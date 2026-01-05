@@ -2360,7 +2360,7 @@ private async Task LoadChildrenAsync(
 - [x] **Step 3.1**: Create `OneDriveFolderNode` model with properties (Id, Name, Path, ParentId, IsFolder, Children collection)
 - [x] **Step 3.2**: Create `IFolderTreeService` interface with methods (GetRootFoldersAsync, GetChildFoldersAsync, GetFolderHierarchyAsync)
 - [x] **Step 3.3**: Create `IGraphApiClient` wrapper interface (similar to IAuthenticationClient pattern) with methods for testability
-- [ ] **Step 3.4**: Implement `GraphApiClient` wrapper around Microsoft.Graph SDK
+- [x] **Step 3.4**: Implement `GraphApiClient` wrapper around Microsoft.Graph SDK
 - [ ] **Step 3.5**: Implement `FolderTreeService` with Graph API integration + unit tests (with mocked IGraphApiClient)
 - [ ] **Step 3.6**: Add integration tests using real Graph API calls (requires authenticated IAuthService)
 - [ ] **Step 3.7**: Create helper method to build hierarchical tree from flat DriveItem list
