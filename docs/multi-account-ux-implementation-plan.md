@@ -2367,7 +2367,7 @@ private async Task LoadChildrenAsync(
 - [x] **Step 3.8**: Manual testing against real OneDrive account (verify folder structure loads correctly) - Verified working with real OneDrive account
 
 ### Sprint 4 (Week 7-8): Sync Tree UI (Tri-State Checkboxes)
-- [ ] **Step 4.1**: Add tri-state selection properties to OneDriveFolderNode (IsSelected nullable bool, SelectionState enum: Unchecked/Checked/Indeterminate)
+- [x] **Step 4.1**: Add tri-state selection properties to OneDriveFolderNode (IsSelected nullable bool, SelectionState enum: Unchecked/Checked/Indeterminate) - Created SelectionState enum, updated OneDriveFolderNode to inherit from ReactiveObject with SelectionState and IsSelected properties using RaiseAndSetIfChanged + 14 unit tests covering property change notifications, all selection states, and observable collection behavior
 - [ ] **Step 4.2**: Create ISyncSelectionService interface for managing folder selection state
 - [ ] **Step 4.3**: Implement SyncSelectionService with cascading selection logic (parent→children) + unit tests
 - [ ] **Step 4.4**: Implement upward propagation logic (children→parent indeterminate state calculation) + unit tests

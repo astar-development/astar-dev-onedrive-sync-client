@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using ReactiveUI;
 
 namespace AStarOneDriveClient.Models;
 
@@ -9,7 +10,7 @@ namespace AStarOneDriveClient.Models;
 /// This model is used for building the folder tree UI and managing sync selection.
 /// The Children collection supports lazy loading for efficient tree rendering.
 /// </remarks>
-public sealed class OneDriveFolderNode
+public sealed class OneDriveFolderNode : ReactiveObject
 {
     /// <summary>
     /// Gets or sets the unique identifier for this item (OneDrive DriveItem ID).
@@ -59,6 +60,34 @@ public sealed class OneDriveFolderNode
     /// Gets or sets a value indicating whether this node is expanded in the tree view.
     /// </summary>
     public bool IsExpanded { get; set; }
+
+    private SelectionState _selectionState;
+    /// <summary>
+    /// Gets or sets the selection state for sync operations.
+    /// </summary>
+    /// <remarks>
+    /// Use Checked/Unchecked for explicit user selection.
+    /// Indeterminate is calculated when some (but not all) children are selected.
+    /// </remarks>
+    public SelectionState SelectionState
+    {
+        get => _selectionState;
+        set => this.RaiseAndSetIfChanged(ref _selectionState, value);
+    }
+
+    private bool? _isSelected;
+    /// <summary>
+    /// Gets or sets a nullable boolean representing the selection state.
+    /// </summary>
+    /// <remarks>
+    /// true = Checked, false = Unchecked, null = Indeterminate.
+    /// This property provides checkbox-friendly binding for tri-state selection.
+    /// </remarks>
+    public bool? IsSelected
+    {
+        get => _isSelected;
+        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="OneDriveFolderNode"/> class.
