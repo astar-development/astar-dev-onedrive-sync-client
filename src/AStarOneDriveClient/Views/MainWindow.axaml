@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="AStarOneDriveClient.Views.MainWindow"
+        Title="OneDrive Multi-Account Sync"
+        Width="800"
+        Height="600"
+        MinWidth="600"
+        MinHeight="400">
+
+    <Grid RowDefinitions="Auto,*" Margin="20">
+        <TextBlock Grid.Row="0"
+                   Text="OneDrive Multi-Account Sync Client"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Margin="0,0,0,20" />
+
+        <StackPanel Grid.Row="1"
+                    Spacing="10"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center">
+            <TextBlock Text="Welcome to AStar OneDrive Client V3"
+                       FontSize="16"
+                       HorizontalAlignment="Center" />
+            <TextBlock Text="Phase 1: Foundation - Project structure created successfully"
+                       FontSize="12"
+                       Foreground="Gray"
+                       HorizontalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Window>

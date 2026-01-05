@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src\AStarOneDriveClient\AStarOneDriveClient.csproj" Type="C#" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test\AStarOneDriveClient.Tests.Unit\AStarOneDriveClient.Tests.Unit.csproj" Type="C#" />
+  </Folder>
+  <Folder Name="/docs/">
+  </Folder>
+</Solution>
