@@ -88,6 +88,18 @@ src/
 
 ```csharp
 /// <summary>
+/// Represents user preferences for the application window.
+/// </summary>
+public sealed record WindowPreferences
+{
+    public double? X { get; init; }                      // Window X position (null = center on screen)
+    public double? Y { get; init; }                      // Window Y position
+    public double Width { get; init; } = 800;            // Window width
+    public double Height { get; init; } = 600;           // Window height
+    public bool IsMaximized { get; init; }               // Whether window is maximized
+}
+
+/// <summary>
 /// Represents a configured OneDrive account.
 /// </summary>
 public sealed record AccountInfo
@@ -2325,10 +2337,14 @@ private async Task LoadChildrenAsync(
 ## Implementation Timeline
 
 ### Sprint 1 (Week 1-2): Foundation
-- [ ] Create models (`AccountInfo`, `SyncConfiguration`, `OneDriveFolderNode`)
-- [ ] Implement `IAccountConfigService` + tests
-- [ ] Implement `IMultiAccountManager` + tests
-- [ ] Setup DI registration
+- [x] **Step 1.1**: Create solution & projects
+- [x] **Step 1.2**: Add NuGet packages & dependencies
+- [ ] **Step 1.3**: Setup database context & migrations (include WindowPreferences table)
+- [ ] **Step 1.4**: Create core models (records): `AccountInfo`, `SyncConfiguration`, `SyncState`, `SyncConflict`, `WindowPreferences`, enums
+- [ ] **Step 1.4.1**: Implement window position persistence service + tests (using DB)
+- [ ] **Step 1.5**: Create repository interfaces
+- [ ] **Step 1.6**: Implement repositories + tests
+- [ ] **Step 1.7**: Setup dependency injection
 
 ### Sprint 2 (Week 3-4): Account Management UI
 - [ ] Create `AccountManagementView.axaml`
@@ -2445,6 +2461,7 @@ private async Task LoadChildrenAsync(
 - [x] User can add up to 3 OneDrive accounts
 - [x] Each account has independent login/logout with persistent token cache
 - [x] User selects unique sync directory per account
+- [x] Window position and size preferences persist across sessions
 - [x] Sync tree displays OneDrive folder structure
 - [x] User can select/deselect folders with checkboxes (auto-saved)
 - [x] Folder selections persist in SQLite database across app restarts
