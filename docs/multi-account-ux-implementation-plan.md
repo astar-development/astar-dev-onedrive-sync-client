@@ -2339,8 +2339,8 @@ private async Task LoadChildrenAsync(
 ### Sprint 1 (Week 1-2): Foundation
 - [x] **Step 1.1**: Create solution & projects
 - [x] **Step 1.2**: Add NuGet packages & dependencies
-- [ ] **Step 1.3**: Setup database context & migrations (include WindowPreferences table)
-- [ ] **Step 1.4**: Create core models (records): `AccountInfo`, `SyncConfiguration`, `SyncState`, `SyncConflict`, `WindowPreferences`, enums
+- [x] **Step 1.3**: Setup database context & migrations (include WindowPreferences table)
+- [x] **Step 1.4**: Create core models (records): `AccountInfo`, `SyncConfiguration`, `SyncState`, `SyncConflict`, `WindowPreferences`, enums
 - [ ] **Step 1.4.1**: Implement window position persistence service + tests (using DB)
 - [ ] **Step 1.5**: Create repository interfaces
 - [ ] **Step 1.6**: Implement repositories + tests
