@@ -2367,14 +2367,14 @@ private async Task LoadChildrenAsync(
 - [x] **Step 3.8**: Manual testing against real OneDrive account (verify folder structure loads correctly) - Verified working with real OneDrive account
 
 ### Sprint 4 (Week 7-8): Sync Tree UI (Tri-State Checkboxes)
-- [ ] Create `SyncTreeView.axaml` with TreeView and tri-state CheckBox
-- [ ] Implement `SyncTreeViewModel` + tests
-- [ ] Implement tri-state checkbox logic in `OneDriveFolderNode`
-- [ ] Test cascading selection (parent → children)
-- [ ] Test upward propagation (children → parent)
-- [ ] Test indeterminate state calculation
-- [ ] Add lazy loading for child folders (inherit parent selection state)
-- [ ] Implement auto-save selection persistence
+- [ ] **Step 4.1**: Add tri-state selection properties to OneDriveFolderNode (IsSelected nullable bool, SelectionState enum: Unchecked/Checked/Indeterminate)
+- [ ] **Step 4.2**: Create ISyncSelectionService interface for managing folder selection state
+- [ ] **Step 4.3**: Implement SyncSelectionService with cascading selection logic (parent→children) + unit tests
+- [ ] **Step 4.4**: Implement upward propagation logic (children→parent indeterminate state calculation) + unit tests
+- [ ] **Step 4.5**: Create SyncTreeViewModel with IFolderTreeService and ISyncSelectionService dependencies + unit tests
+- [ ] **Step 4.6**: Create SyncTreeView.axaml with TreeView, tri-state CheckBox, and hierarchical data template
+- [ ] **Step 4.7**: Wire ViewModel to View, register in DI, and integrate into MainWindow
+- [ ] **Step 4.8**: Integration tests with AccountManagementView and manual testing of selection behavior
 
 ### Sprint 5 (Week 9-10): Database & Persistence
 - [ ] Design SQLite database schema
