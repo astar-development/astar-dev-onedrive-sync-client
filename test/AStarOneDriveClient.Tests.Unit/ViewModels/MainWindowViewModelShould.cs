@@ -107,6 +107,11 @@ public class MainWindowViewModelShould
     {
         IFolderTreeService mockFolderService = Substitute.For<IFolderTreeService>();
         ISyncSelectionService mockSelectionService = Substitute.For<ISyncSelectionService>();
-        return new SyncTreeViewModel(mockFolderService, mockSelectionService);
+        ISyncEngine mockSyncEngine = Substitute.For<ISyncEngine>();
+
+        var progressSubject = new System.Reactive.Subjects.Subject<SyncState>();
+        mockSyncEngine.Progress.Returns(progressSubject);
+
+        return new SyncTreeViewModel(mockFolderService, mockSelectionService, mockSyncEngine);
     }
 }

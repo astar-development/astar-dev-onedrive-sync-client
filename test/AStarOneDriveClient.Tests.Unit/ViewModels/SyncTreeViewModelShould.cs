@@ -1,4 +1,6 @@
+using System.Reactive.Subjects;
 using AStarOneDriveClient.Models;
+using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.Services.OneDriveServices;
 using AStarOneDriveClient.ViewModels;
@@ -10,13 +12,20 @@ public class SyncTreeViewModelShould : IDisposable
 {
     private readonly IFolderTreeService _mockFolderService;
     private readonly ISyncSelectionService _mockSelectionService;
+    private readonly ISyncEngine _mockSyncEngine;
+    private readonly Subject<SyncState> _progressSubject;
     private readonly SyncTreeViewModel _viewModel;
 
     public SyncTreeViewModelShould()
     {
         _mockFolderService = Substitute.For<IFolderTreeService>();
         _mockSelectionService = Substitute.For<ISyncSelectionService>();
-        _viewModel = new SyncTreeViewModel(_mockFolderService, _mockSelectionService);
+        _mockSyncEngine = Substitute.For<ISyncEngine>();
+
+        _progressSubject = new Subject<SyncState>();
+        _mockSyncEngine.Progress.Returns(_progressSubject);
+
+        _viewModel = new SyncTreeViewModel(_mockFolderService, _mockSelectionService, _mockSyncEngine);
     }
 
     [Fact]
@@ -274,7 +283,7 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact]
     public void ThrowArgumentNullExceptionWhenFolderServiceIsNull()
     {
-        Exception? exception = Record.Exception(() => new SyncTreeViewModel(null!, _mockSelectionService));
+        Exception? exception = Record.Exception(() => new SyncTreeViewModel(null!, _mockSelectionService, _mockSyncEngine));
 
         exception.ShouldNotBeNull();
         exception.ShouldBeOfType<ArgumentNullException>();
@@ -283,7 +292,7 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact]
     public void ThrowArgumentNullExceptionWhenSelectionServiceIsNull()
     {
-        Exception? exception = Record.Exception(() => new SyncTreeViewModel(_mockFolderService, null!));
+        Exception? exception = Record.Exception(() => new SyncTreeViewModel(_mockFolderService, null!, _mockSyncEngine));
 
         exception.ShouldNotBeNull();
         exception.ShouldBeOfType<ArgumentNullException>();
@@ -309,6 +318,7 @@ public class SyncTreeViewModelShould : IDisposable
 
     public void Dispose()
     {
+        _progressSubject.Dispose();
         _viewModel.Dispose();
         GC.SuppressFinalize(this);
     }

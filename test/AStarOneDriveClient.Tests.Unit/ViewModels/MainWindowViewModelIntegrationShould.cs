@@ -1,6 +1,7 @@
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Models;
+using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.ViewModels;
@@ -21,6 +22,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     private readonly IAuthService _mockAuthService;
     private readonly IFolderTreeService _mockFolderTreeService;
     private readonly ISyncSelectionService _syncSelectionService;
+    private readonly ISyncEngine _mockSyncEngine;
+    private readonly Subject<SyncState> _progressSubject;
 
     public MainWindowViewModelIntegrationShould()
     {
@@ -32,6 +35,10 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _mockAuthService = Substitute.For<IAuthService>();
         _mockFolderTreeService = Substitute.For<IFolderTreeService>();
         _syncSelectionService = new SyncSelectionService();
+        _mockSyncEngine = Substitute.For<ISyncEngine>();
+
+        _progressSubject = new Subject<SyncState>();
+        _mockSyncEngine.Progress.Returns(_progressSubject);
 
         // Setup folder tree service to return empty list by default
         _mockFolderTreeService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -62,7 +69,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([rootFolder]));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm);
 
         // Allow initialization to complete
@@ -103,7 +110,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([rootFolder]));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm);
 
         await Task.Delay(100);
@@ -149,7 +156,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([folder2]));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm);
 
         await Task.Delay(100);
@@ -182,7 +189,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
                 new InvalidOperationException("Network error")));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm);
 
         await Task.Delay(100);
@@ -216,7 +223,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             ]));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm);
 
         await Task.Delay(100);
