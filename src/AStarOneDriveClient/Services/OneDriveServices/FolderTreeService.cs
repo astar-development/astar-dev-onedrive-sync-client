@@ -37,7 +37,7 @@ public sealed class FolderTreeService : IFolderTreeService
             return Array.Empty<OneDriveFolderNode>();
         }
 
-        var driveItems = await _graphApiClient.GetRootChildrenAsync(cancellationToken);
+        var driveItems = await _graphApiClient.GetRootChildrenAsync(accountId, cancellationToken);
         var folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
@@ -75,12 +75,12 @@ public sealed class FolderTreeService : IFolderTreeService
         }
 
         // Get parent folder to build paths
-        var parentItem = await _graphApiClient.GetDriveItemAsync(parentFolderId, cancellationToken);
+        var parentItem = await _graphApiClient.GetDriveItemAsync(accountId, parentFolderId, cancellationToken);
         var parentPath = parentItem?.ParentReference?.Path is not null
             ? $"{parentItem.ParentReference.Path}/{parentItem.Name}"
             : $"/{parentItem?.Name}";
 
-        var driveItems = await _graphApiClient.GetDriveItemChildrenAsync(parentFolderId, cancellationToken);
+        var driveItems = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentFolderId, cancellationToken);
         var folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();

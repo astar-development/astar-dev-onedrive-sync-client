@@ -14,9 +14,9 @@
 
   <UserControl.Styles>
     <!-- Spinning animation for loading indicator -->
-    <Style Selector="Ellipse.spinning">
+    <Style Selector="Path.spinner">
       <Style.Animations>
-        <Animation Duration="0:0:1" IterationCount="Infinite">
+        <Animation Duration="0:0:0.8" IterationCount="Infinite">
           <KeyFrame Cue="0%">
             <Setter Property="(RotateTransform.Angle)" Value="0"/>
           </KeyFrame>
@@ -89,13 +89,14 @@
                         IsVisible="{Binding !IsLoading}"/>
 
               <!-- Loading Spinner -->
-              <Border Width="16" Height="16" VerticalAlignment="Center"
-                      IsVisible="{Binding IsLoading}">
-                <Ellipse Width="12" Height="12"
-                         Stroke="{DynamicResource SystemAccentColor}"
-                         StrokeThickness="2"
-                         Classes="spinning"/>
-              </Border>
+              <Viewbox Width="16" Height="16" VerticalAlignment="Center"
+                       IsVisible="{Binding IsLoading}">
+                <Path Data="M 8,2 A 6,6 0 1 1 2,8"
+                      Stroke="{DynamicResource SystemAccentColor}"
+                      StrokeThickness="1.5"
+                      StrokeLineCap="Round"
+                      Classes="spinner"/>
+              </Viewbox>
 
               <!-- Folder Name -->
               <TextBlock Text="{Binding Name}"

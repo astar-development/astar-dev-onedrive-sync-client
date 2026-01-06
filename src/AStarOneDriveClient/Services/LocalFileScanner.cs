@@ -125,7 +125,8 @@ public sealed class LocalFileScanner : ILocalFileScanner
         }
     }
 
-    private async Task<string> ComputeFileHashAsync(string filePath, CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public async Task<string> ComputeFileHashAsync(string filePath, CancellationToken cancellationToken)
     {
         using var stream = _fileSystem.File.OpenRead(filePath);
         var hashBytes = await SHA256.HashDataAsync(stream, cancellationToken);

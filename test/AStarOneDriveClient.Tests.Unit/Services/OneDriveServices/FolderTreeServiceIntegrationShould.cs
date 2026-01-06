@@ -221,9 +221,9 @@ public class FolderTreeServiceIntegrationShould
         var graphApiClient = new GraphApiClient(authService);
 
         // Act
-        var drive = await graphApiClient.GetMyDriveAsync();
-        var root = await graphApiClient.GetDriveRootAsync();
-        var rootChildren = await graphApiClient.GetRootChildrenAsync();
+        var drive = await graphApiClient.GetMyDriveAsync(loginResult.AccountId);
+        var root = await graphApiClient.GetDriveRootAsync(loginResult.AccountId);
+        var rootChildren = await graphApiClient.GetRootChildrenAsync(loginResult.AccountId);
 
         // Assert
         drive.ShouldNotBeNull();

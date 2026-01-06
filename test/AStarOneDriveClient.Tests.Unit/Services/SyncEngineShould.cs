@@ -2,6 +2,7 @@ using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
+using AStarOneDriveClient.Services.OneDriveServices;
 using NSubstitute;
 
 namespace AStarOneDriveClient.Tests.Unit.Services;
@@ -485,9 +486,10 @@ public class SyncEngineShould
         IFileMetadataRepository fileMetadataRepo = Substitute.For<IFileMetadataRepository>();
         ISyncConfigurationRepository syncConfigRepo = Substitute.For<ISyncConfigurationRepository>();
         IAccountRepository accountRepo = Substitute.For<IAccountRepository>();
+        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo);
-        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient);
+        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient);
 
         return (engine, mocks);
     }
@@ -497,5 +499,6 @@ public class SyncEngineShould
         IRemoteChangeDetector RemoteDetector,
         IFileMetadataRepository FileMetadataRepo,
         ISyncConfigurationRepository SyncConfigRepo,
-        IAccountRepository AccountRepo);
+        IAccountRepository AccountRepo,
+        IGraphApiClient GraphApiClient);
 }

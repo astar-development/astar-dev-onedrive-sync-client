@@ -18,7 +18,7 @@ public class FolderTreeServiceShould
         var result = await service.GetRootFoldersAsync("account1");
 
         result.ShouldBeEmpty();
-        await mockGraph.DidNotReceive().GetRootChildrenAsync(Arg.Any<CancellationToken>());
+        await mockGraph.DidNotReceive().GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class FolderTreeServiceShould
             new() { Id = "folder2", Name = "Pictures", Folder = new Folder() },
             new() { Id = "file1", Name = "File.txt" } // Files don't have Folder property
         };
-        mockGraph.GetRootChildrenAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(driveItems));
+        mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(driveItems));
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
@@ -62,7 +62,7 @@ public class FolderTreeServiceShould
             new() { Id = "file1", Name = "File1.txt" },
             new() { Id = "file2", Name = "File2.docx" }
         };
-        mockGraph.GetRootChildrenAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(driveItems));
+        mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(driveItems));
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
@@ -85,14 +85,14 @@ public class FolderTreeServiceShould
             Name = "Documents",
             ParentReference = new ItemReference { Path = "/drive/root:" }
         };
-        mockGraph.GetDriveItemAsync("parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<DriveItem?>(parentItem));
+        mockGraph.GetDriveItemAsync(Arg.Any<string>(), "parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<DriveItem?>(parentItem));
 
         var childItems = new List<DriveItem>
         {
             new() { Id = "child1", Name = "Work", Folder = new Folder() },
             new() { Id = "child2", Name = "Personal", Folder = new Folder() }
         };
-        mockGraph.GetDriveItemChildrenAsync("parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(childItems));
+        mockGraph.GetDriveItemChildrenAsync(Arg.Any<string>(), "parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(childItems));
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
@@ -117,7 +117,7 @@ public class FolderTreeServiceShould
         var result = await service.GetChildFoldersAsync("account1", "parent1");
 
         result.ShouldBeEmpty();
-        await mockGraph.DidNotReceive().GetDriveItemChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await mockGraph.DidNotReceive().GetDriveItemChildrenAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public class FolderTreeServiceShould
         {
             new() { Id = "root1", Name = "Documents", Folder = new Folder() }
         };
-        mockGraph.GetRootChildrenAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(rootItems));
+        mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(rootItems));
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 

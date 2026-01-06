@@ -25,16 +25,11 @@ public sealed class GraphApiClient : IGraphApiClient
         _authService = authService;
     }
 
-    private async Task<GraphServiceClient> CreateGraphClientAsync(CancellationToken cancellationToken)
+    private async Task<GraphServiceClient> CreateGraphClientAsync(string accountId, CancellationToken cancellationToken)
     {
-        // Get the first authenticated account (for now - multi-account support will improve this)
-        var accounts = await _authService.GetAuthenticatedAccountsAsync(cancellationToken);
-        var firstAccount = accounts.Count > 0 ? accounts[0] : default;
-        var accountId = firstAccount.AccountId;
-
         if (string.IsNullOrEmpty(accountId))
         {
-            throw new InvalidOperationException("No authenticated account found");
+            throw new ArgumentException("Account ID cannot be null or empty", nameof(accountId));
         }
 
         // Create a token provider that uses the auth service
@@ -63,34 +58,58 @@ public sealed class GraphApiClient : IGraphApiClient
             Dictionary<string, object>? additionalAuthenticationContext = null,
             CancellationToken cancellationToken = default)
         {
+            System.Diagnostics.Debug.WriteLine($"[GraphTokenProvider] Getting token for account: {_accountId}");
             var token = await _authService.GetAccessTokenAsync(_accountId, cancellationToken);
-            return token ?? throw new InvalidOperationException("Failed to acquire access token");
+            if (token is null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[GraphTokenProvider] ERROR: Token is null for account: {_accountId}");
+                throw new InvalidOperationException($"Failed to acquire access token for account: {_accountId}");
+            }
+            System.Diagnostics.Debug.WriteLine($"[GraphTokenProvider] Token acquired successfully for account: {_accountId}");
+            return token;
         }
     }
 
     /// <inheritdoc/>
-    public async Task<Drive?> GetMyDriveAsync(CancellationToken cancellationToken = default)
+    public async Task<Drive?> GetMyDriveAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        var graphClient = await CreateGraphClientAsync(cancellationToken);
+        var graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         return await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<DriveItem?> GetDriveRootAsync(CancellationToken cancellationToken = default)
+    public async Task<DriveItem?> GetDriveRootAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        var graphClient = await CreateGraphClientAsync(cancellationToken);
-        var drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if (drive?.Root is null) return null;
+        try
+        {
+            System.Diagnostics.Debug.WriteLine($"[GraphApiClient] GetDriveRootAsync called for account: {accountId}");
+            var graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
+            System.Diagnostics.Debug.WriteLine($"[GraphApiClient] GraphClient created, getting drive...");
+            var drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
+            System.Diagnostics.Debug.WriteLine($"[GraphApiClient] Drive retrieved: {drive?.Id}");
+            if (drive?.Id is null)
+            {
+                System.Diagnostics.Debug.WriteLine($"[GraphApiClient] Drive ID is null");
+                return null;
+            }
 
-        return await graphClient.Drives[drive.Id].Root.GetAsync(cancellationToken: cancellationToken);
+            var root = await graphClient.Drives[drive.Id].Root.GetAsync(cancellationToken: cancellationToken);
+            System.Diagnostics.Debug.WriteLine($"[GraphApiClient] Root item retrieved: {root?.Name}, ID: {root?.Id}");
+            return root;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[GraphApiClient] ERROR in GetDriveRootAsync: {ex.GetType().Name} - {ex.Message}");
+            throw;
+        }
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string itemId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(itemId);
 
-        var graphClient = await CreateGraphClientAsync(cancellationToken);
+        var graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         var drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         if (drive?.Id is null) return Enumerable.Empty<DriveItem>();
 
@@ -99,11 +118,11 @@ public sealed class GraphApiClient : IGraphApiClient
     }
 
     /// <inheritdoc/>
-    public async Task<DriveItem?> GetDriveItemAsync(string itemId, CancellationToken cancellationToken = default)
+    public async Task<DriveItem?> GetDriveItemAsync(string accountId, string itemId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(itemId);
 
-        var graphClient = await CreateGraphClientAsync(cancellationToken);
+        var graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         var drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         if (drive?.Id is null) return null;
 
@@ -111,9 +130,9 @@ public sealed class GraphApiClient : IGraphApiClient
     }
 
     /// <inheritdoc/>
-    public async Task<IEnumerable<DriveItem>> GetRootChildrenAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<DriveItem>> GetRootChildrenAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        var graphClient = await CreateGraphClientAsync(cancellationToken);
+        var graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         var drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         if (drive?.Id is null) return Enumerable.Empty<DriveItem>();
 
@@ -122,5 +141,37 @@ public sealed class GraphApiClient : IGraphApiClient
 
         var response = await graphClient.Drives[drive.Id].Items[root.Id].Children.GetAsync(cancellationToken: cancellationToken);
         return response?.Value ?? Enumerable.Empty<DriveItem>();
+    }
+
+    /// <inheritdoc/>
+    public async Task DownloadFileAsync(string accountId, string itemId, string localFilePath, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(itemId);
+        ArgumentNullException.ThrowIfNull(localFilePath);
+
+        var graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
+        var drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
+        if (drive?.Id is null)
+        {
+            throw new InvalidOperationException("Unable to access user's drive");
+        }
+
+        // Download file content stream from OneDrive
+        var contentStream = await graphClient.Drives[drive.Id].Items[itemId].Content.GetAsync(cancellationToken: cancellationToken);
+        if (contentStream is null)
+        {
+            throw new InvalidOperationException($"Failed to download file content for item {itemId}");
+        }
+
+        // Ensure the directory exists
+        var directory = System.IO.Path.GetDirectoryName(localFilePath);
+        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        // Write the stream to local file
+        using var fileStream = new FileStream(localFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+        await contentStream.CopyToAsync(fileStream, cancellationToken);
     }
 }

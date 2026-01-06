@@ -20,4 +20,12 @@ public interface ILocalFileScanner
         string localFolderPath,
         string oneDriveFolderPath,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Computes the SHA256 hash of a file.
+    /// </summary>
+    /// <param name="filePath">The path to the file.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Hexadecimal string representation of the file's SHA256 hash.</returns>
+    Task<string> ComputeFileHashAsync(string filePath, CancellationToken cancellationToken = default);
 }

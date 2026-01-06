@@ -2,6 +2,7 @@ using System.Reactive.Subjects;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
+using AStarOneDriveClient.Services.OneDriveServices;
 
 namespace AStarOneDriveClient.Services;
 
@@ -19,6 +20,7 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
     private readonly IFileMetadataRepository _fileMetadataRepository;
     private readonly ISyncConfigurationRepository _syncConfigurationRepository;
     private readonly IAccountRepository _accountRepository;
+    private readonly IGraphApiClient _graphApiClient;
     private readonly BehaviorSubject<SyncState> _progressSubject;
     private CancellationTokenSource? _syncCancellation;
 
@@ -27,19 +29,22 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
         IRemoteChangeDetector remoteChangeDetector,
         IFileMetadataRepository fileMetadataRepository,
         ISyncConfigurationRepository syncConfigurationRepository,
-        IAccountRepository accountRepository)
+        IAccountRepository accountRepository,
+        IGraphApiClient graphApiClient)
     {
         ArgumentNullException.ThrowIfNull(localFileScanner);
         ArgumentNullException.ThrowIfNull(remoteChangeDetector);
         ArgumentNullException.ThrowIfNull(fileMetadataRepository);
         ArgumentNullException.ThrowIfNull(syncConfigurationRepository);
         ArgumentNullException.ThrowIfNull(accountRepository);
+        ArgumentNullException.ThrowIfNull(graphApiClient);
 
         _localFileScanner = localFileScanner;
         _remoteChangeDetector = remoteChangeDetector;
         _fileMetadataRepository = fileMetadataRepository;
         _syncConfigurationRepository = syncConfigurationRepository;
         _accountRepository = accountRepository;
+        _graphApiClient = graphApiClient;
 
         var initialState = new SyncState(
             AccountId: string.Empty,
@@ -74,8 +79,15 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
             // Get selected folders for this account
             var selectedFolders = await _syncConfigurationRepository.GetSelectedFoldersAsync(accountId, cancellationToken);
+            System.Diagnostics.Debug.WriteLine($"[SyncEngine] Selected folders from database: {selectedFolders.Count}");
+            foreach (var folder in selectedFolders)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SyncEngine]   - '{folder}'");
+            }
+
             if (selectedFolders.Count == 0)
             {
+                System.Diagnostics.Debug.WriteLine($"[SyncEngine] No folders selected, exiting sync");
                 ReportProgress(accountId, SyncStatus.Idle, 0, 0, 0, 0);
                 return;
             }
@@ -223,6 +235,10 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
             var totalFiles = filesToUpload.Count + filesToDownload.Count;
             var totalBytes = filesToUpload.Sum(f => f.Size) + filesToDownload.Sum(f => f.Size);
+
+            // Log file counts for debugging
+            System.Diagnostics.Debug.WriteLine($"Sync summary: {filesToDownload.Count} to download, {filesToUpload.Count} to upload, {filesToDelete.Count} to delete");
+
             ReportProgress(accountId, SyncStatus.Running, totalFiles, 0, totalBytes, 0, conflictsDetected: conflictCount);
 
             int completedFiles = 0;
@@ -262,32 +278,62 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                 ReportProgress(accountId, SyncStatus.Running, totalFiles, completedFiles, totalBytes, completedBytes, filesUploading: 1, conflictsDetected: conflictCount);
             }
 
-            // Download files (placeholder - actual download implementation in future)
+            // Download files
             for (int i = 0; i < filesToDownload.Count; i++)
             {
                 _syncCancellation.Token.ThrowIfCancellationRequested();
 
                 var file = filesToDownload[i];
 
-                // Simulate download (actual Graph API download will be added later)
-                await Task.Delay(10, _syncCancellation.Token); // Simulate network delay
-
-                // Update file metadata with downloaded status
-                var downloadedFile = file with
+                try
                 {
-                    SyncStatus = FileSyncStatus.Synced,
-                    LastSyncDirection = SyncDirection.Download,
-                    LocalHash = $"downloaded_hash_{Guid.NewGuid():N}" // Simulated hash from downloaded file
-                };
+                    System.Diagnostics.Debug.WriteLine($"Starting download: {file.Name} (ID: {file.Id}) to {file.LocalPath}");
 
-                // Save to database
-                if (existingFilesDict.ContainsKey(file.Path))
-                {
-                    await _fileMetadataRepository.UpdateAsync(downloadedFile, cancellationToken);
+                    // Download file from OneDrive using Graph API
+                    await _graphApiClient.DownloadFileAsync(accountId, file.Id, file.LocalPath, _syncCancellation.Token);
+
+                    System.Diagnostics.Debug.WriteLine($"Download complete: {file.Name}, computing hash...");
+
+                    // Compute hash of downloaded file
+                    var downloadedHash = await _localFileScanner.ComputeFileHashAsync(file.LocalPath, _syncCancellation.Token);
+
+                    System.Diagnostics.Debug.WriteLine($"Hash computed for {file.Name}: {downloadedHash}");
+
+                    // Update file metadata with downloaded status
+                    var downloadedFile = file with
+                    {
+                        SyncStatus = FileSyncStatus.Synced,
+                        LastSyncDirection = SyncDirection.Download,
+                        LocalHash = downloadedHash
+                    };
+
+                    // Save to database
+                    if (existingFilesDict.ContainsKey(file.Path))
+                    {
+                        await _fileMetadataRepository.UpdateAsync(downloadedFile, cancellationToken);
+                    }
+                    else
+                    {
+                        await _fileMetadataRepository.AddAsync(downloadedFile, cancellationToken);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"Successfully synced: {file.Name}");
                 }
-                else
+                catch (Exception ex)
                 {
-                    await _fileMetadataRepository.AddAsync(downloadedFile, cancellationToken);
+                    System.Diagnostics.Debug.WriteLine($"ERROR downloading {file.Name}: {ex.GetType().Name} - {ex.Message}");
+                    System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+
+                    // Log download failure and mark file as failed
+                    var failedFile = file with { SyncStatus = FileSyncStatus.Failed };
+                    if (existingFilesDict.ContainsKey(file.Path))
+                    {
+                        await _fileMetadataRepository.UpdateAsync(failedFile, cancellationToken);
+                    }
+                    else
+                    {
+                        await _fileMetadataRepository.AddAsync(failedFile, cancellationToken);
+                    }
                 }
 
                 completedFiles++;
