@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.IO.Abstractions;
 
 namespace AStarOneDriveClient;
 
@@ -51,10 +52,12 @@ public static class ServiceConfiguration
         });
 
         // Services
+        services.AddSingleton<IFileSystem, FileSystem>();
         services.AddScoped<IWindowPreferencesService, WindowPreferencesService>();
         services.AddScoped<IGraphApiClient, GraphApiClient>();
         services.AddScoped<IFolderTreeService, FolderTreeService>();
         services.AddScoped<ISyncSelectionService, SyncSelectionService>();
+        services.AddScoped<ILocalFileScanner, LocalFileScanner>();
 
         // ViewModels
         services.AddTransient<AccountManagementViewModel>();
