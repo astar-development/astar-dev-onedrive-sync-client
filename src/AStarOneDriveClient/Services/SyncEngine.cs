@@ -79,15 +79,8 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
             // Get selected folders for this account
             var selectedFolders = await _syncConfigurationRepository.GetSelectedFoldersAsync(accountId, cancellationToken);
-            System.Diagnostics.Debug.WriteLine($"[SyncEngine] Selected folders from database: {selectedFolders.Count}");
-            foreach (var folder in selectedFolders)
-            {
-                System.Diagnostics.Debug.WriteLine($"[SyncEngine]   - '{folder}'");
-            }
-
             if (selectedFolders.Count == 0)
             {
-                System.Diagnostics.Debug.WriteLine($"[SyncEngine] No folders selected, exiting sync");
                 ReportProgress(accountId, SyncStatus.Idle, 0, 0, 0, 0);
                 return;
             }
@@ -163,13 +156,18 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                         existingFile.LastModifiedUtc != remoteFile.LastModifiedUtc ||
                         existingFile.Size != remoteFile.Size)
                     {
-                        filesToDownload.Add(remoteFile);
+                        // Set local path before adding to download list
+                        var localFilePath = System.IO.Path.Combine(account.LocalSyncPath, remoteFile.Path.TrimStart('/'));
+                        var fileWithLocalPath = remoteFile with { LocalPath = localFilePath };
+                        filesToDownload.Add(fileWithLocalPath);
                     }
                 }
                 else
                 {
-                    // New remote file
-                    filesToDownload.Add(remoteFile);
+                    // New remote file - set local path
+                    var localFilePath = System.IO.Path.Combine(account.LocalSyncPath, remoteFile.Path.TrimStart('/'));
+                    var fileWithLocalPath = remoteFile with { LocalPath = localFilePath };
+                    filesToDownload.Add(fileWithLocalPath);
                 }
             }
 
@@ -255,16 +253,39 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                 // Simulate upload (actual Graph API upload will be added later)
                 await Task.Delay(10, _syncCancellation.Token); // Simulate network delay
 
+                // Determine if this is an update or new file
+                var isExistingFile = existingFilesDict.TryGetValue(file.Path, out var existingFile);
+
                 // Update file metadata with uploaded status
-                var uploadedFile = file with
+                FileMetadata uploadedFile;
+                if (isExistingFile)
                 {
-                    Id = $"uploaded_{Guid.NewGuid():N}", // Simulated OneDrive ID
-                    SyncStatus = FileSyncStatus.Synced,
-                    LastSyncDirection = SyncDirection.Upload
-                };
+                    // For existing files, preserve remote metadata (CTag, ETag) and only update local info
+                    uploadedFile = existingFile! with
+                    {
+                        LocalPath = file.LocalPath,
+                        LocalHash = file.LocalHash,
+                        Size = file.Size,
+                        LastModifiedUtc = file.LastModifiedUtc,
+                        SyncStatus = FileSyncStatus.Synced,
+                        LastSyncDirection = SyncDirection.Upload
+                    };
+                }
+                else
+                {
+                    // New file - use simulated OneDrive ID
+                    uploadedFile = file with
+                    {
+                        Id = $"uploaded_{Guid.NewGuid():N}",
+                        SyncStatus = FileSyncStatus.Synced,
+                        LastSyncDirection = SyncDirection.Upload
+                    };
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[SyncEngine] Uploading {file.Name}: Path={file.Path}, IsExisting={isExistingFile}, ID={uploadedFile.Id}");
 
                 // Save to database
-                if (existingFilesDict.ContainsKey(file.Path))
+                if (isExistingFile)
                 {
                     await _fileMetadataRepository.UpdateAsync(uploadedFile, cancellationToken);
                 }

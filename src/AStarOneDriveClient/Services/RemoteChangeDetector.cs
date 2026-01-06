@@ -35,8 +35,6 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Scanning folder: {folderPath}");
-
         // For initial implementation, scan the folder tree
         // Note: For large OneDrive accounts (100k+ files), this can take several minutes
         // In future sprints, this will be enhanced with proper delta query support
@@ -45,16 +43,11 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
         if (rootItem is not null)
         {
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Found folder item: {rootItem.Name}, ID: {rootItem.Id}");
             // Add a practical limit for initial scan to prevent timeout
             // This will be removed when we implement proper delta query support
             const int maxFiles = 10000; // Limit initial scan to 10k files
             await ScanFolderRecursiveAsync(accountId, rootItem, folderPath, changes, cancellationToken, maxFiles);
             System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Scan complete: {changes.Count} files found in {folderPath}");
-        }
-        else
-        {
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] WARNING: Could not find folder item for path: {folderPath}");
         }
 
         // Generate a simple delta token based on timestamp
@@ -66,36 +59,27 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
     private async Task<DriveItem?> GetFolderItemAsync(string accountId, string folderPath, CancellationToken cancellationToken)
     {
-        System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] GetFolderItemAsync called with path: '{folderPath}'");
-
         // For root or empty path, return the drive root
         if (folderPath == "/" || string.IsNullOrEmpty(folderPath))
         {
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Returning drive root for path: '{folderPath}'");
             return await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
         }
 
         // Clean up the path
         folderPath = folderPath.Trim('/');
-        System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Cleaned path: '{folderPath}'");
 
         // Get root and traverse path segments
         var currentItem = await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
         if (currentItem?.Id is null)
         {
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] ERROR: Could not get drive root");
             return null;
         }
 
-        System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Got drive root: {currentItem.Name}, traversing path segments...");
         var pathSegments = folderPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Path segments: {string.Join(" -> ", pathSegments)}");
 
         foreach (var segment in pathSegments)
         {
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Looking for folder segment: '{segment}' in item: {currentItem.Name}");
             var children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, currentItem.Id, cancellationToken);
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Found {children.Count()} children");
 
             currentItem = children.FirstOrDefault(c =>
                 c.Name?.Equals(segment, StringComparison.OrdinalIgnoreCase) == true &&
@@ -103,11 +87,8 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
             if (currentItem?.Id is null)
             {
-                System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] ERROR: Could not find folder segment '{segment}' in path");
                 return null;
             }
-
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Found segment: {currentItem.Name}");
         }
 
         return currentItem;
@@ -125,7 +106,6 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
         if (changes.Count >= maxFiles)
         {
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Reached max files limit: {maxFiles}");
             return; // Reached the limit
         }
 
@@ -134,9 +114,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Scanning folder: {currentPath}, Files so far: {changes.Count}");
         var children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentItem.Id, cancellationToken);
-        System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Found {children.Count()} items in {currentPath}");
 
         foreach (var item in children)
         {
@@ -144,7 +122,6 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
             if (changes.Count >= maxFiles)
             {
-                System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Reached max files limit: {maxFiles}");
                 return; // Reached the limit
             }
 
@@ -154,7 +131,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
                 var itemPath = CombinePaths(currentPath, item.Name);
                 var metadata = ConvertToFileMetadata(accountId, item, itemPath);
                 changes.Add(metadata);
-                if (changes.Count % 100 == 0)
+                if (changes.Count % 500 == 0)
                 {
                     System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Progress: {changes.Count} files scanned");
                 }

@@ -189,12 +189,6 @@ public sealed class SyncSelectionService : ISyncSelectionService
         // Get all checked folders
         var selectedFolders = GetSelectedFolders(rootFolders);
 
-        System.Diagnostics.Debug.WriteLine($"[SyncSelectionService] Saving {selectedFolders.Count} folders to database:");
-        foreach (var folder in selectedFolders)
-        {
-            System.Diagnostics.Debug.WriteLine($"[SyncSelectionService]   - '{folder.Path}' (Name: '{folder.Name}')");
-        }
-
         // Convert to SyncConfiguration records
         var configurations = selectedFolders.Select(folder => new SyncConfiguration(
             Id: 0, // Will be auto-generated
@@ -206,7 +200,6 @@ public sealed class SyncSelectionService : ISyncSelectionService
 
         // Save batch (replaces all existing selections for this account)
         await _configurationRepository.SaveBatchAsync(accountId, configurations, cancellationToken);
-        System.Diagnostics.Debug.WriteLine($"[SyncSelectionService] Save complete");
     }
 
     /// <inheritdoc/>
