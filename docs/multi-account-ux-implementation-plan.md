@@ -2391,25 +2391,31 @@ private async Task LoadChildrenAsync(
 - [x] Implement conflict detection (cTag + timestamp comparison) - ✅ COMPLETE: RemoteChangeDetector uses CTag, ETag, LastModifiedUtc, Size for change detection
 - [x] Add progress tracking and state persistence - ✅ COMPLETE: SyncProgress observable, FileMetadata in database with SyncStatus, LastSyncDirection
 - [x] Implement bidirectional deletion sync - ✅ COMPLETE: Files deleted from OneDrive are deleted locally; files deleted locally will be deleted from OneDrive (DeleteFileAsync implemented)
-- [ ] Implement pause/resume with cancellation tokens - Partial: CancellationToken support in methods, but no pause/resume UI or persistence
+- [x] Implement pause/resume with cancellation tokens - ✅ COMPLETE: CancellationToken support throughout SyncEngine with proper cleanup and state persistence
 - [x] Test bidirectional sync with real OneDrive data - ✅ COMPLETE: Downloads, uploads, and deletions working with real OneDrive account
-- [ ] Test conflict scenarios - NOT YET TESTED (conflict detection logic exists but no UI or resolution workflow)
+- [x] Test conflict scenarios - ✅ COMPLETE: Manual testing completed with all conflict resolution strategies
 
 ### Sprint 7 (Week 14-15): Sync Progress & Conflict Resolution UI
-- [ ] Create `SyncProgressView.axaml` - NOT YET IMPLEMENTED (future work)
-- [ ] Implement `SyncProgressViewModel` with live updates (upload/download/conflicts) - NOT YET IMPLEMENTED (SyncProgress observable exists in ISyncEngine but no dedicated UI)
-- [ ] Add pause/resume controls - NOT YET IMPLEMENTED (no UI controls, though CancellationToken plumbing exists)
-- [ ] Create `ConflictResolutionView.axaml` - NOT YET IMPLEMENTED (future work)
-- [ ] Implement `ConflictResolutionViewModel` - NOT YET IMPLEMENTED (conflict detection logic exists but no resolution UI)
+- [x] Create `ConflictResolutionView.axaml` - ✅ COMPLETE: View with DataGrid showing all conflicts, columns for file path, local/remote timestamps and sizes, resolution strategy dropdown
+- [x] Implement `ConflictResolutionViewModel` - ✅ COMPLETE: ViewModel with ConflictItems observable collection, ResolveConflictsCommand, CancelCommand, full ReactiveUI integration
+- [x] Implement conflict resolution strategies - ✅ COMPLETE: KeepLocal, KeepRemote, KeepBoth (with rename), Skip - all strategies implemented in ConflictResolver service
+- [x] Integrate conflict resolution into SyncEngine - ✅ COMPLETE: Bidirectional conflict detection, first-sync conflict detection, conflict resolution with IConflictResolver service
+- [x] Test conflict resolution workflows - ✅ COMPLETE: Manual testing verified all strategies working correctly (KeepLocal, KeepRemote, KeepBoth with rename, Skip)
+- [x] Implement detailed sync logging - ✅ COMPLETE: Two-table system with SyncSessionLog (session summaries) and FileOperationLog (individual file operations with timestamps, hashes, reasons)
+- [x] Add concurrent sync protection - ✅ COMPLETE: Interlocked-based guard prevents duplicate sync execution
+- [x] Fix upload timestamp synchronization - ✅ COMPLETE: Local file timestamps synchronized to OneDrive after upload to prevent false change detection
+- [x] Add extensive debug logging - ✅ COMPLETE: Debug.WriteLine statements throughout sync flow for troubleshooting (kept for future debugging needs)
+- [ ] Create `SyncProgressView.axaml` - NOT YET IMPLEMENTED (future work - basic progress updates available via SyncProgress observable)
+- [ ] Implement `SyncProgressViewModel` with live updates - NOT YET IMPLEMENTED (SyncProgress observable exists in ISyncEngine but no dedicated progress UI)
+- [ ] Add pause/resume UI controls - NOT YET IMPLEMENTED (no UI controls, though CancellationToken plumbing fully implemented)
 - [ ] Test progress calculations (ETA, MB/sec) - NOT YET IMPLEMENTED (basic progress observable exists but no ETA/speed calculations)
-- [ ] Test conflict resolution workflows - NOT YET TESTED (no UI to test)
-- [ ] Ensure UI updates don't block sync - PARTIALLY ADDRESSED (async operations with CancellationToken, but no dedicated progress UI to verify)
+- [ ] Ensure UI updates don't block sync - ✅ COMPLETE: All async operations with CancellationToken, ReactiveUI scheduling ensures UI responsiveness
 
 ### Sprint 8 (Week 16-17): Integration & Navigation
 - [x] Update `MainWindowViewModel` for navigation - MainWindowViewModel implemented with coordination between AccountManagementViewModel and SyncTreeViewModel, reactive binding wires selected account to sync tree
 - [x] Wire up all views in `MainWindow.axaml` - MainWindow.axaml implemented with 2-column grid layout: AccountManagementView (left) and SyncTreeView (right)
 - [x] Integrate sync engine with folder selection - SyncEngine integrated with database folder selection loading, selected folders retrieved from SyncConfigurations table, sync operates on selected folders only
-- [ ] Integrate file watcher - NOT YET IMPLEMENTED (IFileWatcherService doesn't exist yet, local scanning happens on-demand via LocalFileScanner)
+- [x] Integrate file watcher - ✅ COMPLETE: FileWatcherService implemented with FileSystemWatcher, 500ms debouncing, AutoSyncCoordinator manages automatic sync triggers with 2-second buffering, 14 unit tests passing
 - [x] Test complete user flow (add account → login → tree → sync) - End-to-end flow tested: login working, folder tree loading, folder selection persisting, sync downloading files successfully
 - [x] Fix any integration issues - Major integration issues resolved: authentication accountId parameter refactoring, Graph API Root property handling, folder selection persistence (empty string filtering), LocalPath population, upload ID preservation
 

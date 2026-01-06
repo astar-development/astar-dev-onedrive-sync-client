@@ -57,6 +57,8 @@ public static class ServiceConfiguration
 
         // Services
         services.AddSingleton<IFileSystem, FileSystem>();
+        services.AddSingleton<IFileWatcherService, FileWatcherService>();
+        services.AddSingleton<IAutoSyncCoordinator, AutoSyncCoordinator>();
         services.AddScoped<IWindowPreferencesService, WindowPreferencesService>();
         services.AddScoped<IGraphApiClient, GraphApiClient>();
         services.AddScoped<IFolderTreeService, FolderTreeService>();
