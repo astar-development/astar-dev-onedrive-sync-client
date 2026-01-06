@@ -23,7 +23,7 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        var account = new AccountInfo("acc1", "John Doe", @"C:\Sync1", true, null, null);
+        var account = new AccountInfo("acc1", "John Doe", @"C:\Sync1", true, null, null, false);
 
         await repository.AddAsync(account, CancellationToken.None);
 
@@ -39,8 +39,8 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, null));
-        await repository.AddAsync(new AccountInfo("acc2", "User 2", @"C:\Sync2", false, null, null));
+        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, null, false));
+        await repository.AddAsync(new AccountInfo("acc2", "User 2", @"C:\Sync2", false, null, null, false));
 
         var result = await repository.GetAllAsync();
 
@@ -54,7 +54,7 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, "token123"));
+        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, "token123", false));
 
         var result = await repository.GetByIdAsync("acc1");
 
@@ -80,9 +80,9 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "Old Name", @"C:\Sync1", true, null, null));
+        await repository.AddAsync(new AccountInfo("acc1", "Old Name", @"C:\Sync1", true, null, null, false));
 
-        var updated = new AccountInfo("acc1", "New Name", @"C:\NewPath", false, DateTime.UtcNow, "newToken");
+        var updated = new AccountInfo("acc1", "New Name", @"C:\NewPath", false, DateTime.UtcNow, "newToken", false);
         await repository.UpdateAsync(updated);
 
         var result = await repository.GetByIdAsync("acc1");
@@ -98,7 +98,7 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        var account = new AccountInfo("nonexistent", "Name", @"C:\Path", true, null, null);
+        var account = new AccountInfo("nonexistent", "Name", @"C:\Path", true, null, null, false);
 
         var exception = await Should.ThrowAsync<InvalidOperationException>(
             async () => await repository.UpdateAsync(account)
@@ -112,7 +112,7 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null));
+        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null, false));
 
         await repository.DeleteAsync("acc1");
 
@@ -134,7 +134,7 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null));
+        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null, false));
 
         var result = await repository.ExistsAsync("acc1");
 

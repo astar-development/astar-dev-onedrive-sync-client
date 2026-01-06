@@ -25,6 +25,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         ArgumentNullException.ThrowIfNull(accountId);
 
         var entities = await _context.FileMetadata
+            .AsNoTracking()
             .Where(fm => fm.AccountId == accountId)
             .ToListAsync(cancellationToken);
 

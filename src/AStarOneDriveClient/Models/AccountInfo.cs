@@ -9,11 +9,13 @@ namespace AStarOneDriveClient.Models;
 /// <param name="IsAuthenticated">Indicates whether the account is currently authenticated.</param>
 /// <param name="LastSyncUtc">Timestamp of the last successful synchronization.</param>
 /// <param name="DeltaToken">Delta token for incremental synchronization.</param>
+/// <param name="EnableDetailedSyncLogging">Enables detailed logging of all file operations during sync.</param>
 public sealed record AccountInfo(
     string AccountId,
     string DisplayName,
     string LocalSyncPath,
     bool IsAuthenticated,
     DateTime? LastSyncUtc,
-    string? DeltaToken
+    string? DeltaToken,
+    bool EnableDetailedSyncLogging
 );

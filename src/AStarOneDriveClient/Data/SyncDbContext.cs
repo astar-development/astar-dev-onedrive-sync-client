@@ -38,6 +38,16 @@ public sealed class SyncDbContext : DbContext
     /// </summary>
     public DbSet<SyncConflictEntity> SyncConflicts { get; set; } = null!;
 
+    /// <summary>
+    /// Gets or sets the sync session logs table.
+    /// </summary>
+    public DbSet<SyncSessionLogEntity> SyncSessionLogs { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the file operation logs table.
+    /// </summary>
+    public DbSet<FileOperationLogEntity> FileOperationLogs { get; set; } = null!;
+
     public SyncDbContext(DbContextOptions<SyncDbContext> options) : base(options)
     {
     }

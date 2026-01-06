@@ -243,7 +243,7 @@ public sealed class ConflictResolverShould
                 metadata.Id,
                 Arg.Any<CancellationToken>());
 
-            await _localFileScanner.Received(2).ComputeFileHashAsync(
+            await _localFileScanner.Received(1).ComputeFileHashAsync(
                 Arg.Any<string>(),
                 Arg.Any<CancellationToken>());
 
@@ -252,14 +252,6 @@ public sealed class ConflictResolverShould
                     m.Id == metadata.Id &&
                     m.SyncStatus == FileSyncStatus.Synced &&
                     m.LastSyncDirection == SyncDirection.Download &&
-                    m.LocalHash == "computed-hash-123"),
-                Arg.Any<CancellationToken>());
-
-            await _metadataRepo.Received(1).AddAsync(
-                Arg.Is<FileMetadata>(m =>
-                    m.Id == string.Empty &&
-                    m.AccountId == account.AccountId &&
-                    m.SyncStatus == FileSyncStatus.Synced &&
                     m.LocalHash == "computed-hash-123"),
                 Arg.Any<CancellationToken>());
 
@@ -361,7 +353,8 @@ public sealed class ConflictResolverShould
             LocalSyncPath: Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()),
             IsAuthenticated: true,
             LastSyncUtc: DateTime.UtcNow,
-            DeltaToken: null);
+            DeltaToken: null,
+            EnableDetailedSyncLogging: false);
 
     private static FileMetadata CreateTestMetadata(string accountId, string filePath) =>
         new(

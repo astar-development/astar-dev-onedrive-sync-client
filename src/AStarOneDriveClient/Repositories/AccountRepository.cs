@@ -92,7 +92,8 @@ public sealed class AccountRepository : IAccountRepository
             entity.LocalSyncPath,
             entity.IsAuthenticated,
             entity.LastSyncUtc,
-            entity.DeltaToken
+            entity.DeltaToken,
+            entity.EnableDetailedSyncLogging
         );
 
     private static AccountEntity MapToEntity(AccountInfo model) =>
@@ -103,6 +104,7 @@ public sealed class AccountRepository : IAccountRepository
             LocalSyncPath = model.LocalSyncPath,
             IsAuthenticated = model.IsAuthenticated,
             LastSyncUtc = model.LastSyncUtc,
-            DeltaToken = model.DeltaToken
+            DeltaToken = model.DeltaToken,
+            EnableDetailedSyncLogging = model.EnableDetailedSyncLogging
         };
 }

@@ -22,8 +22,11 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
     private readonly IAccountRepository _accountRepository;
     private readonly IGraphApiClient _graphApiClient;
     private readonly ISyncConflictRepository _syncConflictRepository;
+    private readonly ISyncSessionLogRepository _syncSessionLogRepository;
+    private readonly IFileOperationLogRepository _fileOperationLogRepository;
     private readonly BehaviorSubject<SyncState> _progressSubject;
     private CancellationTokenSource? _syncCancellation;
+    private string? _currentSessionId;
 
     public SyncEngine(
         ILocalFileScanner localFileScanner,
@@ -32,7 +35,9 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
         ISyncConfigurationRepository syncConfigurationRepository,
         IAccountRepository accountRepository,
         IGraphApiClient graphApiClient,
-        ISyncConflictRepository syncConflictRepository)
+        ISyncConflictRepository syncConflictRepository,
+        ISyncSessionLogRepository syncSessionLogRepository,
+        IFileOperationLogRepository fileOperationLogRepository)
     {
         ArgumentNullException.ThrowIfNull(localFileScanner);
         ArgumentNullException.ThrowIfNull(remoteChangeDetector);
@@ -41,6 +46,8 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
         ArgumentNullException.ThrowIfNull(accountRepository);
         ArgumentNullException.ThrowIfNull(graphApiClient);
         ArgumentNullException.ThrowIfNull(syncConflictRepository);
+        ArgumentNullException.ThrowIfNull(syncSessionLogRepository);
+        ArgumentNullException.ThrowIfNull(fileOperationLogRepository);
 
         _localFileScanner = localFileScanner;
         _remoteChangeDetector = remoteChangeDetector;
@@ -49,6 +56,8 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
         _accountRepository = accountRepository;
         _graphApiClient = graphApiClient;
         _syncConflictRepository = syncConflictRepository;
+        _syncSessionLogRepository = syncSessionLogRepository;
+        _fileOperationLogRepository = fileOperationLogRepository;
 
         var initialState = new SyncState(
             AccountId: string.Empty,
@@ -96,6 +105,28 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
             {
                 ReportProgress(accountId, SyncStatus.Failed, 0, 0, 0, 0);
                 return;
+            }
+
+            // Initialize detailed sync logging if enabled
+            if (account.EnableDetailedSyncLogging)
+            {
+                var sessionLog = new SyncSessionLog(
+                    Id: Guid.NewGuid().ToString(),
+                    AccountId: accountId,
+                    StartedUtc: DateTime.UtcNow,
+                    CompletedUtc: null,
+                    Status: SyncStatus.Running,
+                    FilesUploaded: 0,
+                    FilesDownloaded: 0,
+                    FilesDeleted: 0,
+                    ConflictsDetected: 0,
+                    TotalBytes: 0);
+                await _syncSessionLogRepository.AddAsync(sessionLog, cancellationToken);
+                _currentSessionId = sessionLog.Id;
+            }
+            else
+            {
+                _currentSessionId = null;
             }
 
             // Scan local files in selected folders
@@ -232,6 +263,26 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
                             conflictPaths.Add(remoteFile.Path);
                             System.Diagnostics.Debug.WriteLine($"[SyncEngine] CONFLICT detected for {remoteFile.Path}: local and remote both changed");
+
+                            // Log conflict detection if detailed logging is enabled
+                            if (_currentSessionId is not null)
+                            {
+                                var operationLog = new FileOperationLog(
+                                    Id: Guid.NewGuid().ToString(),
+                                    SyncSessionId: _currentSessionId,
+                                    AccountId: accountId,
+                                    Timestamp: DateTime.UtcNow,
+                                    Operation: FileOperation.ConflictDetected,
+                                    FilePath: remoteFile.Path,
+                                    LocalPath: localFileFromDict.LocalPath,
+                                    OneDriveId: remoteFile.Id,
+                                    FileSize: localFileFromDict.Size,
+                                    LocalHash: localFileFromDict.LocalHash,
+                                    RemoteHash: null,
+                                    LastModifiedUtc: localFileFromDict.LastModifiedUtc,
+                                    Reason: $"Conflict: Both local and remote changed. Local modified: {localFileFromDict.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}");
+                                await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                            }
                             continue;
                         }
 
@@ -289,6 +340,26 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                             await _syncConflictRepository.AddAsync(conflict, cancellationToken);
                             conflictCount++;
                             conflictPaths.Add(remoteFile.Path);
+
+                            // Log conflict detection if detailed logging is enabled
+                            if (_currentSessionId is not null)
+                            {
+                                var operationLog = new FileOperationLog(
+                                    Id: Guid.NewGuid().ToString(),
+                                    SyncSessionId: _currentSessionId,
+                                    AccountId: accountId,
+                                    Timestamp: DateTime.UtcNow,
+                                    Operation: FileOperation.ConflictDetected,
+                                    FilePath: remoteFile.Path,
+                                    LocalPath: localFile.LocalPath,
+                                    OneDriveId: remoteFile.Id,
+                                    FileSize: localFile.Size,
+                                    LocalHash: localFile.LocalHash,
+                                    RemoteHash: null,
+                                    LastModifiedUtc: localFile.LastModifiedUtc,
+                                    Reason: $"First sync conflict: Files differ. Local: Size={localFile.Size}, Time={localFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}. Remote: Size={remoteFile.Size}, Time={remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}. TimeDiff={timeDiff:F1}s");
+                                await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                            }
                         }
                     }
                     else
@@ -391,6 +462,27 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
                     System.Diagnostics.Debug.WriteLine($"[SyncEngine] Uploading {file.Name}: Path={file.Path}, IsExisting={isExistingFile}, LocalPath={file.LocalPath}");
 
+                    // Log file operation if detailed logging is enabled
+                    if (_currentSessionId is not null)
+                    {
+                        var reason = isExistingFile ? "File changed locally" : "New file";
+                        var operationLog = new FileOperationLog(
+                            Id: Guid.NewGuid().ToString(),
+                            SyncSessionId: _currentSessionId,
+                            AccountId: accountId,
+                            Timestamp: DateTime.UtcNow,
+                            Operation: FileOperation.Upload,
+                            FilePath: file.Path,
+                            LocalPath: file.LocalPath,
+                            OneDriveId: existingFile?.Id,
+                            FileSize: file.Size,
+                            LocalHash: file.LocalHash,
+                            RemoteHash: existingFile?.LocalHash,
+                            LastModifiedUtc: file.LastModifiedUtc,
+                            Reason: reason);
+                        await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                    }
+
                     // Upload file to OneDrive via Graph API
                     var uploadedItem = await _graphApiClient.UploadFileAsync(
                         accountId,
@@ -488,6 +580,28 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                 {
                     System.Diagnostics.Debug.WriteLine($"Starting download: {file.Name} (ID: {file.Id}) to {file.LocalPath}");
 
+                    // Log file operation if detailed logging is enabled
+                    if (_currentSessionId is not null)
+                    {
+                        var existingLocal = existingFilesDict.TryGetValue(file.Path, out var existingFile);
+                        var reason = existingLocal ? "Remote file changed" : "New remote file";
+                        var operationLog = new FileOperationLog(
+                            Id: Guid.NewGuid().ToString(),
+                            SyncSessionId: _currentSessionId,
+                            AccountId: accountId,
+                            Timestamp: DateTime.UtcNow,
+                            Operation: FileOperation.Download,
+                            FilePath: file.Path,
+                            LocalPath: file.LocalPath,
+                            OneDriveId: file.Id,
+                            FileSize: file.Size,
+                            LocalHash: existingFile?.LocalHash,
+                            RemoteHash: null,
+                            LastModifiedUtc: file.LastModifiedUtc,
+                            Reason: reason);
+                        await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                    }
+
                     // Download file from OneDrive using Graph API
                     await _graphApiClient.DownloadFileAsync(accountId, file.Id, file.LocalPath, _syncCancellation.Token);
 
@@ -561,14 +675,65 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
             }
 
             ReportProgress(accountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes, completedBytes, filesDeleted: filesToDelete.Count, conflictsDetected: conflictCount);
+
+            // Finalize sync session log if detailed logging is enabled
+            if (_currentSessionId is not null)
+            {
+                var session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
+                if (session is not null)
+                {
+                    var updatedSession = session with
+                    {
+                        CompletedUtc = DateTime.UtcNow,
+                        Status = SyncStatus.Completed,
+                        FilesUploaded = filesToUpload.Count,
+                        FilesDownloaded = filesToDownload.Count,
+                        FilesDeleted = filesToDelete.Count,
+                        ConflictsDetected = conflictCount,
+                        TotalBytes = completedBytes
+                    };
+                    await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
+                }
+                _currentSessionId = null;
+            }
         }
         catch (OperationCanceledException)
         {
+            // Finalize sync session log as paused if detailed logging is enabled
+            if (_currentSessionId is not null)
+            {
+                var session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
+                if (session is not null)
+                {
+                    var updatedSession = session with
+                    {
+                        CompletedUtc = DateTime.UtcNow,
+                        Status = SyncStatus.Paused
+                    };
+                    await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
+                }
+                _currentSessionId = null;
+            }
             ReportProgress(accountId, SyncStatus.Paused, 0, 0, 0, 0);
             throw;
         }
         catch (Exception)
         {
+            // Finalize sync session log as failed if detailed logging is enabled
+            if (_currentSessionId is not null)
+            {
+                var session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
+                if (session is not null)
+                {
+                    var updatedSession = session with
+                    {
+                        CompletedUtc = DateTime.UtcNow,
+                        Status = SyncStatus.Failed
+                    };
+                    await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
+                }
+                _currentSessionId = null;
+            }
             ReportProgress(accountId, SyncStatus.Failed, 0, 0, 0, 0);
             throw;
         }

@@ -153,7 +153,8 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                     LocalSyncPath: defaultPath,
                     IsAuthenticated: true,
                     LastSyncUtc: null,
-                    DeltaToken: null);
+                    DeltaToken: null,
+                    EnableDetailedSyncLogging: false);
 
                 await _accountRepository.AddAsync(newAccount);
                 Accounts.Add(newAccount);

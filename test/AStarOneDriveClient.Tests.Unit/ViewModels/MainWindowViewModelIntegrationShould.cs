@@ -55,7 +55,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             @"C:\Sync",
             true,
             null,
-            null);
+            null,
+            false);
         await _accountRepository.AddAsync(account);
 
         var rootFolder = new OneDriveFolderNode
@@ -96,7 +97,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             @"C:\Sync2",
             true,
             null,
-            null);
+            null,
+            false);
         await _accountRepository.AddAsync(account);
 
         var rootFolder = new OneDriveFolderNode
@@ -130,8 +132,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task SwitchFoldersWhenDifferentAccountIsSelected()
     {
         // Arrange
-        var account1 = new AccountInfo("acc-1", "user1@example.com", @"C:\Sync1", true, null, null);
-        var account2 = new AccountInfo("acc-2", "user2@example.com", @"C:\Sync2", true, null, null);
+        var account1 = new AccountInfo("acc-1", "user1@example.com", @"C:\Sync1", true, null, null, false);
+        var account2 = new AccountInfo("acc-2", "user2@example.com", @"C:\Sync2", true, null, null, false);
         await _accountRepository.AddAsync(account1);
         await _accountRepository.AddAsync(account2);
 
@@ -181,7 +183,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task HandleErrorsGracefullyWhenFolderLoadingFails()
     {
         // Arrange
-        var account = new AccountInfo("acc-999", "error@example.com", @"C:\Sync", true, null, null);
+        var account = new AccountInfo("acc-999", "error@example.com", @"C:\Sync", true, null, null, false);
         await _accountRepository.AddAsync(account);
 
         _mockFolderTreeService.GetRootFoldersAsync("acc-999", Arg.Any<CancellationToken>())
@@ -207,7 +209,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task LoadFreshFolderInstancesWhenAccountIsReselected()
     {
         // Arrange
-        var account = new AccountInfo("acc-sel", "sel@example.com", @"C:\Sync", true, null, null);
+        var account = new AccountInfo("acc-sel", "sel@example.com", @"C:\Sync", true, null, null, false);
         await _accountRepository.AddAsync(account);
 
         // Create new instances each time to simulate fresh load from API

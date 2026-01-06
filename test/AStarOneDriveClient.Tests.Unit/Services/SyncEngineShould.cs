@@ -16,7 +16,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([]);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -44,7 +44,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([localFile]);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -80,7 +80,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([localFile]);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -134,7 +134,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
 
         var cts = new CancellationTokenSource();
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -167,7 +167,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(files);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -198,7 +198,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([]);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -224,7 +224,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([]);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -251,7 +251,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([localFile]);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -292,7 +292,7 @@ public class SyncEngineShould
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
-            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null));
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false));
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([localFile]);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
@@ -341,7 +341,10 @@ public class SyncEngineShould
             Arg.Any<CancellationToken>())
             .Returns((SyncConflict?)null);
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo);
+        ISyncSessionLogRepository syncSessionLogRepo = Substitute.For<ISyncSessionLogRepository>();
+        IFileOperationLogRepository fileOperationLogRepo = Substitute.For<IFileOperationLogRepository>();
+
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo);
         var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo);
 
         return (engine, mocks);

@@ -11,4 +11,5 @@ public sealed class AccountEntity
     public bool IsAuthenticated { get; set; }
     public DateTime? LastSyncUtc { get; set; }
     public string? DeltaToken { get; set; }
+    public bool EnableDetailedSyncLogging { get; set; }
 }

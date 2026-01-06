@@ -189,12 +189,24 @@ public sealed class ConflictResolver : IConflictResolver
             localPath,
             cancellationToken);
 
+        // Get remote metadata to get accurate timestamp
+        var remoteItem = await _graphApiClient.GetDriveItemAsync(account.AccountId, fileId, cancellationToken);
+        if (remoteItem?.LastModifiedDateTime.HasValue == true)
+        {
+            // Set local file timestamp to match OneDrive's timestamp
+            File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
+        }
+
+        // Compute hash of downloaded file
+        var downloadedHash = await _localFileScanner.ComputeFileHashAsync(localPath, cancellationToken);
+
         // Update metadata
         var fileInfo = new FileInfo(localPath);
         FileMetadata updatedMetadata = metadata with
         {
             Size = fileInfo.Length,
             LastModifiedUtc = fileInfo.LastWriteTimeUtc,
+            LocalHash = downloadedHash,
             SyncStatus = FileSyncStatus.Synced,
             LastSyncDirection = SyncDirection.Download
         };
@@ -265,6 +277,12 @@ public sealed class ConflictResolver : IConflictResolver
             throw new InvalidOperationException($"Failed to retrieve metadata for remote file {fileId}");
         }
 
+        // Set local file timestamp to match OneDrive's timestamp
+        if (remoteItem.LastModifiedDateTime.HasValue)
+        {
+            File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
+        }
+
         // Compute hash of downloaded file
         var downloadedHash = await _localFileScanner.ComputeFileHashAsync(localPath, cancellationToken);
 
@@ -273,7 +291,7 @@ public sealed class ConflictResolver : IConflictResolver
         FileMetadata updatedMetadata = metadata with
         {
             Size = fileInfo.Length,
-            LastModifiedUtc = remoteItem.LastModifiedDateTime?.UtcDateTime ?? fileInfo.LastWriteTimeUtc,
+            LastModifiedUtc = fileInfo.LastWriteTimeUtc,
             CTag = remoteItem.CTag,
             ETag = remoteItem.ETag,
             LocalHash = downloadedHash,
@@ -281,30 +299,6 @@ public sealed class ConflictResolver : IConflictResolver
             LastSyncDirection = SyncDirection.Download
         };
         await _metadataRepo.UpdateAsync(updatedMetadata, cancellationToken);
-
-        // Create metadata record for the renamed conflict file (local-only)
-        var conflictFileInfo = new FileInfo(conflictPath);
-        var conflictHash = await _localFileScanner.ComputeFileHashAsync(conflictPath, cancellationToken);
-        var conflictRelativePath = conflictPath.Substring(account.LocalSyncPath.Length)
-            .Replace("\\", "/")
-            .TrimStart('/');
-        var conflictOneDrivePath = "/" + conflictRelativePath;
-
-        var conflictMetadata = new FileMetadata(
-            Id: string.Empty, // No OneDrive ID (local-only file)
-            AccountId: account.AccountId,
-            Name: conflictFileInfo.Name,
-            Path: conflictOneDrivePath,
-            Size: conflictFileInfo.Length,
-            LastModifiedUtc: conflictFileInfo.LastWriteTimeUtc,
-            LocalPath: conflictPath,
-            CTag: null,
-            ETag: null,
-            LocalHash: conflictHash,
-            SyncStatus: FileSyncStatus.Synced, // Mark as synced so it's not uploaded again
-            LastSyncDirection: null);
-
-        await _metadataRepo.AddAsync(conflictMetadata, cancellationToken);
 
         if (_logger.IsEnabled(LogLevel.Information))
         {

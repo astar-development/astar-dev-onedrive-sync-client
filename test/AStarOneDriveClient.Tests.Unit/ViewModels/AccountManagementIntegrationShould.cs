@@ -31,8 +31,8 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact]
     public async Task LoadExistingAccountsFromDatabaseOnInitialization()
     {
-        var account1 = new AccountInfo("acc1", "User One", "/path1", true, null, null);
-        var account2 = new AccountInfo("acc2", "User Two", "/path2", false, null, null);
+        var account1 = new AccountInfo("acc1", "User One", "/path1", true, null, null, false);
+        var account2 = new AccountInfo("acc2", "User Two", "/path2", false, null, null, false);
         await _accountRepository.AddAsync(account1);
         await _accountRepository.AddAsync(account2);
 
@@ -66,7 +66,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact]
     public async Task RemoveAccountFromDatabaseWhenDeleted()
     {
-        var account = new AccountInfo("acc-to-delete", "User", "/path", true, null, null);
+        var account = new AccountInfo("acc-to-delete", "User", "/path", true, null, null, false);
         await _accountRepository.AddAsync(account);
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
@@ -83,7 +83,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact]
     public async Task UpdateAuthenticationStateInDatabaseWhenLoggingIn()
     {
-        var account = new AccountInfo("acc-login", "User", "/path", false, null, null);
+        var account = new AccountInfo("acc-login", "User", "/path", false, null, null, false);
         await _accountRepository.AddAsync(account);
 
         var authResult = new AuthenticationResult(true, null, null, null);
@@ -104,7 +104,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact]
     public async Task UpdateAuthenticationStateInDatabaseWhenLoggingOut()
     {
-        var account = new AccountInfo("acc-logout", "User", "/path", true, null, null);
+        var account = new AccountInfo("acc-logout", "User", "/path", true, null, null, false);
         await _accountRepository.AddAsync(account);
 
         _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
@@ -168,7 +168,8 @@ public class AccountManagementIntegrationShould : IDisposable
             "/custom/path",
             true,
             DateTime.UtcNow,
-            "delta-token-123");
+            "delta-token-123",
+            false);
         await _accountRepository.AddAsync(account);
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);

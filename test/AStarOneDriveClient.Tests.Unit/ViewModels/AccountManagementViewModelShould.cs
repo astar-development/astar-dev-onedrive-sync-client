@@ -446,5 +446,5 @@ public class AccountManagementViewModelShould
     }
 
     private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false) =>
-        new(id, displayName, $@"C:\Sync\{id}", isAuthenticated, null, null);
+        new(id, displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false);
 }
