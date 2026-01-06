@@ -63,10 +63,7 @@ public class FolderTreeServiceIntegrationShould
             throw new InvalidOperationException("Failed to get access token");
         }
 
-        var tokenProvider = new TokenProvider(accessToken);
-        var graphClient = new GraphServiceClient(tokenProvider);
-
-        var graphApiClient = new GraphApiClient(graphClient);
+        var graphApiClient = new GraphApiClient(authService);
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Act
@@ -100,10 +97,7 @@ public class FolderTreeServiceIntegrationShould
             throw new InvalidOperationException("Failed to get access token");
         }
 
-        var tokenProvider = new TokenProvider(accessToken);
-        var graphClient = new GraphServiceClient(tokenProvider);
-
-        var graphApiClient = new GraphApiClient(graphClient);
+        var graphApiClient = new GraphApiClient(authService);
         var service = new FolderTreeService(graphApiClient, authService);
 
         // First get root folders to find one with children
@@ -145,10 +139,7 @@ public class FolderTreeServiceIntegrationShould
             throw new InvalidOperationException("Failed to get access token");
         }
 
-        var tokenProvider = new TokenProvider(accessToken);
-        var graphClient = new GraphServiceClient(tokenProvider);
-
-        var graphApiClient = new GraphApiClient(graphClient);
+        var graphApiClient = new GraphApiClient(authService);
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Act - limit to depth of 2 to avoid long load times
@@ -191,10 +182,7 @@ public class FolderTreeServiceIntegrationShould
             throw new InvalidOperationException("Failed to get access token");
         }
 
-        var tokenProvider = new TokenProvider(accessToken);
-        var graphClient = new GraphServiceClient(tokenProvider);
-
-        var graphApiClient = new GraphApiClient(graphClient);
+        var graphApiClient = new GraphApiClient(authService);
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Get root folders
@@ -230,10 +218,7 @@ public class FolderTreeServiceIntegrationShould
             throw new InvalidOperationException("Failed to get access token");
         }
 
-        var tokenProvider = new TokenProvider(accessToken);
-        var graphClient = new GraphServiceClient(tokenProvider);
-
-        var graphApiClient = new GraphApiClient(graphClient);
+        var graphApiClient = new GraphApiClient(authService);
 
         // Act
         var drive = await graphApiClient.GetMyDriveAsync();
