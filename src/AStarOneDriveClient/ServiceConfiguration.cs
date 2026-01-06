@@ -3,6 +3,7 @@ using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.Services.OneDriveServices;
+using AStarOneDriveClient.Services.Sync;
 using AStarOneDriveClient.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -34,6 +35,7 @@ public static class ServiceConfiguration
         services.AddScoped<ISyncConfigurationRepository, SyncConfigurationRepository>();
         services.AddScoped<ISyncStateRepository, SyncStateRepository>();
         services.AddScoped<IFileMetadataRepository, FileMetadataRepository>();
+        services.AddScoped<ISyncConflictRepository, SyncConflictRepository>();
 
         // Load authentication configuration
         var configuration = new ConfigurationBuilder()
@@ -59,6 +61,7 @@ public static class ServiceConfiguration
         services.AddScoped<ISyncSelectionService, SyncSelectionService>();
         services.AddScoped<ILocalFileScanner, LocalFileScanner>();
         services.AddScoped<IRemoteChangeDetector, RemoteChangeDetector>();
+        services.AddScoped<IConflictResolver, ConflictResolver>();
         services.AddScoped<ISyncEngine, SyncEngine>();
 
         // ViewModels

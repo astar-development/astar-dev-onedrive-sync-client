@@ -33,6 +33,11 @@ public sealed class SyncDbContext : DbContext
     /// </summary>
     public DbSet<WindowPreferencesEntity> WindowPreferences { get; set; } = null!;
 
+    /// <summary>
+    /// Gets or sets the sync conflicts table.
+    /// </summary>
+    public DbSet<SyncConflictEntity> SyncConflicts { get; set; } = null!;
+
     public SyncDbContext(DbContextOptions<SyncDbContext> options) : base(options)
     {
     }
@@ -106,6 +111,24 @@ public sealed class SyncDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Width).HasDefaultValue(800);
             entity.Property(e => e.Height).HasDefaultValue(600);
+        });
+
+        // Configure SyncConflictEntity
+        modelBuilder.Entity<SyncConflictEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).IsRequired();
+            entity.Property(e => e.AccountId).IsRequired();
+            entity.Property(e => e.FilePath).IsRequired();
+
+            entity.HasIndex(e => e.AccountId);
+            entity.HasIndex(e => new { e.AccountId, e.IsResolved });
+
+            // Foreign key relationship with cascade delete
+            entity.HasOne(e => e.Account)
+                .WithMany()
+                .HasForeignKey(e => e.AccountId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
