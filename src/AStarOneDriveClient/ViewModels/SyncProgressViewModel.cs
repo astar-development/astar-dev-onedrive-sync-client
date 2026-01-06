@@ -288,6 +288,31 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         }
     }
 
+    /// <summary>
+    /// Refreshes the conflict count from the database and updates CurrentProgress.
+    /// </summary>
+    /// <remarks>
+    /// Call this method after resolving conflicts to update the UI with the current conflict count.
+    /// </remarks>
+    public async Task RefreshConflictCountAsync(CancellationToken cancellationToken = default)
+    {
+        if (CurrentProgress is null)
+            return;
+
+        var conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
+        var conflictCount = conflicts.Count;
+
+        CurrentProgress = CurrentProgress with
+        {
+            ConflictsDetected = conflictCount
+        };
+
+        this.RaisePropertyChanged(nameof(ConflictsText));
+        this.RaisePropertyChanged(nameof(HasConflicts));
+
+        _logger.LogDebug("Refreshed conflict count for account {AccountId}: {Count} conflicts", _accountId, conflictCount);
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {

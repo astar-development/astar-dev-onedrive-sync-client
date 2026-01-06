@@ -1,6 +1,7 @@
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
+using AStarOneDriveClient.Services;
 using AStarOneDriveClient.Services.OneDriveServices;
 using AStarOneDriveClient.Services.Sync;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ public sealed class ConflictResolverShould
     private readonly IFileMetadataRepository _metadataRepo = Substitute.For<IFileMetadataRepository>();
     private readonly IAccountRepository _accountRepo = Substitute.For<IAccountRepository>();
     private readonly ISyncConflictRepository _conflictRepo = Substitute.For<ISyncConflictRepository>();
+    private readonly ILocalFileScanner _localFileScanner = Substitute.For<ILocalFileScanner>();
     private readonly ILogger<ConflictResolver> _logger = Substitute.For<ILogger<ConflictResolver>>();
 
     [Fact]
@@ -199,6 +201,23 @@ public sealed class ConflictResolverShould
             .Returns(Task.CompletedTask)
             .AndDoes(_ => File.WriteAllText(localPath, "remote content"));
 
+        // Mock GetDriveItemAsync to return remote file metadata
+        var remoteItem = new Microsoft.Graph.Models.DriveItem
+        {
+            Id = metadata.Id,
+            Name = "test.txt",
+            Size = 14, // "remote content" length
+            LastModifiedDateTime = DateTime.UtcNow,
+            CTag = "remote-ctag",
+            ETag = "remote-etag"
+        };
+        _graphApiClient.GetDriveItemAsync(account.AccountId, metadata.Id, Arg.Any<CancellationToken>())
+            .Returns(remoteItem);
+
+        // Mock ComputeFileHashAsync for both downloaded and conflict files
+        _localFileScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns("computed-hash-123");
+
         try
         {
             await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepBoth, CancellationToken.None);
@@ -219,11 +238,29 @@ public sealed class ConflictResolverShould
                 localPath,
                 Arg.Any<CancellationToken>());
 
+            await _graphApiClient.Received(1).GetDriveItemAsync(
+                account.AccountId,
+                metadata.Id,
+                Arg.Any<CancellationToken>());
+
+            await _localFileScanner.Received(2).ComputeFileHashAsync(
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>());
+
             await _metadataRepo.Received(1).UpdateAsync(
                 Arg.Is<FileMetadata>(m =>
                     m.Id == metadata.Id &&
                     m.SyncStatus == FileSyncStatus.Synced &&
-                    m.LastSyncDirection == SyncDirection.Download),
+                    m.LastSyncDirection == SyncDirection.Download &&
+                    m.LocalHash == "computed-hash-123"),
+                Arg.Any<CancellationToken>());
+
+            await _metadataRepo.Received(1).AddAsync(
+                Arg.Is<FileMetadata>(m =>
+                    m.Id == string.Empty &&
+                    m.AccountId == account.AccountId &&
+                    m.SyncStatus == FileSyncStatus.Synced &&
+                    m.LocalHash == "computed-hash-123"),
                 Arg.Any<CancellationToken>());
 
             await _conflictRepo.Received(1).UpdateAsync(
@@ -302,7 +339,7 @@ public sealed class ConflictResolverShould
     }
 
     private ConflictResolver CreateResolver() =>
-        new(_graphApiClient, _metadataRepo, _accountRepo, _conflictRepo, _logger);
+        new(_graphApiClient, _metadataRepo, _accountRepo, _conflictRepo, _localFileScanner, _logger);
 
     private static SyncConflict CreateTestConflict() =>
         new(

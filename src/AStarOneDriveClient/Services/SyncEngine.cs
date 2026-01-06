@@ -248,7 +248,13 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                     {
                         // File exists BOTH locally and remotely - compare them
                         var timeDiff = Math.Abs((localFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
-                        var filesMatch = localFile.Size == remoteFile.Size && timeDiff <= 2.0; // 2 second tolerance
+                        // Use 60 second tolerance - OneDrive may round timestamps to nearest minute
+                        var filesMatch = localFile.Size == remoteFile.Size && timeDiff <= 60.0;
+
+                        System.Diagnostics.Debug.WriteLine($"[SyncEngine] First sync compare: {remoteFile.Path}");
+                        System.Diagnostics.Debug.WriteLine($"  Local:  Size={localFile.Size}, Time={localFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}");
+                        System.Diagnostics.Debug.WriteLine($"  Remote: Size={remoteFile.Size}, Time={remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}");
+                        System.Diagnostics.Debug.WriteLine($"  TimeDiff={timeDiff:F1}s, Match={filesMatch}");
 
                         if (filesMatch)
                         {
@@ -267,7 +273,7 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                         else
                         {
                             // Files differ - CONFLICT on first sync!
-                            System.Diagnostics.Debug.WriteLine($"[SyncEngine] First sync CONFLICT: {remoteFile.Path} - files differ");
+                            System.Diagnostics.Debug.WriteLine($"[SyncEngine] First sync CONFLICT: {remoteFile.Path} - files differ (TimeDiff={timeDiff:F1}s, SizeMatch={localFile.Size == remoteFile.Size})");
                             var conflict = new SyncConflict(
                                 Id: Guid.NewGuid().ToString(),
                                 AccountId: accountId,

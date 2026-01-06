@@ -157,12 +157,18 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// <summary>
     /// Closes the conflict resolution view and returns to sync progress.
     /// </summary>
-    private void CloseConflictResolutionView()
+    private async void CloseConflictResolutionView()
     {
         ConflictResolution?.Dispose();
         ConflictResolution = null;
         this.RaisePropertyChanged(nameof(ShowSyncProgress));
         this.RaisePropertyChanged(nameof(ShowConflictResolution));
+
+        // Refresh conflict count after resolving conflicts
+        if (SyncProgress is not null)
+        {
+            await SyncProgress.RefreshConflictCountAsync();
+        }
     }
 
     /// <summary>

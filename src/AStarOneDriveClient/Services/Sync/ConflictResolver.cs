@@ -18,6 +18,7 @@ public sealed class ConflictResolver : IConflictResolver
     private readonly IFileMetadataRepository _metadataRepo;
     private readonly IAccountRepository _accountRepo;
     private readonly ISyncConflictRepository _conflictRepo;
+    private readonly ILocalFileScanner _localFileScanner;
     private readonly ILogger<ConflictResolver> _logger;
 
     public ConflictResolver(
@@ -25,12 +26,14 @@ public sealed class ConflictResolver : IConflictResolver
         IFileMetadataRepository metadataRepo,
         IAccountRepository accountRepo,
         ISyncConflictRepository conflictRepo,
+        ILocalFileScanner localFileScanner,
         ILogger<ConflictResolver> logger)
     {
         _graphApiClient = graphApiClient ?? throw new ArgumentNullException(nameof(graphApiClient));
         _metadataRepo = metadataRepo ?? throw new ArgumentNullException(nameof(metadataRepo));
         _accountRepo = accountRepo ?? throw new ArgumentNullException(nameof(accountRepo));
         _conflictRepo = conflictRepo ?? throw new ArgumentNullException(nameof(conflictRepo));
+        _localFileScanner = localFileScanner ?? throw new ArgumentNullException(nameof(localFileScanner));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -57,7 +60,9 @@ public sealed class ConflictResolver : IConflictResolver
             throw new InvalidOperationException($"Account not found: {conflict.AccountId}");
         }
 
-        var localPath = Path.Combine(account.LocalSyncPath, conflict.FilePath);
+        // Trim leading slash from OneDrive path for Windows compatibility
+        var relativePath = conflict.FilePath.TrimStart('/');
+        var localPath = Path.Combine(account.LocalSyncPath, relativePath);
 
         switch (strategy)
         {
@@ -253,16 +258,53 @@ public sealed class ConflictResolver : IConflictResolver
             localPath,
             cancellationToken);
 
-        // Update metadata for remote version
+        // Get fresh metadata from OneDrive to get accurate remote timestamp
+        var remoteItem = await _graphApiClient.GetDriveItemAsync(account.AccountId, fileId, cancellationToken);
+        if (remoteItem is null)
+        {
+            throw new InvalidOperationException($"Failed to retrieve metadata for remote file {fileId}");
+        }
+
+        // Compute hash of downloaded file
+        var downloadedHash = await _localFileScanner.ComputeFileHashAsync(localPath, cancellationToken);
+
+        // Update metadata for downloaded remote version
         var fileInfo = new FileInfo(localPath);
         FileMetadata updatedMetadata = metadata with
         {
             Size = fileInfo.Length,
-            LastModifiedUtc = fileInfo.LastWriteTimeUtc,
+            LastModifiedUtc = remoteItem.LastModifiedDateTime?.UtcDateTime ?? fileInfo.LastWriteTimeUtc,
+            CTag = remoteItem.CTag,
+            ETag = remoteItem.ETag,
+            LocalHash = downloadedHash,
             SyncStatus = FileSyncStatus.Synced,
             LastSyncDirection = SyncDirection.Download
         };
         await _metadataRepo.UpdateAsync(updatedMetadata, cancellationToken);
+
+        // Create metadata record for the renamed conflict file (local-only)
+        var conflictFileInfo = new FileInfo(conflictPath);
+        var conflictHash = await _localFileScanner.ComputeFileHashAsync(conflictPath, cancellationToken);
+        var conflictRelativePath = conflictPath.Substring(account.LocalSyncPath.Length)
+            .Replace("\\", "/")
+            .TrimStart('/');
+        var conflictOneDrivePath = "/" + conflictRelativePath;
+
+        var conflictMetadata = new FileMetadata(
+            Id: string.Empty, // No OneDrive ID (local-only file)
+            AccountId: account.AccountId,
+            Name: conflictFileInfo.Name,
+            Path: conflictOneDrivePath,
+            Size: conflictFileInfo.Length,
+            LastModifiedUtc: conflictFileInfo.LastWriteTimeUtc,
+            LocalPath: conflictPath,
+            CTag: null,
+            ETag: null,
+            LocalHash: conflictHash,
+            SyncStatus: FileSyncStatus.Synced, // Mark as synced so it's not uploaded again
+            LastSyncDirection: null);
+
+        await _metadataRepo.AddAsync(conflictMetadata, cancellationToken);
 
         if (_logger.IsEnabled(LogLevel.Information))
         {
