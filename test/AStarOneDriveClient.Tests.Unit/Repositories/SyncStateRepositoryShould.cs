@@ -24,7 +24,7 @@ public class SyncStateRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
-        var syncState = new SyncState("acc1", SyncStatus.Running, 100, 50, 1024000, 512000, 2, 3, 0, 5.5, 30, DateTime.UtcNow);
+        var syncState = new SyncState("acc1", SyncStatus.Running, 100, 50, 1024000, 512000, 2, 3, 0, 0, 5.5, 30, DateTime.UtcNow);
 
         await repository.SaveAsync(syncState);
 
@@ -41,10 +41,10 @@ public class SyncStateRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
-        var initial = new SyncState("acc1", SyncStatus.Running, 100, 50, 1024000, 512000, 2, 3, 0, 5.5, 30, DateTime.UtcNow);
+        var initial = new SyncState("acc1", SyncStatus.Running, 100, 50, 1024000, 512000, 2, 3, 0, 0, 5.5, 30, DateTime.UtcNow);
         await repository.SaveAsync(initial);
 
-        var updated = new SyncState("acc1", SyncStatus.Completed, 100, 100, 1024000, 1024000, 0, 0, 0, 0, null, DateTime.UtcNow);
+        var updated = new SyncState("acc1", SyncStatus.Completed, 100, 100, 1024000, 1024000, 0, 0, 0, 0, 0, null, DateTime.UtcNow);
         await repository.SaveAsync(updated);
 
         var result = await repository.GetByAccountIdAsync("acc1");
@@ -60,8 +60,8 @@ public class SyncStateRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
-        await repository.SaveAsync(new SyncState("acc1", SyncStatus.Running, 10, 5, 1000, 500, 1, 0, 0, 2.5, 10, DateTime.UtcNow));
-        await repository.SaveAsync(new SyncState("acc2", SyncStatus.Idle, 0, 0, 0, 0, 0, 0, 0, 0, null, null));
+        await repository.SaveAsync(new SyncState("acc1", SyncStatus.Running, 10, 5, 1000, 500, 1, 0, 0, 0, 2.5, 10, DateTime.UtcNow));
+        await repository.SaveAsync(new SyncState("acc2", SyncStatus.Idle, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, null));
 
         var result = await repository.GetAllAsync();
 
@@ -75,7 +75,7 @@ public class SyncStateRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
-        await repository.SaveAsync(new SyncState("acc1", SyncStatus.Running, 10, 5, 1000, 500, 1, 0, 0, 2.5, 10, DateTime.UtcNow));
+        await repository.SaveAsync(new SyncState("acc1", SyncStatus.Running, 10, 5, 1000, 500, 1, 0, 0, 0, 2.5, 10, DateTime.UtcNow));
 
         await repository.DeleteAsync("acc1");
 
@@ -97,7 +97,7 @@ public class SyncStateRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
-        var syncState = new SyncState("acc1", SyncStatus.Running, 100, 80, 1024000, 819200, 1, 2, 5, 4.2, 15, DateTime.UtcNow);
+        var syncState = new SyncState("acc1", SyncStatus.Running, 100, 80, 1024000, 819200, 1, 2, 0, 5, 4.2, 15, DateTime.UtcNow);
 
         await repository.SaveAsync(syncState);
 

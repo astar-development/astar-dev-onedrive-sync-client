@@ -88,6 +88,7 @@ public sealed class SyncStateRepository : ISyncStateRepository
             entity.CompletedBytes,
             entity.FilesDownloading,
             entity.FilesUploading,
+            0, // FilesDeleted - not persisted in database, only used during sync
             entity.ConflictsDetected,
             entity.MegabytesPerSecond,
             entity.EstimatedSecondsRemaining,

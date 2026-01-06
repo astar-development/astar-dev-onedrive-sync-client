@@ -144,6 +144,15 @@
                        Width="200"
                        Height="4"/>
         </StackPanel>
+
+        <!-- Last Sync Result -->
+        <TextBlock Text="{Binding LastSyncResult}"
+                   FontSize="12"
+                   FontWeight="SemiBold"
+                   Foreground="{DynamicResource SystemAccentColor}"
+                   Margin="24,0,0,0"
+                   VerticalAlignment="Center"
+                   IsVisible="{Binding LastSyncResult, Converter={x:Static ObjectConverters.IsNotNull}}"/>
       </StackPanel>
     </Border>
 

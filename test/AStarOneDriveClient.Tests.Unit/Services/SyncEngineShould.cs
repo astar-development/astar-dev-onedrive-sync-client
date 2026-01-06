@@ -54,6 +54,13 @@ public class SyncEngineShould
 
         await engine.StartSyncAsync("acc1");
 
+        // Verify UploadFileAsync was called
+        await mocks.GraphApiClient.Received(1).UploadFileAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+
         await mocks.FileMetadataRepo.Received(1).AddAsync(
             Arg.Is<FileMetadata>(f => f.Name == "doc.txt" && f.SyncStatus == FileSyncStatus.Synced),
             Arg.Any<CancellationToken>());
@@ -96,6 +103,9 @@ public class SyncEngineShould
             DateTime.UtcNow, @"C:\Sync\Documents\doc.txt", null, null, "hash123",
             FileSyncStatus.Synced, null);
 
+        // Remote file with same metadata (unchanged)
+        var remoteFile = localFile with { };
+
         mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
@@ -103,7 +113,7 @@ public class SyncEngineShould
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns([localFile]);
         mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns((new List<FileMetadata>().AsReadOnly(), "delta_123"));
+            .Returns((new List<FileMetadata> { remoteFile }.AsReadOnly(), "delta_123")); // Include remote file
         mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns([localFile]);
 
@@ -487,6 +497,21 @@ public class SyncEngineShould
         ISyncConfigurationRepository syncConfigRepo = Substitute.For<ISyncConfigurationRepository>();
         IAccountRepository accountRepo = Substitute.For<IAccountRepository>();
         IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
+
+        // Setup default mock return for UploadFileAsync to prevent null reference exceptions
+        graphApiClient.UploadFileAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>())
+            .Returns(callInfo => Task.FromResult(new Microsoft.Graph.Models.DriveItem
+            {
+                Id = $"uploaded_{Guid.NewGuid():N}",
+                Name = callInfo.ArgAt<string>(1).Split('\\', '/').Last(),
+                CTag = $"ctag_{Guid.NewGuid():N}",
+                ETag = $"etag_{Guid.NewGuid():N}",
+                LastModifiedDateTime = DateTimeOffset.UtcNow
+            }));
 
         var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient);
         var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient);

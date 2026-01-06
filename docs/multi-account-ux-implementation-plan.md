@@ -2384,14 +2384,15 @@ private async Task LoadChildrenAsync(
 - [x] Migrate from in-memory to database storage - Fully migrated to SQLite database at %LocalAppData%\AStarOneDriveClient\sync.db
 
 ### Sprint 6 (Week 11-13): Delta Sync Engine (Bidirectional)
-- [ ] Implement `IFileWatcherService` for local change detection - NOT YET IMPLEMENTED (future work)
-- [x] Implement `ISyncEngine` interface - Implemented as ISyncEngine (not IDeltaSyncEngine), handles downloads and simulated uploads
-- [x] Integrate Graph API for downloads - Real file downloads working with IGraphApiClient.DownloadFileAsync, streaming downloads, SHA256 hash verification
-- [x] Add upload logic for local changes - LOCAL FILE SCANNING implemented (LocalFileScanner), UPLOADS SIMULATED (Task.Delay placeholder, not real Graph API uploads yet)
-- [x] Implement conflict detection (cTag + timestamp comparison) - RemoteChangeDetector uses CTag, ETag, LastModifiedUtc, Size for change detection
-- [x] Add progress tracking and state persistence - Progress tracking implemented with SyncProgress observable, FileMetadata stored in database with SyncStatus, LastSyncDirection
+- [ ] Implement `IFileWatcherService` for local change detection - NOT YET IMPLEMENTED (future work - on-demand scanning via LocalFileScanner works for now)
+- [x] Implement `ISyncEngine` interface - ✅ COMPLETE: ISyncEngine with downloads, uploads, and deletions working
+- [x] Integrate Graph API for downloads - ✅ COMPLETE: Real file downloads with IGraphApiClient.DownloadFileAsync, streaming, SHA256 verification
+- [x] Add upload logic for local changes - ✅ COMPLETE: Real Graph API uploads implemented with UploadFileAsync (small <4MB and large ≥4MB resumable sessions)
+- [x] Implement conflict detection (cTag + timestamp comparison) - ✅ COMPLETE: RemoteChangeDetector uses CTag, ETag, LastModifiedUtc, Size for change detection
+- [x] Add progress tracking and state persistence - ✅ COMPLETE: SyncProgress observable, FileMetadata in database with SyncStatus, LastSyncDirection
+- [x] Implement bidirectional deletion sync - ✅ COMPLETE: Files deleted from OneDrive are deleted locally; files deleted locally will be deleted from OneDrive (DeleteFileAsync implemented)
 - [ ] Implement pause/resume with cancellation tokens - Partial: CancellationToken support in methods, but no pause/resume UI or persistence
-- [x] Test bidirectional sync with real OneDrive data - Downloads tested and working (4 files downloaded in end-to-end test), uploads simulated
+- [x] Test bidirectional sync with real OneDrive data - ✅ COMPLETE: Downloads, uploads, and deletions working with real OneDrive account
 - [ ] Test conflict scenarios - NOT YET TESTED (conflict detection logic exists but no UI or resolution workflow)
 
 ### Sprint 7 (Week 14-15): Sync Progress & Conflict Resolution UI

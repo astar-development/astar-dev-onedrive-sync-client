@@ -13,6 +13,7 @@ namespace AStarOneDriveClient.Models;
 /// <param name="CompletedBytes">Number of bytes already synchronized.</param>
 /// <param name="FilesDownloading">Number of files currently downloading.</param>
 /// <param name="FilesUploading">Number of files currently uploading.</param>
+/// <param name="FilesDeleted">Number of files deleted during sync.</param>
 /// <param name="ConflictsDetected">Number of conflicts detected.</param>
 /// <param name="MegabytesPerSecond">Current transfer speed in MB/s.</param>
 /// <param name="EstimatedSecondsRemaining">Estimated seconds until completion.</param>
@@ -26,6 +27,7 @@ public sealed record SyncState(
     long CompletedBytes,
     int FilesDownloading,
     int FilesUploading,
+    int FilesDeleted,
     int ConflictsDetected,
     double MegabytesPerSecond,
     int? EstimatedSecondsRemaining,

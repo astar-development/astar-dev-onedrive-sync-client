@@ -69,6 +69,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         CompletedBytes: 0,
         FilesDownloading: 0,
         FilesUploading: 0,
+        FilesDeleted: 0,
         ConflictsDetected: 0,
         MegabytesPerSecond: 0,
         EstimatedSecondsRemaining: null,
@@ -109,6 +110,16 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         SyncStatus.Failed => "Sync failed",
         _ => string.Empty
     };
+
+    private string? _lastSyncResult;
+    /// <summary>
+    /// Gets the result message from the last sync operation.
+    /// </summary>
+    public string? LastSyncResult
+    {
+        get => _lastSyncResult;
+        private set => this.RaiseAndSetIfChanged(ref _lastSyncResult, value);
+    }
 
     /// <summary>
     /// Command to load root folders for the selected account.
@@ -343,11 +354,28 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
         try
         {
+            LastSyncResult = null; // Clear previous result
             await _syncEngine.StartSyncAsync(SelectedAccountId);
+
+            // Display result after sync completes
+            if (SyncState.Status == SyncStatus.Completed)
+            {
+                var totalChanges = SyncState.TotalFiles + SyncState.FilesDeleted;
+
+                if (totalChanges == 0)
+                {
+                    LastSyncResult = "✓ Sync complete: No changes detected";
+                }
+                else
+                {
+                    LastSyncResult = $"✓ Sync complete: {totalChanges} change(s) synchronized";
+                }
+            }
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Sync failed: {ex.Message}";
+            LastSyncResult = null;
         }
     }
 
