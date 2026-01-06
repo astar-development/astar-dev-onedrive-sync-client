@@ -9,8 +9,8 @@ namespace AStarOneDriveClient.Services;
 /// Service for synchronizing files between local storage and OneDrive.
 /// </summary>
 /// <remarks>
-/// Supports bidirectional sync: uploads local changes to OneDrive and downloads remote changes to local storage.
-/// Conflict resolution will be added in Step 6.7.
+/// Supports bidirectional sync with conflict detection and resolution.
+/// Uses LastWriteWins strategy: when both local and remote files change, the newer timestamp wins.
 /// </remarks>
 public sealed class SyncEngine : ISyncEngine, IDisposable
 {
@@ -167,9 +167,63 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                 .Where(f => !remotePathsSet.Contains(f.Path) && !localPathsSet.Contains(f.Path))
                 .ToList();
 
+            // Detect conflicts: files that appear in both upload and download lists
+            var uploadPathsSet = filesToUpload.Select(f => f.Path).ToHashSet();
+            var conflictPaths = filesToDownload
+                .Where(f => uploadPathsSet.Contains(f.Path))
+                .Select(f => f.Path)
+                .ToHashSet();
+
+            int conflictCount = conflictPaths.Count;
+
+            // Resolve conflicts using LastWriteWins strategy
+            if (conflictCount > 0)
+            {
+                var resolvedUploads = new List<FileMetadata>();
+                var resolvedDownloads = new List<FileMetadata>();
+
+                foreach (var uploadFile in filesToUpload)
+                {
+                    if (conflictPaths.Contains(uploadFile.Path))
+                    {
+                        // Find the corresponding remote file
+                        var remoteFile = filesToDownload.First(f => f.Path == uploadFile.Path);
+
+                        // LastWriteWins: compare timestamps
+                        if (uploadFile.LastModifiedUtc > remoteFile.LastModifiedUtc)
+                        {
+                            // Local is newer - keep in upload list
+                            resolvedUploads.Add(uploadFile);
+                        }
+                        else
+                        {
+                            // Remote is newer or equal - add to download list
+                            resolvedDownloads.Add(remoteFile);
+                        }
+                    }
+                    else
+                    {
+                        // No conflict - keep in upload list
+                        resolvedUploads.Add(uploadFile);
+                    }
+                }
+
+                // Keep non-conflicted downloads
+                foreach (var downloadFile in filesToDownload)
+                {
+                    if (!conflictPaths.Contains(downloadFile.Path))
+                    {
+                        resolvedDownloads.Add(downloadFile);
+                    }
+                }
+
+                filesToUpload = resolvedUploads;
+                filesToDownload = resolvedDownloads;
+            }
+
             var totalFiles = filesToUpload.Count + filesToDownload.Count;
             var totalBytes = filesToUpload.Sum(f => f.Size) + filesToDownload.Sum(f => f.Size);
-            ReportProgress(accountId, SyncStatus.Running, totalFiles, 0, totalBytes, 0);
+            ReportProgress(accountId, SyncStatus.Running, totalFiles, 0, totalBytes, 0, conflictsDetected: conflictCount);
 
             int completedFiles = 0;
             long completedBytes = 0;
@@ -205,7 +259,7 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
                 completedFiles++;
                 completedBytes += file.Size;
-                ReportProgress(accountId, SyncStatus.Running, totalFiles, completedFiles, totalBytes, completedBytes, filesUploading: 1);
+                ReportProgress(accountId, SyncStatus.Running, totalFiles, completedFiles, totalBytes, completedBytes, filesUploading: 1, conflictsDetected: conflictCount);
             }
 
             // Download files (placeholder - actual download implementation in future)
@@ -238,7 +292,7 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
                 completedFiles++;
                 completedBytes += file.Size;
-                ReportProgress(accountId, SyncStatus.Running, totalFiles, completedFiles, totalBytes, completedBytes, filesDownloading: 1);
+                ReportProgress(accountId, SyncStatus.Running, totalFiles, completedFiles, totalBytes, completedBytes, filesDownloading: 1, conflictsDetected: conflictCount);
             }
 
             // Handle deletions
@@ -247,7 +301,7 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                 await _fileMetadataRepository.DeleteAsync(fileToDelete.Id, cancellationToken);
             }
 
-            ReportProgress(accountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes, completedBytes);
+            ReportProgress(accountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes, completedBytes, conflictsDetected: conflictCount);
         }
         catch (OperationCanceledException)
         {
