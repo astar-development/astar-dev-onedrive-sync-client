@@ -149,6 +149,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
         // Commands
         OpenUpdateAccountDetailsCommand = ReactiveCommand.Create(OpenUpdateAccountDetails);
+        OpenViewSyncHistoryCommand = ReactiveCommand.Create(OpenViewSyncHistory);
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
     }
 
@@ -171,6 +172,11 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// Gets the command to close the application.
     /// </summary>
     public ReactiveCommand<Unit, Unit> CloseApplicationCommand { get; }
+
+    /// <summary>
+    /// Gets the command to open the View Sync History window.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> OpenViewSyncHistoryCommand { get; }
 
     /// <summary>
     /// Shows the conflict resolution view for the specified account.
@@ -241,6 +247,20 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     private void OpenUpdateAccountDetails()
     {
         var window = new UpdateAccountDetailsWindow();
+
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow is not null)
+        {
+            _ = window.ShowDialog(desktop.MainWindow);
+        }
+    }
+
+    /// <summary>
+    /// Opens the View Sync History window.
+    /// </summary>
+    private void OpenViewSyncHistory()
+    {
+        var window = new ViewSyncHistoryWindow();
 
         if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow is not null)

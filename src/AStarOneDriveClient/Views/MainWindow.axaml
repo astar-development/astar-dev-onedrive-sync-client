@@ -27,6 +27,8 @@
                 <MenuItem Header="_Update Account Details"
                           Command="{Binding OpenUpdateAccountDetailsCommand}"
                           InputGesture="F2" />
+                <MenuItem Header="_View Sync History"
+                          Command="{Binding OpenViewSyncHistoryCommand}" />
                 <Separator />
                 <MenuItem Header="_Close Application"
                           Command="{Binding CloseApplicationCommand}"
