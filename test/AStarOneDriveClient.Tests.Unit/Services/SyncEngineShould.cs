@@ -62,7 +62,13 @@ public class SyncEngineShould
             Arg.Any<IProgress<long>?>(),
             Arg.Any<CancellationToken>());
 
+        // Verify AddAsync called with PendingUpload before upload
         await mocks.FileMetadataRepo.Received(1).AddAsync(
+            Arg.Is<FileMetadata>(f => f.Name == "doc.txt" && f.SyncStatus == FileSyncStatus.PendingUpload),
+            Arg.Any<CancellationToken>());
+
+        // Verify UpdateAsync called with Synced after upload
+        await mocks.FileMetadataRepo.Received(1).UpdateAsync(
             Arg.Is<FileMetadata>(f => f.Name == "doc.txt" && f.SyncStatus == FileSyncStatus.Synced),
             Arg.Any<CancellationToken>());
     }
@@ -265,7 +271,10 @@ public class SyncEngineShould
 
         await engine.StartSyncAsync("acc1");
 
-        await mocks.FileMetadataRepo.Received(3).AddAsync(Arg.Any<FileMetadata>(), Arg.Any<CancellationToken>());
+        // Expect 2 AddAsync: PendingUpload for upload, Synced for download
+        await mocks.FileMetadataRepo.Received(2).AddAsync(Arg.Any<FileMetadata>(), Arg.Any<CancellationToken>());
+        // Expect 1 UpdateAsync: Synced for upload completion
+        await mocks.FileMetadataRepo.Received(1).UpdateAsync(Arg.Any<FileMetadata>(), Arg.Any<CancellationToken>());
 
         var finalState = progressStates.Last();
         finalState.Status.ShouldBe(SyncStatus.Completed);

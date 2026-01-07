@@ -316,11 +316,18 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
             {
                 if (existingFilesDict.TryGetValue(remoteFile.Path, out var existingFile))
                 {
+                    System.Diagnostics.Debug.WriteLine($"[SyncEngine] Found file in DB: {remoteFile.Path}, DB Status={existingFile.SyncStatus}");
                     // File exists in DB - check if remote changed
                     var timeDiff = Math.Abs((existingFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
                     var remoteHasChanged = existingFile.CTag != remoteFile.CTag ||
                                          timeDiff > 1.0 ||
                                          existingFile.Size != remoteFile.Size;
+
+                    System.Diagnostics.Debug.WriteLine($"[SyncEngine] Remote file check: {remoteFile.Path}");
+                    System.Diagnostics.Debug.WriteLine($"  DB CTag={existingFile.CTag}, Remote CTag={remoteFile.CTag}");
+                    System.Diagnostics.Debug.WriteLine($"  DB Time={existingFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote Time={remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Diff={timeDiff:F1}s");
+                    System.Diagnostics.Debug.WriteLine($"  DB Size={existingFile.Size}, Remote Size={remoteFile.Size}");
+                    System.Diagnostics.Debug.WriteLine($"  RemoteHasChanged={remoteHasChanged}");
 
                     if (remoteHasChanged)
                     {
@@ -393,6 +400,7 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                 }
                 else
                 {
+                    System.Diagnostics.Debug.WriteLine($"[SyncEngine] File NOT in DB: {remoteFile.Path} - first sync or new file");
                     // No DB record - first sync or new file
                     if (localFilesDict.TryGetValue(remoteFile.Path, out var localFile))
                     {
@@ -691,15 +699,11 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
                     System.Diagnostics.Debug.WriteLine($"[SyncEngine] Upload successful: {file.Name}, OneDrive ID={uploadedFile.Id}, CTag={uploadedFile.CTag}");
 
-                    // Save to database
-                    if (isExistingFile)
-                    {
-                        await _fileMetadataRepository.UpdateAsync(uploadedFile, cancellationToken);
-                    }
-                    else
-                    {
-                        await _fileMetadataRepository.AddAsync(uploadedFile, cancellationToken);
-                    }
+                    // Save to database - always UPDATE because we either:
+                    // 1. Saved as PendingUpload before upload started, OR
+                    // 2. File already existed in DB (isExistingFile = true)
+                    // So the record should already exist - never ADD after upload
+                    await _fileMetadataRepository.UpdateAsync(uploadedFile, cancellationToken);
 
                     completedFiles++;
                     completedBytes += file.Size;

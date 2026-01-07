@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.ViewModels;
@@ -13,6 +14,7 @@ namespace AStarOneDriveClient.Views;
 public sealed partial class MainWindow : Window
 {
     private readonly IWindowPreferencesService? _preferencesService;
+    private DispatcherTimer? _savePreferencesTimer;
 
     public MainWindow()
     {
@@ -31,6 +33,17 @@ public sealed partial class MainWindow : Window
         // Save window position when it changes
         PositionChanged += OnPositionChanged;
         PropertyChanged += OnWindowPropertyChanged;
+
+        // Initialize debounce timer for saving preferences (1 second delay)
+        _savePreferencesTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        _savePreferencesTimer.Tick += async (s, e) =>
+        {
+            _savePreferencesTimer.Stop();
+            await SaveWindowPreferencesAsync();
+        };
     }
 
     private async System.Threading.Tasks.Task LoadWindowPreferencesAsync()
@@ -64,14 +77,18 @@ public sealed partial class MainWindow : Window
 
     private void OnPositionChanged(object? sender, PixelPointEventArgs e)
     {
-        _ = SaveWindowPreferencesAsync();
+        // Restart timer - this debounces the save operation
+        _savePreferencesTimer?.Stop();
+        _savePreferencesTimer?.Start();
     }
 
     private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
         if (e.Property == WindowStateProperty || e.Property == WidthProperty || e.Property == HeightProperty)
         {
-            _ = SaveWindowPreferencesAsync();
+            // Restart timer - this debounces the save operation
+            _savePreferencesTimer?.Stop();
+            _savePreferencesTimer?.Start();
         }
     }
 
