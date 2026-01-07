@@ -102,10 +102,15 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
         try
         {
+            // Set debug log context for this account - flows through all async operations
+            DebugLogContext.SetAccountId(accountId);
+
             // Reset progress tracking for new sync
             _lastProgressUpdate = DateTime.UtcNow;
             _lastCompletedBytes = 0;
             _transferHistory.Clear();
+
+            await DebugLog.EntryAsync("SyncEngine.StartSyncAsync", cancellationToken);
 
             ReportProgress(accountId, SyncStatus.Running, 0, 0, 0, 0);
 
@@ -114,6 +119,8 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
             // Deduplicate selected folders to prevent processing same folder multiple times
             selectedFolders = selectedFolders.Distinct().ToList();
+
+            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Found {selectedFolders.Count} selected folders", cancellationToken);
 
             System.Diagnostics.Debug.WriteLine($"[SyncEngine] Starting sync with {selectedFolders.Count} unique folders: {string.Join(", ", selectedFolders)}");
 
@@ -846,6 +853,9 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
 
             ReportProgress(accountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes, completedBytes, filesDeleted: filesToDelete.Count, conflictsDetected: conflictCount);
 
+            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Sync completed: {completedFiles}/{totalFiles} files, {completedBytes} bytes", cancellationToken);
+            await DebugLog.ExitAsync("SyncEngine.StartSyncAsync", cancellationToken);
+
             // Finalize sync session log if detailed logging is enabled
             if (_currentSessionId is not null)
             {
@@ -898,8 +908,10 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
             ReportProgress(accountId, SyncStatus.Paused, 0, 0, 0, 0);
             throw;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", $"Sync failed: {ex.Message}", ex, cancellationToken);
+
             // Finalize sync session log as failed if detailed logging is enabled
             if (_currentSessionId is not null)
             {
@@ -920,6 +932,9 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
         }
         finally
         {
+            // Clear debug log context
+            DebugLogContext.Clear();
+
             // Always reset the sync-in-progress flag
             Interlocked.Exchange(ref _syncInProgress, 0);
         }

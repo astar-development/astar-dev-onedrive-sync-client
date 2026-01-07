@@ -67,6 +67,7 @@ public static class ServiceConfiguration
         services.AddScoped<IRemoteChangeDetector, RemoteChangeDetector>();
         services.AddScoped<IConflictResolver, ConflictResolver>();
         services.AddScoped<ISyncEngine, SyncEngine>();
+        services.AddScoped<IDebugLogger, DebugLogger>();
 
         // ViewModels
         services.AddTransient<AccountManagementViewModel>();

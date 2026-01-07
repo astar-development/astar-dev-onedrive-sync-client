@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using AStarOneDriveClient.Services;
 using AStarOneDriveClient.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,6 +29,10 @@ public sealed class App : Application
         // Configure dependency injection
         Services = ServiceConfiguration.ConfigureServices();
         ServiceConfiguration.EnsureDatabaseCreated(Services);
+
+        // Initialize static debug logger
+        var debugLogger = Services.GetRequiredService<IDebugLogger>();
+        DebugLog.Initialize(debugLogger);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

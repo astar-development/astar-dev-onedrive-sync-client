@@ -48,6 +48,11 @@ public sealed class SyncDbContext : DbContext
     /// </summary>
     public DbSet<FileOperationLogEntity> FileOperationLogs { get; set; } = null!;
 
+    /// <summary>
+    /// Gets or sets the debug logs table.
+    /// </summary>
+    public DbSet<DebugLogEntity> DebugLogs { get; set; } = null!;
+
     public SyncDbContext(DbContextOptions<SyncDbContext> options) : base(options)
     {
     }
