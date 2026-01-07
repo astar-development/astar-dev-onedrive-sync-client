@@ -150,6 +150,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         // Commands
         OpenUpdateAccountDetailsCommand = ReactiveCommand.Create(OpenUpdateAccountDetails);
         OpenViewSyncHistoryCommand = ReactiveCommand.Create(OpenViewSyncHistory);
+        OpenDebugLogViewerCommand = ReactiveCommand.Create(OpenDebugLogViewer);
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
     }
 
@@ -177,6 +178,11 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// Gets the command to open the View Sync History window.
     /// </summary>
     public ReactiveCommand<Unit, Unit> OpenViewSyncHistoryCommand { get; }
+
+    /// <summary>
+    /// Gets the command to open the Debug Log Viewer window.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> OpenDebugLogViewerCommand { get; }
 
     /// <summary>
     /// Shows the conflict resolution view for the specified account.
@@ -261,6 +267,20 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     private void OpenViewSyncHistory()
     {
         var window = new ViewSyncHistoryWindow();
+
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow is not null)
+        {
+            _ = window.ShowDialog(desktop.MainWindow);
+        }
+    }
+
+    /// <summary>
+    /// Opens the Debug Log Viewer window.
+    /// </summary>
+    private void OpenDebugLogViewer()
+    {
+        var window = new DebugLogWindow();
 
         if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow is not null)

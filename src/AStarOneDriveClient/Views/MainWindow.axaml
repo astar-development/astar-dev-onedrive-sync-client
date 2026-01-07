@@ -29,6 +29,8 @@
                           InputGesture="F2" />
                 <MenuItem Header="_View Sync History"
                           Command="{Binding OpenViewSyncHistoryCommand}" />
+                <MenuItem Header="_View Debug Logs"
+                          Command="{Binding OpenDebugLogViewerCommand}" />
                 <Separator />
                 <MenuItem Header="_Close Application"
                           Command="{Binding CloseApplicationCommand}"

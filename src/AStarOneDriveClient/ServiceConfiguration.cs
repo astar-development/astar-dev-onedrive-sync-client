@@ -38,6 +38,7 @@ public static class ServiceConfiguration
         services.AddScoped<ISyncConflictRepository, SyncConflictRepository>();
         services.AddScoped<ISyncSessionLogRepository, SyncSessionLogRepository>();
         services.AddScoped<IFileOperationLogRepository, FileOperationLogRepository>();
+        services.AddScoped<IDebugLogRepository, DebugLogRepository>();
 
         // Load authentication configuration
         var configuration = new ConfigurationBuilder()
