@@ -57,13 +57,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <summary>
     /// Gets a formatted string showing completed/total files.
     /// </summary>
-    public string FilesProgressText
-    {
-        get
-        {
-            return CurrentProgress is null ? "No files" : $"{CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files";
-        }
-    }
+    public string FilesProgressText => CurrentProgress is null ? "No files" : $"{CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files";
 
     /// <summary>
     /// Gets a formatted string showing upload/download counts.
