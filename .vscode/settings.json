@@ -1,5 +1,10 @@
 {
     "cSpell.words": [
-        "avares"
+        "appsettings",
+        "avares",
+        "DPAPI",
+        "libsecret",
+        "Msal",
+        "onedrive"
     ]
 }

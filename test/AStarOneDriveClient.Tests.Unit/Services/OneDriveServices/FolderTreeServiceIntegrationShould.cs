@@ -1,7 +1,6 @@
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Services.OneDriveServices;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions.Authentication;
 using System.Diagnostics.CodeAnalysis;
 

@@ -1,14 +1,10 @@
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Models;
-using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Shouldly;
 using System.Reactive.Subjects;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;

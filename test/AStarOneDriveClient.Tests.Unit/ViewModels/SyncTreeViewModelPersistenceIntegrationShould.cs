@@ -1,14 +1,10 @@
 using System.Reactive.Subjects;
 using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Models;
-using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
-using AStarOneDriveClient.Services.OneDriveServices;
 using AStarOneDriveClient.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using NSubstitute;
-using Shouldly;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 

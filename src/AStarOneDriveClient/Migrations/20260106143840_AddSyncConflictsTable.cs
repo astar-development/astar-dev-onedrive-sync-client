@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #pragma warning disable CA1861 // Prefer static readonly fields - EF Core generated migration code
 

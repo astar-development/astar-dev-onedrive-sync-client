@@ -1,6 +1,5 @@
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Models;
-using Microsoft.Graph.Models;
 
 namespace AStarOneDriveClient.Services.OneDriveServices;
 

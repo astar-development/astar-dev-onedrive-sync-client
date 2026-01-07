@@ -1,7 +1,6 @@
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.ViewModels;
-using Shouldly;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 

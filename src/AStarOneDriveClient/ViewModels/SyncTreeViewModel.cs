@@ -5,7 +5,6 @@ using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Services;
-using AStarOneDriveClient.Services.OneDriveServices;
 using ReactiveUI;
 
 namespace AStarOneDriveClient.ViewModels;

@@ -3,8 +3,6 @@ using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Services;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Shouldly;
 
 namespace AStarOneDriveClient.Tests.Unit.Services;
 

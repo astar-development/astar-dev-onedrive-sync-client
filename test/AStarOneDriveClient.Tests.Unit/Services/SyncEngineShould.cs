@@ -3,7 +3,6 @@ using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.Services.OneDriveServices;
-using NSubstitute;
 
 namespace AStarOneDriveClient.Tests.Unit.Services;
 

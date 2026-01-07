@@ -1,10 +1,7 @@
 using System.Reactive.Subjects;
 using AStarOneDriveClient.Models;
-using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Services;
-using AStarOneDriveClient.Services.OneDriveServices;
 using AStarOneDriveClient.ViewModels;
-using NSubstitute;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 

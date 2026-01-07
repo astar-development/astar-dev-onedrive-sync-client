@@ -1,10 +1,7 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Reactive;
-using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
-using Avalonia.Controls;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 

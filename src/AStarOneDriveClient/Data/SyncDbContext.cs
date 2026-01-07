@@ -57,15 +57,7 @@ public sealed class SyncDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configure AccountEntity
-        modelBuilder.Entity<AccountEntity>(entity =>
-        {
-            entity.HasKey(e => e.AccountId);
-            entity.Property(e => e.AccountId).IsRequired();
-            entity.Property(e => e.DisplayName).IsRequired();
-            entity.Property(e => e.LocalSyncPath).IsRequired();
-            entity.HasIndex(e => e.LocalSyncPath).IsUnique();
-        });
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(SyncDbContext).Assembly);
 
         // Configure SyncConfigurationEntity
         modelBuilder.Entity<SyncConfigurationEntity>(entity =>

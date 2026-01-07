@@ -5,8 +5,6 @@ using AStarOneDriveClient.Services;
 using AStarOneDriveClient.Services.Sync;
 using AStarOneDriveClient.ViewModels;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Shouldly;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 

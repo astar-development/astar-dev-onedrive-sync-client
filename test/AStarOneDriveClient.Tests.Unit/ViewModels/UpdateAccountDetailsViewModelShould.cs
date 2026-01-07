@@ -2,8 +2,6 @@ using System.Collections.ObjectModel;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.ViewModels;
-using NSubstitute;
-using Shouldly;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 

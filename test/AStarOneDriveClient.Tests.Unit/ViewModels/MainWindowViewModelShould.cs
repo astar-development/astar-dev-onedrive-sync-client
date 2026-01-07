@@ -3,9 +3,6 @@ using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.ViewModels;
-using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Shouldly;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 
