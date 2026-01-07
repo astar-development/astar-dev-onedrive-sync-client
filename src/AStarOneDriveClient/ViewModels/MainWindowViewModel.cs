@@ -3,6 +3,8 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
+using AStarOneDriveClient.Views;
+using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
@@ -144,6 +146,10 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                 this.RaisePropertyChanged(nameof(ShowConflictResolution));
             })
             .DisposeWith(_disposables);
+
+        // Commands
+        OpenUpdateAccountDetailsCommand = ReactiveCommand.Create(OpenUpdateAccountDetails);
+        CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
     }
 
     /// <summary>
@@ -155,6 +161,16 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// Gets the sync tree view model.
     /// </summary>
     public SyncTreeViewModel SyncTree { get; }
+
+    /// <summary>
+    /// Gets the command to open the Update Account Details window.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> OpenUpdateAccountDetailsCommand { get; }
+
+    /// <summary>
+    /// Gets the command to close the application.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> CloseApplicationCommand { get; }
 
     /// <summary>
     /// Shows the conflict resolution view for the specified account.
@@ -217,6 +233,34 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         ConflictResolution = null;
         this.RaisePropertyChanged(nameof(ShowSyncProgress));
         this.RaisePropertyChanged(nameof(ShowConflictResolution));
+    }
+
+    /// <summary>
+    /// Opens the Update Account Details window.
+    /// </summary>
+    private void OpenUpdateAccountDetails()
+    {
+        var window = new UpdateAccountDetailsWindow
+        {
+            DataContext = _serviceProvider.GetRequiredService<UpdateAccountDetailsViewModel>()
+        };
+
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow is not null)
+        {
+            window.ShowDialog(desktop.MainWindow);
+        }
+    }
+
+    /// <summary>
+    /// Closes the application.
+    /// </summary>
+    private void CloseApplication()
+    {
+        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
     }
 
     /// <inheritdoc/>

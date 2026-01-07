@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AStarOneDriveClient.ViewModels"
+        x:Class="AStarOneDriveClient.Views.UpdateAccountDetailsWindow"
+        x:DataType="vm:UpdateAccountDetailsViewModel"
+        Title="Update Account Details"
+        Width="500"
+        Height="300"
+        MinWidth="400"
+        MinHeight="200"
+        WindowStartupLocation="CenterOwner">
+
+    <Design.DataContext>
+        <vm:UpdateAccountDetailsViewModel />
+    </Design.DataContext>
+
+    <Panel Margin="20">
+        <TextBlock Text="{Binding PlaceholderMessage}"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   FontSize="16" />
+    </Panel>
+</Window>
