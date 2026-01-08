@@ -38,6 +38,13 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
         await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scanning folder: '{folderPath}'", cancellationToken);
 
+        // Clean the folder path of Graph API prefixes before using it for file paths
+        var cleanedFolderPath = CleanGraphApiPathPrefix(folderPath);
+        if (cleanedFolderPath != folderPath)
+        {
+            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Cleaned folder path from '{folderPath}' to '{cleanedFolderPath}'", cancellationToken);
+        }
+
         // For initial implementation, scan the folder tree
         // Note: For large OneDrive accounts (100k+ files), this can take several minutes
         // In future sprints, this will be enhanced with proper delta query support
@@ -50,13 +57,16 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
             // Add a practical limit for initial scan to prevent timeout
             // This will be removed when we implement proper delta query support
             const int maxFiles = 10000; // Limit initial scan to 10k files
-            await ScanFolderRecursiveAsync(accountId, rootItem, folderPath, changes, cancellationToken, maxFiles);
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Scan complete: {changes.Count} files found in {folderPath}");
+            // Use cleaned path for building file paths
+            await ScanFolderRecursiveAsync(accountId, rootItem, cleanedFolderPath, changes, cancellationToken, maxFiles);
+            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Scan complete: {changes.Count} files found in {cleanedFolderPath}");
             await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scan complete: {changes.Count} files found", cancellationToken);
         }
         else
         {
-            await DebugLog.ErrorAsync("RemoteChangeDetector.DetectChangesAsync", $"Folder item not found for path: '{folderPath}'", null, cancellationToken);
+            var errorMessage = $"Remote folder not found: '{folderPath}'. Please verify the folder exists and you have access to it.";
+            await DebugLog.ErrorAsync("RemoteChangeDetector.DetectChangesAsync", errorMessage, null, cancellationToken);
+            throw new InvalidOperationException(errorMessage);
         }
 
         // Generate a simple delta token based on timestamp
@@ -73,6 +83,23 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         await DebugLog.EntryAsync("RemoteChangeDetector.GetFolderItemAsync", cancellationToken);
         await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for folder: '{folderPath}'", cancellationToken);
 
+        // Defensive: Strip Graph API path prefixes that might be in stored paths
+        // This handles cases where paths like "/drive/root:/Documents" or "/drives/{id}/root:/Documents" were stored
+        if (folderPath.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
+        {
+            folderPath = folderPath["/drive/root:".Length..];
+            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Stripped '/drive/root:' prefix, new path: '{folderPath}'", cancellationToken);
+        }
+        else if (folderPath.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
+        {
+            var rootIndex = folderPath.IndexOf("/root:", StringComparison.OrdinalIgnoreCase);
+            if (rootIndex >= 0)
+            {
+                folderPath = folderPath[(rootIndex + "/root:".Length)..];
+                await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Stripped '/drives/.../root:' prefix, new path: '{folderPath}'", cancellationToken);
+            }
+        }
+
         // For root or empty path, return the drive root
         if (folderPath == "/" || string.IsNullOrEmpty(folderPath))
         {
@@ -82,7 +109,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
         // Clean up the path
         folderPath = folderPath.Trim('/');
-        await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Cleaned path: '{folderPath}'", cancellationToken);
+        await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Trimmed path: '{folderPath}'", cancellationToken);
 
         // Get root and traverse path segments
         var currentItem = await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
@@ -217,5 +244,36 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         }
 
         return basePath + name;
+    }
+
+    /// <summary>
+    /// Cleans Graph API path prefixes from folder paths.
+    /// </summary>
+    /// <param name="path">The path that may contain Graph API prefixes.</param>
+    /// <returns>The cleaned path without Graph API prefixes.</returns>
+    private static string CleanGraphApiPathPrefix(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return path;
+        }
+
+        // Strip /drive/root: prefix
+        if (path.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
+        {
+            return path["/drive/root:".Length..];
+        }
+
+        // Strip /drives/{drive-id}/root: prefix
+        if (path.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
+        {
+            var rootIndex = path.IndexOf("/root:", StringComparison.OrdinalIgnoreCase);
+            if (rootIndex >= 0)
+            {
+                return path[(rootIndex + "/root:".Length)..];
+            }
+        }
+
+        return path;
     }
 }

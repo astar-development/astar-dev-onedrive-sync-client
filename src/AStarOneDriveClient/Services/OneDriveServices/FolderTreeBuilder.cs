@@ -95,14 +95,25 @@ public static class FolderTreeBuilder
     {
         if (item.ParentReference?.Path is not null && item.Name is not null)
         {
-            // Path format from Graph API: "/drive/root:/Documents/Work"
+            // Path format from Graph API can be:
+            // - "/drive/root:/Documents/Work" (personal OneDrive)
+            // - "/drives/{drive-id}/root:/Documents/Work" (shared drives or when accessing via drive ID)
             // We want: "/Documents/Work/FolderName"
             var parentPath = item.ParentReference.Path;
 
-            // Remove the "/drive/root:" prefix if present
+            // Remove the "/drive/root:" or "/drives/{drive-id}/root:" prefix if present
             if (parentPath.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
             {
                 parentPath = parentPath["/drive/root:".Length..];
+            }
+            else if (parentPath.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
+            {
+                // Find the "/root:" part and remove everything up to and including it
+                var rootIndex = parentPath.IndexOf("/root:", StringComparison.OrdinalIgnoreCase);
+                if (rootIndex >= 0)
+                {
+                    parentPath = parentPath[(rootIndex + "/root:".Length)..];
+                }
             }
 
             // If parent is root, path is just "/FolderName"

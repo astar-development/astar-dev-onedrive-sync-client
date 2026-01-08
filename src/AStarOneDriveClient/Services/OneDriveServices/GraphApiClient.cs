@@ -83,17 +83,38 @@ public sealed class GraphApiClient : IGraphApiClient
     {
         ArgumentNullException.ThrowIfNull(itemId);
 
+        await DebugLog.EntryAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
+        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"Fetching children for item ID: {itemId}", cancellationToken);
+
         var graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         var drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         if (drive?.Id is null)
         {
+            await DebugLog.ErrorAsync("GraphApiClient.GetDriveItemChildrenAsync", "Drive ID is null", null, cancellationToken);
+            await DebugLog.ExitAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
             return [];
         }
 
+        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"Using drive ID: {drive.Id}", cancellationToken);
+
         var response = await graphClient.Drives[drive.Id].Items[itemId].Children.GetAsync(cancellationToken: cancellationToken);
 
+        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"Response received - Value count: {response?.Value?.Count ?? 0}, NextLink: {response?.OdataNextLink}", cancellationToken);
+
         // Filter out deleted items (items in recycle bin)
-        return response?.Value?.Where(item => item.Deleted is null) ?? [];
+        var items = response?.Value?.Where(item => item.Deleted is null) ?? [];
+        var itemsList = items.ToList();
+
+        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"After filtering deleted items: {itemsList.Count} items", cancellationToken);
+
+        if (itemsList.Count == 0 && response?.Value?.Count > 0)
+        {
+            await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"All {response.Value.Count} items were filtered out (deleted)", cancellationToken);
+        }
+
+        await DebugLog.ExitAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
+
+        return itemsList;
     }
 
     /// <inheritdoc/>

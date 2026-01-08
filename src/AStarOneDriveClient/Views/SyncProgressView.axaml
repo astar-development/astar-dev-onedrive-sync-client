@@ -37,7 +37,8 @@
                              Maximum="100"
                              Height="30"
                              IsIndeterminate="{Binding IsProgressIndeterminate}"
-                             ShowProgressText="True" />
+                             ShowProgressText="True"
+                             Foreground="#00E5FF" />
             </StackPanel>
 
             <!-- Transfer Details -->

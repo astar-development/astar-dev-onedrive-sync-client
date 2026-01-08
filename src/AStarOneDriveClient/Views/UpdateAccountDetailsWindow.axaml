@@ -6,7 +6,7 @@
         x:DataType="vm:UpdateAccountDetailsViewModel"
         Title="Update Account Details"
         Width="900"
-        Height="700"
+        Height="800"
         MinWidth="700"
         MinHeight="600"
         WindowStartupLocation="CenterOwner">

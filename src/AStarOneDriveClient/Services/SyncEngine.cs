@@ -587,6 +587,15 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                 {
                     System.Diagnostics.Debug.WriteLine($"[SyncEngine]   Duplicate: {dup.Key} appears {dup.Count()} times");
                 }
+
+                // Deduplicate: Keep first occurrence of each path
+                filesToDownload = [.. filesToDownload.GroupBy(f => f.Path).Select(g => g.First())];
+                System.Diagnostics.Debug.WriteLine($"[SyncEngine] After deduplication: {filesToDownload.Count} files to download");
+
+                // Recalculate totals after deduplication
+                totalFiles = filesToUpload.Count + filesToDownload.Count;
+                totalBytes = filesToUpload.Sum(f => f.Size) + filesToDownload.Sum(f => f.Size);
+                downloadBytes = filesToDownload.Sum(f => f.Size);
             }
 
             ReportProgress(accountId, SyncStatus.Running, totalFiles, 0, totalBytes, 0, filesDeleted: filesToDelete.Count, conflictsDetected: conflictCount);
@@ -595,7 +604,8 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
             long completedBytes = 0;
 
             // Upload files to OneDrive with parallel execution
-            var maxParallelUploads = account.MaxParallelUpDownloads;
+            // Ensure we have a valid value (defensive check in case of data migration issues)
+            var maxParallelUploads = Math.Max(1, account.MaxParallelUpDownloads);
             using var uploadSemaphore = new SemaphoreSlim(maxParallelUploads, maxParallelUploads);
             var activeUploads = 0;
             var uploadTasks = filesToUpload.Select(async file =>
@@ -773,7 +783,8 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
             _lastCompletedBytes = completedBytes;
 
             // Download files with parallel execution
-            var maxParallelDownloads = account.MaxParallelUpDownloads;
+            // Ensure we have a valid value (defensive check in case of data migration issues)
+            var maxParallelDownloads = Math.Max(1, account.MaxParallelUpDownloads);
             using var downloadSemaphore = new SemaphoreSlim(maxParallelDownloads, maxParallelDownloads);
             var activeDownloads = 0;
             var downloadTasks = filesToDownload.Select(async file =>
@@ -786,6 +797,15 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                     _syncCancellation.Token.ThrowIfCancellationRequested();
 
                     System.Diagnostics.Debug.WriteLine($"Starting download: {file.Name} (ID: {file.Id}) to {file.LocalPath}");
+                    await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Starting download: {file.Name} (ID: {file.Id}) to {file.LocalPath}", _syncCancellation.Token);
+
+                    // Create directory if it doesn't exist
+                    var directory = Path.GetDirectoryName(file.LocalPath);
+                    if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    {
+                        await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Creating directory: {directory}", _syncCancellation.Token);
+                        Directory.CreateDirectory(directory);
+                    }
 
                     // Log file operation if detailed logging is enabled
                     if (_currentSessionId is not null)
@@ -813,6 +833,7 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                     await _graphApiClient.DownloadFileAsync(accountId, file.Id, file.LocalPath, _syncCancellation.Token);
 
                     System.Diagnostics.Debug.WriteLine($"Download complete: {file.Name}, computing hash...");
+                    await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Download complete: {file.Name}, computing hash...", _syncCancellation.Token);
 
                     // Compute hash of downloaded file
                     var downloadedHash = await _localFileScanner.ComputeFileHashAsync(file.LocalPath, _syncCancellation.Token);
@@ -836,13 +857,26 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                     // If not found by ID, try by path (for files that might have empty IDs)
                     existingRecord ??= await _fileMetadataRepository.GetByPathAsync(accountId, downloadedFile.Path, cancellationToken);
 
-                    if (existingRecord is not null)
+                    await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Saving {file.Name}: ExistingRecord={(existingRecord is not null ? "Found" : "NotFound")}, ID={downloadedFile.Id}, Path={downloadedFile.Path}", _syncCancellation.Token);
+
+                    try
                     {
-                        await _fileMetadataRepository.UpdateAsync(downloadedFile, cancellationToken);
+                        if (existingRecord is not null)
+                        {
+                            await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Updating existing record: ExistingID={existingRecord.Id}, NewID={downloadedFile.Id}", _syncCancellation.Token);
+                            await _fileMetadataRepository.UpdateAsync(downloadedFile, cancellationToken);
+                        }
+                        else
+                        {
+                            await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Adding new record: ID={downloadedFile.Id}", _syncCancellation.Token);
+                            await _fileMetadataRepository.AddAsync(downloadedFile, cancellationToken);
+                        }
+                        await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Successfully saved {file.Name} to database", _syncCancellation.Token);
                     }
-                    else
+                    catch (Exception dbEx)
                     {
-                        await _fileMetadataRepository.AddAsync(downloadedFile, cancellationToken);
+                        await DebugLog.ErrorAsync("SyncEngine.SaveFileMetadata", $"FAILED to save {file.Name} to database: {dbEx.Message}", dbEx, _syncCancellation.Token);
+                        throw; // Re-throw to trigger outer catch handler
                     }
 
                     System.Diagnostics.Debug.WriteLine($"Successfully synced: {file.Name}");
@@ -858,6 +892,7 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
                 {
                     System.Diagnostics.Debug.WriteLine($"ERROR downloading {file.Name}: {ex.GetType().Name} - {ex.Message}");
                     System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                    await DebugLog.ErrorAsync("SyncEngine.DownloadFile", $"ERROR downloading {file.Name}: {ex.Message}", ex, _syncCancellation.Token);
 
                     // Log download failure and mark file as failed
                     var failedFile = file with { SyncStatus = FileSyncStatus.Failed };

@@ -122,7 +122,8 @@
                         VerticalAlignment="Center"
                         Spacing="10">
                 <ProgressBar IsIndeterminate="True"
-                             Width="200" />
+                             Width="200"
+                             Foreground="#00E5FF" />
                 <TextBlock Text="Loading conflicts..."
                            Foreground="White"
                            HorizontalAlignment="Center" />
@@ -137,7 +138,8 @@
                         VerticalAlignment="Center"
                         Spacing="10">
                 <ProgressBar IsIndeterminate="True"
-                             Width="200" />
+                             Width="200"
+                             Foreground="#00E5FF" />
                 <TextBlock Text="{Binding StatusMessage}"
                            Foreground="White"
                            HorizontalAlignment="Center"

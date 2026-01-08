@@ -80,8 +80,10 @@
                                FontSize="13">
                         <Run Text="Page " />
                         <Run Text="{Binding CurrentPage}" FontWeight="Bold" />
-                        <Run Text=" • " />
+                        <Run Text=" • Showing " />
                         <Run Text="{Binding DebugLogs.Count}" FontWeight="Bold" />
+                        <Run Text=" of " />
+                        <Run Text="{Binding TotalRecordCount}" FontWeight="Bold" />
                         <Run Text=" records" />
                     </TextBlock>
                     <Button Grid.Column="2"

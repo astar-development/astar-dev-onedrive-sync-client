@@ -15,14 +15,14 @@ public partial class AddMaxParallelAndBatchSettings : Migration
             table: "Accounts",
             type: "INTEGER",
             nullable: false,
-            defaultValue: 0);
+            defaultValue: 50);
 
         migrationBuilder.AddColumn<int>(
             name: "MaxParallelUpDownloads",
             table: "Accounts",
             type: "INTEGER",
             nullable: false,
-            defaultValue: 0);
+            defaultValue: 3);
     }
 
     /// <inheritdoc />

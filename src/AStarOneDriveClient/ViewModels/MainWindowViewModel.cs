@@ -163,6 +163,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                             .DisposeWith(_disposables);
 
                         // Auto-close overlay when sync completes successfully without conflicts
+                        // Note: Do NOT auto-close on Failed status - user needs to see error details
                         syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
                             .Where(progress => progress is not null &&
                                    progress.Status == SyncStatus.Completed &&

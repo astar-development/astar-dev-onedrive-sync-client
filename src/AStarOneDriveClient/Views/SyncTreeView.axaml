@@ -92,7 +92,7 @@
               <Viewbox Width="16" Height="16" VerticalAlignment="Center"
                        IsVisible="{Binding IsLoading}">
                 <Path Data="M 8,2 A 6,6 0 1 1 2,8"
-                      Stroke="{DynamicResource SystemAccentColor}"
+                      Stroke="#00E5FF"
                       StrokeThickness="1.5"
                       StrokeLineCap="Round"
                       Classes="spinner"/>
@@ -178,7 +178,8 @@
         <ProgressBar IsIndeterminate="True"
                      Width="200"
                      Height="4"
-                     VerticalAlignment="Center"/>
+                     VerticalAlignment="Center"
+                     Foreground="#00E5FF"/>
         <TextBlock Text="Loading folders..."
                    VerticalAlignment="Center"
                    FontSize="12"

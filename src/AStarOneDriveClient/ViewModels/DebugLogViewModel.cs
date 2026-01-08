@@ -51,15 +51,17 @@ public sealed class DebugLogViewModel : ReactiveObject
     /// </summary>
     public ObservableCollection<DebugLogEntry> DebugLogs { get; }
 
+    private AccountInfo? _selectedAccount;
+
     /// <summary>
     /// Gets or sets the selected account.
     /// </summary>
     public AccountInfo? SelectedAccount
     {
-        get;
+        get => _selectedAccount;
         set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            this.RaiseAndSetIfChanged(ref _selectedAccount, value);
             if (value is not null)
             {
                 CurrentPage = 1;
@@ -68,31 +70,61 @@ public sealed class DebugLogViewModel : ReactiveObject
         }
     }
 
+    private int _currentPage = 1;
+
     /// <summary>
     /// Gets the current page number.
     /// </summary>
     public int CurrentPage
     {
-        get;
-        private set => this.RaiseAndSetIfChanged(ref field, value);
-    } = 1;
+        get => _currentPage;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _currentPage, value);
+            this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
+        }
+    }
+
+    private bool _hasMoreRecords = true;
 
     /// <summary>
     /// Gets a value indicating whether there are more records to load.
     /// </summary>
     public bool HasMoreRecords
     {
-        get;
-        private set => this.RaiseAndSetIfChanged(ref field, value);
-    } = true;
+        get => _hasMoreRecords;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _hasMoreRecords, value);
+            this.RaisePropertyChanged(nameof(CanGoToNextPage));
+        }
+    }
+
+    private bool _isLoading;
 
     /// <summary>
     /// Gets a value indicating whether data is currently loading.
     /// </summary>
     public bool IsLoading
     {
-        get;
-        private set => this.RaiseAndSetIfChanged(ref field, value);
+        get => _isLoading;
+        private set
+        {
+            this.RaiseAndSetIfChanged(ref _isLoading, value);
+            this.RaisePropertyChanged(nameof(CanGoToNextPage));
+            this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
+        }
+    }
+
+    private int _totalRecordCount;
+
+    /// <summary>
+    /// Gets the total number of records available.
+    /// </summary>
+    public int TotalRecordCount
+    {
+        get => _totalRecordCount;
+        private set => this.RaiseAndSetIfChanged(ref _totalRecordCount, value);
     }
 
     /// <summary>
@@ -155,6 +187,13 @@ public sealed class DebugLogViewModel : ReactiveObject
                 PageSize + 1,
                 skip);
 
+            // Get total count on first page load (when skip is 0)
+            if (skip == 0)
+            {
+                TotalRecordCount = logs.Count > PageSize ? logs.Count : logs.Count;
+                // Note: This is an approximation. For exact count, we'd need a separate count query
+            }
+
             DebugLogs.Clear();
 
             // If we got more than PageSize, there are more records
@@ -165,6 +204,18 @@ public sealed class DebugLogViewModel : ReactiveObject
             foreach (var log in logsToDisplay)
             {
                 DebugLogs.Add(log);
+            }
+
+            // Update total count estimate based on current position
+            if (HasMoreRecords)
+            {
+                // We know there are at least (CurrentPage * PageSize) + 1 records
+                TotalRecordCount = Math.Max(TotalRecordCount, (CurrentPage * PageSize) + 1);
+            }
+            else
+            {
+                // We're on the last page, so we know the exact total
+                TotalRecordCount = skip + DebugLogs.Count;
             }
 
             // Notify property changes for navigation buttons
