@@ -104,7 +104,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
             var clampedValue = Math.Clamp(value, 1, 10);
             this.RaiseAndSetIfChanged(ref field, clampedValue);
         }
-    }
+    } = 3;
 
     /// <summary>
     /// Gets or sets the maximum number of items to process in a single batch (1-100).
@@ -117,7 +117,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
             var clampedValue = Math.Clamp(value, 1, 100);
             this.RaiseAndSetIfChanged(ref field, clampedValue);
         }
-    }
+    } = 50;
 
     /// <summary>
     /// Gets or sets the status message.
