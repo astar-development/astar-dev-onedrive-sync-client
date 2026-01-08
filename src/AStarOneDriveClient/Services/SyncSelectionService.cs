@@ -229,6 +229,9 @@ public sealed class SyncSelectionService : ISyncSelectionService
         ArgumentNullException.ThrowIfNull(accountId);
         ArgumentNullException.ThrowIfNull(rootFolders);
 
+        // Set account context for debug logging
+        DebugLogContext.SetAccountId(accountId);
+
         if (_configurationRepository is null)
         {
             return; // No persistence configured
@@ -236,6 +239,24 @@ public sealed class SyncSelectionService : ISyncSelectionService
 
         // Get saved folder paths
         var savedFolderPaths = await _configurationRepository.GetSelectedFoldersAsync(accountId, cancellationToken);
+
+        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Loading selections for account {accountId}", cancellationToken);
+        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Found {savedFolderPaths.Count} saved paths in database", cancellationToken);
+        foreach (var path in savedFolderPaths)
+        {
+            await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"DB Path: {path}", cancellationToken);
+        }
+
+        // Normalize paths by removing Graph API prefixes for comparison
+        var normalizedSavedPaths = savedFolderPaths
+            .Select(path => NormalizePathForComparison(path))
+            .ToList();
+
+        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", "Normalized paths:", cancellationToken);
+        foreach (var path in normalizedSavedPaths)
+        {
+            await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Normalized: {path}", cancellationToken);
+        }
 
         // Build lookup dictionary for fast path-to-node resolution
         var pathToNodeMap = new Dictionary<string, OneDriveFolderNode>(StringComparer.OrdinalIgnoreCase);
@@ -251,21 +272,60 @@ public sealed class SyncSelectionService : ISyncSelectionService
         // Then set saved selections to Checked
         if (savedFolderPaths.Count > 0)
         {
-            foreach (var folderPath in savedFolderPaths)
+            for (var i = 0; i < savedFolderPaths.Count; i++)
             {
-                if (pathToNodeMap.TryGetValue(folderPath, out var folder))
+                var originalPath = savedFolderPaths[i];
+                var normalizedPath = normalizedSavedPaths[i];
+
+                // Try both original and normalized paths for backward compatibility
+                if (pathToNodeMap.TryGetValue(originalPath, out var folder) ||
+                    pathToNodeMap.TryGetValue(normalizedPath, out folder))
                 {
                     SetSelection(folder, true);
                 }
                 // Silently ignore folders that no longer exist (deleted or renamed)
             }
+
+            // For root folders that aren't loaded: check if they have selected descendants
+            // This handles the case where only a deep subfolder is selected
+            await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", "Checking root folders for selected descendants", cancellationToken);
+            foreach (var rootFolder in rootFolders)
+            {
+                await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Checking root: {rootFolder.Path} (State: {rootFolder.SelectionState})", cancellationToken);
+
+                // Skip if root is already explicitly selected
+                if (rootFolder.SelectionState == SelectionState.Checked)
+                {
+                    await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", "Already checked, skipping", cancellationToken);
+                    continue;
+                }
+
+                // Normalize root path for comparison
+                var normalizedRootPath = NormalizePathForComparison(rootFolder.Path);
+                await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Root normalized to: {normalizedRootPath}", cancellationToken);
+
+                // Check if any saved path is a descendant of this root
+                var hasSelectedDescendants = normalizedSavedPaths.Any(path =>
+                    path.StartsWith(normalizedRootPath + "/", StringComparison.OrdinalIgnoreCase) ||
+                    (normalizedRootPath == "/" && path.StartsWith("/", StringComparison.OrdinalIgnoreCase) && path != "/"));
+
+                await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Has selected descendants: {hasSelectedDescendants}", cancellationToken);
+
+                if (hasSelectedDescendants)
+                {
+                    // Set root to indeterminate since it has selected descendants
+                    await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Setting {rootFolder.Path} to Indeterminate", cancellationToken);
+                    rootFolder.SelectionState = SelectionState.Indeterminate;
+                    rootFolder.IsSelected = null;
+                    await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"After setting - State: {rootFolder.SelectionState}, IsSelected: {rootFolder.IsSelected}", cancellationToken);
+                }
+            }
         }
 
-        // Recalculate parent states to ensure indeterminate states are correct
-        foreach (var rootFolder in rootFolders)
-        {
-            RecalculateParentStates(rootFolder);
-        }
+        // NOTE: We don't call RecalculateParentStates here because:
+        // 1. Root folders don't have parents
+        // 2. Their children aren't loaded yet (just placeholder nodes)
+        // 3. We've already manually set indeterminate state for roots with selected descendants
     }
 
     private static void BuildPathLookup(List<OneDriveFolderNode> folders, Dictionary<string, OneDriveFolderNode> pathMap)
@@ -279,6 +339,61 @@ public sealed class SyncSelectionService : ISyncSelectionService
                 BuildPathLookup([.. folder.Children], pathMap);
             }
         }
+    }
+
+    /// <inheritdoc/>
+    public void UpdateParentState(OneDriveFolderNode folder)
+    {
+        ArgumentNullException.ThrowIfNull(folder);
+
+        if (folder.Children.Count == 0)
+        {
+            return; // No children, nothing to calculate
+        }
+
+        var calculatedState = CalculateStateFromChildren(folder);
+        folder.SelectionState = calculatedState;
+        folder.IsSelected = calculatedState switch
+        {
+            SelectionState.Checked => true,
+            SelectionState.Unchecked => false,
+            SelectionState.Indeterminate => null,
+            _ => null
+        };
+    }
+
+    /// <summary>
+    /// Normalizes a path by removing Graph API prefixes for comparison.
+    /// </summary>
+    /// <param name="path">The path to normalize.</param>
+    /// <returns>The normalized path without Graph API prefixes.</returns>
+    private static string NormalizePathForComparison(string path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return path;
+        }
+
+        // Remove /drives/{id}/root: prefix
+        var drivesPattern = @"^/drives/[^/]+/root:";
+        if (System.Text.RegularExpressions.Regex.IsMatch(path, drivesPattern))
+        {
+            path = System.Text.RegularExpressions.Regex.Replace(path, drivesPattern, string.Empty);
+        }
+
+        // Remove /drive/root: prefix
+        if (path.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
+        {
+            path = path["/drive/root:".Length..];
+        }
+
+        // Ensure path starts with /
+        if (!path.StartsWith('/'))
+        {
+            path = "/" + path;
+        }
+
+        return path;
     }
 
     private void RecalculateParentStates(OneDriveFolderNode folder)

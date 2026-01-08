@@ -13,7 +13,7 @@ namespace AStarOneDriveClient.Services;
 /// Supports bidirectional sync with conflict detection and resolution.
 /// Uses LastWriteWins strategy: when both local and remote files change, the newer timestamp wins.
 /// </remarks>
-public sealed class SyncEngine : ISyncEngine, IDisposable
+public sealed partial class SyncEngine : ISyncEngine, IDisposable
 {
     private readonly ILocalFileScanner _localFileScanner;
     private readonly IRemoteChangeDetector _remoteChangeDetector;
@@ -223,8 +223,9 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
             var allRemoteFiles = new List<FileMetadata>();
             foreach (var folder in selectedFolders)
             {
-                // Report scanning progress
-                ReportProgress(accountId, SyncStatus.Running, 0, 0, 0, 0, currentScanningFolder: folder);
+                // Report scanning progress with cleaned folder path
+                var displayFolder = FormatScanningFolderForDisplay(folder);
+                ReportProgress(accountId, SyncStatus.Running, 0, 0, 0, 0, currentScanningFolder: displayFolder);
 
                 var (remoteFiles, _) = await _remoteChangeDetector.DetectChangesAsync(
                     accountId,
@@ -1115,9 +1116,40 @@ public sealed class SyncEngine : ISyncEngine, IDisposable
         _progressSubject.OnNext(progress);
     }
 
+    /// <summary>
+    /// Formats a folder path for display by removing Graph API prefixes.
+    /// </summary>
+    private static string FormatScanningFolderForDisplay(string folderPath)
+    {
+        if (string.IsNullOrEmpty(folderPath))
+        {
+            return folderPath;
+        }
+
+        // Remove /drives/{id}/root: prefix
+        var cleaned = MyRegex().Replace(folderPath, string.Empty);
+
+        // Remove /drive/root: prefix
+        if (cleaned.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
+        {
+            cleaned = cleaned["/drive/root:".Length..];
+        }
+
+        // Ensure starts with /
+        if (!string.IsNullOrEmpty(cleaned) && !cleaned.StartsWith('/'))
+        {
+            cleaned = "/" + cleaned;
+        }
+
+        return $"OneDrive: {cleaned}";
+    }
+
     public void Dispose()
     {
         _syncCancellation?.Dispose();
         _progressSubject.Dispose();
     }
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"^/drives/[^/]+/root:")]
+    private static partial System.Text.RegularExpressions.Regex MyRegex();
 }

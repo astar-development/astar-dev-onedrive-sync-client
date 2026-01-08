@@ -211,14 +211,18 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
             var folders = await _folderTreeService.GetRootFoldersAsync(SelectedAccountId, cancellationToken);
 
+            // Convert to list to ensure we work with the same object references
+            var folderList = folders.ToList();
+
+            // Apply saved selections from database BEFORE adding to observable collection
+            await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, folderList, cancellationToken);
+
+            // Now add folders to UI with correct selection states already applied
             RootFolders.Clear();
-            foreach (var folder in folders)
+            foreach (var folder in folderList)
             {
                 RootFolders.Add(folder);
             }
-
-            // Load saved selections from database
-            await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, [.. RootFolders], cancellationToken);
         }
         catch (Exception ex)
         {
@@ -253,15 +257,16 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             var children = await _folderTreeService.GetChildFoldersAsync(SelectedAccountId, folder.Id, cancellationToken);
             foreach (var child in children)
             {
-                // Inherit parent's selection state for new children
-                if (folder.SelectionState == SelectionState.Checked)
-                {
-                    child.SelectionState = SelectionState.Checked;
-                    child.IsSelected = true;
-                }
-
                 folder.Children.Add(child);
             }
+
+            // Apply saved selections from database to the newly loaded children
+            // This ensures that sub-folder selections persist correctly
+            await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, [.. folder.Children], cancellationToken);
+
+            // After applying database selections, recalculate parent state
+            // This will set parent to indeterminate if some (but not all) children are selected
+            _selectionService.UpdateParentState(folder);
 
             folder.ChildrenLoaded = true;
         }
