@@ -99,7 +99,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         {
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for segment: '{segment}'", cancellationToken);
             var children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, currentItem.Id, cancellationToken);
-            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found {children.Count} children in current folder", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found {children.Count()} children in current folder", cancellationToken);
 
             currentItem = children.FirstOrDefault(c =>
                 c.Name?.Equals(segment, StringComparison.OrdinalIgnoreCase) == true &&
@@ -143,7 +143,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         }
 
         var children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentItem.Id, cancellationToken);
-        await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Found {children.Count} items in '{currentPath}'", cancellationToken);
+        await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Found {children.Count()} items in '{currentPath}'", cancellationToken);
 
         var fileCount = 0;
         var folderCount = 0;
