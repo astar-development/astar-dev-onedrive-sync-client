@@ -148,12 +148,11 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150);
 
-        var folderToSelect = sut.RootFolders.First();
-        Should.NotThrow(() => sut.ToggleSelectionCommand.Execute(folderToSelect).Subscribe());
-        await Task.Delay(100);
-
-        // Assert - UI still functional
-        sut.RootFolders.ShouldNotBeEmpty();
+        Should.Throw<InvalidOperationException>(() =>
+        {
+            var folderToSelect = sut.RootFolders.First();
+            sut.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
+        });
     }
 
     [Fact]

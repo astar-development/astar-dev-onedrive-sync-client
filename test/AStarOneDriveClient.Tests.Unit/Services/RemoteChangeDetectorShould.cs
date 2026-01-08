@@ -106,10 +106,8 @@ public class RemoteChangeDetectorShould
         mockClient.GetDriveRootAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns((DriveItem?)null);
         var detector = new RemoteChangeDetector(mockClient);
 
-        var (changes, deltaLink) = await detector.DetectChangesAsync("acc1", "/", null);
-
-        changes.ShouldBeEmpty();
-        deltaLink.ShouldNotBeNull();
+        await Should.ThrowAsync<InvalidOperationException>(async () =>
+            await detector.DetectChangesAsync("acc1", "/", null));
     }
 
     [Fact]

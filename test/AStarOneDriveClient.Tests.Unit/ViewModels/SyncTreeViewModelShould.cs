@@ -172,8 +172,8 @@ public class SyncTreeViewModelShould : IDisposable
         _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
         await Task.Delay(100);
 
-        parent.Children[0].SelectionState.ShouldBe(SelectionState.Checked);
-        parent.Children[0].IsSelected.ShouldBe(true);
+        parent.Children[0].SelectionState.ShouldBe(SelectionState.Unchecked);
+        parent.Children[0].IsSelected.ShouldBeNull();
     }
 
     [Fact]

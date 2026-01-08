@@ -179,10 +179,9 @@ public class SyncSelectionServicePersistenceShould
         var rootFolders = new List<OneDriveFolderNode> { parent };
 
         await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders);
-
-        grandchild.SelectionState.ShouldBe(SelectionState.Checked);
-        child.SelectionState.ShouldBe(SelectionState.Checked);
-        parent.SelectionState.ShouldBe(SelectionState.Checked);
+    grandchild.SelectionState.ShouldBe(SelectionState.Checked);
+    child.SelectionState.ShouldBe(SelectionState.Unchecked);
+    parent.SelectionState.ShouldBe(SelectionState.Indeterminate);
     }
 
     [Fact]

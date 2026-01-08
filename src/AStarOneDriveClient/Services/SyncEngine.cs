@@ -1119,7 +1119,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     /// <summary>
     /// Formats a folder path for display by removing Graph API prefixes.
     /// </summary>
-    private static string FormatScanningFolderForDisplay(string folderPath)
+    public static string? FormatScanningFolderForDisplay(string? folderPath)
     {
         if (string.IsNullOrEmpty(folderPath))
         {
