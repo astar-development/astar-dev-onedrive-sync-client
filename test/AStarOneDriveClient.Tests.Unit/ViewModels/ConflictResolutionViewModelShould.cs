@@ -104,7 +104,7 @@ public class ConflictResolutionViewModelShould
         var (viewModel, syncEngine, _, _) = CreateTestViewModel(conflicts);
 
         // Wait for LoadConflictsCommand to complete (auto-executed on construction)
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Conflicts.Count.ShouldBe(2);
         viewModel.HasConflicts.ShouldBeTrue();
@@ -117,7 +117,7 @@ public class ConflictResolutionViewModelShould
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
         var (viewModel, _, _, _) = CreateTestViewModel(conflicts);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.StatusMessage.ShouldContain("1 conflict(s)");
     }
@@ -127,7 +127,7 @@ public class ConflictResolutionViewModelShould
     {
         var (viewModel, _, _, _) = CreateTestViewModel([]);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.StatusMessage.ShouldBe("No conflicts detected.");
         viewModel.HasConflicts.ShouldBeFalse();
@@ -144,7 +144,7 @@ public class ConflictResolutionViewModelShould
 
         var (viewModel, _, conflictResolver, _) = CreateTestViewModel(conflicts);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
         viewModel.Conflicts[1].SelectedStrategy = ConflictResolutionStrategy.KeepRemote;
@@ -168,7 +168,7 @@ public class ConflictResolutionViewModelShould
 
         var (viewModel, _, conflictResolver, _) = CreateTestViewModel(conflicts);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
         viewModel.Conflicts[1].SelectedStrategy = ConflictResolutionStrategy.None;
@@ -191,7 +191,7 @@ public class ConflictResolutionViewModelShould
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
         var (viewModel, _, _, _) = CreateTestViewModel(conflicts);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
 
@@ -207,7 +207,7 @@ public class ConflictResolutionViewModelShould
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
         var (viewModel, _, conflictResolver, _) = CreateTestViewModel(conflicts);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         var isResolvingValues = new List<bool>();
 
@@ -242,7 +242,7 @@ public class ConflictResolutionViewModelShould
 
         var viewModel = new ConflictResolutionViewModel("test-account", syncEngine, conflictResolver, logger);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.StatusMessage.ShouldContain("Error loading conflicts");
         viewModel.IsLoading.ShouldBeFalse();
@@ -254,7 +254,7 @@ public class ConflictResolutionViewModelShould
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
         var (viewModel, _, conflictResolver, _) = CreateTestViewModel(conflicts);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new IOException("File locked"));
@@ -273,7 +273,7 @@ public class ConflictResolutionViewModelShould
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
         var (viewModel, _, _, _) = CreateTestViewModel(conflicts);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.HasConflicts.ShouldBeTrue();
 

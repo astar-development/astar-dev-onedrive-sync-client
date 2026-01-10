@@ -13,11 +13,11 @@ public class FileMetadataRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc1.txt"));
-        await repository.AddAsync(CreateFileMetadata("file2", "acc1", "/doc2.txt"));
-        await repository.AddAsync(CreateFileMetadata("file3", "acc2", "/doc3.txt"));
+        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc1.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file2", "acc1", "/doc2.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file3", "acc2", "/doc3.txt"), TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByAccountIdAsync("acc1");
+        var result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result.ShouldContain(f => f.Id == "file1");
@@ -29,9 +29,9 @@ public class FileMetadataRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt"));
+        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt"), TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("file1");
+        var result = await repository.GetByIdAsync("file1", TestContext.Current.CancellationToken);
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe("file1");
@@ -44,7 +44,7 @@ public class FileMetadataRepositoryShould
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
 
-        var result = await repository.GetByIdAsync("nonexistent");
+        var result = await repository.GetByIdAsync("nonexistent", TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -54,9 +54,9 @@ public class FileMetadataRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/docs/file.txt"));
+        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/docs/file.txt"), TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByPathAsync("acc1", "/docs/file.txt");
+        var result = await repository.GetByPathAsync("acc1", "/docs/file.txt", TestContext.Current.CancellationToken);
 
         result.ShouldNotBeNull();
         result.Id.ShouldBe("file1");
@@ -68,7 +68,7 @@ public class FileMetadataRepositoryShould
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
 
-        var result = await repository.GetByPathAsync("acc1", "/nonexistent.txt");
+        var result = await repository.GetByPathAsync("acc1", "/nonexistent.txt", TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -78,11 +78,11 @@ public class FileMetadataRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc1.txt", FileSyncStatus.Synced));
-        await repository.AddAsync(CreateFileMetadata("file2", "acc1", "/doc2.txt", FileSyncStatus.PendingUpload));
-        await repository.AddAsync(CreateFileMetadata("file3", "acc1", "/doc3.txt", FileSyncStatus.Conflict));
+        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc1.txt", FileSyncStatus.Synced), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file2", "acc1", "/doc2.txt", FileSyncStatus.PendingUpload), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file3", "acc1", "/doc3.txt", FileSyncStatus.Conflict), TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByStatusAsync("acc1", FileSyncStatus.PendingUpload);
+        var result = await repository.GetByStatusAsync("acc1", FileSyncStatus.PendingUpload, TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
         result[0].Id.ShouldBe("file2");
@@ -95,9 +95,9 @@ public class FileMetadataRepositoryShould
         var repository = new FileMetadataRepository(context);
         var file = CreateFileMetadata("file1", "acc1", "/doc.txt");
 
-        await repository.AddAsync(file);
+        await repository.AddAsync(file, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("file1");
+        var result = await repository.GetByIdAsync("file1", TestContext.Current.CancellationToken);
         result.ShouldNotBeNull();
         result.Name.ShouldBe("doc.txt");
     }
@@ -107,12 +107,12 @@ public class FileMetadataRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt", FileSyncStatus.PendingUpload));
+        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt", FileSyncStatus.PendingUpload), TestContext.Current.CancellationToken);
 
         var updated = new FileMetadata("file1", "acc1", "doc.txt", "/doc.txt", 2048, DateTime.UtcNow, @"C:\local\doc.txt", "newtag", "newetag", "newhash", FileSyncStatus.Synced, SyncDirection.Upload);
-        await repository.UpdateAsync(updated);
+        await repository.UpdateAsync(updated, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("file1");
+        var result = await repository.GetByIdAsync("file1", TestContext.Current.CancellationToken);
         result.ShouldNotBeNull();
         result.SyncStatus.ShouldBe(FileSyncStatus.Synced);
         result.Size.ShouldBe(2048);
@@ -138,11 +138,11 @@ public class FileMetadataRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt"));
+        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt"), TestContext.Current.CancellationToken);
 
-        await repository.DeleteAsync("file1");
+        await repository.DeleteAsync("file1", TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("file1");
+        var result = await repository.GetByIdAsync("file1", TestContext.Current.CancellationToken);
         result.ShouldBeNull();
     }
 
@@ -151,14 +151,14 @@ public class FileMetadataRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc1.txt"));
-        await repository.AddAsync(CreateFileMetadata("file2", "acc1", "/doc2.txt"));
-        await repository.AddAsync(CreateFileMetadata("file3", "acc2", "/doc3.txt"));
+        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc1.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file2", "acc1", "/doc2.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file3", "acc2", "/doc3.txt"), TestContext.Current.CancellationToken);
 
-        await repository.DeleteByAccountIdAsync("acc1");
+        await repository.DeleteByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
 
-        var acc1Files = await repository.GetByAccountIdAsync("acc1");
-        var acc2Files = await repository.GetByAccountIdAsync("acc2");
+        var acc1Files = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
+        var acc2Files = await repository.GetByAccountIdAsync("acc2", TestContext.Current.CancellationToken);
         acc1Files.ShouldBeEmpty();
         acc2Files.Count.ShouldBe(1);
     }
@@ -168,19 +168,19 @@ public class FileMetadataRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new FileMetadataRepository(context);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/old.txt", FileSyncStatus.Synced));
+        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/old.txt", FileSyncStatus.Synced), TestContext.Current.CancellationToken);
 
         var batchFiles = new[]
         {
             CreateFileMetadata("file1", "acc1", "/old.txt", FileSyncStatus.PendingUpload),
             CreateFileMetadata("file2", "acc1", "/new.txt", FileSyncStatus.PendingDownload)
         };
-        await repository.SaveBatchAsync(batchFiles);
+        await repository.SaveBatchAsync(batchFiles, TestContext.Current.CancellationToken);
 
-        var allFiles = await repository.GetByAccountIdAsync("acc1");
+        var allFiles = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
         allFiles.Count.ShouldBe(2);
 
-        var file1 = await repository.GetByIdAsync("file1");
+        var file1 = await repository.GetByIdAsync("file1", TestContext.Current.CancellationToken);
         file1.ShouldNotBeNull();
         file1.SyncStatus.ShouldBe(FileSyncStatus.PendingUpload);
     }

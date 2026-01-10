@@ -1,5 +1,6 @@
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
@@ -116,7 +117,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         // Wire up: When sync completes successfully, start auto-sync monitoring
         syncTreeViewModel
             .WhenAnyValue(x => x.SyncState)
-            .Where(state => state.Status == Models.Enums.SyncStatus.Completed && !string.IsNullOrEmpty(state.AccountId))
+            .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.AccountId))
             .Subscribe(async state =>
             {
                 try
@@ -272,7 +273,9 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// <summary>
     /// Closes the conflict resolution view and returns to sync progress.
     /// </summary>
+#pragma warning disable S3168 // "async" methods should not return "void"
     private async void CloseConflictResolutionView()
+#pragma warning restore S3168 // "async" methods should not return "void"
     {
         ConflictResolution?.Dispose();
         ConflictResolution = null;

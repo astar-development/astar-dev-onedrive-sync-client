@@ -79,6 +79,7 @@ public sealed class ConflictResolver : IConflictResolver
                 {
                     _logger.LogInformation("Skipping conflict resolution for {FilePath}", conflict.FilePath);
                 }
+
                 return;
             case ConflictResolutionStrategy.KeepNewer:
                 break;

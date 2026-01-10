@@ -14,7 +14,7 @@ public class DebugLogRepositoryShould
         var repository = new DebugLogRepository(context);
         await SeedDebugLogsAsync(context, "acc1", 10);
 
-        var result = await repository.GetByAccountIdAsync("acc1", 5, 0);
+        var result = await repository.GetByAccountIdAsync("acc1", 5, 0, TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(5);
     }
@@ -26,7 +26,7 @@ public class DebugLogRepositoryShould
         var repository = new DebugLogRepository(context);
         await SeedDebugLogsAsync(context, "acc1", 10);
 
-        var result = await repository.GetByAccountIdAsync("acc1", 5, 5);
+        var result = await repository.GetByAccountIdAsync("acc1", 5, 5, TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(5);
     }
@@ -39,7 +39,7 @@ public class DebugLogRepositoryShould
         await SeedDebugLogsAsync(context, "acc1", 15);
         await SeedDebugLogsAsync(context, "acc2", 5);
 
-        var result = await repository.GetByAccountIdAsync("acc1");
+        var result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(15);
         result.All(log => log.AccountId == "acc1").ShouldBeTrue();
@@ -76,9 +76,9 @@ public class DebugLogRepositoryShould
             Source = "Test",
             Message = "Middle"
         });
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByAccountIdAsync("acc1");
+        var result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
 
         result[0].Message.ShouldBe("Newest");
         result[1].Message.ShouldBe("Middle");
@@ -93,10 +93,10 @@ public class DebugLogRepositoryShould
         await SeedDebugLogsAsync(context, "acc1", 5);
         await SeedDebugLogsAsync(context, "acc2", 3);
 
-        await repository.DeleteByAccountIdAsync("acc1");
+        await repository.DeleteByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
 
-        var acc1Logs = await repository.GetByAccountIdAsync("acc1");
-        var acc2Logs = await repository.GetByAccountIdAsync("acc2");
+        var acc1Logs = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
+        var acc2Logs = await repository.GetByAccountIdAsync("acc2", TestContext.Current.CancellationToken);
         acc1Logs.ShouldBeEmpty();
         acc2Logs.Count.ShouldBe(3);
     }
@@ -125,11 +125,11 @@ public class DebugLogRepositoryShould
             Source = "Test",
             Message = "Recent"
         });
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        await repository.DeleteOlderThanAsync(cutoff);
+        await repository.DeleteOlderThanAsync(cutoff, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByAccountIdAsync("acc1");
+        var result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
         result.Count.ShouldBe(1);
         result[0].Message.ShouldBe("Recent");
     }
@@ -140,7 +140,7 @@ public class DebugLogRepositoryShould
         using var context = CreateInMemoryContext();
         var repository = new DebugLogRepository(context);
 
-        var result = await repository.GetByAccountIdAsync("nonexistent");
+        var result = await repository.GetByAccountIdAsync("nonexistent", TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -167,6 +167,7 @@ public class DebugLogRepositoryShould
                 Message = $"Log message {i}"
             });
         }
-        await context.SaveChangesAsync();
+
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
     }
 }

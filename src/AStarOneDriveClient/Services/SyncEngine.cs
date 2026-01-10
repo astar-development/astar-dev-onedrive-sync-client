@@ -215,6 +215,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
                         return best;
                     }
+
                     return g.First();
                 })
                 .ToDictionary(f => f.Path, f => f);
@@ -397,6 +398,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                                     Reason: $"Conflict: Both local and remote changed. Local modified: {localFileFromDict.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}");
                                 await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
                             }
+
                             continue;
                         }
 
@@ -507,6 +509,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     {
                         File.Delete(file.LocalPath);
                     }
+
                     await _fileMetadataRepository.DeleteAsync(file.Id, cancellationToken);
                 }
                 catch (Exception ex)
@@ -874,6 +877,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                             await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Adding new record: ID={downloadedFile.Id}", _syncCancellation.Token);
                             await _fileMetadataRepository.AddAsync(downloadedFile, cancellationToken);
                         }
+
                         await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Successfully saved {file.Name} to database", _syncCancellation.Token);
                     }
                     catch (Exception dbEx)
@@ -989,8 +993,10 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     };
                     await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
                 }
+
                 _currentSessionId = null;
             }
+
             ReportProgress(accountId, SyncStatus.Paused, 0, 0, 0, 0);
             throw;
         }
@@ -1011,8 +1017,10 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     };
                     await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
                 }
+
                 _currentSessionId = null;
             }
+
             ReportProgress(accountId, SyncStatus.Failed, 0, 0, 0, 0);
             throw;
         }

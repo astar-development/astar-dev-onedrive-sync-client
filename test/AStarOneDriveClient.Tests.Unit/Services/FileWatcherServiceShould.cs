@@ -59,14 +59,14 @@ public class FileWatcherServiceShould : IDisposable
         _sut.StartWatching("account1", _testDirectory);
 
         // Give watcher time to initialize
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.Current.CancellationToken);
 
         // Create a file
         var testFile = Path.Combine(_testDirectory, "test.txt");
-        await File.WriteAllTextAsync(testFile, "content");
+        await File.WriteAllTextAsync(testFile, "content", TestContext.Current.CancellationToken);
 
         // Wait for debounce (500ms) + buffer - FileSystemWatcher needs more time on some systems
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         // FileSystemWatcher behavior can vary - just verify SOME events were captured
         events.ShouldNotBeEmpty();
@@ -81,19 +81,19 @@ public class FileWatcherServiceShould : IDisposable
     {
         // Pre-create file
         var testFile = Path.Combine(_testDirectory, "modify.txt");
-        await File.WriteAllTextAsync(testFile, "initial");
+        await File.WriteAllTextAsync(testFile, "initial", TestContext.Current.CancellationToken);
 
         var events = new List<FileChangeEvent>();
         using var subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Modify the file
-        await File.WriteAllTextAsync(testFile, "modified content");
+        await File.WriteAllTextAsync(testFile, "modified content", TestContext.Current.CancellationToken);
 
         // Wait for debounce
-        await Task.Delay(700);
+        await Task.Delay(700, TestContext.Current.CancellationToken);
 
         events.ShouldNotBeEmpty();
 
@@ -102,7 +102,7 @@ public class FileWatcherServiceShould : IDisposable
             e.RelativePath == "modify.txt");
 
         modifiedEvent.ShouldNotBeNull();
-        modifiedEvent!.AccountId.ShouldBe("account1");
+        modifiedEvent.AccountId.ShouldBe("account1");
     }
 
     [Fact]
@@ -110,19 +110,19 @@ public class FileWatcherServiceShould : IDisposable
     {
         // Pre-create file
         var testFile = Path.Combine(_testDirectory, "delete.txt");
-        await File.WriteAllTextAsync(testFile, "content");
+        await File.WriteAllTextAsync(testFile, "content", TestContext.Current.CancellationToken);
 
         var events = new List<FileChangeEvent>();
         using var subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Delete the file
         File.Delete(testFile);
 
         // Deletion events are not debounced, should be immediate
-        await Task.Delay(300);
+        await Task.Delay(300, TestContext.Current.CancellationToken);
 
         events.ShouldNotBeEmpty();
 
@@ -131,7 +131,7 @@ public class FileWatcherServiceShould : IDisposable
             e.RelativePath == "delete.txt");
 
         deletedEvent.ShouldNotBeNull();
-        deletedEvent!.AccountId.ShouldBe("account1");
+        deletedEvent.AccountId.ShouldBe("account1");
     }
 
     [Fact]
@@ -144,13 +144,13 @@ public class FileWatcherServiceShould : IDisposable
         using var subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Create file in subdirectory
         var testFile = Path.Combine(subDir, "nested.txt");
-        await File.WriteAllTextAsync(testFile, "content");
+        await File.WriteAllTextAsync(testFile, "content", TestContext.Current.CancellationToken);
 
-        await Task.Delay(700);
+        await Task.Delay(700, TestContext.Current.CancellationToken);
 
         events.ShouldNotBeEmpty();
 
@@ -158,7 +158,7 @@ public class FileWatcherServiceShould : IDisposable
             e.RelativePath == Path.Combine("SubFolder", "nested.txt"));
 
         nestedEvent.ShouldNotBeNull();
-        nestedEvent!.AccountId.ShouldBe("account1");
+        nestedEvent.AccountId.ShouldBe("account1");
     }
 
     [Fact]
@@ -174,13 +174,13 @@ public class FileWatcherServiceShould : IDisposable
 
         _sut.StartWatching("account1", dir1);
         _sut.StartWatching("account2", dir2);
-        await Task.Delay(200);
+        await Task.Delay(200, TestContext.Current.CancellationToken);
 
         // Create files in both directories
-        await File.WriteAllTextAsync(Path.Combine(dir1, "file1.txt"), "content1");
-        await File.WriteAllTextAsync(Path.Combine(dir2, "file2.txt"), "content2");
+        await File.WriteAllTextAsync(Path.Combine(dir1, "file1.txt"), "content1", TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(Path.Combine(dir2, "file2.txt"), "content2", TestContext.Current.CancellationToken);
 
-        await Task.Delay(1000);
+        await Task.Delay(1000, TestContext.Current.CancellationToken);
 
         // Verify events were captured for both accounts
         events.ShouldNotBeEmpty();
@@ -205,7 +205,7 @@ public class FileWatcherServiceShould : IDisposable
     }
 
     [Fact]
-    public void StopWatchingStopsEmittingEvents()
+    public async Task StopWatchingStopsEmittingEvents()
     {
         var events = new List<FileChangeEvent>();
         using var subscription = _sut.FileChanges.Subscribe(events.Add);
@@ -215,10 +215,10 @@ public class FileWatcherServiceShould : IDisposable
 
         // File changes after stopping should not be detected
         var testFile = Path.Combine(_testDirectory, "after_stop.txt");
-        File.WriteAllText(testFile, "content");
+        await File.WriteAllTextAsync(testFile, "content", TestContext.Current.CancellationToken);
 
         // No events should be emitted
-        Thread.Sleep(700);
+        await Task.Delay(700, TestContext.Current.CancellationToken);
 
         events.ShouldBeEmpty();
     }
@@ -262,23 +262,23 @@ public class FileWatcherServiceShould : IDisposable
     public async Task DebounceRapidFileChanges()
     {
         var testFile = Path.Combine(_testDirectory, "rapid.txt");
-        await File.WriteAllTextAsync(testFile, "initial");
+        await File.WriteAllTextAsync(testFile, "initial", TestContext.Current.CancellationToken);
 
         var events = new List<FileChangeEvent>();
         using var subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Make rapid changes to the same file
         for (var i = 0; i < 5; i++)
         {
-            await File.AppendAllTextAsync(testFile, $"update{i}");
-            await Task.Delay(50); // 50ms between writes (within 500ms debounce window)
+            await File.AppendAllTextAsync(testFile, $"update{i}", TestContext.Current.CancellationToken);
+            await Task.Delay(50, TestContext.Current.CancellationToken); // 50ms between writes (within 500ms debounce window)
         }
 
         // Wait for debounce period
-        await Task.Delay(700);
+        await Task.Delay(700, TestContext.Current.CancellationToken);
 
         // Should have received events, but likely fewer than 5 due to debouncing
         var rapidEvents = events.Where(e => e.RelativePath == "rapid.txt").ToList();

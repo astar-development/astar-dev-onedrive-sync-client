@@ -23,7 +23,7 @@ public sealed class ConflictResolverShould
         var resolver = CreateResolver();
 
         var exception = Should.Throw<ArgumentNullException>(async () =>
-            await resolver.ResolveAsync(null!, ConflictResolutionStrategy.KeepLocal, CancellationToken.None));
+            await resolver.ResolveAsync(null!, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken));
 
         exception.ParamName.ShouldBe("conflict");
     }
@@ -38,7 +38,7 @@ public sealed class ConflictResolverShould
             .Returns((AccountInfo?)null);
 
         var exception = await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, CancellationToken.None));
+            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken));
 
         exception.Message.ShouldContain("Account not found");
     }
@@ -59,11 +59,11 @@ public sealed class ConflictResolverShould
 
         // Create temporary test file
         Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await File.WriteAllTextAsync(localPath, "local content", CancellationToken.None);
+        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
 
         try
         {
-            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, CancellationToken.None);
+            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken);
 
             await _graphApiClient.Received(1).UploadFileAsync(
                 account.AccountId,
@@ -107,7 +107,7 @@ public sealed class ConflictResolverShould
             .Returns(metadata);
 
         var exception = await Should.ThrowAsync<FileNotFoundException>(async () =>
-            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, CancellationToken.None));
+            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken));
 
         exception.Message.ShouldContain("Local file not found");
     }
@@ -140,7 +140,7 @@ public sealed class ConflictResolverShould
 
         try
         {
-            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepRemote, CancellationToken.None);
+            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepRemote, TestContext.Current.CancellationToken);
 
             await _graphApiClient.Received(1).DownloadFileAsync(
                 account.AccountId,
@@ -168,6 +168,7 @@ public sealed class ConflictResolverShould
             {
                 File.Delete(localPath);
             }
+
             Directory.Delete(account.LocalSyncPath, true);
         }
     }
@@ -188,7 +189,7 @@ public sealed class ConflictResolverShould
 
         // Create temporary test file
         Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await File.WriteAllTextAsync(localPath, "local content", CancellationToken.None);
+        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
 
         // Mock the download to create the file
         _graphApiClient.DownloadFileAsync(
@@ -218,17 +219,17 @@ public sealed class ConflictResolverShould
 
         try
         {
-            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepBoth, CancellationToken.None);
+            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepBoth, TestContext.Current.CancellationToken);
 
             // Verify original file now has remote content
             File.Exists(localPath).ShouldBeTrue();
-            (await File.ReadAllTextAsync(localPath)).ShouldBe("remote content");
+            (await File.ReadAllTextAsync(localPath, TestContext.Current.CancellationToken)).ShouldBe("remote content");
 
             // Verify conflict file exists with local content
             var directory = Path.GetDirectoryName(localPath)!;
             var conflictFiles = Directory.GetFiles(directory, "*Conflict*.txt");
             conflictFiles.Length.ShouldBe(1);
-            (await File.ReadAllTextAsync(conflictFiles[0])).ShouldBe("local content");
+            (await File.ReadAllTextAsync(conflictFiles[0], TestContext.Current.CancellationToken)).ShouldBe("local content");
 
             await _graphApiClient.Received(1).DownloadFileAsync(
                 account.AccountId,
@@ -281,12 +282,12 @@ public sealed class ConflictResolverShould
 
         // Create temporary test file
         Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await File.WriteAllTextAsync(localPath, "local content", CancellationToken.None);
+        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
 
         try
         {
             var exception = await Should.ThrowAsync<InvalidOperationException>(async () =>
-                await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, CancellationToken.None));
+                await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken));
 
             exception.Message.ShouldContain("File metadata not found");
         }
@@ -307,7 +308,7 @@ public sealed class ConflictResolverShould
         _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns(account);
 
-        await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.None, CancellationToken.None);
+        await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.None, TestContext.Current.CancellationToken);
 
         // Verify no API calls were made
         await _graphApiClient.DidNotReceive().UploadFileAsync(

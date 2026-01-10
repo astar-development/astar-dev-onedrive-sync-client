@@ -137,6 +137,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
                 await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", $"Folder segment '{segment}' not found", null, cancellationToken);
                 return null;
             }
+
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found folder: '{currentItem.Name}' (ID: {currentItem.Id})", cancellationToken);
         }
 

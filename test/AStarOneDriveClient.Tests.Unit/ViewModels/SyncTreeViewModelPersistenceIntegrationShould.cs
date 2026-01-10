@@ -45,15 +45,15 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
 
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine);
         sut.SelectedAccountId = "acc-1";
-        await Task.Delay(100); // Allow async load
+        await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async load
 
         // Act - Select a folder
-        var folderToSelect = sut.RootFolders.First();
+        var folderToSelect = sut.RootFolders[0];
         sut.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
-        await Task.Delay(100); // Allow async save
+        await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async save
 
         // Assert - Check database
-        var savedPaths = await _configRepository.GetSelectedFoldersAsync("acc-1");
+        var savedPaths = await _configRepository.GetSelectedFoldersAsync("acc-1", TestContext.Current.CancellationToken);
         savedPaths.ShouldContain("/Folder1");
     }
 
@@ -63,7 +63,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         // Arrange - Pre-populate database
         await _configRepository.SaveBatchAsync("acc-1", [
             new SyncConfiguration(0, "acc-1", "/Folder2", true, DateTime.UtcNow)
-        ]);
+        ], TestContext.Current.CancellationToken);
 
         var folders = CreateTestFolders();
         _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
@@ -72,7 +72,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         // Act - Load folders (should restore selections)
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine);
         sut.SelectedAccountId = "acc-1";
-        await Task.Delay(150);
+        await Task.Delay(150, TestContext.Current.CancellationToken);
 
         // Assert
         var folder2 = sut.RootFolders.FirstOrDefault(f => f.Path == "/Folder2");
@@ -86,7 +86,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         // Arrange - Pre-populate database
         await _configRepository.SaveBatchAsync("acc-1", [
             new SyncConfiguration(0, "acc-1", "/Folder1", true, DateTime.UtcNow)
-        ]);
+        ], TestContext.Current.CancellationToken);
 
         var folders = CreateTestFolders();
         _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
@@ -94,14 +94,14 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
 
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine);
         sut.SelectedAccountId = "acc-1";
-        await Task.Delay(150);
+        await Task.Delay(150, TestContext.Current.CancellationToken);
 
         // Act - Clear all selections
         sut.ClearSelectionsCommand.Execute().Subscribe();
-        await Task.Delay(100); // Allow async save
+        await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async save
 
         // Assert - Check database
-        var savedPaths = await _configRepository.GetSelectedFoldersAsync("acc-1");
+        var savedPaths = await _configRepository.GetSelectedFoldersAsync("acc-1", TestContext.Current.CancellationToken);
         savedPaths.ShouldBeEmpty();
     }
 
@@ -111,10 +111,10 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         // Arrange - Create selections for two accounts
         await _configRepository.SaveBatchAsync("acc-1", [
             new SyncConfiguration(0, "acc-1", "/Folder1", true, DateTime.UtcNow)
-        ]);
+        ], TestContext.Current.CancellationToken);
         await _configRepository.SaveBatchAsync("acc-2", [
             new SyncConfiguration(0, "acc-2", "/Folder2", true, DateTime.UtcNow)
-        ]);
+        ], TestContext.Current.CancellationToken);
 
         var folders = CreateTestFolders();
         _mockFolderTreeService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -123,7 +123,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         // Act - Load account 1
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine);
         sut.SelectedAccountId = "acc-1";
-        await Task.Delay(150);
+        await Task.Delay(150, TestContext.Current.CancellationToken);
 
         var folder1Selected = sut.RootFolders.First(f => f.Path == "/Folder1").SelectionState;
         var folder2Selected = sut.RootFolders.First(f => f.Path == "/Folder2").SelectionState;
@@ -137,7 +137,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     public async Task HandleDatabaseErrorsGracefully()
     {
         // Arrange - Dispose context to cause errors
-        _context.Dispose();
+        await _context.DisposeAsync();
 
         var folders = CreateTestFolders();
         _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
@@ -146,11 +146,11 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         // Act - Should not throw even if database is unavailable
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine);
         sut.SelectedAccountId = "acc-1";
-        await Task.Delay(150);
+        await Task.Delay(150, TestContext.Current.CancellationToken);
 
         Should.Throw<InvalidOperationException>(() =>
         {
-            var folderToSelect = sut.RootFolders.First();
+            var folderToSelect = sut.RootFolders[0];
             sut.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
         });
     }
@@ -161,7 +161,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         // Arrange - Save only one child checked
         await _configRepository.SaveBatchAsync("acc-1", [
             new SyncConfiguration(0, "acc-1", "/Parent/Child1", true, DateTime.UtcNow)
-        ]);
+        ], TestContext.Current.CancellationToken);
 
         var child1 = CreateFolder("c1", "Child1", "/Parent/Child1");
         var child2 = CreateFolder("c2", "Child2", "/Parent/Child2");
@@ -177,7 +177,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         // Act
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine);
         sut.SelectedAccountId = "acc-1";
-        await Task.Delay(150);
+        await Task.Delay(150, TestContext.Current.CancellationToken);
 
         // Assert
         var loadedParent = sut.RootFolders[0];

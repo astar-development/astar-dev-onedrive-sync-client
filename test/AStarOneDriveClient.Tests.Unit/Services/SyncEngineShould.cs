@@ -26,7 +26,7 @@ public class SyncEngineShould
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         progressStates.Count.ShouldBeGreaterThan(0);
         progressStates.Last().Status.ShouldBe(SyncStatus.Completed);
@@ -51,7 +51,7 @@ public class SyncEngineShould
         mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns([]);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         // Verify UploadFileAsync was called
         await mocks.GraphApiClient.Received(1).UploadFileAsync(
@@ -94,7 +94,7 @@ public class SyncEngineShould
         mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns([localFile]);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         await mocks.FileMetadataRepo.DidNotReceive().AddAsync(Arg.Any<FileMetadata>(), Arg.Any<CancellationToken>());
         await mocks.FileMetadataRepo.DidNotReceive().UpdateAsync(Arg.Any<FileMetadata>(), Arg.Any<CancellationToken>());
@@ -111,7 +111,7 @@ public class SyncEngineShould
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         progressStates.Last().Status.ShouldBe(SyncStatus.Idle);
     }
@@ -128,7 +128,7 @@ public class SyncEngineShould
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         progressStates.Last().Status.ShouldBe(SyncStatus.Failed);
     }
@@ -142,10 +142,10 @@ public class SyncEngineShould
         mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false, false, 3, 50, null));
 
-        var cts = new CancellationTokenSource();
+        using var cts = new CancellationTokenSource();
         mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<IReadOnlyList<FileMetadata>>(new OperationCanceledException(cts.Token)));
-        cts.Cancel();
+        await cts.CancelAsync();
 
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
@@ -184,7 +184,7 @@ public class SyncEngineShould
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         var finalState = progressStates.Last();
         finalState.TotalFiles.ShouldBe(2);
@@ -212,7 +212,7 @@ public class SyncEngineShould
         mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns([]);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         await mocks.FileMetadataRepo.Received(1).AddAsync(
             Arg.Is<FileMetadata>(f => f.Name == "report.pdf" && f.SyncStatus == FileSyncStatus.Synced && f.LastSyncDirection == SyncDirection.Download),
@@ -238,7 +238,7 @@ public class SyncEngineShould
         mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns([deletedFile]);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         await mocks.FileMetadataRepo.Received(1).DeleteAsync("deleted1", Arg.Any<CancellationToken>());
     }
@@ -268,7 +268,7 @@ public class SyncEngineShould
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         // Expect 2 AddAsync: PendingUpload for upload, Synced for download
         await mocks.FileMetadataRepo.Received(2).AddAsync(Arg.Any<FileMetadata>(), Arg.Any<CancellationToken>());
@@ -312,7 +312,7 @@ public class SyncEngineShould
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         var finalState = progressStates.Last();
         finalState.ConflictsDetected.ShouldBe(1);
@@ -348,7 +348,7 @@ public class SyncEngineShould
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         // Verify all files were uploaded
         await mocks.GraphApiClient.Received(5).UploadFileAsync(
@@ -402,7 +402,7 @@ public class SyncEngineShould
         var progressStates = new List<SyncState>();
         engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1");
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         // Verify all files were downloaded
         await mocks.GraphApiClient.Received(5).DownloadFileAsync(

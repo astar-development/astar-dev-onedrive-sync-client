@@ -33,11 +33,11 @@ public class AccountManagementIntegrationShould : IDisposable
     {
         var account1 = new AccountInfo("acc1", "User One", "/path1", true, null, null, false, false, 3, 50, null);
         var account2 = new AccountInfo("acc2", "User Two", "/path2", false, null, null, false, false, 3, 50, null);
-        await _accountRepository.AddAsync(account1);
-        await _accountRepository.AddAsync(account2);
+        await _accountRepository.AddAsync(account1, TestContext.Current.CancellationToken);
+        await _accountRepository.AddAsync(account2, TestContext.Current.CancellationToken);
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Accounts.Count.ShouldBe(2);
         viewModel.Accounts.ShouldContain(a => a.AccountId == "acc1");
@@ -51,12 +51,12 @@ public class AccountManagementIntegrationShould : IDisposable
         _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.AddAccountCommand.Execute().Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        var accounts = await _accountRepository.GetAllAsync();
+        var accounts = await _accountRepository.GetAllAsync(TestContext.Current.CancellationToken);
         accounts.Count.ShouldBe(1);
         accounts[0].AccountId.ShouldBe("new-acc");
         accounts[0].DisplayName.ShouldBe("New User");
@@ -67,16 +67,16 @@ public class AccountManagementIntegrationShould : IDisposable
     public async Task RemoveAccountFromDatabaseWhenDeleted()
     {
         var account = new AccountInfo("acc-to-delete", "User", "/path", true, null, null, false, false, 3, 50, null);
-        await _accountRepository.AddAsync(account);
+        await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.SelectedAccount = viewModel.Accounts.First();
         viewModel.RemoveAccountCommand.Execute().Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        var accounts = await _accountRepository.GetAllAsync();
+        var accounts = await _accountRepository.GetAllAsync(TestContext.Current.CancellationToken);
         accounts.ShouldBeEmpty();
     }
 
@@ -84,19 +84,19 @@ public class AccountManagementIntegrationShould : IDisposable
     public async Task UpdateAuthenticationStateInDatabaseWhenLoggingIn()
     {
         var account = new AccountInfo("acc-login", "User", "/path", false, null, null, false, false, 3, 50, null);
-        await _accountRepository.AddAsync(account);
+        await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var authResult = new AuthenticationResult(true, null, null, null);
         _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.SelectedAccount = viewModel.Accounts.First();
         viewModel.LoginCommand.Execute().Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        var updatedAccount = await _accountRepository.GetByIdAsync("acc-login");
+        var updatedAccount = await _accountRepository.GetByIdAsync("acc-login", TestContext.Current.CancellationToken);
         updatedAccount.ShouldNotBeNull();
         updatedAccount.IsAuthenticated.ShouldBeTrue();
     }
@@ -105,18 +105,18 @@ public class AccountManagementIntegrationShould : IDisposable
     public async Task UpdateAuthenticationStateInDatabaseWhenLoggingOut()
     {
         var account = new AccountInfo("acc-logout", "User", "/path", true, null, null, false, false, 3, 50, null);
-        await _accountRepository.AddAsync(account);
+        await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.SelectedAccount = viewModel.Accounts.First();
         viewModel.LogoutCommand.Execute().Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        var updatedAccount = await _accountRepository.GetByIdAsync("acc-logout");
+        var updatedAccount = await _accountRepository.GetByIdAsync("acc-logout", TestContext.Current.CancellationToken);
         updatedAccount.ShouldNotBeNull();
         updatedAccount.IsAuthenticated.ShouldBeFalse();
     }
@@ -129,19 +129,19 @@ public class AccountManagementIntegrationShould : IDisposable
         _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.AddAccountCommand.Execute().Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.SelectedAccount = viewModel.Accounts.First();
         viewModel.LogoutCommand.Execute().Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.LoginCommand.Execute().Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        var dbAccounts = await _accountRepository.GetAllAsync();
+        var dbAccounts = await _accountRepository.GetAllAsync(TestContext.Current.CancellationToken);
         viewModel.Accounts.Count.ShouldBe(1);
         dbAccounts.Count.ShouldBe(1);
         dbAccounts[0].AccountId.ShouldBe("multi-acc");
@@ -152,7 +152,7 @@ public class AccountManagementIntegrationShould : IDisposable
     public async Task HandleEmptyDatabaseGracefully()
     {
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.Accounts.ShouldBeEmpty();
         viewModel.SelectedAccount.ShouldBeNull();
@@ -174,10 +174,10 @@ public class AccountManagementIntegrationShould : IDisposable
             3,
             50,
             null);
-        await _accountRepository.AddAsync(account);
+        await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         var loadedAccount = viewModel.Accounts.First();
         loadedAccount.AccountId.ShouldBe("preserve-acc");

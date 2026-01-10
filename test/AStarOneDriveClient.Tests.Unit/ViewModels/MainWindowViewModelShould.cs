@@ -15,7 +15,7 @@ public class MainWindowViewModelShould
         var syncTreeVm = CreateSyncTreeViewModel();
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         var mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
 
         var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
@@ -30,7 +30,7 @@ public class MainWindowViewModelShould
         var syncTreeVm = CreateSyncTreeViewModel();
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         var mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
 
         var exception = Should.Throw<ArgumentNullException>(() =>
@@ -45,7 +45,7 @@ public class MainWindowViewModelShould
         var accountVm = CreateAccountManagementViewModel();
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         var mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
 
         var exception = Should.Throw<ArgumentNullException>(() =>
@@ -61,7 +61,7 @@ public class MainWindowViewModelShould
         var syncTreeVm = CreateSyncTreeViewModel();
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         var mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
 
         _ = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
@@ -90,7 +90,7 @@ public class MainWindowViewModelShould
         var syncTreeVm = CreateSyncTreeViewModel();
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         var mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
 
         _ = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
@@ -120,7 +120,7 @@ public class MainWindowViewModelShould
         var syncTreeVm = CreateSyncTreeViewModel();
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         var mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
         var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
 

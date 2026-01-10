@@ -1,3 +1,4 @@
+using System.IO.Abstractions;
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Repositories;
@@ -9,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.IO.Abstractions;
+using Testably.Abstractions;
 
 namespace AStarOneDriveClient;
 
@@ -55,7 +56,7 @@ public static class ServiceConfiguration
             AuthService.CreateAsync(authConfig).GetAwaiter().GetResult());
 
         // Services
-        services.AddSingleton<IFileSystem, FileSystem>();
+        services.AddSingleton<IFileSystem, RealFileSystem>();
         services.AddSingleton<IFileWatcherService, FileWatcherService>();
         services.AddSingleton<IAutoSyncCoordinator, AutoSyncCoordinator>();
         services.AddSingleton<IAutoSyncSchedulerService, AutoSyncSchedulerService>();

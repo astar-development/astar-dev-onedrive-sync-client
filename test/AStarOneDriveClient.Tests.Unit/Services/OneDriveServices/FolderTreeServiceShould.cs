@@ -15,7 +15,7 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
-        var result = await service.GetRootFoldersAsync("account1");
+        var result = await service.GetRootFoldersAsync("account1", TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
         await mockGraph.DidNotReceive().GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
@@ -38,7 +38,7 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
-        var result = await service.GetRootFoldersAsync("account1");
+        var result = await service.GetRootFoldersAsync("account1", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result[0].Id.ShouldBe("folder1");
@@ -66,7 +66,7 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
-        var result = await service.GetRootFoldersAsync("account1");
+        var result = await service.GetRootFoldersAsync("account1", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
         result[0].Name.ShouldBe("Documents");
@@ -96,7 +96,7 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
-        var result = await service.GetChildFoldersAsync("account1", "parent1");
+        var result = await service.GetChildFoldersAsync("account1", "parent1", TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result[0].Id.ShouldBe("child1");
@@ -114,7 +114,7 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
-        var result = await service.GetChildFoldersAsync("account1", "parent1");
+        var result = await service.GetChildFoldersAsync("account1", "parent1", TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
         await mockGraph.DidNotReceive().GetDriveItemChildrenAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
@@ -129,7 +129,7 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
-        var result = await service.GetFolderHierarchyAsync("account1", maxDepth: 1);
+        var result = await service.GetFolderHierarchyAsync("account1", maxDepth: 1, cancellationToken: TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -149,7 +149,7 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth);
 
-        var result = await service.GetFolderHierarchyAsync("account1", maxDepth: 0);
+        var result = await service.GetFolderHierarchyAsync("account1", maxDepth: 0, cancellationToken: TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
         result[0].Name.ShouldBe("Documents");
@@ -163,7 +163,7 @@ public class FolderTreeServiceShould
         var service = new FolderTreeService(mockGraph, mockAuth);
 
         await Should.ThrowAsync<ArgumentNullException>(async () =>
-            await service.GetRootFoldersAsync(null!));
+            await service.GetRootFoldersAsync(null!, TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -174,7 +174,7 @@ public class FolderTreeServiceShould
         var service = new FolderTreeService(mockGraph, mockAuth);
 
         await Should.ThrowAsync<ArgumentNullException>(async () =>
-            await service.GetChildFoldersAsync("account1", null!));
+            await service.GetChildFoldersAsync("account1", null!, TestContext.Current.CancellationToken));
     }
 
     [Fact]

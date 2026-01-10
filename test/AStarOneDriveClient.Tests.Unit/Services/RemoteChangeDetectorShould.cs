@@ -18,7 +18,7 @@ public class RemoteChangeDetectorShould
         mockClient.GetDriveItemChildrenAsync(Arg.Any<string>(), "root", Arg.Any<CancellationToken>()).Returns([file1, file2]);
         var detector = new RemoteChangeDetector(mockClient);
 
-        var (changes, deltaLink) = await detector.DetectChangesAsync("acc1", "/", null);
+        var (changes, deltaLink) = await detector.DetectChangesAsync("acc1", "/", null, TestContext.Current.CancellationToken);
 
         changes.Count.ShouldBe(2);
         changes.ShouldAllBe(c => c.AccountId == "acc1");
@@ -41,7 +41,7 @@ public class RemoteChangeDetectorShould
         mockClient.GetDriveItemChildrenAsync(Arg.Any<string>(), "folder1", Arg.Any<CancellationToken>()).Returns([file2]);
         var detector = new RemoteChangeDetector(mockClient);
 
-        var (changes, deltaLink) = await detector.DetectChangesAsync("acc1", "/", null);
+        var (changes, deltaLink) = await detector.DetectChangesAsync("acc1", "/", null, TestContext.Current.CancellationToken);
 
         changes.Count.ShouldBe(2);
         changes.ShouldContain(c => c.Name == "root.txt" && c.Path == "/root.txt");
@@ -68,7 +68,7 @@ public class RemoteChangeDetectorShould
         mockClient.GetDriveItemChildrenAsync(Arg.Any<string>(), "root", Arg.Any<CancellationToken>()).Returns([file]);
         var detector = new RemoteChangeDetector(mockClient);
 
-        var (changes, _) = await detector.DetectChangesAsync("acc1", "/", null);
+        var (changes, _) = await detector.DetectChangesAsync("acc1", "/", null, TestContext.Current.CancellationToken);
 
         changes.Count.ShouldBe(1);
         var metadata = changes[0];
@@ -93,7 +93,7 @@ public class RemoteChangeDetectorShould
         mockClient.GetDriveItemChildrenAsync(Arg.Any<string>(), "root", Arg.Any<CancellationToken>()).Returns([]);
         var detector = new RemoteChangeDetector(mockClient);
 
-        var (changes, deltaLink) = await detector.DetectChangesAsync("acc1", "/", null);
+        var (changes, deltaLink) = await detector.DetectChangesAsync("acc1", "/", null, TestContext.Current.CancellationToken);
 
         changes.ShouldBeEmpty();
         deltaLink.ShouldNotBeNull();
@@ -119,9 +119,9 @@ public class RemoteChangeDetectorShould
         mockClient.GetDriveItemChildrenAsync(Arg.Any<string>(), "root", Arg.Any<CancellationToken>()).Returns([]);
         var detector = new RemoteChangeDetector(mockClient);
 
-        var (_, deltaLink1) = await detector.DetectChangesAsync("acc1", "/", null);
-        await Task.Delay(1100); // Wait for second to change in timestamp
-        var (_, deltaLink2) = await detector.DetectChangesAsync("acc1", "/", deltaLink1);
+        var (_, deltaLink1) = await detector.DetectChangesAsync("acc1", "/", null, TestContext.Current.CancellationToken);
+        await Task.Delay(1100, TestContext.Current.CancellationToken); // Wait for second to change in timestamp
+        var (_, deltaLink2) = await detector.DetectChangesAsync("acc1", "/", deltaLink1, TestContext.Current.CancellationToken);
 
         deltaLink1.ShouldNotBeNull();
         deltaLink2.ShouldNotBeNull();
@@ -133,8 +133,8 @@ public class RemoteChangeDetectorShould
     {
         var mockClient = Substitute.For<IGraphApiClient>();
         var detector = new RemoteChangeDetector(mockClient);
-        var cts = new CancellationTokenSource();
-        cts.Cancel();
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
 
         await Should.ThrowAsync<OperationCanceledException>(async () =>
             await detector.DetectChangesAsync("acc1", "/", null, cts.Token));
@@ -152,7 +152,7 @@ public class RemoteChangeDetectorShould
         mockClient.GetDriveItemChildrenAsync(Arg.Any<string>(), "folder1", Arg.Any<CancellationToken>()).Returns([]);
         var detector = new RemoteChangeDetector(mockClient);
 
-        var (changes, _) = await detector.DetectChangesAsync("acc1", "/", null);
+        var (changes, _) = await detector.DetectChangesAsync("acc1", "/", null, TestContext.Current.CancellationToken);
 
         changes.Count.ShouldBe(1);
         changes[0].Name.ShouldBe("doc.txt");
@@ -170,7 +170,7 @@ public class RemoteChangeDetectorShould
         mockClient.GetDriveItemChildrenAsync(Arg.Any<string>(), "root", Arg.Any<CancellationToken>()).Returns([validFile, fileWithoutId, fileWithoutName]);
         var detector = new RemoteChangeDetector(mockClient);
 
-        var (changes, _) = await detector.DetectChangesAsync("acc1", "/", null);
+        var (changes, _) = await detector.DetectChangesAsync("acc1", "/", null, TestContext.Current.CancellationToken);
 
         changes.Count.ShouldBe(1);
         changes[0].Name.ShouldBe("valid.txt");

@@ -13,7 +13,7 @@ public class AccountRepositoryShould
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
 
-        var result = await repository.GetAllAsync();
+        var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -27,7 +27,7 @@ public class AccountRepositoryShould
 
         await repository.AddAsync(account, CancellationToken.None);
 
-        var saved = await repository.GetByIdAsync("acc1");
+        var saved = await repository.GetByIdAsync("acc1", TestContext.Current.CancellationToken);
         saved.ShouldNotBeNull();
         saved.DisplayName.ShouldBe("John Doe");
         saved.LocalSyncPath.ShouldBe(@"C:\Sync1");
@@ -39,10 +39,10 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, null, false, false, 3, 50, null));
-        await repository.AddAsync(new AccountInfo("acc2", "User 2", @"C:\Sync2", false, null, null, false, false, 3, 50, null));
+        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, null, false, false, 3, 50, null), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new AccountInfo("acc2", "User 2", @"C:\Sync2", false, null, null, false, false, 3, 50, null), TestContext.Current.CancellationToken);
 
-        var result = await repository.GetAllAsync();
+        var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result.ShouldContain(a => a.AccountId == "acc1");
@@ -54,9 +54,9 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, "token123", false, false, 3, 50, null));
+        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, "token123", false, false, 3, 50, null), TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("acc1");
+        var result = await repository.GetByIdAsync("acc1", TestContext.Current.CancellationToken);
 
         result.ShouldNotBeNull();
         result.AccountId.ShouldBe("acc1");
@@ -70,7 +70,7 @@ public class AccountRepositoryShould
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
 
-        var result = await repository.GetByIdAsync("nonexistent");
+        var result = await repository.GetByIdAsync("nonexistent", TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -80,12 +80,12 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "Old Name", @"C:\Sync1", true, null, null, false, false, 3, 50, null));
+        await repository.AddAsync(new AccountInfo("acc1", "Old Name", @"C:\Sync1", true, null, null, false, false, 3, 50, null), TestContext.Current.CancellationToken);
 
         var updated = new AccountInfo("acc1", "New Name", @"C:\NewPath", false, DateTime.UtcNow, "newToken", false, false, 3, 50, null);
-        await repository.UpdateAsync(updated);
+        await repository.UpdateAsync(updated, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("acc1");
+        var result = await repository.GetByIdAsync("acc1", TestContext.Current.CancellationToken);
         result.ShouldNotBeNull();
         result.DisplayName.ShouldBe("New Name");
         result.LocalSyncPath.ShouldBe(@"C:\NewPath");
@@ -112,11 +112,11 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null, false, false, 3, 50, null));
+        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null, false, false, 3, 50, null), TestContext.Current.CancellationToken);
 
-        await repository.DeleteAsync("acc1");
+        await repository.DeleteAsync("acc1", TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByIdAsync("acc1");
+        var result = await repository.GetByIdAsync("acc1", TestContext.Current.CancellationToken);
         result.ShouldBeNull();
     }
 
@@ -134,9 +134,9 @@ public class AccountRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
-        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null, false, false, 3, 50, null));
+        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null, false, false, 3, 50, null), TestContext.Current.CancellationToken);
 
-        var result = await repository.ExistsAsync("acc1");
+        var result = await repository.ExistsAsync("acc1", TestContext.Current.CancellationToken);
 
         result.ShouldBeTrue();
     }
@@ -147,7 +147,7 @@ public class AccountRepositoryShould
         using var context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
 
-        var result = await repository.ExistsAsync("nonexistent");
+        var result = await repository.ExistsAsync("nonexistent", TestContext.Current.CancellationToken);
 
         result.ShouldBeFalse();
     }

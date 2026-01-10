@@ -1,5 +1,6 @@
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
@@ -223,7 +224,9 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         catch (OperationCanceledException)
         {
             StatusMessage = "Sync paused";
+#pragma warning disable S6667 // Logging in a catch clause should pass the caught exception as a parameter.
             _logger.LogInformation("Sync paused for account {AccountId}", AccountId);
+#pragma warning restore S6667 // Logging in a catch clause should pass the caught exception as a parameter.
         }
         catch (Exception ex)
         {
@@ -261,7 +264,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <summary>
     /// Handles the view conflicts command.
     /// </summary>
-    private void OnViewConflicts() => _logger.LogInformation("User requested to view conflicts for account {AccountId}", AccountId);// Navigation logic would go here in a real implementation// e.g., NavigationService.NavigateTo<ConflictResolutionViewModel>(_accountId);
+    private void OnViewConflicts() => _logger.LogInformation("User requested to view conflicts for account {AccountId}", AccountId);
 
     /// <summary>
     /// Updates the status message based on current progress.
@@ -283,13 +286,11 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
                     ? "Scanning for changes..."
                     : $"Scanning: {CurrentProgress.CurrentScanningFolder}";
             }
-            else if (CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles)
-            {
-                StatusMessage = "Finalizing sync...";
-            }
             else
             {
-                StatusMessage = $"Syncing {CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files...";
+                StatusMessage = CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles
+                    ? "Finalizing sync..."
+                    : $"Syncing {CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files...";
             }
         }
         else if (CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles && CurrentProgress.TotalFiles > 0)

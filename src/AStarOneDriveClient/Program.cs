@@ -1,10 +1,15 @@
 using Avalonia;
-using Avalonia.ReactiveUI;
+using ReactiveUI.Avalonia;
 
 namespace AStarOneDriveClient;
 
 internal sealed class Program
 {
+    private Program()
+    {
+
+    }
+
     [STAThread]
     public static void Main(string[] args) => BuildAvaloniaApp()
         .StartWithClassicDesktopLifetime(args);

@@ -1,8 +1,8 @@
+using System.Diagnostics.CodeAnalysis;
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Services.OneDriveServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Kiota.Abstractions.Authentication;
-using System.Diagnostics.CodeAnalysis;
 
 namespace AStarOneDriveClient.Tests.Unit.Services.OneDriveServices;
 
@@ -48,21 +48,19 @@ public class FolderTreeServiceIntegrationShould
     {
         // Arrange
         var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config);
-        var loginResult = await authService.LoginAsync();
+        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
 
-        var accessToken = await authService.GetAccessTokenAsync(loginResult.AccountId) ?? throw new InvalidOperationException("Failed to get access token");
-
         var graphApiClient = new GraphApiClient(authService);
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Act
-        var folders = await service.GetRootFoldersAsync(loginResult.AccountId);
+        var folders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
 
         // Assert
         folders.ShouldNotBeEmpty();
@@ -78,27 +76,25 @@ public class FolderTreeServiceIntegrationShould
     {
         // Arrange
         var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config);
-        var loginResult = await authService.LoginAsync();
+        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
 
-        var accessToken = await authService.GetAccessTokenAsync(loginResult.AccountId) ?? throw new InvalidOperationException("Failed to get access token");
-
         var graphApiClient = new GraphApiClient(authService);
         var service = new FolderTreeService(graphApiClient, authService);
 
         // First get root folders to find one with children
-        var rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId);
+        var rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
         rootFolders.ShouldNotBeEmpty();
 
         var parentFolder = rootFolders[0];
 
         // Act
-        var childFolders = await service.GetChildFoldersAsync(loginResult.AccountId, parentFolder.Id);
+        var childFolders = await service.GetChildFoldersAsync(loginResult.AccountId, parentFolder.Id, TestContext.Current.CancellationToken);
 
         // Assert - may be empty if folder has no subfolders, but should succeed
         childFolders.ShouldNotBeNull();
@@ -116,21 +112,19 @@ public class FolderTreeServiceIntegrationShould
     {
         // Arrange
         var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config);
-        var loginResult = await authService.LoginAsync();
+        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
 
-        var accessToken = await authService.GetAccessTokenAsync(loginResult.AccountId) ?? throw new InvalidOperationException("Failed to get access token");
-
         var graphApiClient = new GraphApiClient(authService);
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Act - limit to depth of 2 to avoid long load times
-        var hierarchy = await service.GetFolderHierarchyAsync(loginResult.AccountId, maxDepth: 2);
+        var hierarchy = await service.GetFolderHierarchyAsync(loginResult.AccountId, maxDepth: 2, TestContext.Current.CancellationToken);
 
         // Assert
         hierarchy.ShouldNotBeEmpty();
@@ -155,27 +149,27 @@ public class FolderTreeServiceIntegrationShould
     {
         // Arrange
         var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config);
-        var loginResult = await authService.LoginAsync();
+        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
 
-        _ = await authService.GetAccessTokenAsync(loginResult.AccountId) ?? throw new InvalidOperationException("Failed to get access token");
+        _ = await authService.GetAccessTokenAsync(loginResult.AccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
 
         var graphApiClient = new GraphApiClient(authService);
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Get root folders
-        var rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId);
+        var rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
         rootFolders.ShouldNotBeEmpty();
 
         // Act - try to get children from each root folder
         foreach (var folder in rootFolders)
         {
-            var children = await service.GetChildFoldersAsync(loginResult.AccountId, folder.Id);
+            var children = await service.GetChildFoldersAsync(loginResult.AccountId, folder.Id, TestContext.Current.CancellationToken);
 
             // Assert - should not throw, even if empty
             children.ShouldNotBeNull();
@@ -187,22 +181,22 @@ public class FolderTreeServiceIntegrationShould
     {
         // Arrange
         var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config);
-        var loginResult = await authService.LoginAsync();
+        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
 
-        _ = await authService.GetAccessTokenAsync(loginResult.AccountId) ?? throw new InvalidOperationException("Failed to get access token");
+        _ = await authService.GetAccessTokenAsync(loginResult.AccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
 
         var graphApiClient = new GraphApiClient(authService);
 
         // Act
-        var drive = await graphApiClient.GetMyDriveAsync(loginResult.AccountId);
-        var root = await graphApiClient.GetDriveRootAsync(loginResult.AccountId);
-        var rootChildren = await graphApiClient.GetRootChildrenAsync(loginResult.AccountId);
+        var drive = await graphApiClient.GetMyDriveAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
+        var root = await graphApiClient.GetDriveRootAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
+        var rootChildren = await graphApiClient.GetRootChildrenAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
 
         // Assert
         drive.ShouldNotBeNull();

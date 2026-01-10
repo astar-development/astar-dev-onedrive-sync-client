@@ -26,16 +26,17 @@ public sealed class LocalFileScanner : ILocalFileScanner
         CancellationToken cancellationToken = default)
     {
         var indexOfDrives = localFolderPath.IndexOf("drives", StringComparison.OrdinalIgnoreCase);
-        if(indexOfDrives >= 0)
+        if (indexOfDrives >= 0)
         {
             var indexOfColon = localFolderPath.IndexOf(":/", StringComparison.OrdinalIgnoreCase);
-            if(indexOfColon > 0)
+            if (indexOfColon > 0)
             {
                 var part1 = localFolderPath[..indexOfDrives];
                 var part2 = localFolderPath[(indexOfColon + 2)..];
                 localFolderPath = part1 + part2;
             }
         }
+
         await DebugLog.EntryAsync("LocalFileScanner.ScanFolderAsync", cancellationToken);
         ArgumentNullException.ThrowIfNull(accountId);
         ArgumentNullException.ThrowIfNull(localFolderPath);

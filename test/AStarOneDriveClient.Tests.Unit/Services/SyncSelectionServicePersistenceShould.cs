@@ -18,7 +18,7 @@ public class SyncSelectionServicePersistenceShould
 
         sut.SetSelection(folder1, true);
 
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders);
+        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
         await mockRepo.Received(1).SaveBatchAsync(
             "acc-123",
@@ -42,7 +42,7 @@ public class SyncSelectionServicePersistenceShould
         sut.SetSelection(folder1, true);
         sut.SetSelection(folder2, true);
 
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders);
+        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
         await mockRepo.Received(1).SaveBatchAsync(
             "acc-123",
@@ -62,11 +62,11 @@ public class SyncSelectionServicePersistenceShould
 
         // Don't select any folders
 
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders);
+        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
         await mockRepo.Received(1).SaveBatchAsync(
             "acc-123",
-            Arg.Is<IEnumerable<SyncConfiguration>>(configs => configs.Count() == 0),
+            Arg.Is<IEnumerable<SyncConfiguration>>(configs => configs.Any()),
             Arg.Any<CancellationToken>());
     }
 
@@ -83,7 +83,7 @@ public class SyncSelectionServicePersistenceShould
         var folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders);
+        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
         folder1.SelectionState.ShouldBe(SelectionState.Checked);
         folder2.SelectionState.ShouldBe(SelectionState.Unchecked);
@@ -101,7 +101,7 @@ public class SyncSelectionServicePersistenceShould
         var folder = CreateFolder("1", "Folder1", "/Folder1");
         var rootFolders = new List<OneDriveFolderNode> { folder };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders);
+        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
         folder.SelectionState.ShouldBe(SelectionState.Unchecked);
     }
@@ -123,7 +123,7 @@ public class SyncSelectionServicePersistenceShould
         var folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders);
+        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
         folder1.SelectionState.ShouldBe(SelectionState.Checked);
         folder2.SelectionState.ShouldBe(SelectionState.Checked);
@@ -149,7 +149,7 @@ public class SyncSelectionServicePersistenceShould
 
         var rootFolders = new List<OneDriveFolderNode> { parent };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders);
+        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
         child1.SelectionState.ShouldBe(SelectionState.Checked);
         child2.SelectionState.ShouldBe(SelectionState.Unchecked);
@@ -178,10 +178,10 @@ public class SyncSelectionServicePersistenceShould
 
         var rootFolders = new List<OneDriveFolderNode> { parent };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders);
-    grandchild.SelectionState.ShouldBe(SelectionState.Checked);
-    child.SelectionState.ShouldBe(SelectionState.Unchecked);
-    parent.SelectionState.ShouldBe(SelectionState.Indeterminate);
+        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        grandchild.SelectionState.ShouldBe(SelectionState.Checked);
+        child.SelectionState.ShouldBe(SelectionState.Unchecked);
+        parent.SelectionState.ShouldBe(SelectionState.Indeterminate);
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class SyncSelectionServicePersistenceShould
         var rootFolders = new List<OneDriveFolderNode> { folder };
 
         // Should not throw
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders);
+        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -206,7 +206,7 @@ public class SyncSelectionServicePersistenceShould
         var rootFolders = new List<OneDriveFolderNode> { folder };
 
         // Should not throw
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders);
+        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
         folder.SelectionState.ShouldBe(SelectionState.Unchecked);
     }

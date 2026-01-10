@@ -48,7 +48,7 @@ public class SyncTreeViewModelShould : IDisposable
 
         _viewModel.SelectedAccountId = "account123";
 
-        await Task.Delay(100); // Allow async command to execute
+        await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async command to execute
 
         _viewModel.RootFolders.Count.ShouldBe(2);
         _viewModel.RootFolders[0].Name.ShouldBe("Folder 1");
@@ -84,11 +84,11 @@ public class SyncTreeViewModelShould : IDisposable
 
         _viewModel.SelectedAccountId = "account123";
 
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
         isLoadingValues.ShouldContain(true);
 
         tcs.SetResult([]);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         isLoadingValues.ShouldContain(false);
     }
@@ -101,7 +101,7 @@ public class SyncTreeViewModelShould : IDisposable
 
         _viewModel.SelectedAccountId = "account123";
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         _viewModel.ErrorMessage.ShouldNotBeNull();
         _viewModel.ErrorMessage.ShouldContain("Test error");
@@ -122,7 +122,7 @@ public class SyncTreeViewModelShould : IDisposable
         _viewModel.SelectedAccountId = "account123";
 
         _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         parent.Children.Count.ShouldBe(1);
         parent.Children[0].Name.ShouldBe("Child 1");
@@ -143,7 +143,7 @@ public class SyncTreeViewModelShould : IDisposable
         _viewModel.SelectedAccountId = "account123";
 
         _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         await _mockFolderService.DidNotReceive().GetChildFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
@@ -170,7 +170,7 @@ public class SyncTreeViewModelShould : IDisposable
         _viewModel.SelectedAccountId = "account123";
 
         _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         parent.Children[0].SelectionState.ShouldBe(SelectionState.Unchecked);
         parent.Children[0].IsSelected.ShouldBeNull();

@@ -14,7 +14,7 @@ public class SyncStateRepositoryShould
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
 
-        var result = await repository.GetByAccountIdAsync("nonexistent");
+        var result = await repository.GetByAccountIdAsync("nonexistent", TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -26,9 +26,9 @@ public class SyncStateRepositoryShould
         var repository = new SyncStateRepository(context);
         var syncState = new SyncState("acc1", SyncStatus.Running, 100, 50, 1024000, 512000, 2, 3, 0, 0, 5.5, 30, null, DateTime.UtcNow);
 
-        await repository.SaveAsync(syncState);
+        await repository.SaveAsync(syncState, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByAccountIdAsync("acc1");
+        var result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
         result.ShouldNotBeNull();
         result.Status.ShouldBe(SyncStatus.Running);
         result.TotalFiles.ShouldBe(100);
@@ -42,12 +42,12 @@ public class SyncStateRepositoryShould
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
         var initial = new SyncState("acc1", SyncStatus.Running, 100, 50, 1024000, 512000, 2, 3, 0, 0, 5.5, 30, null, DateTime.UtcNow);
-        await repository.SaveAsync(initial);
+        await repository.SaveAsync(initial, TestContext.Current.CancellationToken);
 
         var updated = new SyncState("acc1", SyncStatus.Completed, 100, 100, 1024000, 1024000, 0, 0, 0, 0, 0, null, null, DateTime.UtcNow);
-        await repository.SaveAsync(updated);
+        await repository.SaveAsync(updated, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByAccountIdAsync("acc1");
+        var result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
         result.ShouldNotBeNull();
         result.Status.ShouldBe(SyncStatus.Completed);
         result.CompletedFiles.ShouldBe(100);
@@ -60,10 +60,10 @@ public class SyncStateRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
-        await repository.SaveAsync(new SyncState("acc1", SyncStatus.Running, 10, 5, 1000, 500, 1, 0, 0, 0, 2.5, 10, null, DateTime.UtcNow));
-        await repository.SaveAsync(new SyncState("acc2", SyncStatus.Idle, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, null, null));
+        await repository.SaveAsync(new SyncState("acc1", SyncStatus.Running, 10, 5, 1000, 500, 1, 0, 0, 0, 2.5, 10, null, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        await repository.SaveAsync(new SyncState("acc2", SyncStatus.Idle, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, null, null), TestContext.Current.CancellationToken);
 
-        var result = await repository.GetAllAsync();
+        var result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result.ShouldContain(s => s.AccountId == "acc1");
@@ -75,11 +75,11 @@ public class SyncStateRepositoryShould
     {
         using var context = CreateInMemoryContext();
         var repository = new SyncStateRepository(context);
-        await repository.SaveAsync(new SyncState("acc1", SyncStatus.Running, 10, 5, 1000, 500, 1, 0, 0, 0, 2.5, 10, null, DateTime.UtcNow));
+        await repository.SaveAsync(new SyncState("acc1", SyncStatus.Running, 10, 5, 1000, 500, 1, 0, 0, 0, 2.5, 10, null, DateTime.UtcNow), TestContext.Current.CancellationToken);
 
-        await repository.DeleteAsync("acc1");
+        await repository.DeleteAsync("acc1", TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByAccountIdAsync("acc1");
+        var result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
         result.ShouldBeNull();
     }
 
@@ -99,9 +99,9 @@ public class SyncStateRepositoryShould
         var repository = new SyncStateRepository(context);
         var syncState = new SyncState("acc1", SyncStatus.Running, 100, 80, 1024000, 819200, 1, 2, 0, 5, 4.2, 15, null, DateTime.UtcNow);
 
-        await repository.SaveAsync(syncState);
+        await repository.SaveAsync(syncState, TestContext.Current.CancellationToken);
 
-        var result = await repository.GetByAccountIdAsync("acc1");
+        var result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
         result.ShouldNotBeNull();
         result.ConflictsDetected.ShouldBe(5);
     }

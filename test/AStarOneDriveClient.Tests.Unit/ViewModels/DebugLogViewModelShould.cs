@@ -138,6 +138,7 @@ public class DebugLogViewModelShould
         {
             logs.Add(new DebugLogEntry(i, "acc1", DateTime.UtcNow, "Info", "Test", $"Message {i}", null));
         }
+
         mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(logs);
 

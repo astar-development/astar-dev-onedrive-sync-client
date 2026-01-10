@@ -27,7 +27,7 @@ public class WindowPreferencesServiceShould
 
         await service.SaveAsync(preferences, CancellationToken.None);
 
-        var saved = await context.WindowPreferences.FirstOrDefaultAsync();
+        var saved = await context.WindowPreferences.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
         saved.ShouldNotBeNull();
         saved.X.ShouldBe(100);
         saved.Y.ShouldBe(200);
@@ -47,7 +47,7 @@ public class WindowPreferencesServiceShould
         var updatedPrefs = new WindowPreferences(1, 150, 250, 1280, 720, true);
         await service.SaveAsync(updatedPrefs, CancellationToken.None);
 
-        var allPreferences = await context.WindowPreferences.ToListAsync();
+        var allPreferences = await context.WindowPreferences.ToListAsync(TestContext.Current.CancellationToken);
         allPreferences.Count.ShouldBe(1);
 
         var saved = allPreferences[0];
@@ -123,7 +123,7 @@ public class WindowPreferencesServiceShould
         using var context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
         await Should.ThrowAsync<OperationCanceledException>(
             async () => await service.LoadAsync(cts.Token)
@@ -137,7 +137,7 @@ public class WindowPreferencesServiceShould
         var service = new WindowPreferencesService(context);
         var preferences = new WindowPreferences(0, 100, 200, 800, 600, false);
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
         await Should.ThrowAsync<OperationCanceledException>(
             async () => await service.SaveAsync(preferences, cts.Token)

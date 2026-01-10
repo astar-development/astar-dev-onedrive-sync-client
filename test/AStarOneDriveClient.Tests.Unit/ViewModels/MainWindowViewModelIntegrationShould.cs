@@ -1,3 +1,4 @@
+using System.Reactive.Subjects;
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Models;
@@ -5,7 +6,6 @@ using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.ViewModels;
 using Microsoft.EntityFrameworkCore;
-using System.Reactive.Subjects;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 
@@ -58,7 +58,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             3,
             50,
             null);
-        await _accountRepository.AddAsync(account);
+        await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var rootFolder = new OneDriveFolderNode
         {
@@ -73,16 +73,16 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
         var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, _accountRepository, mockConflictRepo);
 
         // Allow initialization to complete
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Act
         accountVm.SelectedAccount = account;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Assert
         syncTreeVm.SelectedAccountId.ShouldBe("acc-123");
@@ -107,7 +107,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             3,
             50,
             null);
-        await _accountRepository.AddAsync(account);
+        await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var rootFolder = new OneDriveFolderNode
         {
@@ -122,18 +122,17 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
         var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, _accountRepository, mockConflictRepo);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         accountVm.SelectedAccount = account;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Act
         accountVm.SelectedAccount = null;
-        await Task.Delay(100);
-
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         // Assert
         syncTreeVm.SelectedAccountId.ShouldBeNull();
         syncTreeVm.RootFolders.ShouldBeEmpty();
@@ -145,8 +144,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         // Arrange
         var account1 = new AccountInfo("acc-1", "user1@example.com", @"C:\Sync1", true, null, null, false, false, 3, 50, null);
         var account2 = new AccountInfo("acc-2", "user2@example.com", @"C:\Sync2", true, null, null, false, false, 3, 50, null);
-        await _accountRepository.AddAsync(account1);
-        await _accountRepository.AddAsync(account2);
+        await _accountRepository.AddAsync(account1, TestContext.Current.CancellationToken);
+        await _accountRepository.AddAsync(account2, TestContext.Current.CancellationToken);
 
         var folder1 = new OneDriveFolderNode
         {
@@ -171,20 +170,20 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
         var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, _accountRepository, mockConflictRepo);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Act - Select first account
         accountVm.SelectedAccount = account1;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         var firstFolder = syncTreeVm.RootFolders.FirstOrDefault()?.Name;
 
         // Act - Select second account
         accountVm.SelectedAccount = account2;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         var secondFolder = syncTreeVm.RootFolders.FirstOrDefault()?.Name;
 
         // Assert
@@ -198,7 +197,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     {
         // Arrange
         var account = new AccountInfo("acc-999", "error@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, null);
-        await _accountRepository.AddAsync(account);
+        await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         _mockFolderTreeService.GetRootFoldersAsync("acc-999", Arg.Any<CancellationToken>())
             .Returns(Task.FromException<IReadOnlyList<OneDriveFolderNode>>(
@@ -207,16 +206,15 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
         var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, _accountRepository, mockConflictRepo);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Act
         accountVm.SelectedAccount = account;
-        await Task.Delay(100);
-
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         // Assert
         syncTreeVm.ErrorMessage.ShouldNotBeNullOrEmpty();
         syncTreeVm.RootFolders.ShouldBeEmpty();
@@ -227,7 +225,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     {
         // Arrange
         var account = new AccountInfo("acc-sel", "sel@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, null);
-        await _accountRepository.AddAsync(account);
+        await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         // Create new instances each time to simulate fresh load from API
         _mockFolderTreeService.GetRootFoldersAsync("acc-sel", Arg.Any<CancellationToken>())
@@ -244,27 +242,27 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
         var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine);
         var mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        var mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, _accountRepository, mockConflictRepo);
 
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         accountVm.SelectedAccount = account;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Act - Select the folder
         var folderToSelect = syncTreeVm.RootFolders[0];
         syncTreeVm.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
 
         // Store the selection state
         var initialState = folderToSelect.SelectionState;
 
         // Deselect and reselect account
         accountVm.SelectedAccount = null;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         accountVm.SelectedAccount = account;
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Assert - Fresh instances should have reset selection state
         var reloadedFolder = syncTreeVm.RootFolders[0];
