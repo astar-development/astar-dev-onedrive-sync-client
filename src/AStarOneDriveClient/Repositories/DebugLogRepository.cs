@@ -84,4 +84,10 @@ public sealed class DebugLogRepository : IDebugLogRepository
         _context.DebugLogs.RemoveRange(entities);
         await _context.SaveChangesAsync(cancellationToken);
     }
+
+    /// <inheritdoc/>
+    public async Task<int> GetDebugLogCountByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+        => await _context.DebugLogs
+                .Where(log => log.AccountId == accountId)
+                .CountAsync(cancellationToken);
 }

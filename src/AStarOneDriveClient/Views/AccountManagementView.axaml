@@ -39,9 +39,6 @@
                                 <!-- Account Info -->
                                 <StackPanel>
                                     <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" />
-                                    <TextBlock Text="{Binding AccountId}"
-                                             FontSize="11"
-                                             Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                                     <StackPanel Orientation="Horizontal" Spacing="5">
                                         <TextBlock Text="Authenticated:" FontSize="11" />
                                         <TextBlock Text="{Binding IsAuthenticated}" FontSize="11" FontWeight="SemiBold" />

@@ -79,7 +79,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
         try
         {
-            ResetBeforeRunning();
+            ResetTrackingDetails();
 
             await DebugLog.EntryAsync("SyncEngine.StartSyncAsync", cancellationToken);
 
@@ -396,7 +396,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
             ReportProgress(accountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes, completedBytes, filesDeleted: filesToDelete.Count, conflictsDetected: conflictCount);
 
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Sync completed: {completedFiles}/{totalFiles} files, {completedBytes} bytes", cancellationToken);
+            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Sync completed: {totalFiles} files, {completedBytes} bytes", cancellationToken);
             await DebugLog.ExitAsync("SyncEngine.StartSyncAsync", cancellationToken);
 
             await FinalizeSyncSessionAsync(_currentSessionId, filesToUpload.Count, filesToDownload.Count, filesToDelete.Count, conflictCount, completedBytes, account, cancellationToken);
@@ -550,13 +550,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             }
         }).ToList();
         return (activeDownloads, completedBytes, completedFiles, downloadTasks);
-    }
-
-    private void ResetTrackingDetails(long completedBytes)
-    {
-        _transferHistory.Clear();
-        _lastProgressUpdate = DateTime.UtcNow;
-        _lastCompletedBytes = completedBytes;
     }
 
     private (int activeUploads, long completedBytes, int completedFiles, List<Task> uploadTasks) CreateUploadTasks(string accountId, Dictionary<string, FileMetadata> existingFilesDict, List<FileMetadata> filesToUpload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, int completedFiles, long completedBytes, SemaphoreSlim uploadSemaphore, int activeUploads, CancellationToken cancellationToken)
@@ -765,11 +758,11 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return allLocalFiles;
     }
 
-    private void ResetBeforeRunning()
+    private void ResetTrackingDetails(long completedBytes = 0)
     {
-        _lastProgressUpdate = DateTime.UtcNow;
-        _lastCompletedBytes = 0;
         _transferHistory.Clear();
+        _lastProgressUpdate = DateTime.UtcNow;
+        _lastCompletedBytes = completedBytes;
     }
 
     private bool SyncIsAlreadyRunning() => Interlocked.CompareExchange(ref _syncInProgress, 1, 0) != 0;

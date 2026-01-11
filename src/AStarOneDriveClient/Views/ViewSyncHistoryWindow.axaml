@@ -31,10 +31,6 @@
                                        FontWeight="Bold"
                                        FontSize="13"
                                        VerticalAlignment="Center" />
-                            <TextBlock Text="{Binding AccountId}"
-                                       FontSize="11"
-                                       Opacity="0.6"
-                                       VerticalAlignment="Center" />
                         </StackPanel>
                     </DataTemplate>
                 </ListBox.ItemTemplate>

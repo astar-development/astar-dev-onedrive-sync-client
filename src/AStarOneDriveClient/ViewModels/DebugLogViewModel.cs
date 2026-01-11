@@ -13,7 +13,7 @@ public sealed class DebugLogViewModel : ReactiveObject
 {
     private readonly IAccountRepository _accountRepository;
     private readonly IDebugLogRepository _debugLogRepository;
-    private const int PageSize = 50;
+    private const int _pageSize = 50;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DebugLogViewModel"/> class.
@@ -37,7 +37,6 @@ public sealed class DebugLogViewModel : ReactiveObject
         LoadPreviousPageCommand = ReactiveCommand.CreateFromTask(LoadPreviousPageAsync);
         ClearLogsCommand = ReactiveCommand.CreateFromTask(ClearLogsAsync);
 
-        // Load accounts on initialization
         _ = LoadAccountsAsync();
     }
 
@@ -51,17 +50,15 @@ public sealed class DebugLogViewModel : ReactiveObject
     /// </summary>
     public ObservableCollection<DebugLogEntry> DebugLogs { get; }
 
-    private AccountInfo? _selectedAccount;
-
     /// <summary>
     /// Gets or sets the selected account.
     /// </summary>
     public AccountInfo? SelectedAccount
     {
-        get => _selectedAccount;
+        get;
         set
         {
-            this.RaiseAndSetIfChanged(ref _selectedAccount, value);
+            this.RaiseAndSetIfChanged(ref field, value);
             if (value is not null)
             {
                 CurrentPage = 1;
@@ -70,61 +67,53 @@ public sealed class DebugLogViewModel : ReactiveObject
         }
     }
 
-    private int _currentPage = 1;
-
     /// <summary>
     /// Gets the current page number.
     /// </summary>
     public int CurrentPage
     {
-        get => _currentPage;
+        get;
         private set
         {
-            this.RaiseAndSetIfChanged(ref _currentPage, value);
+            this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
         }
-    }
-
-    private bool _hasMoreRecords = true;
+    } = 1;
 
     /// <summary>
     /// Gets a value indicating whether there are more records to load.
     /// </summary>
     public bool HasMoreRecords
     {
-        get => _hasMoreRecords;
+        get;
         private set
         {
-            this.RaiseAndSetIfChanged(ref _hasMoreRecords, value);
+            this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
         }
-    }
-
-    private bool _isLoading;
+    } = true;
 
     /// <summary>
     /// Gets a value indicating whether data is currently loading.
     /// </summary>
     public bool IsLoading
     {
-        get => _isLoading;
+        get;
         private set
         {
-            this.RaiseAndSetIfChanged(ref _isLoading, value);
+            this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
         }
     }
-
-    private int _totalRecordCount;
 
     /// <summary>
     /// Gets the total number of records available.
     /// </summary>
     public int TotalRecordCount
     {
-        get => _totalRecordCount;
-        private set => this.RaiseAndSetIfChanged(ref _totalRecordCount, value);
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -179,28 +168,23 @@ public sealed class DebugLogViewModel : ReactiveObject
         IsLoading = true;
         try
         {
-            var skip = (CurrentPage - 1) * PageSize;
+            var skip = (CurrentPage - 1) * _pageSize;
 
             // Fetch PageSize + 1 to determine if there are more records
             var logs = await _debugLogRepository.GetByAccountIdAsync(
                 SelectedAccount.AccountId,
-                PageSize + 1,
+                _pageSize + 1,
                 skip);
 
-            // Get total count on first page load (when skip is 0)
-            if (skip == 0)
-            {
-                TotalRecordCount = logs.Count > PageSize ? logs.Count : logs.Count;
-                // Note: This is an approximation. For exact count, we'd need a separate count query
-            }
+            TotalRecordCount = await _debugLogRepository.GetDebugLogCountByAccountIdAsync(SelectedAccount.AccountId);
 
             DebugLogs.Clear();
 
             // If we got more than PageSize, there are more records
-            HasMoreRecords = logs.Count > PageSize;
+            HasMoreRecords = logs.Count > _pageSize;
 
             // Only show PageSize records
-            var logsToDisplay = logs.Take(PageSize);
+            var logsToDisplay = logs.Take(_pageSize);
             foreach (var log in logsToDisplay)
             {
                 DebugLogs.Add(log);
@@ -210,7 +194,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             if (HasMoreRecords)
             {
                 // We know there are at least (CurrentPage * PageSize) + 1 records
-                TotalRecordCount = Math.Max(TotalRecordCount, (CurrentPage * PageSize) + 1);
+                TotalRecordCount = Math.Max(TotalRecordCount, (CurrentPage * _pageSize) + 1);
             }
             else
             {

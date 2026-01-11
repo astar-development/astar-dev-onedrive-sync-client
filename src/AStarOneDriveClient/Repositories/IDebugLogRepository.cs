@@ -18,6 +18,14 @@ public interface IDebugLogRepository
     Task<IReadOnlyList<DebugLogEntry>> GetByAccountIdAsync(string accountId, int pageSize, int skip, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Gets the count of debug log entries for a specific account.
+    /// </summary>
+    /// <param name="accountId">The account ID to filter by.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The count of debug log entries for the account.</returns>
+    Task<int> GetDebugLogCountByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Gets all debug log entries for a specific account.
     /// </summary>
     /// <param name="accountId">The account ID to filter by.</param>
