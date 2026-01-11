@@ -27,9 +27,7 @@ public record SyncSessionLog(
     int ConflictsDetected,
     long TotalBytes)
 {
-    public static SyncSessionLog CreateInitialRunning(string accountId)
-    {
-        return new SyncSessionLog(
+    public static SyncSessionLog CreateInitialRunning(string accountId) => new(
             Id: Guid.CreateVersion7().ToString(),
             AccountId: accountId,
             StartedUtc: DateTime.UtcNow,
@@ -40,5 +38,4 @@ public record SyncSessionLog(
             FilesDeleted: 0,
             ConflictsDetected: 0,
             TotalBytes: 0L);
-    }
 }

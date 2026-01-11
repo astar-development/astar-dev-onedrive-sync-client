@@ -58,7 +58,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         get;
         set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             if (value is not null)
             {
                 CurrentPage = 1;
@@ -75,7 +75,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         get;
         private set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
         }
     } = 1;
@@ -88,7 +88,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         get;
         private set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
         }
     } = true;
@@ -101,7 +101,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         get;
         private set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
         }
@@ -145,9 +145,9 @@ public sealed class DebugLogViewModel : ReactiveObject
     {
         try
         {
-            var accounts = await _accountRepository.GetAllAsync();
+            IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (var account in accounts)
+            foreach (AccountInfo account in accounts)
             {
                 Accounts.Add(account);
             }
@@ -171,7 +171,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             var skip = (CurrentPage - 1) * _pageSize;
 
             // Fetch PageSize + 1 to determine if there are more records
-            var logs = await _debugLogRepository.GetByAccountIdAsync(
+            IReadOnlyList<DebugLogEntry> logs = await _debugLogRepository.GetByAccountIdAsync(
                 SelectedAccount.AccountId,
                 _pageSize + 1,
                 skip);
@@ -184,8 +184,8 @@ public sealed class DebugLogViewModel : ReactiveObject
             HasMoreRecords = logs.Count > _pageSize;
 
             // Only show PageSize records
-            var logsToDisplay = logs.Take(_pageSize);
-            foreach (var log in logsToDisplay)
+            IEnumerable<DebugLogEntry> logsToDisplay = logs.Take(_pageSize);
+            foreach (DebugLogEntry? log in logsToDisplay)
             {
                 DebugLogs.Add(log);
             }

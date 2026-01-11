@@ -59,7 +59,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         get;
         set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             if (value is not null)
             {
                 _currentPage = 1;
@@ -119,9 +119,9 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     {
         try
         {
-            var accounts = await _accountRepository.GetAllAsync();
+            IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (var account in accounts)
+            foreach (AccountInfo account in accounts)
             {
                 Accounts.Add(account);
             }
@@ -144,7 +144,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         try
         {
             var skip = (CurrentPage - 1) * PageSize;
-            var records = await _fileOperationLogRepository.GetByAccountIdAsync(
+            IReadOnlyList<FileOperationLog> records = await _fileOperationLogRepository.GetByAccountIdAsync(
                 SelectedAccount.AccountId,
                 PageSize + 1, // Fetch one extra to determine if more records exist
                 skip);
@@ -153,8 +153,8 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
             HasMoreRecords = records.Count > PageSize;
 
             // Only add PageSize records (exclude the extra one used for hasMore check)
-            var recordsToShow = HasMoreRecords ? records.Take(PageSize) : records;
-            foreach (var record in recordsToShow)
+            IEnumerable<FileOperationLog> recordsToShow = HasMoreRecords ? records.Take(PageSize) : records;
+            foreach (FileOperationLog? record in recordsToShow)
             {
                 SyncHistory.Add(record);
             }

@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
 using Microsoft.Extensions.Logging;
 
@@ -43,8 +44,8 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
     {
         _logger.LogInformation("Starting auto-sync scheduler");
 
-        var accounts = await _accountRepository.GetAllAsync(cancellationToken);
-        foreach (var account in accounts)
+        IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync(cancellationToken);
+        foreach (AccountInfo account in accounts)
         {
             if (account.AutoSyncIntervalMinutes.HasValue && account.IsAuthenticated)
             {
@@ -60,7 +61,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
     {
         _logger.LogInformation("Stopping auto-sync scheduler");
 
-        foreach (var (accountId, timer) in _timers)
+        foreach ((string? accountId, System.Timers.Timer? timer) in _timers)
         {
             timer.Stop();
             timer.Dispose();
@@ -79,7 +80,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
         ArgumentNullException.ThrowIfNull(accountId);
 
         // Remove existing timer if present
-        if (_timers.TryRemove(accountId, out var existingTimer))
+        if (_timers.TryRemove(accountId, out System.Timers.Timer? existingTimer))
         {
             existingTimer.Stop();
             existingTimer.Dispose();
@@ -123,7 +124,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        if (_timers.TryRemove(accountId, out var timer))
+        if (_timers.TryRemove(accountId, out System.Timers.Timer? timer))
         {
             timer.Stop();
             timer.Dispose();

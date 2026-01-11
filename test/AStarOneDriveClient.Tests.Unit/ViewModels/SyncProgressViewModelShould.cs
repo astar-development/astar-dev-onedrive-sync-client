@@ -13,65 +13,65 @@ public class SyncProgressViewModelShould
     [Fact]
     public void ThrowArgumentExceptionWhenAccountIdIsNull()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var logger = Substitute.For<ILogger<SyncProgressViewModel>>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        ILogger<SyncProgressViewModel> logger = Substitute.For<ILogger<SyncProgressViewModel>>();
 
-        var exception = Record.Exception(() => new SyncProgressViewModel(
+        Exception? exception = Record.Exception(() => new SyncProgressViewModel(
             null!,
             syncEngine,
             logger));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentExceptionWhenAccountIdIsEmpty()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var logger = Substitute.For<ILogger<SyncProgressViewModel>>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        ILogger<SyncProgressViewModel> logger = Substitute.For<ILogger<SyncProgressViewModel>>();
 
-        var exception = Record.Exception(() => new SyncProgressViewModel(
+        Exception? exception = Record.Exception(() => new SyncProgressViewModel(
             string.Empty,
             syncEngine,
             logger));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenSyncEngineIsNull()
     {
-        var logger = Substitute.For<ILogger<SyncProgressViewModel>>();
+        ILogger<SyncProgressViewModel> logger = Substitute.For<ILogger<SyncProgressViewModel>>();
 
-        var exception = Record.Exception(() => new SyncProgressViewModel(
+        Exception? exception = Record.Exception(() => new SyncProgressViewModel(
             "test-account",
             null!,
             logger));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenLoggerIsNull()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
 
-        var exception = Record.Exception(() => new SyncProgressViewModel(
+        Exception? exception = Record.Exception(() => new SyncProgressViewModel(
             "test-account",
             syncEngine,
             null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void InitializeWithDefaultValues()
     {
-        var (viewModel, _, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState> _) = CreateTestViewModel();
 
         viewModel.CurrentProgress.ShouldBeNull();
         viewModel.IsSyncing.ShouldBeFalse();
@@ -83,7 +83,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void UpdateProgressWhenProgressObservableEmits()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
 
         var progress = new SyncState(
             "test-account",
@@ -112,7 +112,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void CalculateProgressPercentageCorrectly()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
 
         var progress = new SyncState(
             "test-account",
@@ -139,7 +139,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void DisplayZeroPercentageWhenTotalFilesIsZero()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
 
         var progress = new SyncState(
             "test-account",
@@ -166,7 +166,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void DisplayTransferDetailsCorrectly()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
 
         var progress = new SyncState(
             "test-account",
@@ -194,7 +194,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void DisplayConflictsWhenDetected()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
 
         var progress = new SyncState(
             "test-account",
@@ -222,7 +222,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void NotDisplayConflictsWhenNoneDetected()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
 
         var progress = new SyncState(
             "test-account",
@@ -250,12 +250,12 @@ public class SyncProgressViewModelShould
     [Fact]
     public async Task StartSyncCommandExecutesSuccessfully()
     {
-        var (viewModel, syncEngine, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine? syncEngine, Subject<SyncState> _) = CreateTestViewModel();
 
-        syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
-        await viewModel.StartSyncCommand.Execute().FirstAsync();
+        _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
 
         await syncEngine.Received(1).StartSyncAsync("test-account", Arg.Any<CancellationToken>());
         viewModel.IsSyncing.ShouldBeFalse();
@@ -265,7 +265,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public async Task StartSyncCommandSetsIsSyncingFlag()
     {
-        var (viewModel, syncEngine, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine? syncEngine, Subject<SyncState> _) = CreateTestViewModel();
         var isSyncingValues = new List<bool>();
 
         viewModel.PropertyChanged += (_, e) =>
@@ -276,10 +276,10 @@ public class SyncProgressViewModelShould
             }
         };
 
-        syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(async _ => await Task.Delay(50));
 
-        await viewModel.StartSyncCommand.Execute().FirstAsync();
+        _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
 
         isSyncingValues.ShouldContain(true);
         viewModel.IsSyncing.ShouldBeFalse();
@@ -288,11 +288,11 @@ public class SyncProgressViewModelShould
     [Fact]
     public async Task PauseSyncCommandCallsSyncEngine()
     {
-        var (viewModel, syncEngine, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine? syncEngine, Subject<SyncState> _) = CreateTestViewModel();
 
         viewModel.GetType().GetProperty("IsSyncing")!.SetValue(viewModel, true);
 
-        await viewModel.PauseSyncCommand.Execute().FirstAsync();
+        _ = await viewModel.PauseSyncCommand.Execute().FirstAsync();
 
         await syncEngine.Received(1).StopSyncAsync();
         viewModel.IsSyncing.ShouldBeFalse();
@@ -302,12 +302,12 @@ public class SyncProgressViewModelShould
     [Fact]
     public async Task HandleSyncCancellation()
     {
-        var (viewModel, syncEngine, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine? syncEngine, Subject<SyncState> _) = CreateTestViewModel();
 
-        syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new OperationCanceledException());
 
-        await viewModel.StartSyncCommand.Execute().FirstAsync();
+        _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
 
         viewModel.StatusMessage.ShouldBe("Sync paused");
         viewModel.IsSyncing.ShouldBeFalse();
@@ -316,12 +316,12 @@ public class SyncProgressViewModelShould
     [Fact]
     public async Task HandleSyncErrors()
     {
-        var (viewModel, syncEngine, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine? syncEngine, Subject<SyncState> _) = CreateTestViewModel();
 
-        syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new InvalidOperationException("Test error"));
 
-        await viewModel.StartSyncCommand.Execute().FirstAsync();
+        _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
 
         viewModel.StatusMessage.ShouldContain("Sync failed");
         viewModel.IsSyncing.ShouldBeFalse();
@@ -330,7 +330,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void StartSyncCommandCanExecuteWhenNotSyncing()
     {
-        var (viewModel, _, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState> _) = CreateTestViewModel();
 
         viewModel.GetType().GetProperty("IsSyncing")!.SetValue(viewModel, false);
 
@@ -340,7 +340,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void StartSyncCommandCannotExecuteWhenSyncing()
     {
-        var (viewModel, _, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState> _) = CreateTestViewModel();
 
         viewModel.GetType().GetProperty("IsSyncing")!.SetValue(viewModel, true);
 
@@ -350,7 +350,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void PauseSyncCommandCanExecuteWhenSyncing()
     {
-        var (viewModel, _, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState> _) = CreateTestViewModel();
 
         viewModel.GetType().GetProperty("IsSyncing")!.SetValue(viewModel, true);
 
@@ -360,7 +360,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void PauseSyncCommandCannotExecuteWhenNotSyncing()
     {
-        var (viewModel, _, _) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState> _) = CreateTestViewModel();
 
         viewModel.GetType().GetProperty("IsSyncing")!.SetValue(viewModel, false);
 
@@ -370,7 +370,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void ViewConflictsCommandCanExecuteWhenConflictsExist()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
 
         var progress = new SyncState(
             "test-account",
@@ -397,7 +397,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void ViewConflictsCommandCannotExecuteWhenNoConflicts()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
 
         var progress = new SyncState(
             "test-account",
@@ -424,7 +424,7 @@ public class SyncProgressViewModelShould
     [Fact]
     public void RaisePropertyChangedForAllDerivedProperties()
     {
-        var (viewModel, _, progressSubject) = CreateTestViewModel();
+        (SyncProgressViewModel? viewModel, ISyncEngine _, Subject<SyncState>? progressSubject) = CreateTestViewModel();
         var changedProperties = new List<string>();
 
         viewModel.PropertyChanged += (_, e) =>
@@ -465,16 +465,16 @@ public class SyncProgressViewModelShould
     private static (SyncProgressViewModel ViewModel, ISyncEngine SyncEngine, Subject<SyncState> ProgressSubject)
         CreateTestViewModel()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var logger = Substitute.For<ILogger<SyncProgressViewModel>>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        ILogger<SyncProgressViewModel> logger = Substitute.For<ILogger<SyncProgressViewModel>>();
 
         var progressSubject = new Subject<SyncState>();
-        syncEngine.Progress.Returns(progressSubject);
+        _ = syncEngine.Progress.Returns(progressSubject);
 
-        syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
-        syncEngine.StopSyncAsync()
+        _ = syncEngine.StopSyncAsync()
             .Returns(Task.CompletedTask);
 
         var viewModel = new SyncProgressViewModel("test-account", syncEngine, logger);

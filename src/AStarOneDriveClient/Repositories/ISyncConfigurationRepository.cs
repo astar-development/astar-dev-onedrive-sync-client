@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStarOneDriveClient.Models;
 
 namespace AStarOneDriveClient.Repositories;
@@ -22,6 +23,8 @@ public interface ISyncConfigurationRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of selected folder paths.</returns>
     Task<IReadOnlyList<string>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken = default);
+
+    Task<Result<IReadOnlyList<string>, ErrorResponse>> GetSelectedFolders2Async(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a new sync configuration.

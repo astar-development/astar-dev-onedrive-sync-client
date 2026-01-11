@@ -33,7 +33,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         Accounts = [];
 
         // Update command - enabled when account is selected and path is valid
-        var canUpdate = this.WhenAnyValue(
+        IObservable<bool> canUpdate = this.WhenAnyValue(
             x => x.SelectedAccount,
             x => x.LocalSyncPath,
             (account, path) => account is not null && !string.IsNullOrWhiteSpace(path));
@@ -59,7 +59,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         get;
         set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             if (value is not null)
             {
                 // Load editable fields when account is selected
@@ -110,7 +110,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         set
         {
             var clampedValue = Math.Clamp(value, 1, 10);
-            this.RaiseAndSetIfChanged(ref field, clampedValue);
+            _ = this.RaiseAndSetIfChanged(ref field, clampedValue);
         }
     } = 3;
 
@@ -123,7 +123,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         set
         {
             var clampedValue = Math.Clamp(value, 1, 100);
-            this.RaiseAndSetIfChanged(ref field, clampedValue);
+            _ = this.RaiseAndSetIfChanged(ref field, clampedValue);
         }
     } = 50;
 
@@ -136,7 +136,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         set
         {
             var clampedValue = value.HasValue ? Math.Clamp(value.Value, 60, 1440) : (int?)null;
-            this.RaiseAndSetIfChanged(ref field, clampedValue);
+            _ = this.RaiseAndSetIfChanged(ref field, clampedValue);
         }
     }
 
@@ -182,12 +182,12 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     {
         try
         {
-            var accounts = await _accountRepository.GetAllAsync();
+            IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (var account in accounts)
+            foreach (AccountInfo account in accounts)
             {
-                var acc = await _accountRepository.GetByIdAsync(account.AccountId);
-                var accountWithSync = account with { LastSyncUtc = acc?.LastSyncUtc };
+                AccountInfo? acc = await _accountRepository.GetByIdAsync(account.AccountId);
+                AccountInfo accountWithSync = account with { LastSyncUtc = acc?.LastSyncUtc };
                 Accounts.Add(accountWithSync);
             }
         }
@@ -216,7 +216,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         try
         {
             // Create updated account with new values
-            var updatedAccount = SelectedAccount with
+            AccountInfo updatedAccount = SelectedAccount with
             {
                 LocalSyncPath = LocalSyncPath,
                 EnableDetailedSyncLogging = EnableDetailedSyncLogging,
@@ -263,7 +263,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow?.StorageProvider is { } storageProvider)
         {
-            var result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            IReadOnlyList<IStorageFolder> result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = "Select Local Sync Path",
                 AllowMultiple = false

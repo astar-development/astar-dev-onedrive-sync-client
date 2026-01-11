@@ -103,7 +103,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
         _conflictResolver = conflictResolver;
         _logger = logger;
 
-        var canResolve = this.WhenAnyValue(
+        IObservable<bool> canResolve = this.WhenAnyValue(
             x => x.IsResolving,
             x => x.HasConflicts,
             (isResolving, hasConflicts) => !isResolving && hasConflicts);
@@ -116,7 +116,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
         Conflicts.CollectionChanged += (_, _) => this.RaisePropertyChanged(nameof(HasConflicts));
 
         // Load conflicts on initialization
-        LoadConflictsCommand.Execute().Subscribe().DisposeWith(_disposables);
+        _ = LoadConflictsCommand.Execute().Subscribe().DisposeWith(_disposables);
     }
 
     /// <summary>
@@ -130,9 +130,9 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
             StatusMessage = "Loading conflicts...";
             Conflicts.Clear();
 
-            var conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
+            IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
 
-            foreach (var conflict in conflicts)
+            foreach (SyncConflict conflict in conflicts)
             {
                 Conflicts.Add(new ConflictItemViewModel(conflict));
             }
@@ -170,7 +170,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             for (var i = Conflicts.Count - 1; i >= 0; i--)
             {
-                var conflictVm = Conflicts[i];
+                ConflictItemViewModel conflictVm = Conflicts[i];
 
                 if (conflictVm.SelectedStrategy == ConflictResolutionStrategy.None)
                 {

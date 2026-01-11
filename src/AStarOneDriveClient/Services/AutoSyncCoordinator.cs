@@ -67,7 +67,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
 
             // Subscribe to file changes with debouncing (2 seconds)
             // This groups rapid file changes into a single sync operation
-            var subscription = _fileWatcherService.FileChanges
+            IDisposable subscription = _fileWatcherService.FileChanges
                 .Where(e => e.AccountId == accountId)
                 .Buffer(TimeSpan.FromSeconds(2))
                 .Where(changes => changes.Count > 0)
@@ -108,7 +108,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        if (_accountSubscriptions.Remove(accountId, out var subscription))
+        if (_accountSubscriptions.Remove(accountId, out IDisposable? subscription))
         {
             subscription.Dispose();
             _fileWatcherService.StopWatching(accountId);

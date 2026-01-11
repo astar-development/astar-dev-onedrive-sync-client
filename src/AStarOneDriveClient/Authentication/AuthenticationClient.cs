@@ -27,7 +27,7 @@ public sealed class AuthenticationClient : IAuthenticationClient
     /// <inheritdoc/>
     public async Task<MsalAuthResult> AcquireTokenInteractiveAsync(IEnumerable<string> scopes, CancellationToken cancellationToken = default)
     {
-        var result = await _publicClientApp
+        Microsoft.Identity.Client.AuthenticationResult result = await _publicClientApp
             .AcquireTokenInteractive(scopes)
             .ExecuteAsync(cancellationToken);
 
@@ -37,7 +37,7 @@ public sealed class AuthenticationClient : IAuthenticationClient
     /// <inheritdoc/>
     public async Task<MsalAuthResult> AcquireTokenSilentAsync(IEnumerable<string> scopes, IAccount account, CancellationToken cancellationToken = default)
     {
-        var result = await _publicClientApp
+        Microsoft.Identity.Client.AuthenticationResult result = await _publicClientApp
             .AcquireTokenSilent(scopes, account)
             .ExecuteAsync(cancellationToken);
 

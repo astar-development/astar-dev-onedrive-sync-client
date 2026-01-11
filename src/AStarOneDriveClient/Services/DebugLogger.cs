@@ -1,5 +1,6 @@
 using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Data.Entities;
+using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
 
 namespace AStarOneDriveClient.Services;
@@ -41,7 +42,7 @@ public sealed class DebugLogger : IDebugLogger
         }
 
         // Check if debug logging is enabled for this account
-        var account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
+        AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
         if (account is null || !account.EnableDebugLogging)
         {
             return; // Debug logging not enabled for this account
@@ -57,7 +58,7 @@ public sealed class DebugLogger : IDebugLogger
             Exception = exception?.ToString()
         };
 
-        _context.DebugLogs.Add(logEntry);
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = _context.DebugLogs.Add(logEntry);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 }

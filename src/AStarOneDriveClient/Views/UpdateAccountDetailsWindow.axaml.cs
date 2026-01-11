@@ -16,7 +16,7 @@ public sealed partial class UpdateAccountDetailsWindow : Window
         // Retrieve the UpdateAccountDetailsViewModel from DI container
         if (App.Services is not null)
         {
-            var viewModel = App.Services.GetRequiredService<UpdateAccountDetailsViewModel>();
+            UpdateAccountDetailsViewModel viewModel = App.Services.GetRequiredService<UpdateAccountDetailsViewModel>();
             DataContext = viewModel;
 
             // Wire up RequestClose event to close the window

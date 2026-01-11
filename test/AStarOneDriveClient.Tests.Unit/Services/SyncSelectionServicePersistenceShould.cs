@@ -9,11 +9,11 @@ public class SyncSelectionServicePersistenceShould
     [Fact]
     public async Task SaveCheckedFoldersToDatabase()
     {
-        var mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
         var sut = new SyncSelectionService(mockRepo);
 
-        var folder1 = CreateFolder("1", "Folder1", "/Folder1");
-        var folder2 = CreateFolder("2", "Folder2", "/Folder2");
+        OneDriveFolderNode folder1 = CreateFolder("1", "Folder1", "/Folder1");
+        OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
         sut.SetSelection(folder1, true);
@@ -32,11 +32,11 @@ public class SyncSelectionServicePersistenceShould
     [Fact]
     public async Task SaveMultipleCheckedFoldersToDatabase()
     {
-        var mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
         var sut = new SyncSelectionService(mockRepo);
 
-        var folder1 = CreateFolder("1", "Folder1", "/Folder1");
-        var folder2 = CreateFolder("2", "Folder2", "/Folder2");
+        OneDriveFolderNode folder1 = CreateFolder("1", "Folder1", "/Folder1");
+        OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
         sut.SetSelection(folder1, true);
@@ -53,11 +53,11 @@ public class SyncSelectionServicePersistenceShould
     [Fact]
     public async Task NotSaveUncheckedFoldersToDatabase()
     {
-        var mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
         var sut = new SyncSelectionService(mockRepo);
 
-        var folder1 = CreateFolder("1", "Folder1", "/Folder1");
-        var folder2 = CreateFolder("2", "Folder2", "/Folder2");
+        OneDriveFolderNode folder1 = CreateFolder("1", "Folder1", "/Folder1");
+        OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
         // Don't select any folders
@@ -73,14 +73,14 @@ public class SyncSelectionServicePersistenceShould
     [Fact]
     public async Task LoadSelectionsFromDatabaseAndApplyToTree()
     {
-        var mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>(["/Folder1"]));
 
         var sut = new SyncSelectionService(mockRepo);
 
-        var folder1 = CreateFolder("1", "Folder1", "/Folder1");
-        var folder2 = CreateFolder("2", "Folder2", "/Folder2");
+        OneDriveFolderNode folder1 = CreateFolder("1", "Folder1", "/Folder1");
+        OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
         await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
@@ -92,13 +92,13 @@ public class SyncSelectionServicePersistenceShould
     [Fact]
     public async Task HandleEmptyDatabaseGracefully()
     {
-        var mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>([]));
 
         var sut = new SyncSelectionService(mockRepo);
 
-        var folder = CreateFolder("1", "Folder1", "/Folder1");
+        OneDriveFolderNode folder = CreateFolder("1", "Folder1", "/Folder1");
         var rootFolders = new List<OneDriveFolderNode> { folder };
 
         await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
@@ -109,8 +109,8 @@ public class SyncSelectionServicePersistenceShould
     [Fact]
     public async Task IgnoreFoldersInDatabaseThatNoLongerExist()
     {
-        var mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>([
                 "/Folder1",
                 "/DeletedFolder",
@@ -119,8 +119,8 @@ public class SyncSelectionServicePersistenceShould
 
         var sut = new SyncSelectionService(mockRepo);
 
-        var folder1 = CreateFolder("1", "Folder1", "/Folder1");
-        var folder2 = CreateFolder("2", "Folder2", "/Folder2");
+        OneDriveFolderNode folder1 = CreateFolder("1", "Folder1", "/Folder1");
+        OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
         await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
@@ -133,15 +133,15 @@ public class SyncSelectionServicePersistenceShould
     [Fact]
     public async Task RecalculateIndeterminateStatesAfterLoading()
     {
-        var mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>(["/Parent/Child1"]));
 
         var sut = new SyncSelectionService(mockRepo);
 
-        var child1 = CreateFolder("c1", "Child1", "/Parent/Child1");
-        var child2 = CreateFolder("c2", "Child2", "/Parent/Child2");
-        var parent = CreateFolder("p", "Parent", "/Parent");
+        OneDriveFolderNode child1 = CreateFolder("c1", "Child1", "/Parent/Child1");
+        OneDriveFolderNode child2 = CreateFolder("c2", "Child2", "/Parent/Child2");
+        OneDriveFolderNode parent = CreateFolder("p", "Parent", "/Parent");
         parent.Children.Add(child1);
         parent.Children.Add(child2);
         child1.ParentId = "p";
@@ -159,17 +159,17 @@ public class SyncSelectionServicePersistenceShould
     [Fact]
     public async Task WorkWithNestedFolderStructures()
     {
-        var mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>([
                 "/Parent/Child/Grandchild"
             ]));
 
         var sut = new SyncSelectionService(mockRepo);
 
-        var grandchild = CreateFolder("gc", "Grandchild", "/Parent/Child/Grandchild");
-        var child = CreateFolder("c", "Child", "/Parent/Child");
-        var parent = CreateFolder("p", "Parent", "/Parent");
+        OneDriveFolderNode grandchild = CreateFolder("gc", "Grandchild", "/Parent/Child/Grandchild");
+        OneDriveFolderNode child = CreateFolder("c", "Child", "/Parent/Child");
+        OneDriveFolderNode parent = CreateFolder("p", "Parent", "/Parent");
 
         child.Children.Add(grandchild);
         parent.Children.Add(child);
@@ -189,7 +189,7 @@ public class SyncSelectionServicePersistenceShould
     {
         var sut = new SyncSelectionService(); // No repository
 
-        var folder = CreateFolder("1", "Folder1", "/Folder1");
+        OneDriveFolderNode folder = CreateFolder("1", "Folder1", "/Folder1");
         sut.SetSelection(folder, true);
         var rootFolders = new List<OneDriveFolderNode> { folder };
 
@@ -202,7 +202,7 @@ public class SyncSelectionServicePersistenceShould
     {
         var sut = new SyncSelectionService(); // No repository
 
-        var folder = CreateFolder("1", "Folder1", "/Folder1");
+        OneDriveFolderNode folder = CreateFolder("1", "Folder1", "/Folder1");
         var rootFolders = new List<OneDriveFolderNode> { folder };
 
         // Should not throw

@@ -20,7 +20,7 @@ public class SyncTreeViewModelShould : IDisposable
         _mockSyncEngine = Substitute.For<ISyncEngine>();
 
         _progressSubject = new Subject<SyncState>();
-        _mockSyncEngine.Progress.Returns(_progressSubject);
+        _ = _mockSyncEngine.Progress.Returns(_progressSubject);
 
         _viewModel = new SyncTreeViewModel(_mockFolderService, _mockSelectionService, _mockSyncEngine);
     }
@@ -43,7 +43,7 @@ public class SyncTreeViewModelShould : IDisposable
             new() { Id = "folder2", Name = "Folder 2", IsFolder = true }
         };
 
-        _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(folders);
 
         _viewModel.SelectedAccountId = "account123";
@@ -61,7 +61,7 @@ public class SyncTreeViewModelShould : IDisposable
         _viewModel.RootFolders.Add(new OneDriveFolderNode { Id = "test", Name = "Test" });
 
         _viewModel.SelectedAccountId = null;
-        _viewModel.LoadFoldersCommand.Execute().Subscribe();
+        _ = _viewModel.LoadFoldersCommand.Execute().Subscribe();
 
         _viewModel.RootFolders.ShouldBeEmpty();
     }
@@ -70,7 +70,7 @@ public class SyncTreeViewModelShould : IDisposable
     public async Task SetIsLoadingDuringFolderLoad()
     {
         var tcs = new TaskCompletionSource<IReadOnlyList<OneDriveFolderNode>>();
-        _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(info => tcs.Task);
 
         var isLoadingValues = new List<bool>();
@@ -96,14 +96,14 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact]
     public async Task SetErrorMessageWhenLoadFails()
     {
-        _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<IReadOnlyList<OneDriveFolderNode>>(new InvalidOperationException("Test error")));
 
         _viewModel.SelectedAccountId = "account123";
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        _viewModel.ErrorMessage.ShouldNotBeNull();
+        _ = _viewModel.ErrorMessage.ShouldNotBeNull();
         _viewModel.ErrorMessage.ShouldContain("Test error");
     }
 
@@ -116,12 +116,12 @@ public class SyncTreeViewModelShould : IDisposable
             new() { Id = "child1", Name = "Child 1", ParentId = "parent", IsFolder = true }
         };
 
-        _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<CancellationToken>())
             .Returns(children);
 
         _viewModel.SelectedAccountId = "account123";
 
-        _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
+        _ = _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         parent.Children.Count.ShouldBe(1);
@@ -142,10 +142,10 @@ public class SyncTreeViewModelShould : IDisposable
 
         _viewModel.SelectedAccountId = "account123";
 
-        _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
+        _ = _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        await _mockFolderService.DidNotReceive().GetChildFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = await _mockFolderService.DidNotReceive().GetChildFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -164,12 +164,12 @@ public class SyncTreeViewModelShould : IDisposable
             new() { Id = "child1", Name = "Child 1", ParentId = "parent", IsFolder = true }
         };
 
-        _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<CancellationToken>())
             .Returns(children);
 
         _viewModel.SelectedAccountId = "account123";
 
-        _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
+        _ = _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         parent.Children[0].SelectionState.ShouldBe(SelectionState.Unchecked);
@@ -186,7 +186,7 @@ public class SyncTreeViewModelShould : IDisposable
             SelectionState = SelectionState.Unchecked
         };
 
-        _viewModel.ToggleSelectionCommand.Execute(folder).Subscribe();
+        _ = _viewModel.ToggleSelectionCommand.Execute(folder).Subscribe();
 
         _mockSelectionService.Received(1).SetSelection(folder, true);
         _mockSelectionService.Received(1).UpdateParentStates(folder, Arg.Any<List<OneDriveFolderNode>>());
@@ -202,7 +202,7 @@ public class SyncTreeViewModelShould : IDisposable
             SelectionState = SelectionState.Checked
         };
 
-        _viewModel.ToggleSelectionCommand.Execute(folder).Subscribe();
+        _ = _viewModel.ToggleSelectionCommand.Execute(folder).Subscribe();
 
         _mockSelectionService.Received(1).SetSelection(folder, false);
     }
@@ -217,7 +217,7 @@ public class SyncTreeViewModelShould : IDisposable
             SelectionState = SelectionState.Indeterminate
         };
 
-        _viewModel.ToggleSelectionCommand.Execute(folder).Subscribe();
+        _ = _viewModel.ToggleSelectionCommand.Execute(folder).Subscribe();
 
         _mockSelectionService.Received(1).SetSelection(folder, true);
     }
@@ -227,7 +227,7 @@ public class SyncTreeViewModelShould : IDisposable
     {
         _viewModel.RootFolders.Add(new OneDriveFolderNode { Id = "folder1", Name = "Folder 1" });
 
-        _viewModel.ClearSelectionsCommand.Execute().Subscribe();
+        _ = _viewModel.ClearSelectionsCommand.Execute().Subscribe();
 
         _mockSelectionService.Received(1).ClearAllSelections(Arg.Any<List<OneDriveFolderNode>>());
     }
@@ -240,10 +240,10 @@ public class SyncTreeViewModelShould : IDisposable
             new() { Id = "selected1", Name = "Selected 1", SelectionState = SelectionState.Checked }
         };
 
-        _mockSelectionService.GetSelectedFolders(Arg.Any<List<OneDriveFolderNode>>())
+        _ = _mockSelectionService.GetSelectedFolders(Arg.Any<List<OneDriveFolderNode>>())
             .Returns(selectedFolders);
 
-        var result = _viewModel.GetSelectedFolders();
+        List<OneDriveFolderNode> result = _viewModel.GetSelectedFolders();
 
         result.Count.ShouldBe(1);
         result[0].Name.ShouldBe("Selected 1");
@@ -280,37 +280,37 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact]
     public void ThrowArgumentNullExceptionWhenFolderServiceIsNull()
     {
-        var exception = Record.Exception(() => new SyncTreeViewModel(null!, _mockSelectionService, _mockSyncEngine));
+        Exception? exception = Record.Exception(() => new SyncTreeViewModel(null!, _mockSelectionService, _mockSyncEngine));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenSelectionServiceIsNull()
     {
-        var exception = Record.Exception(() => new SyncTreeViewModel(_mockFolderService, null!, _mockSyncEngine));
+        Exception? exception = Record.Exception(() => new SyncTreeViewModel(_mockFolderService, null!, _mockSyncEngine));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenLoadingChildrenWithNullFolder()
     {
-        var exception = Record.Exception(() => _viewModel.LoadChildrenCommand.Execute(null!).Subscribe());
+        Exception? exception = Record.Exception(() => _viewModel.LoadChildrenCommand.Execute(null!).Subscribe());
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenTogglingNullFolder()
     {
-        var exception = Record.Exception(() => _viewModel.ToggleSelectionCommand.Execute(null!).Subscribe());
+        Exception? exception = Record.Exception(() => _viewModel.ToggleSelectionCommand.Execute(null!).Subscribe());
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     public void Dispose()

@@ -17,7 +17,7 @@ public class FolderTreeBuilderShould
             CreateFolder("child2", "Child 2", "root1", "/drive/root:/Root Folder 1")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree.Count.ShouldBe(2);
         tree[0].Name.ShouldBe("Root Folder 1");
@@ -37,7 +37,7 @@ public class FolderTreeBuilderShould
             CreateFile("file1", "My File.txt", null, "/drive/root:")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Name.ShouldBe("My Folder");
@@ -55,7 +55,7 @@ public class FolderTreeBuilderShould
             CreateFolder("childM", "Mango", "root", "/drive/root:/Root")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Children.Count.ShouldBe(3);
@@ -74,7 +74,7 @@ public class FolderTreeBuilderShould
             CreateFolder("level3", "Level 3", "level2", "/drive/root:/Level 1/Level 2")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Name.ShouldBe("Level 1");
@@ -93,7 +93,7 @@ public class FolderTreeBuilderShould
             CreateFolder("work", "Work", "docs", "/drive/root:/Documents")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree[0].Path.ShouldBe("/Documents");
         tree[0].Children[0].Path.ShouldBe("/Documents/Work");
@@ -104,7 +104,7 @@ public class FolderTreeBuilderShould
     {
         var items = new List<DriveItem>();
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree.ShouldBeEmpty();
     }
@@ -117,7 +117,7 @@ public class FolderTreeBuilderShould
             CreateFolder("orphan", "Orphan Folder", "nonexistent", "/drive/root:/Somewhere")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree.ShouldBeEmpty();
     }
@@ -133,7 +133,7 @@ public class FolderTreeBuilderShould
             CreateFolder("grandchild", "Grandchild", "child1", "/drive/root:/Root/Child 1")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items, "root");
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items, "root");
 
         tree.Count.ShouldBe(2);
         tree[0].Name.ShouldBe("Child 1");
@@ -221,7 +221,7 @@ public class FolderTreeBuilderShould
             CreateFolder("valid", "Valid Folder", null, "/drive/root:")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Id.ShouldBe("valid");
@@ -242,7 +242,7 @@ public class FolderTreeBuilderShould
             CreateFolder("valid", "Valid Folder", null, "/drive/root:")
         };
 
-        var tree = FolderTreeBuilder.BuildTree(items);
+        List<OneDriveFolderNode> tree = FolderTreeBuilder.BuildTree(items);
 
         tree.Count.ShouldBe(1);
         tree[0].Id.ShouldBe("valid");
@@ -251,10 +251,10 @@ public class FolderTreeBuilderShould
     [Fact]
     public void ThrowArgumentNullExceptionWhenItemsIsNull()
     {
-        var exception = Record.Exception(() => FolderTreeBuilder.BuildTree(null!));
+        Exception? exception = Record.Exception(() => FolderTreeBuilder.BuildTree(null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -262,10 +262,10 @@ public class FolderTreeBuilderShould
     {
         var items = new List<DriveItem> { CreateFolder("test", "Test", "parent", "/drive/root:") };
 
-        var exception = Record.Exception(() => FolderTreeBuilder.MergeIntoTree(null!, items, "parent"));
+        Exception? exception = Record.Exception(() => FolderTreeBuilder.MergeIntoTree(null!, items, "parent"));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -273,10 +273,10 @@ public class FolderTreeBuilderShould
     {
         var tree = new List<OneDriveFolderNode>();
 
-        var exception = Record.Exception(() => FolderTreeBuilder.MergeIntoTree(tree, null!, "parent"));
+        Exception? exception = Record.Exception(() => FolderTreeBuilder.MergeIntoTree(tree, null!, "parent"));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -285,38 +285,32 @@ public class FolderTreeBuilderShould
         var tree = new List<OneDriveFolderNode>();
         var items = new List<DriveItem>();
 
-        var exception = Record.Exception(() => FolderTreeBuilder.MergeIntoTree(tree, items, null!));
+        Exception? exception = Record.Exception(() => FolderTreeBuilder.MergeIntoTree(tree, items, null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
-    private static DriveItem CreateFolder(string id, string name, string? parentId, string parentPath)
+    private static DriveItem CreateFolder(string id, string name, string? parentId, string parentPath) => new()
     {
-        return new DriveItem
+        Id = id,
+        Name = name,
+        Folder = new Folder(),
+        ParentReference = new ItemReference
         {
-            Id = id,
-            Name = name,
-            Folder = new Folder(),
-            ParentReference = new ItemReference
-            {
-                Id = parentId,
-                Path = parentPath
-            }
-        };
-    }
+            Id = parentId,
+            Path = parentPath
+        }
+    };
 
-    private static DriveItem CreateFile(string id, string name, string? parentId, string parentPath)
+    private static DriveItem CreateFile(string id, string name, string? parentId, string parentPath) => new()
     {
-        return new DriveItem
+        Id = id,
+        Name = name,
+        ParentReference = new ItemReference
         {
-            Id = id,
-            Name = name,
-            ParentReference = new ItemReference
-            {
-                Id = parentId,
-                Path = parentPath
-            }
-        };
-    }
+            Id = parentId,
+            Path = parentPath
+        }
+    };
 }

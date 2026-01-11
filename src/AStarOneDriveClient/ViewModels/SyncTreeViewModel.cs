@@ -176,12 +176,12 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         CancelSyncCommand = ReactiveCommand.CreateFromTask(CancelSyncAsync,
             this.WhenAnyValue(x => x.IsSyncing));
 
-        this.WhenAnyValue(x => x.SelectedAccountId)
+        _ = this.WhenAnyValue(x => x.SelectedAccountId)
             .Subscribe(_ => LoadFoldersCommand.Execute().Subscribe())
             .DisposeWith(_disposables);
 
         // Subscribe to sync progress updates
-        _syncEngine.Progress
+        _ = _syncEngine.Progress
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(state =>
             {
@@ -210,7 +210,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             IsLoading = true;
             ErrorMessage = null;
 
-            var folders = await _folderTreeService.GetRootFoldersAsync(SelectedAccountId, cancellationToken);
+            IReadOnlyList<OneDriveFolderNode> folders = await _folderTreeService.GetRootFoldersAsync(SelectedAccountId, cancellationToken);
 
             // Convert to list to ensure we work with the same object references
             var folderList = folders.ToList();
@@ -220,7 +220,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
             // Now add folders to UI with correct selection states already applied
             RootFolders.Clear();
-            foreach (var folder in folderList)
+            foreach (OneDriveFolderNode? folder in folderList)
             {
                 RootFolders.Add(folder);
             }
@@ -255,8 +255,8 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             // Clear placeholder dummy child
             folder.Children.Clear();
 
-            var children = await _folderTreeService.GetChildFoldersAsync(SelectedAccountId, folder.Id, cancellationToken);
-            foreach (var child in children)
+            IReadOnlyList<OneDriveFolderNode> children = await _folderTreeService.GetChildFoldersAsync(SelectedAccountId, folder.Id, cancellationToken);
+            foreach (OneDriveFolderNode child in children)
             {
                 folder.Children.Add(child);
             }

@@ -13,30 +13,30 @@ public class FileWatcherServiceShould : IDisposable
 
     public FileWatcherServiceShould()
     {
-        var mockLogger = Substitute.For<ILogger<FileWatcherService>>();
+        ILogger<FileWatcherService> mockLogger = Substitute.For<ILogger<FileWatcherService>>();
         _sut = new FileWatcherService(mockLogger);
 
         // Create a temporary directory for testing
         _testDirectory = Path.Combine(Path.GetTempPath(), $"FileWatcherTest_{Guid.CreateVersion7()}");
-        Directory.CreateDirectory(_testDirectory);
+        _ = Directory.CreateDirectory(_testDirectory);
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenAccountIdIsNull()
     {
-        var exception = Record.Exception(() =>
+        Exception? exception = Record.Exception(() =>
             _sut.StartWatching(null!, _testDirectory));
 
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenLocalPathIsNull()
     {
-        var exception = Record.Exception(() =>
+        Exception? exception = Record.Exception(() =>
             _sut.StartWatching("account1", null!));
 
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -44,17 +44,17 @@ public class FileWatcherServiceShould : IDisposable
     {
         var nonExistentPath = Path.Combine(_testDirectory, "NonExistent");
 
-        var exception = Record.Exception(() =>
+        Exception? exception = Record.Exception(() =>
             _sut.StartWatching("account1", nonExistentPath));
 
-        exception.ShouldBeOfType<DirectoryNotFoundException>();
+        _ = exception.ShouldBeOfType<DirectoryNotFoundException>();
     }
 
     [Fact]
     public async Task DetectFileCreationEvents()
     {
         var events = new List<FileChangeEvent>();
-        using var subscription = _sut.FileChanges.Subscribe(events.Add);
+        using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
 
@@ -72,7 +72,7 @@ public class FileWatcherServiceShould : IDisposable
         events.ShouldNotBeEmpty();
 
         // Verify at least one event is for our test file
-        var fileEvent = events.FirstOrDefault(e => e.RelativePath == "test.txt");
+        FileChangeEvent? fileEvent = events.FirstOrDefault(e => e.RelativePath == "test.txt");
         fileEvent?.AccountId.ShouldBe("account1");
     }
 
@@ -84,7 +84,7 @@ public class FileWatcherServiceShould : IDisposable
         await File.WriteAllTextAsync(testFile, "initial", TestContext.Current.CancellationToken);
 
         var events = new List<FileChangeEvent>();
-        using var subscription = _sut.FileChanges.Subscribe(events.Add);
+        using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -97,11 +97,11 @@ public class FileWatcherServiceShould : IDisposable
 
         events.ShouldNotBeEmpty();
 
-        var modifiedEvent = events.FirstOrDefault(e =>
+        FileChangeEvent? modifiedEvent = events.FirstOrDefault(e =>
             e.ChangeType == FileChangeType.Modified &&
             e.RelativePath == "modify.txt");
 
-        modifiedEvent.ShouldNotBeNull();
+        _ = modifiedEvent.ShouldNotBeNull();
         modifiedEvent.AccountId.ShouldBe("account1");
     }
 
@@ -113,7 +113,7 @@ public class FileWatcherServiceShould : IDisposable
         await File.WriteAllTextAsync(testFile, "content", TestContext.Current.CancellationToken);
 
         var events = new List<FileChangeEvent>();
-        using var subscription = _sut.FileChanges.Subscribe(events.Add);
+        using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -126,11 +126,11 @@ public class FileWatcherServiceShould : IDisposable
 
         events.ShouldNotBeEmpty();
 
-        var deletedEvent = events.FirstOrDefault(e =>
+        FileChangeEvent? deletedEvent = events.FirstOrDefault(e =>
             e.ChangeType == FileChangeType.Deleted &&
             e.RelativePath == "delete.txt");
 
-        deletedEvent.ShouldNotBeNull();
+        _ = deletedEvent.ShouldNotBeNull();
         deletedEvent.AccountId.ShouldBe("account1");
     }
 
@@ -138,10 +138,10 @@ public class FileWatcherServiceShould : IDisposable
     public async Task DetectChangesInSubdirectories()
     {
         var subDir = Path.Combine(_testDirectory, "SubFolder");
-        Directory.CreateDirectory(subDir);
+        _ = Directory.CreateDirectory(subDir);
 
         var events = new List<FileChangeEvent>();
-        using var subscription = _sut.FileChanges.Subscribe(events.Add);
+        using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -154,10 +154,10 @@ public class FileWatcherServiceShould : IDisposable
 
         events.ShouldNotBeEmpty();
 
-        var nestedEvent = events.FirstOrDefault(e =>
+        FileChangeEvent? nestedEvent = events.FirstOrDefault(e =>
             e.RelativePath == Path.Combine("SubFolder", "nested.txt"));
 
-        nestedEvent.ShouldNotBeNull();
+        _ = nestedEvent.ShouldNotBeNull();
         nestedEvent.AccountId.ShouldBe("account1");
     }
 
@@ -166,11 +166,11 @@ public class FileWatcherServiceShould : IDisposable
     {
         var dir1 = Path.Combine(_testDirectory, "Account1");
         var dir2 = Path.Combine(_testDirectory, "Account2");
-        Directory.CreateDirectory(dir1);
-        Directory.CreateDirectory(dir2);
+        _ = Directory.CreateDirectory(dir1);
+        _ = Directory.CreateDirectory(dir2);
 
         var events = new List<FileChangeEvent>();
-        using var subscription = _sut.FileChanges.Subscribe(events.Add);
+        using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", dir1);
         _sut.StartWatching("account2", dir2);
@@ -208,7 +208,7 @@ public class FileWatcherServiceShould : IDisposable
     public async Task StopWatchingStopsEmittingEvents()
     {
         var events = new List<FileChangeEvent>();
-        using var subscription = _sut.FileChanges.Subscribe(events.Add);
+        using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
         _sut.StopWatching("account1");
@@ -229,7 +229,7 @@ public class FileWatcherServiceShould : IDisposable
         _sut.StartWatching("account1", _testDirectory);
 
         // Start watching again for same account - should stop existing watcher
-        var exception = Record.Exception(() =>
+        Exception? exception = Record.Exception(() =>
             _sut.StartWatching("account1", _testDirectory));
 
         exception.ShouldBeNull();
@@ -238,22 +238,22 @@ public class FileWatcherServiceShould : IDisposable
     [Fact]
     public void ThrowArgumentNullExceptionWhenStoppingNullAccountId()
     {
-        var exception = Record.Exception(() =>
+        Exception? exception = Record.Exception(() =>
             _sut.StopWatching(null!));
 
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void DisposeCleanlyWithoutThrowingExceptions()
     {
         var subFolder = Path.Combine(_testDirectory, "SubFolder");
-        Directory.CreateDirectory(subFolder);
+        _ = Directory.CreateDirectory(subFolder);
 
         _sut.StartWatching("account1", _testDirectory);
         _sut.StartWatching("account2", subFolder);
 
-        var exception = Record.Exception(_sut.Dispose);
+        Exception? exception = Record.Exception(_sut.Dispose);
 
         exception.ShouldBeNull();
     }
@@ -265,7 +265,7 @@ public class FileWatcherServiceShould : IDisposable
         await File.WriteAllTextAsync(testFile, "initial", TestContext.Current.CancellationToken);
 
         var events = new List<FileChangeEvent>();
-        using var subscription = _sut.FileChanges.Subscribe(events.Add);
+        using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
         _sut.StartWatching("account1", _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);

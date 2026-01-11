@@ -1,3 +1,5 @@
+using AStarOneDriveClient.Models.Enums;
+
 namespace AStarOneDriveClient.Models;
 
 public class SyncConflictShould
@@ -7,12 +9,12 @@ public class SyncConflictShould
     {
         var accountId = "account-id";
         var filePath = "/path/to/conflicted/file.txt";
-        var localModifiedUtc = DateTime.UtcNow.AddMinutes(-10);
-        var remoteModifiedUtc = DateTime.UtcNow.AddMinutes(-5);
+        DateTime localModifiedUtc = DateTime.UtcNow.AddMinutes(-10);
+        DateTime remoteModifiedUtc = DateTime.UtcNow.AddMinutes(-5);
         var localSize = 1024L;
         var remoteSize = 2048L;
-        var detectedUtc = DateTime.UtcNow;
-        var resolutionStrategy = Enums.ConflictResolutionStrategy.None;
+        DateTime detectedUtc = DateTime.UtcNow;
+        ConflictResolutionStrategy resolutionStrategy = Enums.ConflictResolutionStrategy.None;
         var isResolved = false;
 
         var syncConflict = SyncConflict.CreateUnresolvedConflict(
@@ -23,7 +25,7 @@ public class SyncConflictShould
             localSize,
             remoteSize);
 
-        syncConflict.Id.ShouldNotBeNull();
+        _ = syncConflict.Id.ShouldNotBeNull();
         syncConflict.AccountId.ShouldBe(accountId);
         syncConflict.FilePath.ShouldBe(filePath);
         syncConflict.LocalModifiedUtc.ShouldBe(localModifiedUtc);

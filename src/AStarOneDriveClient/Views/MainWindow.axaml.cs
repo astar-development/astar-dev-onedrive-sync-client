@@ -55,7 +55,7 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            var preferences = await _preferencesService.LoadAsync();
+            WindowPreferences? preferences = await _preferencesService.LoadAsync();
             if (preferences is not null)
             {
                 // Apply saved preferences

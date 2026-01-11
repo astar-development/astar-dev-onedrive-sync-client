@@ -12,11 +12,11 @@ public class FileOperationLogShould
         var filePath = "/path/to/file.txt";
         var localPath = "/onedrive/path/to/file.txt";
         var oneDriveId = "onedrive-item-id";
-        var operationType = FileOperation.ConflictDetected;
+        FileOperation operationType = FileOperation.ConflictDetected;
         var localHash = "local-file-hash";
         var fileSize = 2048L;
-        var lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
-        var remoteLastModifiedUtc = DateTime.UtcNow;
+        DateTime lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
+        DateTime remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
         var fileOperationLog = FileOperationLog.CreateSyncConflictLog(
@@ -30,7 +30,7 @@ public class FileOperationLogShould
             lastModifiedUtc,
             remoteLastModifiedUtc);
 
-        fileOperationLog.Id.ShouldNotBeNull();
+        _ = fileOperationLog.Id.ShouldNotBeNull();
         fileOperationLog.AccountId.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);
@@ -49,11 +49,11 @@ public class FileOperationLogShould
         var filePath = "/path/to/file.txt";
         var localPath = "/onedrive/path/to/file.txt";
         var oneDriveId = "onedrive-item-id";
-        var operationType = FileOperation.Download;
+        FileOperation operationType = FileOperation.Download;
         var localHash = "local-file-hash";
         var fileSize = 2048L;
-        var lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
-        var remoteLastModifiedUtc = DateTime.UtcNow;
+        DateTime lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
+        DateTime remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
         var fileOperationLog = FileOperationLog.CreateDownloadLog(
@@ -67,7 +67,7 @@ public class FileOperationLogShould
             lastModifiedUtc,
             reason);
 
-        fileOperationLog.Id.ShouldNotBeNull();
+        _ = fileOperationLog.Id.ShouldNotBeNull();
         fileOperationLog.AccountId.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);
@@ -86,11 +86,11 @@ public class FileOperationLogShould
         var filePath = "/path/to/file.txt";
         var localPath = "/onedrive/path/to/file.txt";
         var oneDriveId = "onedrive-item-id";
-        var operationType = FileOperation.Upload;
+        FileOperation operationType = FileOperation.Upload;
         var localHash = "local-file-hash";
         var fileSize = 2048L;
-        var lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
-        var remoteLastModifiedUtc = DateTime.UtcNow;
+        DateTime lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
+        DateTime remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
         var fileOperationLog = FileOperationLog.CreateUploadLog(
@@ -104,7 +104,7 @@ public class FileOperationLogShould
             lastModifiedUtc,
             reason);
 
-        fileOperationLog.Id.ShouldNotBeNull();
+        _ = fileOperationLog.Id.ShouldNotBeNull();
         fileOperationLog.AccountId.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);

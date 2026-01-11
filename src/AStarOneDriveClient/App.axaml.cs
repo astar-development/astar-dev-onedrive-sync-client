@@ -28,11 +28,11 @@ public sealed class App : Application
         ServiceConfiguration.EnsureDatabaseCreated(Services);
 
         // Initialize static debug logger
-        var debugLogger = Services.GetRequiredService<IDebugLogger>();
+        IDebugLogger debugLogger = Services.GetRequiredService<IDebugLogger>();
         DebugLog.Initialize(debugLogger);
 
         // Start auto-sync scheduler
-        var scheduler = Services.GetRequiredService<IAutoSyncSchedulerService>();
+        IAutoSyncSchedulerService scheduler = Services.GetRequiredService<IAutoSyncSchedulerService>();
         _ = scheduler.StartAsync();
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

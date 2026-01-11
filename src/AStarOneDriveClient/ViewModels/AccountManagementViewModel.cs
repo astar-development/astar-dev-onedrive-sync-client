@@ -41,7 +41,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             outputScheduler: RxApp.MainThreadScheduler);
 
         // Remove Account command - enabled when account is selected
-        var canRemove = this.WhenAnyValue(x => x.SelectedAccount)
+        IObservable<bool> canRemove = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null);
         RemoveAccountCommand = ReactiveCommand.CreateFromTask(
             RemoveAccountAsync,
@@ -49,7 +49,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             RxApp.MainThreadScheduler);
 
         // Login command - enabled when account is selected and not authenticated
-        var canLogin = this.WhenAnyValue(x => x.SelectedAccount)
+        IObservable<bool> canLogin = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null && !account.IsAuthenticated);
         LoginCommand = ReactiveCommand.CreateFromTask(
             LoginAsync,
@@ -57,7 +57,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             RxApp.MainThreadScheduler);
 
         // Logout command - enabled when account is selected and authenticated
-        var canLogout = this.WhenAnyValue(x => x.SelectedAccount)
+        IObservable<bool> canLogout = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null && account.IsAuthenticated);
         LogoutCommand = ReactiveCommand.CreateFromTask(
             LogoutAsync,
@@ -65,9 +65,9 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             RxApp.MainThreadScheduler);
 
         // Dispose observables
-        canRemove.Subscribe().DisposeWith(_disposables);
-        canLogin.Subscribe().DisposeWith(_disposables);
-        canLogout.Subscribe().DisposeWith(_disposables);
+        _ = canRemove.Subscribe().DisposeWith(_disposables);
+        _ = canLogin.Subscribe().DisposeWith(_disposables);
+        _ = canLogout.Subscribe().DisposeWith(_disposables);
 
         // Load accounts on initialization
         _ = LoadAccountsAsync();
@@ -140,9 +140,9 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            var accounts = await _accountRepository.GetAllAsync();
+            IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (var account in accounts)
+            foreach (AccountInfo account in accounts)
             {
                 Accounts.Add(account);
             }
@@ -163,7 +163,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastMessage = null;
             ToastVisible = false;
 
-            var result = await _authService.LoginAsync();
+            AuthenticationResult result = await _authService.LoginAsync();
             if (result.Success && result.AccountId is not null && result.DisplayName is not null)
             {
                 // Create new account with default sync path
@@ -211,7 +211,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         try
         {
             await _accountRepository.DeleteAsync(SelectedAccount.AccountId);
-            Accounts.Remove(SelectedAccount);
+            _ = Accounts.Remove(SelectedAccount);
             SelectedAccount = null;
         }
         finally
@@ -235,10 +235,10 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastMessage = null;
             ToastVisible = false;
 
-            var result = await _authService.LoginAsync();
+            AuthenticationResult result = await _authService.LoginAsync();
             if (result.Success)
             {
-                var updatedAccount = SelectedAccount with { IsAuthenticated = true };
+                AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = true };
                 await _accountRepository.UpdateAsync(updatedAccount);
 
                 var index = Accounts.IndexOf(SelectedAccount);
@@ -298,7 +298,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             var success = await _authService.LogoutAsync(SelectedAccount.AccountId);
             if (success)
             {
-                var updatedAccount = SelectedAccount with { IsAuthenticated = false };
+                AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };
                 await _accountRepository.UpdateAsync(updatedAccount);
 
                 var index = Accounts.IndexOf(SelectedAccount);

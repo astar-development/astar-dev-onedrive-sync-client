@@ -13,83 +13,83 @@ public class ConflictResolutionViewModelShould
     [Fact]
     public void ThrowArgumentNullExceptionWhenAccountIdIsNull()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var conflictResolver = Substitute.For<IConflictResolver>();
-        var logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        IConflictResolver conflictResolver = Substitute.For<IConflictResolver>();
+        ILogger<ConflictResolutionViewModel> logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
 
-        var exception = Record.Exception(() => new ConflictResolutionViewModel(
+        Exception? exception = Record.Exception(() => new ConflictResolutionViewModel(
             null!,
             syncEngine,
             conflictResolver,
             logger));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentExceptionWhenAccountIdIsEmpty()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var conflictResolver = Substitute.For<IConflictResolver>();
-        var logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        IConflictResolver conflictResolver = Substitute.For<IConflictResolver>();
+        ILogger<ConflictResolutionViewModel> logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
 
-        var exception = Record.Exception(() => new ConflictResolutionViewModel(
+        Exception? exception = Record.Exception(() => new ConflictResolutionViewModel(
             string.Empty,
             syncEngine,
             conflictResolver,
             logger));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenSyncEngineIsNull()
     {
-        var conflictResolver = Substitute.For<IConflictResolver>();
-        var logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
+        IConflictResolver conflictResolver = Substitute.For<IConflictResolver>();
+        ILogger<ConflictResolutionViewModel> logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
 
-        var exception = Record.Exception(() => new ConflictResolutionViewModel(
+        Exception? exception = Record.Exception(() => new ConflictResolutionViewModel(
             "test-account",
             null!,
             conflictResolver,
             logger));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenConflictResolverIsNull()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        ILogger<ConflictResolutionViewModel> logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
 
-        var exception = Record.Exception(() => new ConflictResolutionViewModel(
+        Exception? exception = Record.Exception(() => new ConflictResolutionViewModel(
             "test-account",
             syncEngine,
             null!,
             logger));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenLoggerIsNull()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var conflictResolver = Substitute.For<IConflictResolver>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        IConflictResolver conflictResolver = Substitute.For<IConflictResolver>();
 
-        var exception = Record.Exception(() => new ConflictResolutionViewModel(
+        Exception? exception = Record.Exception(() => new ConflictResolutionViewModel(
             "test-account",
             syncEngine,
             conflictResolver,
             null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -101,21 +101,21 @@ public class ConflictResolutionViewModelShould
             CreateTestConflict("file2.txt")
         };
 
-        var (viewModel, syncEngine, _, _) = CreateTestViewModel(conflicts);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine? syncEngine, IConflictResolver _, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
         // Wait for LoadConflictsCommand to complete (auto-executed on construction)
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Conflicts.Count.ShouldBe(2);
         viewModel.HasConflicts.ShouldBeTrue();
-        await syncEngine.Received(1).GetConflictsAsync("test-account", Arg.Any<CancellationToken>());
+        _ = await syncEngine.Received(1).GetConflictsAsync("test-account", Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task SetStatusMessageWhenConflictsLoaded()
     {
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
-        var (viewModel, _, _, _) = CreateTestViewModel(conflicts);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver _, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
@@ -125,7 +125,7 @@ public class ConflictResolutionViewModelShould
     [Fact]
     public async Task SetStatusMessageWhenNoConflictsFound()
     {
-        var (viewModel, _, _, _) = CreateTestViewModel([]);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver _, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel([]);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
@@ -142,14 +142,14 @@ public class ConflictResolutionViewModelShould
             CreateTestConflict("file2.txt")
         };
 
-        var (viewModel, _, conflictResolver, _) = CreateTestViewModel(conflicts);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver? conflictResolver, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
         viewModel.Conflicts[1].SelectedStrategy = ConflictResolutionStrategy.KeepRemote;
 
-        await viewModel.ResolveAllCommand.Execute().FirstAsync();
+        _ = await viewModel.ResolveAllCommand.Execute().FirstAsync();
 
         await conflictResolver.Received(2).ResolveAsync(
             Arg.Any<SyncConflict>(),
@@ -166,14 +166,14 @@ public class ConflictResolutionViewModelShould
             CreateTestConflict("file2.txt")
         };
 
-        var (viewModel, _, conflictResolver, _) = CreateTestViewModel(conflicts);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver? conflictResolver, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
         viewModel.Conflicts[1].SelectedStrategy = ConflictResolutionStrategy.None;
 
-        await viewModel.ResolveAllCommand.Execute().FirstAsync();
+        _ = await viewModel.ResolveAllCommand.Execute().FirstAsync();
 
         await conflictResolver.Received(1).ResolveAsync(
             Arg.Any<SyncConflict>(),
@@ -189,13 +189,13 @@ public class ConflictResolutionViewModelShould
     public async Task RemoveResolvedConflictsFromCollection()
     {
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
-        var (viewModel, _, _, _) = CreateTestViewModel(conflicts);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver _, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
 
-        await viewModel.ResolveAllCommand.Execute().FirstAsync();
+        _ = await viewModel.ResolveAllCommand.Execute().FirstAsync();
 
         viewModel.Conflicts.Count.ShouldBe(0);
         viewModel.HasConflicts.ShouldBeFalse();
@@ -205,7 +205,7 @@ public class ConflictResolutionViewModelShould
     public async Task SetIsResolvingFlagDuringResolution()
     {
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
-        var (viewModel, _, conflictResolver, _) = CreateTestViewModel(conflicts);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver? conflictResolver, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
@@ -219,12 +219,12 @@ public class ConflictResolutionViewModelShould
             }
         };
 
-        conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())
+        _ = conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())
             .Returns(async _ => await Task.Delay(50));
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
 
-        await viewModel.ResolveAllCommand.Execute().FirstAsync();
+        _ = await viewModel.ResolveAllCommand.Execute().FirstAsync();
 
         isResolvingValues.ShouldContain(true);
         viewModel.IsResolving.ShouldBeFalse();
@@ -233,11 +233,11 @@ public class ConflictResolutionViewModelShould
     [Fact]
     public async Task HandleErrorsDuringConflictLoading()
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var conflictResolver = Substitute.For<IConflictResolver>();
-        var logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        IConflictResolver conflictResolver = Substitute.For<IConflictResolver>();
+        ILogger<ConflictResolutionViewModel> logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
 
-        syncEngine.GetConflictsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.GetConflictsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns<IReadOnlyList<SyncConflict>>(_ => throw new InvalidOperationException("Database error"));
 
         var viewModel = new ConflictResolutionViewModel("test-account", syncEngine, conflictResolver, logger);
@@ -252,16 +252,16 @@ public class ConflictResolutionViewModelShould
     public async Task HandleErrorsDuringResolution()
     {
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
-        var (viewModel, _, conflictResolver, _) = CreateTestViewModel(conflicts);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver? conflictResolver, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())
+        _ = conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new IOException("File locked"));
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
 
-        await viewModel.ResolveAllCommand.Execute().FirstAsync();
+        _ = await viewModel.ResolveAllCommand.Execute().FirstAsync();
 
         viewModel.StatusMessage.ShouldContain("Error resolving conflicts");
         viewModel.IsResolving.ShouldBeFalse();
@@ -271,14 +271,14 @@ public class ConflictResolutionViewModelShould
     public async Task UpdateHasConflictsPropertyWhenCollectionChanges()
     {
         var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt") };
-        var (viewModel, _, _, _) = CreateTestViewModel(conflicts);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver _, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.HasConflicts.ShouldBeTrue();
 
         viewModel.Conflicts[0].SelectedStrategy = ConflictResolutionStrategy.KeepLocal;
-        await viewModel.ResolveAllCommand.Execute().FirstAsync();
+        _ = await viewModel.ResolveAllCommand.Execute().FirstAsync();
 
         viewModel.HasConflicts.ShouldBeFalse();
     }
@@ -286,9 +286,9 @@ public class ConflictResolutionViewModelShould
     [Fact]
     public void ExecuteCancelCommandSuccessfully()
     {
-        var (viewModel, _, _, _) = CreateTestViewModel([]);
+        (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver _, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel([]);
 
-        viewModel.CancelCommand.Execute().Subscribe();
+        _ = viewModel.CancelCommand.Execute().Subscribe();
 
         viewModel.StatusMessage.ShouldContain("cancelled");
     }
@@ -309,14 +309,14 @@ public class ConflictResolutionViewModelShould
     private static (ConflictResolutionViewModel ViewModel, ISyncEngine SyncEngine, IConflictResolver ConflictResolver, ILogger<ConflictResolutionViewModel> Logger)
         CreateTestViewModel(List<SyncConflict> conflicts)
     {
-        var syncEngine = Substitute.For<ISyncEngine>();
-        var conflictResolver = Substitute.For<IConflictResolver>();
-        var logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
+        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
+        IConflictResolver conflictResolver = Substitute.For<IConflictResolver>();
+        ILogger<ConflictResolutionViewModel> logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
 
-        syncEngine.GetConflictsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.GetConflictsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(conflicts);
 
-        conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())
+        _ = conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
         var viewModel = new ConflictResolutionViewModel("test-account", syncEngine, conflictResolver, logger);

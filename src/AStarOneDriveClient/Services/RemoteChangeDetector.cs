@@ -49,7 +49,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         // Note: For large OneDrive accounts (100k+ files), this can take several minutes
         // In future sprints, this will be enhanced with proper delta query support
         var changes = new List<FileMetadata>();
-        var rootItem = await GetFolderItemAsync(accountId, folderPath, cancellationToken);
+        DriveItem? rootItem = await GetFolderItemAsync(accountId, folderPath, cancellationToken);
 
         if (rootItem is not null)
         {
@@ -112,7 +112,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Trimmed path: '{folderPath}'", cancellationToken);
 
         // Get root and traverse path segments
-        var currentItem = await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
+        DriveItem? currentItem = await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
         if (currentItem?.Id is null)
         {
             await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", "Failed to get drive root", null, cancellationToken);
@@ -125,7 +125,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         foreach (var segment in pathSegments)
         {
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for segment: '{segment}'", cancellationToken);
-            var children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, currentItem.Id, cancellationToken);
+            IEnumerable<DriveItem> children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, currentItem.Id, cancellationToken);
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found {children.Count()} children in current folder", cancellationToken);
 
             currentItem = children.FirstOrDefault(c =>
@@ -170,13 +170,13 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
             return;
         }
 
-        var children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentItem.Id, cancellationToken);
+        IEnumerable<DriveItem> children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentItem.Id, cancellationToken);
         await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Found {children.Count()} items in '{currentPath}'", cancellationToken);
 
         var fileCount = 0;
         var folderCount = 0;
 
-        foreach (var item in children)
+        foreach (DriveItem item in children)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -190,7 +190,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
                 // It's a file
                 fileCount++;
                 var itemPath = CombinePaths(currentPath, item.Name);
-                var metadata = ConvertToFileMetadata(accountId, item, itemPath);
+                FileMetadata metadata = ConvertToFileMetadata(accountId, item, itemPath);
                 changes.Add(metadata);
                 if (changes.Count % 500 == 0)
                 {
@@ -212,9 +212,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         await DebugLog.ExitAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", cancellationToken);
     }
 
-    private static FileMetadata ConvertToFileMetadata(string accountId, DriveItem item, string path)
-    {
-        return new FileMetadata(
+    private static FileMetadata ConvertToFileMetadata(string accountId, DriveItem item, string path) => new(
             Id: item.Id ?? string.Empty,
             AccountId: accountId,
             Name: item.Name ?? string.Empty,
@@ -227,7 +225,6 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
             LocalHash: null, // Will be computed after download
             SyncStatus: FileSyncStatus.PendingDownload,
             LastSyncDirection: SyncDirection.Download);
-    }
 
     private static string CombinePaths(string basePath, string name)
     {

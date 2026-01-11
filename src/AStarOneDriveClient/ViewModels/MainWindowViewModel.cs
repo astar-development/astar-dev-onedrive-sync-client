@@ -2,6 +2,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.Services;
@@ -92,18 +93,18 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         _conflictRepository = conflictRepository;
 
         // Wire up: When an account is selected, update the sync tree
-        accountManagementViewModel
+        _ = accountManagementViewModel
             .WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account?.AccountId)
             .BindTo(syncTreeViewModel, x => x.SelectedAccountId)
             .DisposeWith(_disposables);
 
         // Wire up: Check for unresolved conflicts when account selection changes
-        accountManagementViewModel
+        _ = accountManagementViewModel
             .WhenAnyValue(x => x.SelectedAccount)
             .Subscribe(async account =>
             {
-                if (account is not null)
+                if(account is not null)
                 {
                     await UpdateConflictStatusAsync(account.AccountId);
                 }
@@ -115,7 +116,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             .DisposeWith(_disposables);
 
         // Wire up: When sync completes successfully, start auto-sync monitoring
-        syncTreeViewModel
+        _ = syncTreeViewModel
             .WhenAnyValue(x => x.SyncState)
             .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.AccountId))
             .Subscribe(async state =>
@@ -123,8 +124,8 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                 try
                 {
                     // Get account info to retrieve local sync path
-                    var account = await _accountRepository.GetByIdAsync(state.AccountId);
-                    if (account is not null && !string.IsNullOrEmpty(account.LocalSyncPath))
+                    AccountInfo? account = await _accountRepository.GetByIdAsync(state.AccountId);
+                    if(account is not null && !string.IsNullOrEmpty(account.LocalSyncPath))
                     {
                         await _autoSyncCoordinator.StartMonitoringAsync(state.AccountId, account.LocalSyncPath);
                     }
@@ -138,34 +139,34 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             .DisposeWith(_disposables);
 
         // Wire up: When sync starts, show sync progress view
-        syncTreeViewModel
+        _ = syncTreeViewModel
             .WhenAnyValue(x => x.IsSyncing, x => x.SelectedAccountId,
                 (isSyncing, accountId) => new { IsSyncing = isSyncing, AccountId = accountId })
             .Subscribe(state =>
             {
-                if (state.IsSyncing && !string.IsNullOrEmpty(state.AccountId))
+                if(state.IsSyncing && !string.IsNullOrEmpty(state.AccountId))
                 {
                     // Create sync progress view model if not already created
-                    if (SyncProgress is null || SyncProgress.AccountId != state.AccountId)
+                    if(SyncProgress is null || SyncProgress.AccountId != state.AccountId)
                     {
                         SyncProgress?.Dispose();
-                        var syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
+                        SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
                             _serviceProvider,
                             state.AccountId);
 
                         // Wire up ViewConflictsCommand to show conflict resolution
-                        syncProgressVm.ViewConflictsCommand
+                        _ = syncProgressVm.ViewConflictsCommand
                             .Subscribe(_ => ShowConflictResolutionView(state.AccountId))
                             .DisposeWith(_disposables);
 
                         // Wire up CloseCommand to dismiss sync progress view
-                        syncProgressVm.CloseCommand
+                        _ = syncProgressVm.CloseCommand
                             .Subscribe(_ => CloseSyncProgressView())
                             .DisposeWith(_disposables);
 
                         // Auto-close overlay when sync completes successfully without conflicts
                         // Note: Do NOT auto-close on Failed status - user needs to see error details
-                        syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
+                        _ = syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
                             .Where(progress => progress is not null &&
                                    progress.Status == SyncStatus.Completed &&
                                    progress.ConflictsDetected == 0)
@@ -175,7 +176,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                             .DisposeWith(_disposables);
 
                         // Update conflict status when sync completes
-                        syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
+                        _ = syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
                             .Where(progress => progress is not null && progress.Status == SyncStatus.Completed)
                             .Subscribe(async _ => await UpdateConflictStatusAsync(state.AccountId))
                             .DisposeWith(_disposables);
@@ -183,7 +184,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                         SyncProgress = syncProgressVm;
                     }
                 }
-                else if (!state.IsSyncing && SyncProgress is not null)
+                else if(!state.IsSyncing && SyncProgress is not null)
                 {
                     // Keep showing progress view even when not syncing (shows completion/pause state)
                     // User can manually close by navigating away
@@ -244,17 +245,17 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     private void ShowConflictResolutionView(string accountId)
     {
         ConflictResolution?.Dispose();
-        var conflictResolutionVm = ActivatorUtilities.CreateInstance<ConflictResolutionViewModel>(
+        ConflictResolutionViewModel conflictResolutionVm = ActivatorUtilities.CreateInstance<ConflictResolutionViewModel>(
             _serviceProvider,
             accountId);
 
         // Wire up CancelCommand to return to sync progress
-        conflictResolutionVm.CancelCommand
+        _ = conflictResolutionVm.CancelCommand
             .Subscribe(_ => CloseConflictResolutionView())
             .DisposeWith(_disposables);
 
         // Wire up ResolveAllCommand to return to sync progress after resolution
-        conflictResolutionVm.ResolveAllCommand
+        _ = conflictResolutionVm.ResolveAllCommand
             .Subscribe(_ =>
             {
                 // Delay closing to allow user to see the status message
@@ -301,7 +302,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// <param name="accountId">The account ID to check.</param>
     private async Task UpdateConflictStatusAsync(string accountId)
     {
-        var conflicts = await _conflictRepository.GetUnresolvedByAccountIdAsync(accountId);
+        IReadOnlyList<SyncConflict> conflicts = await _conflictRepository.GetUnresolvedByAccountIdAsync(accountId);
         HasUnresolvedConflicts = conflicts.Any();
     }
 

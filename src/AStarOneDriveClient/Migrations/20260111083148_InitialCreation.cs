@@ -11,7 +11,7 @@ namespace AStarOneDriveClient.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
@@ -29,10 +29,10 @@ namespace AStarOneDriveClient.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Accounts", x => x.AccountId);
+                    _ = table.PrimaryKey("PK_Accounts", x => x.AccountId);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "DebugLogs",
                 columns: table => new
                 {
@@ -47,10 +47,10 @@ namespace AStarOneDriveClient.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DebugLogs", x => x.Id);
+                    _ = table.PrimaryKey("PK_DebugLogs", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "FileOperationLogs",
                 columns: table => new
                 {
@@ -70,10 +70,10 @@ namespace AStarOneDriveClient.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FileOperationLogs", x => x.Id);
+                    _ = table.PrimaryKey("PK_FileOperationLogs", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "SyncSessionLogs",
                 columns: table => new
                 {
@@ -90,10 +90,10 @@ namespace AStarOneDriveClient.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SyncSessionLogs", x => x.Id);
+                    _ = table.PrimaryKey("PK_SyncSessionLogs", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "WindowPreferences",
                 columns: table => new
                 {
@@ -107,10 +107,10 @@ namespace AStarOneDriveClient.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_WindowPreferences", x => x.Id);
+                    _ = table.PrimaryKey("PK_WindowPreferences", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "FileMetadata",
                 columns: table => new
                 {
@@ -129,8 +129,8 @@ namespace AStarOneDriveClient.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FileMetadata", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_FileMetadata", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_FileMetadata_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
@@ -138,7 +138,7 @@ namespace AStarOneDriveClient.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "SyncConfigurations",
                 columns: table => new
                 {
@@ -151,8 +151,8 @@ namespace AStarOneDriveClient.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SyncConfigurations", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_SyncConfigurations", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_SyncConfigurations_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
@@ -160,7 +160,7 @@ namespace AStarOneDriveClient.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "SyncConflicts",
                 columns: table => new
                 {
@@ -177,8 +177,8 @@ namespace AStarOneDriveClient.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SyncConflicts", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_SyncConflicts", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_SyncConflicts_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
@@ -186,35 +186,35 @@ namespace AStarOneDriveClient.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_Accounts_LocalSyncPath",
                 table: "Accounts",
                 column: "LocalSyncPath",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_FileMetadata_AccountId",
                 table: "FileMetadata",
                 column: "AccountId");
 
 #pragma warning disable IDE0300 // Simplify collection initialization
 #pragma warning disable CA1861 // Avoid constant arrays as arguments
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_FileMetadata_AccountId_Path",
                 table: "FileMetadata",
                 columns: new[] { "AccountId", "Path" });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_SyncConfigurations_AccountId_FolderPath",
                 table: "SyncConfigurations",
                 columns: new[] { "AccountId", "FolderPath" });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_SyncConflicts_AccountId",
                 table: "SyncConflicts",
                 column: "AccountId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_SyncConflicts_AccountId_IsResolved",
                 table: "SyncConflicts",
                 columns: new[] { "AccountId", "IsResolved" });
@@ -225,28 +225,28 @@ namespace AStarOneDriveClient.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "DebugLogs");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "FileMetadata");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "FileOperationLogs");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "SyncConfigurations");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "SyncConflicts");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "SyncSessionLogs");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "WindowPreferences");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "Accounts");
         }
     }

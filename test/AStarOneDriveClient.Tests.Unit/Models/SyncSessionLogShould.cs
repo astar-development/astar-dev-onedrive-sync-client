@@ -7,7 +7,7 @@ public class SyncSessionLogShould
     {
         var syncSessionLog = SyncSessionLog.CreateInitialRunning("test-account-id");
 
-        syncSessionLog.Id.ShouldNotBeNull();
+        _ = syncSessionLog.Id.ShouldNotBeNull();
         syncSessionLog.AccountId.ShouldBe("test-account-id");
         syncSessionLog.StartedUtc.ShouldBe(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         syncSessionLog.CompletedUtc.ShouldBeNull();

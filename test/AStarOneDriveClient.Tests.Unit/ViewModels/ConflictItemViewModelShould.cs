@@ -9,10 +9,10 @@ public class ConflictItemViewModelShould
     [Fact]
     public void ThrowArgumentNullExceptionWhenConflictIsNull()
     {
-        var exception = Record.Exception(() => new ConflictItemViewModel(null!));
+        Exception? exception = Record.Exception(() => new ConflictItemViewModel(null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class ConflictItemViewModelShould
     [Fact]
     public void RaisePropertyChangedWhenSelectedStrategyChanges()
     {
-        var conflict = CreateTestConflict();
+        SyncConflict conflict = CreateTestConflict();
         var viewModel = new ConflictItemViewModel(conflict);
         var propertyChanged = false;
 
@@ -68,7 +68,7 @@ public class ConflictItemViewModelShould
     [Fact]
     public void NotRaisePropertyChangedWhenSelectedStrategySetToSameValue()
     {
-        var conflict = CreateTestConflict();
+        SyncConflict conflict = CreateTestConflict();
         var viewModel = new ConflictItemViewModel(conflict);
         var propertyChangedCount = 0;
 
@@ -94,7 +94,7 @@ public class ConflictItemViewModelShould
     [InlineData(1073741824, "1 GB")]
     public void FormatFileSizeCorrectly(long bytes, string expected)
     {
-        var conflict = CreateTestConflict() with { LocalSize = bytes };
+        SyncConflict conflict = CreateTestConflict() with { LocalSize = bytes };
         var viewModel = new ConflictItemViewModel(conflict);
 
         viewModel.LocalDetailsDisplay.ShouldContain(expected);
@@ -104,7 +104,7 @@ public class ConflictItemViewModelShould
     public void DisplayLocalDetailsWithTimestampAndSize()
     {
         var localModified = new DateTime(2026, 1, 5, 10, 30, 45, DateTimeKind.Utc);
-        var conflict = CreateTestConflict() with
+        SyncConflict conflict = CreateTestConflict() with
         {
             LocalModifiedUtc = localModified,
             LocalSize = 2048
@@ -119,7 +119,7 @@ public class ConflictItemViewModelShould
     public void DisplayRemoteDetailsWithTimestampAndSize()
     {
         var remoteModified = new DateTime(2026, 1, 6, 14, 20, 30, DateTimeKind.Utc);
-        var conflict = CreateTestConflict() with
+        SyncConflict conflict = CreateTestConflict() with
         {
             RemoteModifiedUtc = remoteModified,
             RemoteSize = 3072

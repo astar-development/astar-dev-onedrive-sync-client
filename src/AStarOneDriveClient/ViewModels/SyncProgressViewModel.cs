@@ -167,9 +167,9 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         _syncEngine = syncEngine;
         _logger = logger;
 
-        var canStart = this.WhenAnyValue(x => x.IsSyncing, isSyncing => !isSyncing);
-        var canPause = this.WhenAnyValue(x => x.IsSyncing);
-        var hasConflicts = this.WhenAnyValue(x => x.HasConflicts);
+        IObservable<bool> canStart = this.WhenAnyValue(x => x.IsSyncing, isSyncing => !isSyncing);
+        IObservable<bool> canPause = this.WhenAnyValue(x => x.IsSyncing);
+        IObservable<bool> hasConflicts = this.WhenAnyValue(x => x.HasConflicts);
 
         StartSyncCommand = ReactiveCommand.CreateFromTask(StartSyncAsync, canStart);
         PauseSyncCommand = ReactiveCommand.CreateFromTask(PauseSyncAsync, canPause);
@@ -177,7 +177,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         CloseCommand = ReactiveCommand.Create(() => { /* Handled by MainWindowViewModel */ });
 
         // Subscribe to sync progress updates
-        _syncEngine.Progress
+        _ = _syncEngine.Progress
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(progress =>
             {
@@ -312,7 +312,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
             return;
         }
 
-        var conflicts = await _syncEngine.GetConflictsAsync(AccountId, cancellationToken);
+        IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(AccountId, cancellationToken);
         var conflictCount = conflicts.Count;
 
         CurrentProgress = CurrentProgress with

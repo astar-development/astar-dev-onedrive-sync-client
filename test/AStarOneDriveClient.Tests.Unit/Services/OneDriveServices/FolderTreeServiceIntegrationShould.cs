@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using AStarOneDriveClient.Authentication;
+using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Services.OneDriveServices;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace AStarOneDriveClient.Tests.Unit.Services.OneDriveServices;
@@ -34,7 +36,7 @@ public class FolderTreeServiceIntegrationShould
 {
     private static AuthConfiguration LoadTestConfiguration()
     {
-        var configuration = new ConfigurationBuilder()
+        IConfigurationRoot configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: false)
             .AddUserSecrets<FolderTreeServiceIntegrationShould>(optional: true)
@@ -47,9 +49,9 @@ public class FolderTreeServiceIntegrationShould
     public async Task GetRootFoldersFromRealOneDriveAccount()
     {
         // Arrange
-        var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
-        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
+        AuthConfiguration config = LoadTestConfiguration();
+        AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
@@ -60,7 +62,7 @@ public class FolderTreeServiceIntegrationShould
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Act
-        var folders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> folders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
 
         // Assert
         folders.ShouldNotBeEmpty();
@@ -75,9 +77,9 @@ public class FolderTreeServiceIntegrationShould
     public async Task GetChildFoldersFromRealOneDriveFolder()
     {
         // Arrange
-        var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
-        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
+        AuthConfiguration config = LoadTestConfiguration();
+        AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
@@ -88,16 +90,16 @@ public class FolderTreeServiceIntegrationShould
         var service = new FolderTreeService(graphApiClient, authService);
 
         // First get root folders to find one with children
-        var rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
         rootFolders.ShouldNotBeEmpty();
 
-        var parentFolder = rootFolders[0];
+        OneDriveFolderNode parentFolder = rootFolders[0];
 
         // Act
-        var childFolders = await service.GetChildFoldersAsync(loginResult.AccountId, parentFolder.Id, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> childFolders = await service.GetChildFoldersAsync(loginResult.AccountId, parentFolder.Id, TestContext.Current.CancellationToken);
 
         // Assert - may be empty if folder has no subfolders, but should succeed
-        childFolders.ShouldNotBeNull();
+        _ = childFolders.ShouldNotBeNull();
         if (childFolders.Count > 0)
         {
             childFolders.All(f => f.IsFolder).ShouldBeTrue();
@@ -111,9 +113,9 @@ public class FolderTreeServiceIntegrationShould
     public async Task GetFolderHierarchyWithLimitedDepth()
     {
         // Arrange
-        var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
-        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
+        AuthConfiguration config = LoadTestConfiguration();
+        AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
@@ -124,14 +126,14 @@ public class FolderTreeServiceIntegrationShould
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Act - limit to depth of 2 to avoid long load times
-        var hierarchy = await service.GetFolderHierarchyAsync(loginResult.AccountId, maxDepth: 2, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> hierarchy = await service.GetFolderHierarchyAsync(loginResult.AccountId, maxDepth: 2, TestContext.Current.CancellationToken);
 
         // Assert
         hierarchy.ShouldNotBeEmpty();
         hierarchy.All(f => f.IsFolder).ShouldBeTrue();
 
         // Check that ChildrenLoaded flag is set on folders that were loaded
-        foreach (var folder in hierarchy)
+        foreach (OneDriveFolderNode folder in hierarchy)
         {
             folder.ChildrenLoaded.ShouldBeTrue();
 
@@ -148,9 +150,9 @@ public class FolderTreeServiceIntegrationShould
     public async Task HandleEmptyFoldersGracefully()
     {
         // Arrange
-        var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
-        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
+        AuthConfiguration config = LoadTestConfiguration();
+        AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
@@ -163,16 +165,16 @@ public class FolderTreeServiceIntegrationShould
         var service = new FolderTreeService(graphApiClient, authService);
 
         // Get root folders
-        var rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
         rootFolders.ShouldNotBeEmpty();
 
         // Act - try to get children from each root folder
-        foreach (var folder in rootFolders)
+        foreach (OneDriveFolderNode folder in rootFolders)
         {
-            var children = await service.GetChildFoldersAsync(loginResult.AccountId, folder.Id, TestContext.Current.CancellationToken);
+            IReadOnlyList<OneDriveFolderNode> children = await service.GetChildFoldersAsync(loginResult.AccountId, folder.Id, TestContext.Current.CancellationToken);
 
             // Assert - should not throw, even if empty
-            children.ShouldNotBeNull();
+            _ = children.ShouldNotBeNull();
         }
     }
 
@@ -180,9 +182,9 @@ public class FolderTreeServiceIntegrationShould
     public async Task GraphApiClientCanAccessDrive()
     {
         // Arrange
-        var config = LoadTestConfiguration();
-        var authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
-        var loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
+        AuthConfiguration config = LoadTestConfiguration();
+        AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
+        AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
         if (!loginResult.Success || loginResult.AccountId is null)
         {
@@ -194,17 +196,17 @@ public class FolderTreeServiceIntegrationShould
         var graphApiClient = new GraphApiClient(authService);
 
         // Act
-        var drive = await graphApiClient.GetMyDriveAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
-        var root = await graphApiClient.GetDriveRootAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
-        var rootChildren = await graphApiClient.GetRootChildrenAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
+        Drive? drive = await graphApiClient.GetMyDriveAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
+        DriveItem? root = await graphApiClient.GetDriveRootAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
+        IEnumerable<DriveItem> rootChildren = await graphApiClient.GetRootChildrenAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
 
         // Assert
-        drive.ShouldNotBeNull();
+        _ = drive.ShouldNotBeNull();
         drive.Id.ShouldNotBeNullOrEmpty();
 
-        root.ShouldNotBeNull();
+        _ = root.ShouldNotBeNull();
         root.Id.ShouldNotBeNullOrEmpty();
 
-        rootChildren.ShouldNotBeNull();
+        _ = rootChildren.ShouldNotBeNull();
     }
 }

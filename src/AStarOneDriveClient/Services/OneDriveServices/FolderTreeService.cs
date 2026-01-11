@@ -1,5 +1,6 @@
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Models;
+using Microsoft.Graph.Models;
 
 namespace AStarOneDriveClient.Services.OneDriveServices;
 
@@ -36,11 +37,11 @@ public sealed class FolderTreeService : IFolderTreeService
             return [];
         }
 
-        var driveItems = await _graphApiClient.GetRootChildrenAsync(accountId, cancellationToken);
-        var folders = driveItems.Where(item => item.Folder is not null);
+        IEnumerable<DriveItem> driveItems = await _graphApiClient.GetRootChildrenAsync(accountId, cancellationToken);
+        IEnumerable<DriveItem> folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
-        foreach (var item in folders)
+        foreach (DriveItem? item in folders)
         {
             if (item.Id is null || item.Name is null)
             {
@@ -80,16 +81,16 @@ public sealed class FolderTreeService : IFolderTreeService
         }
 
         // Get parent folder to build paths
-        var parentItem = await _graphApiClient.GetDriveItemAsync(accountId, parentFolderId, cancellationToken);
+        DriveItem? parentItem = await _graphApiClient.GetDriveItemAsync(accountId, parentFolderId, cancellationToken);
         var parentPath = parentItem?.ParentReference?.Path is not null
             ? $"{parentItem.ParentReference.Path}/{parentItem.Name}"
             : $"/{parentItem?.Name}";
 
-        var driveItems = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentFolderId, cancellationToken);
-        var folders = driveItems.Where(item => item.Folder is not null);
+        IEnumerable<DriveItem> driveItems = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentFolderId, cancellationToken);
+        IEnumerable<DriveItem> folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
-        foreach (var item in folders)
+        foreach (DriveItem? item in folders)
         {
             if (item.Id is null || item.Name is null)
             {
@@ -127,12 +128,12 @@ public sealed class FolderTreeService : IFolderTreeService
             return [];
         }
 
-        var rootFolders = await GetRootFoldersAsync(accountId, cancellationToken);
+        IReadOnlyList<OneDriveFolderNode> rootFolders = await GetRootFoldersAsync(accountId, cancellationToken);
         var rootList = rootFolders.ToList();
 
         if (maxDepth is null or > 0)
         {
-            foreach (var folder in rootList)
+            foreach (OneDriveFolderNode? folder in rootList)
             {
                 await LoadChildrenRecursiveAsync(accountId, folder, maxDepth, 1, cancellationToken);
             }
@@ -153,8 +154,8 @@ public sealed class FolderTreeService : IFolderTreeService
             return;
         }
 
-        var children = await GetChildFoldersAsync(accountId, parentNode.Id, cancellationToken);
-        foreach (var child in children)
+        IReadOnlyList<OneDriveFolderNode> children = await GetChildFoldersAsync(accountId, parentNode.Id, cancellationToken);
+        foreach (OneDriveFolderNode child in children)
         {
             parentNode.Children.Add(child);
             await LoadChildrenRecursiveAsync(accountId, child, maxDepth, currentDepth + 1, cancellationToken);

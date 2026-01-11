@@ -23,7 +23,7 @@ public sealed class FileOperationLogRepository : IFileOperationLogRepository
     {
         ArgumentNullException.ThrowIfNull(syncSessionId);
 
-        var entities = await _context.FileOperationLogs
+        List<FileOperationLogEntity> entities = await _context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.SyncSessionId == syncSessionId)
             .OrderBy(f => f.Timestamp)
@@ -37,7 +37,7 @@ public sealed class FileOperationLogRepository : IFileOperationLogRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.FileOperationLogs
+        List<FileOperationLogEntity> entities = await _context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.AccountId == accountId)
             .OrderByDescending(f => f.Timestamp)
@@ -51,7 +51,7 @@ public sealed class FileOperationLogRepository : IFileOperationLogRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.FileOperationLogs
+        List<FileOperationLogEntity> entities = await _context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.AccountId == accountId)
             .OrderByDescending(f => f.Timestamp)
@@ -67,9 +67,9 @@ public sealed class FileOperationLogRepository : IFileOperationLogRepository
     {
         ArgumentNullException.ThrowIfNull(operationLog);
 
-        var entity = MapToEntity(operationLog);
-        _context.FileOperationLogs.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        FileOperationLogEntity entity = MapToEntity(operationLog);
+        _ = _context.FileOperationLogs.Add(entity);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -77,7 +77,7 @@ public sealed class FileOperationLogRepository : IFileOperationLogRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        await _context.FileOperationLogs
+        _ = await _context.FileOperationLogs
             .Where(f => f.AccountId == accountId && f.Timestamp < olderThan)
             .ExecuteDeleteAsync(cancellationToken);
     }

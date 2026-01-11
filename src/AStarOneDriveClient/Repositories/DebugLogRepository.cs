@@ -1,4 +1,5 @@
 using AStarOneDriveClient.Data;
+using AStarOneDriveClient.Data.Entities;
 using AStarOneDriveClient.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,7 +23,7 @@ public sealed class DebugLogRepository : IDebugLogRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.DebugLogs
+        List<DebugLogEntity> entities = await _context.DebugLogs
             .Where(log => log.AccountId == accountId)
             .OrderByDescending(log => log.TimestampUtc)
             .Skip(skip)
@@ -45,7 +46,7 @@ public sealed class DebugLogRepository : IDebugLogRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.DebugLogs
+        List<DebugLogEntity> entities = await _context.DebugLogs
             .Where(log => log.AccountId == accountId)
             .OrderByDescending(log => log.TimestampUtc)
             .ToListAsync(cancellationToken);
@@ -66,23 +67,23 @@ public sealed class DebugLogRepository : IDebugLogRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.DebugLogs
+        List<DebugLogEntity> entities = await _context.DebugLogs
             .Where(log => log.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
         _context.DebugLogs.RemoveRange(entities);
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task DeleteOlderThanAsync(DateTime olderThan, CancellationToken cancellationToken = default)
     {
-        var entities = await _context.DebugLogs
+        List<DebugLogEntity> entities = await _context.DebugLogs
             .Where(log => log.TimestampUtc < olderThan)
             .ToListAsync(cancellationToken);
 
         _context.DebugLogs.RemoveRange(entities);
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>

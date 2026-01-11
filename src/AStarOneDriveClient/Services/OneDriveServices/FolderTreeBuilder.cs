@@ -30,7 +30,7 @@ public static class FolderTreeBuilder
         var nodeDict = new Dictionary<string, OneDriveFolderNode>();
 
         // First pass: Create all nodes
-        foreach (var item in folderItems)
+        foreach (DriveItem? item in folderItems)
         {
             if (item.Id is null || item.Name is null)
             {
@@ -55,14 +55,14 @@ public static class FolderTreeBuilder
         // Second pass: Build parent-child relationships
         var rootNodes = new List<OneDriveFolderNode>();
 
-        foreach (var node in nodeDict.Values)
+        foreach (OneDriveFolderNode node in nodeDict.Values)
         {
             if (node.ParentId == rootParentId)
             {
                 // This is a root-level node
                 rootNodes.Add(node);
             }
-            else if (node.ParentId is not null && nodeDict.TryGetValue(node.ParentId, out var parentNode))
+            else if (node.ParentId is not null && nodeDict.TryGetValue(node.ParentId, out OneDriveFolderNode? parentNode))
             {
                 // Add this node as a child of its parent
                 parentNode.Children.Add(node);
@@ -70,13 +70,13 @@ public static class FolderTreeBuilder
         }
 
         // Sort children by name for consistent ordering
-        foreach (var node in nodeDict.Values)
+        foreach (OneDriveFolderNode node in nodeDict.Values)
         {
             if (node.Children.Count > 0)
             {
                 var sortedChildren = node.Children.OrderBy(c => c.Name).ToList();
                 node.Children.Clear();
-                foreach (var child in sortedChildren)
+                foreach (OneDriveFolderNode? child in sortedChildren)
                 {
                     node.Children.Add(child);
                 }
@@ -145,15 +145,15 @@ public static class FolderTreeBuilder
         ArgumentNullException.ThrowIfNull(newItems);
         ArgumentNullException.ThrowIfNull(parentId);
 
-        var parentNode = FindNodeById(existingTree, parentId);
+        OneDriveFolderNode? parentNode = FindNodeById(existingTree, parentId);
         if (parentNode is null)
         {
             return;
         }
 
-        var newNodes = BuildTree(newItems, parentId);
+        List<OneDriveFolderNode> newNodes = BuildTree(newItems, parentId);
 
-        foreach (var newNode in newNodes)
+        foreach (OneDriveFolderNode newNode in newNodes)
         {
             // Check if this node already exists
             if (!parentNode.Children.Any(c => c.Id == newNode.Id))
@@ -167,7 +167,7 @@ public static class FolderTreeBuilder
         {
             var sortedChildren = parentNode.Children.OrderBy(c => c.Name).ToList();
             parentNode.Children.Clear();
-            foreach (var child in sortedChildren)
+            foreach (OneDriveFolderNode? child in sortedChildren)
             {
                 parentNode.Children.Add(child);
             }
@@ -184,14 +184,14 @@ public static class FolderTreeBuilder
     /// <returns>The node if found, otherwise null.</returns>
     private static OneDriveFolderNode? FindNodeById(List<OneDriveFolderNode> tree, string nodeId)
     {
-        foreach (var node in tree)
+        foreach (OneDriveFolderNode node in tree)
         {
             if (node.Id == nodeId)
             {
                 return node;
             }
 
-            var foundInChildren = FindNodeById([.. node.Children], nodeId);
+            OneDriveFolderNode? foundInChildren = FindNodeById([.. node.Children], nodeId);
             if (foundInChildren is not null)
             {
                 return foundInChildren;

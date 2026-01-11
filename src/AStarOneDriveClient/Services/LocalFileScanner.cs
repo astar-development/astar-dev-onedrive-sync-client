@@ -79,7 +79,7 @@ public sealed class LocalFileScanner : ILocalFileScanner
 
                 try
                 {
-                    var fileInfo = _fileSystem.FileInfo.New(filePath);
+                    IFileInfo fileInfo = _fileSystem.FileInfo.New(filePath);
                     if (!fileInfo.Exists)
                     {
                         continue;
@@ -146,7 +146,7 @@ public sealed class LocalFileScanner : ILocalFileScanner
     /// <inheritdoc/>
     public async Task<string> ComputeFileHashAsync(string filePath, CancellationToken cancellationToken)
     {
-        using var stream = _fileSystem.File.OpenRead(filePath);
+        using FileSystemStream stream = _fileSystem.File.OpenRead(filePath);
         var hashBytes = await SHA256.HashDataAsync(stream, cancellationToken);
         return Convert.ToHexString(hashBytes);
     }
@@ -155,7 +155,7 @@ public sealed class LocalFileScanner : ILocalFileScanner
     {
         var baseUri = new Uri(EnsureTrailingSlash(basePath));
         var fullUri = new Uri(fullPath);
-        var relativeUri = baseUri.MakeRelativeUri(fullUri);
+        Uri relativeUri = baseUri.MakeRelativeUri(fullUri);
         return Uri.UnescapeDataString(relativeUri.ToString());
     }
 

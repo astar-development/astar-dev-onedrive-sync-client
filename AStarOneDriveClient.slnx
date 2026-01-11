@@ -1,10 +1,20 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src\AStarOneDriveClient\AStarOneDriveClient.csproj" Type="C#" />
+    <Project Path="src\AStarOneDriveClient\AStarOneDriveClient.csproj" />
+  </Folder>
+  <Folder Name="/src/nuget-packages/">
+    <Project Path="src/nuget-packages/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test\AStarOneDriveClient.Tests.Unit\AStarOneDriveClient.Tests.Unit.csproj" Type="C#" />
+    <Project Path="test\AStarOneDriveClient.Tests.Unit\AStarOneDriveClient.Tests.Unit.csproj" />
   </Folder>
   <Folder Name="/docs/">
+  </Folder>
+  <Folder Name="/test/nuget-packages/">
+    <Project Path="test/nuget-packages/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj" />
+    <Project Path="test/nuget-packages/AStar.Dev.Logging.Extensions.Tests.Unit/AStar.Dev.Logging.Extensions.Tests.Unit.csproj" />
+    <Project Path="test/nuget-packages/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
   </Folder>
 </Solution>

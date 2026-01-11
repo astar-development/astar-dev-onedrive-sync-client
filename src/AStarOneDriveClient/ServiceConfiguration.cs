@@ -28,20 +28,20 @@ public static class ServiceConfiguration
         var services = new ServiceCollection();
 
         // Database
-        services.AddDbContext<SyncDbContext>(options =>
+        _ = services.AddDbContext<SyncDbContext>(options =>
             options.UseSqlite(DatabaseConfiguration.ConnectionString));
 
         // Repositories
-        services.AddScoped<IAccountRepository, AccountRepository>();
-        services.AddScoped<ISyncConfigurationRepository, SyncConfigurationRepository>();
-        services.AddScoped<IFileMetadataRepository, FileMetadataRepository>();
-        services.AddScoped<ISyncConflictRepository, SyncConflictRepository>();
-        services.AddScoped<ISyncSessionLogRepository, SyncSessionLogRepository>();
-        services.AddScoped<IFileOperationLogRepository, FileOperationLogRepository>();
-        services.AddScoped<IDebugLogRepository, DebugLogRepository>();
+        _ = services.AddScoped<IAccountRepository, AccountRepository>();
+        _ = services.AddScoped<ISyncConfigurationRepository, SyncConfigurationRepository>();
+        _ = services.AddScoped<IFileMetadataRepository, FileMetadataRepository>();
+        _ = services.AddScoped<ISyncConflictRepository, SyncConflictRepository>();
+        _ = services.AddScoped<ISyncSessionLogRepository, SyncSessionLogRepository>();
+        _ = services.AddScoped<IFileOperationLogRepository, FileOperationLogRepository>();
+        _ = services.AddScoped<IDebugLogRepository, DebugLogRepository>();
 
         // Load authentication configuration
-        var configuration = new ConfigurationBuilder()
+        IConfigurationRoot configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false)
             .Build();
@@ -49,39 +49,39 @@ public static class ServiceConfiguration
         var authConfig = AuthConfiguration.LoadFromConfiguration(configuration);
 
         // Authentication - registered as singleton with factory
-        services.AddSingleton<IAuthService>(provider =>
+        _ = services.AddSingleton<IAuthService>(provider =>
             // AuthService.CreateAsync must be called synchronously during startup
             // This is acceptable as it's a one-time initialization cost
             AuthService.CreateAsync(authConfig).GetAwaiter().GetResult());
 
         // Services
-        services.AddSingleton<IFileSystem, RealFileSystem>();
-        services.AddSingleton<IFileWatcherService, FileWatcherService>();
-        services.AddSingleton<IAutoSyncCoordinator, AutoSyncCoordinator>();
-        services.AddSingleton<IAutoSyncSchedulerService, AutoSyncSchedulerService>();
-        services.AddScoped<IWindowPreferencesService, WindowPreferencesService>();
-        services.AddScoped<IGraphApiClient, GraphApiClient>();
-        services.AddScoped<IFolderTreeService, FolderTreeService>();
-        services.AddScoped<ISyncSelectionService, SyncSelectionService>();
-        services.AddScoped<ILocalFileScanner, LocalFileScanner>();
-        services.AddScoped<IRemoteChangeDetector, RemoteChangeDetector>();
-        services.AddScoped<IConflictResolver, ConflictResolver>();
-        services.AddScoped<ISyncEngine, SyncEngine>();
-        services.AddScoped<IDebugLogger, DebugLogger>();
+        _ = services.AddSingleton<IFileSystem, RealFileSystem>();
+        _ = services.AddSingleton<IFileWatcherService, FileWatcherService>();
+        _ = services.AddSingleton<IAutoSyncCoordinator, AutoSyncCoordinator>();
+        _ = services.AddSingleton<IAutoSyncSchedulerService, AutoSyncSchedulerService>();
+        _ = services.AddScoped<IWindowPreferencesService, WindowPreferencesService>();
+        _ = services.AddScoped<IGraphApiClient, GraphApiClient>();
+        _ = services.AddScoped<IFolderTreeService, FolderTreeService>();
+        _ = services.AddScoped<ISyncSelectionService, SyncSelectionService>();
+        _ = services.AddScoped<ILocalFileScanner, LocalFileScanner>();
+        _ = services.AddScoped<IRemoteChangeDetector, RemoteChangeDetector>();
+        _ = services.AddScoped<IConflictResolver, ConflictResolver>();
+        _ = services.AddScoped<ISyncEngine, SyncEngine>();
+        _ = services.AddScoped<IDebugLogger, DebugLogger>();
 
         // ViewModels
-        services.AddTransient<AccountManagementViewModel>();
-        services.AddTransient<SyncTreeViewModel>();
-        services.AddTransient<MainWindowViewModel>();
-        services.AddTransient<ConflictResolutionViewModel>();
-        services.AddTransient<SyncProgressViewModel>();
-        services.AddTransient<UpdateAccountDetailsViewModel>();
+        _ = services.AddTransient<AccountManagementViewModel>();
+        _ = services.AddTransient<SyncTreeViewModel>();
+        _ = services.AddTransient<MainWindowViewModel>();
+        _ = services.AddTransient<ConflictResolutionViewModel>();
+        _ = services.AddTransient<SyncProgressViewModel>();
+        _ = services.AddTransient<UpdateAccountDetailsViewModel>();
 
         // Logging
-        services.AddLogging(builder =>
+        _ = services.AddLogging(builder =>
         {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
+            _ = builder.AddConsole();
+            _ = builder.SetMinimumLevel(LogLevel.Information);
         });
 
         return services.BuildServiceProvider();
@@ -93,8 +93,8 @@ public static class ServiceConfiguration
     /// <param name="serviceProvider">The service provider.</param>
     public static void EnsureDatabaseCreated(ServiceProvider serviceProvider)
     {
-        using var scope = serviceProvider.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<SyncDbContext>();
+        using IServiceScope scope = serviceProvider.CreateScope();
+        SyncDbContext context = scope.ServiceProvider.GetRequiredService<SyncDbContext>();
         try
         {
             context.Database.Migrate();

@@ -16,8 +16,8 @@ public partial class DebugLogWindow : Window
 
         if (App.Services is not null)
         {
-            var accountRepository = App.Services.GetRequiredService<IAccountRepository>();
-            var debugLogRepository = App.Services.GetRequiredService<IDebugLogRepository>();
+            IAccountRepository accountRepository = App.Services.GetRequiredService<IAccountRepository>();
+            IDebugLogRepository debugLogRepository = App.Services.GetRequiredService<IDebugLogRepository>();
             DataContext = new DebugLogViewModel(accountRepository, debugLogRepository);
         }
     }
