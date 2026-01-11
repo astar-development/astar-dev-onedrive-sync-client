@@ -3,6 +3,8 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
@@ -77,6 +79,25 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
     public ObservableCollection<AccountInfo> Accounts { get; }
 
     /// <summary>
+    /// Gets or sets the transient toast message to show to the user.
+    /// </summary>
+    public string? ToastMessage
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>
+    /// Gets or sets whether the toast is currently visible.
+    /// </summary>
+    public bool ToastVisible
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    private CancellationTokenSource? _toastCts;
+    /// <summary>
     /// Gets or sets the currently selected account.
     /// </summary>
     public AccountInfo? SelectedAccount
@@ -137,6 +158,11 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
+            // Clear any existing toast and start fresh
+            _toastCts?.Cancel();
+            ToastMessage = null;
+            ToastVisible = false;
+
             var result = await _authService.LoginAsync();
             if (result.Success && result.AccountId is not null && result.DisplayName is not null)
             {
@@ -162,6 +188,10 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                 await _accountRepository.AddAsync(newAccount);
                 Accounts.Add(newAccount);
                 SelectedAccount = newAccount;
+            }
+            else if (!result.Success && result.ErrorMessage is not null)
+            {
+                _ = ShowToastAsync(result.ErrorMessage);
             }
         }
         finally
@@ -200,6 +230,11 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
+            // Clear any existing toast and start fresh
+            _toastCts?.Cancel();
+            ToastMessage = null;
+            ToastVisible = false;
+
             var result = await _authService.LoginAsync();
             if (result.Success)
             {
@@ -213,10 +248,40 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                     SelectedAccount = updatedAccount;
                 }
             }
+            else if (!result.Success && result.ErrorMessage is not null)
+            {
+                _ = ShowToastAsync(result.ErrorMessage);
+            }
         }
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private async Task ShowToastAsync(string message)
+    {
+        try
+        {
+            _toastCts?.Cancel();
+            _toastCts = new CancellationTokenSource();
+            ToastMessage = message;
+            ToastVisible = true;
+
+            await Task.Delay(TimeSpan.FromSeconds(5), _toastCts.Token);
+
+            // Clear toast if not cancelled
+            ToastVisible = false;
+            ToastMessage = null;
+        }
+        catch (TaskCanceledException)
+        {
+            // Ignore - a new toast was requested
+        }
+        finally
+        {
+            _toastCts?.Dispose();
+            _toastCts = null;
         }
     }
 

@@ -68,8 +68,11 @@ public sealed class AuthService : IAuthService
     {
         try
         {
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(30));
+
             var result = await _authClient
-                .AcquireTokenInteractiveAsync(_configuration.Scopes, cancellationToken);
+                .AcquireTokenInteractiveAsync(_configuration.Scopes, cts.Token);
 
             return new AuthenticationResult(
                 Success: true,
@@ -89,11 +92,15 @@ public sealed class AuthService : IAuthService
         }
         catch (OperationCanceledException)
         {
+            var message = cancellationToken.IsCancellationRequested
+                ? "Login was cancelled."
+                : "Login timed out after 30 seconds.";
+
             return new AuthenticationResult(
                 Success: false,
                 AccountId: null,
                 DisplayName: null,
-                ErrorMessage: "Login was cancelled."
+                ErrorMessage: message
             );
         }
     }
