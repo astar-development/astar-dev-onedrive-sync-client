@@ -26,4 +26,20 @@ public sealed record SyncConflict(
     DateTime DetectedUtc,
     ConflictResolutionStrategy ResolutionStrategy,
     bool IsResolved
-);
+)
+{
+    public static SyncConflict CreateUnresolvedConflict(string accountId, string filePath, DateTime localModifiedUtc, DateTime remoteModifiedUtc, long localSize, long remoteSize)
+    {
+        return new SyncConflict(
+            Id: Guid.CreateVersion7().ToString(),
+            AccountId: accountId,
+            FilePath: filePath,
+            LocalModifiedUtc: localModifiedUtc,
+            RemoteModifiedUtc: remoteModifiedUtc,
+            LocalSize: localSize,
+            RemoteSize: remoteSize,
+            DetectedUtc: DateTime.UtcNow,
+            ResolutionStrategy: ConflictResolutionStrategy.None,
+            IsResolved: false);
+    }
+}

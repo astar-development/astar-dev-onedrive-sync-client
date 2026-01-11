@@ -350,7 +350,7 @@ public sealed class ConflictResolverShould
         new(
             AccountId: "account-456",
             DisplayName: "Test User",
-            LocalSyncPath: Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString()),
+            LocalSyncPath: Path.Combine(Path.GetTempPath(), Guid.CreateVersion7().ToString()),
             IsAuthenticated: true,
             LastSyncUtc: DateTime.UtcNow,
             DeltaToken: null,

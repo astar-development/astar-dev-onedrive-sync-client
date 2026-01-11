@@ -837,10 +837,10 @@ public class SyncEngineShould
             Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromResult(new Microsoft.Graph.Models.DriveItem
             {
-                Id = $"uploaded_{Guid.NewGuid():N}",
+                Id = $"uploaded_{Guid.CreateVersion7():N}",
                 Name = callInfo.ArgAt<string>(1).Split('\\', '/').Last(),
-                CTag = $"ctag_{Guid.NewGuid():N}",
-                ETag = $"etag_{Guid.NewGuid():N}",
+                CTag = $"ctag_{Guid.CreateVersion7():N}",
+                ETag = $"etag_{Guid.CreateVersion7():N}",
                 LastModifiedDateTime = DateTimeOffset.UtcNow
             }));
 

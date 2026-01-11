@@ -198,7 +198,7 @@ public class AccountRepositoryShould
     private static SyncDbContext CreateInMemoryContext()
     {
         var options = new DbContextOptionsBuilder<SyncDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .UseInMemoryDatabase(Guid.CreateVersion7().ToString())
             .Options;
 
         return new SyncDbContext(options);

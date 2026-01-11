@@ -294,7 +294,7 @@ public class ConflictResolutionViewModelShould
     }
 
     private static SyncConflict CreateTestConflict(string filePath) => new(
-        Guid.NewGuid().ToString(),
+        Guid.CreateVersion7().ToString(),
         "test-account",
         filePath,
         DateTime.UtcNow.AddHours(-1),

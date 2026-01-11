@@ -40,7 +40,7 @@ public class AccountManagementViewModelShould
         var mockAuth = Substitute.For<IAuthService>();
         var mockRepo = Substitute.For<IAccountRepository>();
         var accounts = new[] { CreateAccount("acc1", "User 1"), CreateAccount("acc2", "User 2") };
-        mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>(accounts));
+        mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>(accounts));
 
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo);
         await Task.Delay(50, TestContext.Current.CancellationToken);

@@ -31,4 +31,32 @@ public record FileOperationLog(
     string? LocalHash,
     string? RemoteHash,
     DateTime LastModifiedUtc,
-    string Reason);
+    string Reason)
+{
+    public static FileOperationLog CreateSyncConflictLog(
+        string syncSessionId,
+        string accountId,
+        string filePath,
+        string localPath,
+        string oneDriveId,
+        string? localHash,
+        long fileSize,
+        DateTime lastModifiedUtc,
+        DateTime remoteFileLastModifiedUtc)
+    {
+        return new FileOperationLog(
+            Id: Guid.NewGuid().ToString(),
+            SyncSessionId: syncSessionId,
+            AccountId: accountId,
+            Timestamp: DateTime.UtcNow,
+            Operation: FileOperation.ConflictDetected,
+            FilePath: filePath,
+            LocalPath: localPath,
+            OneDriveId: oneDriveId,
+            FileSize: fileSize,
+            LocalHash: localHash,
+            RemoteHash: null,
+            LastModifiedUtc: lastModifiedUtc,
+            Reason: $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteFileLastModifiedUtc:yyyy-MM-dd HH:mm:ss}");
+    }
+}

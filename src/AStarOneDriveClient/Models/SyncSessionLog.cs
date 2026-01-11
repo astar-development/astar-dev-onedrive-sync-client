@@ -25,4 +25,20 @@ public record SyncSessionLog(
     int FilesDownloaded,
     int FilesDeleted,
     int ConflictsDetected,
-    long TotalBytes);
+    long TotalBytes)
+{
+    public static SyncSessionLog CreateInitialRunning(string accountId)
+    {
+        return new SyncSessionLog(
+            Id: Guid.CreateVersion7().ToString(),
+            AccountId: accountId,
+            StartedUtc: DateTime.UtcNow,
+            CompletedUtc: null,
+            Status: SyncStatus.Running,
+            FilesUploaded: 0,
+            FilesDownloaded: 0,
+            FilesDeleted: 0,
+            ConflictsDetected: 0,
+            TotalBytes: 0L);
+    }
+}

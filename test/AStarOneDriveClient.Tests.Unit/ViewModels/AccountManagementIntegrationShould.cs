@@ -20,7 +20,7 @@ public class AccountManagementIntegrationShould : IDisposable
     public AccountManagementIntegrationShould()
     {
         var options = new DbContextOptionsBuilder<SyncDbContext>()
-            .UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}")
+            .UseInMemoryDatabase($"TestDb_{Guid.CreateVersion7()}")
             .Options;
 
         _dbContext = new SyncDbContext(options);

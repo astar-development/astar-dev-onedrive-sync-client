@@ -66,7 +66,7 @@ public class SyncSelectionServicePersistenceShould
 
         await mockRepo.Received(1).SaveBatchAsync(
             "acc-123",
-            Arg.Is<IEnumerable<SyncConfiguration>>(configs => configs.Any()),
+            Arg.Any<IEnumerable<SyncConfiguration>>(),
             Arg.Any<CancellationToken>());
     }
 

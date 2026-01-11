@@ -19,7 +19,7 @@ public class ConflictItemViewModelShould
     public void InitializePropertiesFromConflict()
     {
         var conflict = new SyncConflict(
-            Guid.NewGuid().ToString(),
+            Guid.CreateVersion7().ToString(),
             "test-account-id",
             "Documents/test.txt",
             new DateTime(2026, 1, 5, 10, 30, 0, DateTimeKind.Utc),
@@ -131,7 +131,7 @@ public class ConflictItemViewModelShould
     }
 
     private static SyncConflict CreateTestConflict() => new(
-        Guid.NewGuid().ToString(),
+        Guid.CreateVersion7().ToString(),
         "test-account",
         "test.txt",
         DateTime.UtcNow,

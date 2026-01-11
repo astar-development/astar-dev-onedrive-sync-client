@@ -17,7 +17,7 @@ public class FileWatcherServiceShould : IDisposable
         _sut = new FileWatcherService(mockLogger);
 
         // Create a temporary directory for testing
-        _testDirectory = Path.Combine(Path.GetTempPath(), $"FileWatcherTest_{Guid.NewGuid()}");
+        _testDirectory = Path.Combine(Path.GetTempPath(), $"FileWatcherTest_{Guid.CreateVersion7()}");
         Directory.CreateDirectory(_testDirectory);
     }
 

@@ -25,7 +25,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public MainWindowViewModelIntegrationShould()
     {
         var options = new DbContextOptionsBuilder<SyncDbContext>()
-            .UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}")
+            .UseInMemoryDatabase($"TestDb_{Guid.CreateVersion7()}")
             .Options;
         _context = new SyncDbContext(options);
         _accountRepository = new AccountRepository(_context);

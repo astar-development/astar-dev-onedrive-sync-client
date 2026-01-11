@@ -34,4 +34,22 @@ public sealed record SyncState(
     int? EstimatedSecondsRemaining,
     string? CurrentScanningFolder,
     DateTime? LastUpdateUtc
-);
+)
+{
+    public static SyncState CreateInitial(string accountId) =>
+        new(
+            AccountId: accountId,
+            Status: SyncStatus.Idle,
+            TotalFiles: 0,
+            CompletedFiles: 0,
+            TotalBytes: 0,
+            CompletedBytes: 0,
+            FilesDownloading: 0,
+            FilesUploading: 0,
+            FilesDeleted: 0,
+            ConflictsDetected: 0,
+            MegabytesPerSecond: 0,
+            EstimatedSecondsRemaining: null,
+            CurrentScanningFolder: null,
+            LastUpdateUtc: null);
+};
