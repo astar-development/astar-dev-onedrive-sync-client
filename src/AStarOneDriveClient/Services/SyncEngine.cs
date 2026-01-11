@@ -15,7 +15,7 @@ namespace AStarOneDriveClient.Services;
 /// </remarks>
 public sealed partial class SyncEngine : ISyncEngine, IDisposable
 {
-    private const double AllowedTimeDifference = 60.0;
+    private const double _allowedTimeDifference = 60.0;
     private readonly ILocalFileScanner _localFileScanner;
     private readonly IRemoteChangeDetector _remoteChangeDetector;
     private readonly IFileMetadataRepository _fileMetadataRepository;
@@ -266,7 +266,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     if (localFilesDict.TryGetValue(remoteFile.Path, out var localFile))
                     {
                         var timeDiff = Math.Abs((localFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
-                        var filesMatch = localFile.Size == remoteFile.Size && timeDiff <= AllowedTimeDifference;
+                        var filesMatch = localFile.Size == remoteFile.Size && timeDiff <= _allowedTimeDifference;
 
                         await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"First sync compare: {remoteFile.Path} - Local: Size={localFile.Size}, Time={localFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote: Size={remoteFile.Size}, Time={remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, TimeDiff={timeDiff:F1}s, Match={filesMatch}", cancellationToken);
 
@@ -379,7 +379,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             var maxParallelUploads = Math.Max(1, account.MaxParallelUpDownloads);
             using var uploadSemaphore = new SemaphoreSlim(maxParallelUploads, maxParallelUploads);
             var activeUploads = 0;
-            var uploadTasks = CreateUploadTasks(accountId, existingFilesDict, filesToUpload, conflictCount, totalFiles, totalBytes, uploadBytes, completedFiles, completedBytes, uploadSemaphore, activeUploads, cancellationToken);
+            (activeUploads, completedBytes, completedFiles, var uploadTasks) = CreateUploadTasks(accountId, existingFilesDict, filesToUpload, conflictCount, totalFiles, totalBytes, uploadBytes, completedFiles, completedBytes, uploadSemaphore, activeUploads, cancellationToken);
 
             await Task.WhenAll(uploadTasks);
 
@@ -388,7 +388,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             var maxParallelDownloads = Math.Max(1, account.MaxParallelUpDownloads);
             using var downloadSemaphore = new SemaphoreSlim(maxParallelDownloads, maxParallelDownloads);
             var activeDownloads = 0;
-            var downloadTasks = GenerateDownloadTasks(accountId, existingFilesDict, filesToDownload, conflictCount, totalFiles, totalBytes, uploadBytes, downloadBytes, completedFiles, completedBytes, downloadSemaphore, activeDownloads, cancellationToken);
+            (activeDownloads, completedBytes, completedFiles, var downloadTasks) = GenerateDownloadTasks(accountId, existingFilesDict, filesToDownload, conflictCount, totalFiles, totalBytes, uploadBytes, downloadBytes, completedFiles, completedBytes, downloadSemaphore, activeDownloads, cancellationToken);
 
             await Task.WhenAll(downloadTasks);
 
@@ -429,7 +429,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         }
     }
 
-    private List<Task> GenerateDownloadTasks(string accountId, Dictionary<string, FileMetadata> existingFilesDict, List<FileMetadata> filesToDownload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, long downloadBytes, int completedFiles, long completedBytes, SemaphoreSlim downloadSemaphore, int activeDownloads, CancellationToken cancellationToken)
+    private (int activeDownloads, long completedBytes, int completedFiles, List<Task> downloadTasks) GenerateDownloadTasks(string accountId, Dictionary<string, FileMetadata> existingFilesDict, List<FileMetadata> filesToDownload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, long downloadBytes, int completedFiles, long completedBytes, SemaphoreSlim downloadSemaphore, int activeDownloads, CancellationToken cancellationToken)
     {
         var downloadTasks = filesToDownload.Select(async file =>
         {
@@ -560,7 +560,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 downloadSemaphore.Release();
             }
         }).ToList();
-        return downloadTasks;
+        return (activeDownloads, completedBytes, completedFiles, downloadTasks);
     }
 
     private void ResetTrackingDetails(long completedBytes)
@@ -570,7 +570,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         _lastCompletedBytes = completedBytes;
     }
 
-    private List<Task> CreateUploadTasks(string accountId, Dictionary<string, FileMetadata> existingFilesDict, List<FileMetadata> filesToUpload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, int completedFiles, long completedBytes, SemaphoreSlim uploadSemaphore, int activeUploads, CancellationToken cancellationToken)
+    private (int activeUploads, long completedBytes, int completedFiles, List<Task> uploadTasks) CreateUploadTasks(string accountId, Dictionary<string, FileMetadata> existingFilesDict, List<FileMetadata> filesToUpload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, int completedFiles, long completedBytes, SemaphoreSlim uploadSemaphore, int activeUploads, CancellationToken cancellationToken)
     {
         var uploadTasks = filesToUpload.Select(async file =>
         {
@@ -716,7 +716,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 uploadSemaphore.Release();
             }
         }).ToList();
-        return uploadTasks;
+        return (activeUploads, completedBytes, completedFiles, uploadTasks);
     }
 
     private static async Task<(List<FileMetadata> filesToDownload, int totalFiles, long totalBytes, long downloadBytes)> RemoveDuplicatesFromDownloadList(List<FileMetadata> filesToUpload, List<FileMetadata> filesToDownload, int totalFiles, long totalBytes, long downloadBytes, CancellationToken cancellationToken)
