@@ -24,12 +24,12 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.FileMetadata
+        List<FileMetadataEntity> entities = await _context.FileMetadata
             .AsNoTracking()
             .Where(fm => fm.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
-        return entities.Select(MapToModel).ToList();
+        return [.. entities.Select(MapToModel)];
     }
 
     /// <inheritdoc/>
@@ -37,7 +37,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        var entity = await _context.FileMetadata.FindAsync([id], cancellationToken);
+        FileMetadataEntity? entity = await _context.FileMetadata.FindAsync([id], cancellationToken);
         return entity is null ? null : MapToModel(entity);
     }
 
@@ -47,7 +47,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         ArgumentNullException.ThrowIfNull(accountId);
         ArgumentNullException.ThrowIfNull(path);
 
-        var entity = await _context.FileMetadata
+        FileMetadataEntity? entity = await _context.FileMetadata
             .FirstOrDefaultAsync(fm => fm.AccountId == accountId && fm.Path == path, cancellationToken);
 
         return entity is null ? null : MapToModel(entity);
@@ -58,11 +58,11 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.FileMetadata
+        List<FileMetadataEntity> entities = await _context.FileMetadata
             .Where(fm => fm.AccountId == accountId && fm.SyncStatus == (int)status)
             .ToListAsync(cancellationToken);
 
-        return entities.Select(MapToModel).ToList();
+        return [.. entities.Select(MapToModel)];
     }
 
     /// <inheritdoc/>
@@ -70,9 +70,15 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     {
         ArgumentNullException.ThrowIfNull(fileMetadata);
 
-        var entity = MapToEntity(fileMetadata);
-        _context.FileMetadata.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        FileMetadataEntity entity = MapToEntity(fileMetadata);
+        if (_context.FileMetadata.Any(fm => fm.Id == entity.Id))
+        {
+            await UpdateAsync(fileMetadata, cancellationToken);
+            return;
+        }
+
+        _ = _context.FileMetadata.Add(entity);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -80,11 +86,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     {
         ArgumentNullException.ThrowIfNull(fileMetadata);
 
-        var entity = await _context.FileMetadata.FindAsync([fileMetadata.Id], cancellationToken);
-        if (entity is null)
-        {
-            throw new InvalidOperationException($"File metadata with ID '{fileMetadata.Id}' not found.");
-        }
+        FileMetadataEntity entity = await _context.FileMetadata.FindAsync([fileMetadata.Id], cancellationToken) ?? throw new InvalidOperationException($"File metadata with ID '{fileMetadata.Id}' not found.");
 
         entity.AccountId = fileMetadata.AccountId;
         entity.Name = fileMetadata.Name;
@@ -98,7 +100,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         entity.SyncStatus = (int)fileMetadata.SyncStatus;
         entity.LastSyncDirection = fileMetadata.LastSyncDirection.HasValue ? (int)fileMetadata.LastSyncDirection.Value : null;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -106,11 +108,11 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        var entity = await _context.FileMetadata.FindAsync([id], cancellationToken);
+        FileMetadataEntity? entity = await _context.FileMetadata.FindAsync([id], cancellationToken);
         if (entity is not null)
         {
-            _context.FileMetadata.Remove(entity);
-            await _context.SaveChangesAsync(cancellationToken);
+            _ = _context.FileMetadata.Remove(entity);
+            _ = await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
@@ -119,12 +121,12 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.FileMetadata
+        List<FileMetadataEntity> entities = await _context.FileMetadata
             .Where(fm => fm.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
         _context.FileMetadata.RemoveRange(entities);
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -134,12 +136,12 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
 
         var entities = fileMetadataList.Select(MapToEntity).ToList();
 
-        foreach (var entity in entities)
+        foreach (FileMetadataEntity? entity in entities)
         {
-            var existing = await _context.FileMetadata.FindAsync([entity.Id], cancellationToken);
+            FileMetadataEntity? existing = await _context.FileMetadata.FindAsync([entity.Id], cancellationToken);
             if (existing is null)
             {
-                _context.FileMetadata.Add(entity);
+                _ = _context.FileMetadata.Add(entity);
             }
             else
             {
@@ -147,7 +149,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
             }
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     private static FileMetadata MapToModel(FileMetadataEntity entity) =>

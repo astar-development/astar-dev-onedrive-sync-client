@@ -1,7 +1,5 @@
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.ViewModels;
-using NSubstitute;
-using Shouldly;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 
@@ -12,7 +10,7 @@ public class ViewSyncHistoryViewModelShould
     {
         IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
 
-        var exception = Should.Throw<ArgumentNullException>(() =>
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             new ViewSyncHistoryViewModel(null!, mockFileOpLogRepo));
 
         exception.ParamName.ShouldBe("accountRepository");
@@ -23,7 +21,7 @@ public class ViewSyncHistoryViewModelShould
     {
         IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
 
-        var exception = Should.Throw<ArgumentNullException>(() =>
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             new ViewSyncHistoryViewModel(mockAccountRepo, null!));
 
         exception.ParamName.ShouldBe("fileOperationLogRepository");
@@ -103,7 +101,7 @@ public class ViewSyncHistoryViewModelShould
 
         var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
 
-        sut.LoadNextPageCommand.ShouldNotBeNull();
+        _ = sut.LoadNextPageCommand.ShouldNotBeNull();
     }
 
     [Fact]
@@ -114,7 +112,7 @@ public class ViewSyncHistoryViewModelShould
 
         var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
 
-        sut.LoadPreviousPageCommand.ShouldNotBeNull();
+        _ = sut.LoadPreviousPageCommand.ShouldNotBeNull();
     }
 
     [Fact]

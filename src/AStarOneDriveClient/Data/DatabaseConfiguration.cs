@@ -15,7 +15,7 @@ public sealed class DatabaseConfiguration
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             var appFolder = Path.Combine(appDataPath, "AStarOneDriveClient");
 
-            Directory.CreateDirectory(appFolder);
+            _ = Directory.CreateDirectory(appFolder);
 
             return Path.Combine(appFolder, "sync.db");
         }

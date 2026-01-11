@@ -6,9 +6,9 @@
         x:DataType="vm:UpdateAccountDetailsViewModel"
         Title="Update Account Details"
         Width="900"
-        Height="600"
+        Height="800"
         MinWidth="700"
-        MinHeight="500"
+        MinHeight="600"
         WindowStartupLocation="CenterOwner">
 
     <Design.DataContext>
@@ -73,9 +73,6 @@
                             <TextBlock Text="{Binding DisplayName}"
                                        FontWeight="Bold"
                                        FontSize="14" />
-                            <TextBlock Text="{Binding AccountId}"
-                                       FontSize="12"
-                                       Opacity="0.7" />
                             <TextBlock Text="{Binding LocalSyncPath}"
                                        FontSize="12"
                                        TextWrapping="Wrap" />
@@ -108,10 +105,6 @@
 
                     <!-- Read-only fields -->
                     <StackPanel Spacing="10">
-                        <StackPanel>
-                            <TextBlock Text="Account ID:" FontWeight="SemiBold" />
-                            <TextBlock Text="{Binding SelectedAccount.AccountId}" Margin="0,2,0,0" />
-                        </StackPanel>
 
                         <StackPanel>
                             <TextBlock Text="Display Name:" FontWeight="SemiBold" />
@@ -153,6 +146,57 @@
                                           Margin="0,5,0,0"
                                           OnContent="Enabled"
                                           OffContent="Disabled" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Enable Debug Logging:" FontWeight="SemiBold" />
+                            <ToggleSwitch IsChecked="{Binding EnableDebugLogging}"
+                                          Margin="0,5,0,0"
+                                          OnContent="Enabled"
+                                          OffContent="Disabled" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Max Parallel Upload/Downloads (1-10):" FontWeight="SemiBold" />
+                            <NumericUpDown Value="{Binding MaxParallelUpDownloads}"
+                                           Minimum="1"
+                                           Maximum="10"
+                                           Increment="1"
+                                           FormatString="0"
+                                           Margin="0,5,0,0"
+                                           Width="150"
+                                           HorizontalAlignment="Left" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Max Items In Batch (1-100):" FontWeight="SemiBold" />
+                            <NumericUpDown Value="{Binding MaxItemsInBatch}"
+                                           Minimum="1"
+                                           Maximum="100"
+                                           Increment="5"
+                                           FormatString="0"
+                                           Margin="0,5,0,0"
+                                           Width="150"
+                                           HorizontalAlignment="Left" />
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="Auto-Sync Interval (minutes, 60-1440):" FontWeight="SemiBold" />
+                            <TextBlock Text="Leave empty to disable automatic remote checks"
+                                       FontSize="11"
+                                       Opacity="0.7"
+                                       Margin="0,2,0,5" />
+                            <NumericUpDown Value="{Binding AutoSyncIntervalMinutes}"
+                                           Minimum="60"
+                                           Maximum="1440"
+                                           Increment="60"
+                                           FormatString="0"
+                                           AllowSpin="True"
+                                           ShowButtonSpinner="True"
+                                           Watermark="Disabled"
+                                           Margin="0,5,0,0"
+                                           Width="150"
+                                           HorizontalAlignment="Left" />
                         </StackPanel>
                     </StackPanel>
                 </StackPanel>

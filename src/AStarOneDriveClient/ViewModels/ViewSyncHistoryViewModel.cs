@@ -13,11 +13,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 {
     private readonly IAccountRepository _accountRepository;
     private readonly IFileOperationLogRepository _fileOperationLogRepository;
-    private AccountInfo? _selectedAccount;
     private int _currentPage = 1;
-    private bool _hasMoreRecords = true;
-    private bool _isLoading;
-
     private const int PageSize = 20;
 
     /// <summary>
@@ -35,8 +31,8 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         _accountRepository = accountRepository;
         _fileOperationLogRepository = fileOperationLogRepository;
 
-        Accounts = new ObservableCollection<AccountInfo>();
-        SyncHistory = new ObservableCollection<FileOperationLog>();
+        Accounts = [];
+        SyncHistory = [];
 
         LoadNextPageCommand = ReactiveCommand.CreateFromTask(LoadNextPageAsync);
         LoadPreviousPageCommand = ReactiveCommand.CreateFromTask(LoadPreviousPageAsync);
@@ -60,10 +56,10 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     /// </summary>
     public AccountInfo? SelectedAccount
     {
-        get => _selectedAccount;
+        get;
         set
         {
-            this.RaiseAndSetIfChanged(ref _selectedAccount, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             if (value is not null)
             {
                 _currentPage = 1;
@@ -86,17 +82,17 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     /// </summary>
     public bool HasMoreRecords
     {
-        get => _hasMoreRecords;
-        private set => this.RaiseAndSetIfChanged(ref _hasMoreRecords, value);
-    }
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    } = true;
 
     /// <summary>
     /// Gets a value indicating whether data is currently loading.
     /// </summary>
     public bool IsLoading
     {
-        get => _isLoading;
-        private set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -123,9 +119,9 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     {
         try
         {
-            var accounts = await _accountRepository.GetAllAsync();
+            IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (var account in accounts)
+            foreach (AccountInfo account in accounts)
             {
                 Accounts.Add(account);
             }
@@ -148,7 +144,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         try
         {
             var skip = (CurrentPage - 1) * PageSize;
-            var records = await _fileOperationLogRepository.GetByAccountIdAsync(
+            IReadOnlyList<FileOperationLog> records = await _fileOperationLogRepository.GetByAccountIdAsync(
                 SelectedAccount.AccountId,
                 PageSize + 1, // Fetch one extra to determine if more records exist
                 skip);
@@ -157,8 +153,8 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
             HasMoreRecords = records.Count > PageSize;
 
             // Only add PageSize records (exclude the extra one used for hasMore check)
-            var recordsToShow = HasMoreRecords ? records.Take(PageSize) : records;
-            foreach (var record in recordsToShow)
+            IEnumerable<FileOperationLog> recordsToShow = HasMoreRecords ? records.Take(PageSize) : records;
+            foreach (FileOperationLog? record in recordsToShow)
             {
                 SyncHistory.Add(record);
             }

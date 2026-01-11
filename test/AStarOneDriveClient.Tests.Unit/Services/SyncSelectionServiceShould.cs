@@ -10,7 +10,7 @@ public class SyncSelectionServiceShould
     [Fact]
     public void SelectFolderAndSetPropertiesCorrectly()
     {
-        var folder = CreateFolder("folder1", "Folder 1");
+        OneDriveFolderNode folder = CreateFolder("folder1", "Folder 1");
 
         _service.SetSelection(folder, true);
 
@@ -21,7 +21,7 @@ public class SyncSelectionServiceShould
     [Fact]
     public void DeselectFolderAndSetPropertiesCorrectly()
     {
-        var folder = CreateFolder("folder1", "Folder 1");
+        OneDriveFolderNode folder = CreateFolder("folder1", "Folder 1");
         folder.SelectionState = SelectionState.Checked;
         folder.IsSelected = true;
 
@@ -34,10 +34,10 @@ public class SyncSelectionServiceShould
     [Fact]
     public void CascadeSelectionToAllChildren()
     {
-        var parent = CreateFolder("parent", "Parent");
-        var child1 = CreateFolder("child1", "Child 1", "parent");
-        var child2 = CreateFolder("child2", "Child 2", "parent");
-        var grandchild = CreateFolder("grandchild", "Grandchild", "child1");
+        OneDriveFolderNode parent = CreateFolder("parent", "Parent");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "parent");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "parent");
+        OneDriveFolderNode grandchild = CreateFolder("grandchild", "Grandchild", "child1");
 
         parent.Children.Add(child1);
         parent.Children.Add(child2);
@@ -55,9 +55,9 @@ public class SyncSelectionServiceShould
     [Fact]
     public void CascadeDeselectionToAllChildren()
     {
-        var parent = CreateFolder("parent", "Parent");
-        var child1 = CreateFolder("child1", "Child 1", "parent");
-        var child2 = CreateFolder("child2", "Child 2", "parent");
+        OneDriveFolderNode parent = CreateFolder("parent", "Parent");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "parent");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "parent");
 
         parent.Children.Add(child1);
         parent.Children.Add(child2);
@@ -77,9 +77,9 @@ public class SyncSelectionServiceShould
     [Fact]
     public void CalculateCheckedStateWhenAllChildrenAreChecked()
     {
-        var parent = CreateFolder("parent", "Parent");
-        var child1 = CreateFolder("child1", "Child 1", "parent");
-        var child2 = CreateFolder("child2", "Child 2", "parent");
+        OneDriveFolderNode parent = CreateFolder("parent", "Parent");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "parent");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "parent");
 
         parent.Children.Add(child1);
         parent.Children.Add(child2);
@@ -87,7 +87,7 @@ public class SyncSelectionServiceShould
         child1.SelectionState = SelectionState.Checked;
         child2.SelectionState = SelectionState.Checked;
 
-        var state = _service.CalculateStateFromChildren(parent);
+        SelectionState state = _service.CalculateStateFromChildren(parent);
 
         state.ShouldBe(SelectionState.Checked);
     }
@@ -95,9 +95,9 @@ public class SyncSelectionServiceShould
     [Fact]
     public void CalculateUncheckedStateWhenAllChildrenAreUnchecked()
     {
-        var parent = CreateFolder("parent", "Parent");
-        var child1 = CreateFolder("child1", "Child 1", "parent");
-        var child2 = CreateFolder("child2", "Child 2", "parent");
+        OneDriveFolderNode parent = CreateFolder("parent", "Parent");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "parent");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "parent");
 
         parent.Children.Add(child1);
         parent.Children.Add(child2);
@@ -105,7 +105,7 @@ public class SyncSelectionServiceShould
         child1.SelectionState = SelectionState.Unchecked;
         child2.SelectionState = SelectionState.Unchecked;
 
-        var state = _service.CalculateStateFromChildren(parent);
+        SelectionState state = _service.CalculateStateFromChildren(parent);
 
         state.ShouldBe(SelectionState.Unchecked);
     }
@@ -113,9 +113,9 @@ public class SyncSelectionServiceShould
     [Fact]
     public void CalculateIndeterminateStateWhenChildrenHaveMixedStates()
     {
-        var parent = CreateFolder("parent", "Parent");
-        var child1 = CreateFolder("child1", "Child 1", "parent");
-        var child2 = CreateFolder("child2", "Child 2", "parent");
+        OneDriveFolderNode parent = CreateFolder("parent", "Parent");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "parent");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "parent");
 
         parent.Children.Add(child1);
         parent.Children.Add(child2);
@@ -123,7 +123,7 @@ public class SyncSelectionServiceShould
         child1.SelectionState = SelectionState.Checked;
         child2.SelectionState = SelectionState.Unchecked;
 
-        var state = _service.CalculateStateFromChildren(parent);
+        SelectionState state = _service.CalculateStateFromChildren(parent);
 
         state.ShouldBe(SelectionState.Indeterminate);
     }
@@ -131,9 +131,9 @@ public class SyncSelectionServiceShould
     [Fact]
     public void CalculateIndeterminateStateWhenAnyChildIsIndeterminate()
     {
-        var parent = CreateFolder("parent", "Parent");
-        var child1 = CreateFolder("child1", "Child 1", "parent");
-        var child2 = CreateFolder("child2", "Child 2", "parent");
+        OneDriveFolderNode parent = CreateFolder("parent", "Parent");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "parent");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "parent");
 
         parent.Children.Add(child1);
         parent.Children.Add(child2);
@@ -141,7 +141,7 @@ public class SyncSelectionServiceShould
         child1.SelectionState = SelectionState.Indeterminate;
         child2.SelectionState = SelectionState.Checked;
 
-        var state = _service.CalculateStateFromChildren(parent);
+        SelectionState state = _service.CalculateStateFromChildren(parent);
 
         state.ShouldBe(SelectionState.Indeterminate);
     }
@@ -149,10 +149,10 @@ public class SyncSelectionServiceShould
     [Fact]
     public void ReturnFolderOwnStateWhenNoChildren()
     {
-        var folder = CreateFolder("folder", "Folder");
+        OneDriveFolderNode folder = CreateFolder("folder", "Folder");
         folder.SelectionState = SelectionState.Checked;
 
-        var state = _service.CalculateStateFromChildren(folder);
+        SelectionState state = _service.CalculateStateFromChildren(folder);
 
         state.ShouldBe(SelectionState.Checked);
     }
@@ -160,9 +160,9 @@ public class SyncSelectionServiceShould
     [Fact]
     public void UpdateParentStateBasedOnChildren()
     {
-        var parent = CreateFolder("parent", "Parent");
-        var child1 = CreateFolder("child1", "Child 1", "parent");
-        var child2 = CreateFolder("child2", "Child 2", "parent");
+        OneDriveFolderNode parent = CreateFolder("parent", "Parent");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "parent");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "parent");
 
         parent.Children.Add(child1);
         parent.Children.Add(child2);
@@ -181,10 +181,10 @@ public class SyncSelectionServiceShould
     [Fact]
     public void PropagateParentStateUpToRoot()
     {
-        var root = CreateFolder("root", "Root");
-        var parent = CreateFolder("parent", "Parent", "root");
-        var child1 = CreateFolder("child1", "Child 1", "parent");
-        var child2 = CreateFolder("child2", "Child 2", "parent");
+        OneDriveFolderNode root = CreateFolder("root", "Root");
+        OneDriveFolderNode parent = CreateFolder("parent", "Parent", "root");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "parent");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "parent");
 
         root.Children.Add(parent);
         parent.Children.Add(child1);
@@ -204,7 +204,7 @@ public class SyncSelectionServiceShould
     [Fact]
     public void NotUpdateParentWhenFolderHasNoParent()
     {
-        var folder = CreateFolder("folder", "Folder");
+        OneDriveFolderNode folder = CreateFolder("folder", "Folder");
         folder.SelectionState = SelectionState.Checked;
 
         var rootFolders = new List<OneDriveFolderNode> { folder };
@@ -217,10 +217,10 @@ public class SyncSelectionServiceShould
     [Fact]
     public void GetAllSelectedFoldersRecursively()
     {
-        var root = CreateFolder("root", "Root");
-        var child1 = CreateFolder("child1", "Child 1", "root");
-        var child2 = CreateFolder("child2", "Child 2", "root");
-        var grandchild = CreateFolder("grandchild", "Grandchild", "child1");
+        OneDriveFolderNode root = CreateFolder("root", "Root");
+        OneDriveFolderNode child1 = CreateFolder("child1", "Child 1", "root");
+        OneDriveFolderNode child2 = CreateFolder("child2", "Child 2", "root");
+        OneDriveFolderNode grandchild = CreateFolder("grandchild", "Grandchild", "child1");
 
         root.Children.Add(child1);
         root.Children.Add(child2);
@@ -233,7 +233,7 @@ public class SyncSelectionServiceShould
 
         var rootFolders = new List<OneDriveFolderNode> { root };
 
-        var selectedFolders = _service.GetSelectedFolders(rootFolders);
+        List<OneDriveFolderNode> selectedFolders = _service.GetSelectedFolders(rootFolders);
 
         selectedFolders.Count.ShouldBe(2);
         selectedFolders.ShouldContain(child1);
@@ -245,8 +245,8 @@ public class SyncSelectionServiceShould
     [Fact]
     public void ReturnEmptyListWhenNoFoldersSelected()
     {
-        var root = CreateFolder("root", "Root");
-        var child = CreateFolder("child", "Child", "root");
+        OneDriveFolderNode root = CreateFolder("root", "Root");
+        OneDriveFolderNode child = CreateFolder("child", "Child", "root");
 
         root.Children.Add(child);
 
@@ -255,7 +255,7 @@ public class SyncSelectionServiceShould
 
         var rootFolders = new List<OneDriveFolderNode> { root };
 
-        var selectedFolders = _service.GetSelectedFolders(rootFolders);
+        List<OneDriveFolderNode> selectedFolders = _service.GetSelectedFolders(rootFolders);
 
         selectedFolders.ShouldBeEmpty();
     }
@@ -263,8 +263,8 @@ public class SyncSelectionServiceShould
     [Fact]
     public void ClearAllSelectionsRecursively()
     {
-        var root = CreateFolder("root", "Root");
-        var child = CreateFolder("child", "Child", "root");
+        OneDriveFolderNode root = CreateFolder("root", "Root");
+        OneDriveFolderNode child = CreateFolder("child", "Child", "root");
 
         root.Children.Add(child);
 
@@ -286,8 +286,8 @@ public class SyncSelectionServiceShould
     {
         Exception? exception = Record.Exception(() => _service.SetSelection(null!, true));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -297,19 +297,19 @@ public class SyncSelectionServiceShould
 
         Exception? exception = Record.Exception(() => _service.UpdateParentStates(null!, rootFolders));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenUpdateParentStatesRootFoldersIsNull()
     {
-        var folder = CreateFolder("test", "Test");
+        OneDriveFolderNode folder = CreateFolder("test", "Test");
 
         Exception? exception = Record.Exception(() => _service.UpdateParentStates(folder, null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -317,8 +317,8 @@ public class SyncSelectionServiceShould
     {
         Exception? exception = Record.Exception(() => _service.GetSelectedFolders(null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -326,8 +326,8 @@ public class SyncSelectionServiceShould
     {
         Exception? exception = Record.Exception(() => _service.ClearAllSelections(null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -335,19 +335,16 @@ public class SyncSelectionServiceShould
     {
         Exception? exception = Record.Exception(() => _service.CalculateStateFromChildren(null!));
 
-        exception.ShouldNotBeNull();
-        exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldNotBeNull();
+        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
-    private static OneDriveFolderNode CreateFolder(string id, string name, string? parentId = null)
+    private static OneDriveFolderNode CreateFolder(string id, string name, string? parentId = null) => new()
     {
-        return new OneDriveFolderNode
-        {
-            Id = id,
-            Name = name,
-            Path = $"/{name}",  // Add Path property for tests that rely on it
-            ParentId = parentId,
-            IsFolder = true
-        };
-    }
+        Id = id,
+        Name = name,
+        Path = $"/{name}",  // Add Path property for tests that rely on it
+        ParentId = parentId,
+        IsFolder = true
+    };
 }

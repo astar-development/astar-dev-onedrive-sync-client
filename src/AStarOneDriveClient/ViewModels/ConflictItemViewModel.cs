@@ -13,7 +13,6 @@ namespace AStarOneDriveClient.ViewModels;
 /// </remarks>
 public sealed class ConflictItemViewModel : ReactiveObject
 {
-    private ConflictResolutionStrategy _selectedStrategy = ConflictResolutionStrategy.None;
 
     /// <summary>
     /// Gets the conflict ID.
@@ -60,9 +59,9 @@ public sealed class ConflictItemViewModel : ReactiveObject
     /// </summary>
     public ConflictResolutionStrategy SelectedStrategy
     {
-        get => _selectedStrategy;
-        set => this.RaiseAndSetIfChanged(ref _selectedStrategy, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = ConflictResolutionStrategy.None;
 
     /// <summary>
     /// Gets a UI-friendly display string for local file details.

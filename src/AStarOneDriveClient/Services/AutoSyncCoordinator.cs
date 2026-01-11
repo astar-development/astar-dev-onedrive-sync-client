@@ -15,7 +15,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
     private readonly ISyncEngine _syncEngine;
     private readonly IAccountRepository _accountRepository;
     private readonly ILogger<AutoSyncCoordinator> _logger;
-    private readonly CompositeDisposable _disposables = new();
+    private readonly CompositeDisposable _disposables = [];
     private readonly Dictionary<string, IDisposable> _accountSubscriptions = [];
 
     /// <summary>
@@ -67,7 +67,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
 
             // Subscribe to file changes with debouncing (2 seconds)
             // This groups rapid file changes into a single sync operation
-            var subscription = _fileWatcherService.FileChanges
+            IDisposable subscription = _fileWatcherService.FileChanges
                 .Where(e => e.AccountId == accountId)
                 .Buffer(TimeSpan.FromSeconds(2))
                 .Where(changes => changes.Count > 0)
@@ -108,7 +108,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        if (_accountSubscriptions.Remove(accountId, out var subscription))
+        if (_accountSubscriptions.Remove(accountId, out IDisposable? subscription))
         {
             subscription.Dispose();
             _fileWatcherService.StopWatching(accountId);

@@ -1,4 +1,5 @@
 using AStarOneDriveClient.Data;
+using AStarOneDriveClient.Data.Entities;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Services;
 using Microsoft.EntityFrameworkCore;
@@ -10,10 +11,10 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task ReturnNullWhenNoPreferencesExist()
     {
-        using var context = CreateInMemoryContext();
+        using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
 
-        var result = await service.LoadAsync(CancellationToken.None);
+        WindowPreferences? result = await service.LoadAsync(CancellationToken.None);
 
         result.ShouldBeNull();
     }
@@ -21,14 +22,14 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task SaveNewPreferencesWhenNoneExist()
     {
-        using var context = CreateInMemoryContext();
+        using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
         var preferences = new WindowPreferences(0, 100, 200, 1024, 768, false);
 
         await service.SaveAsync(preferences, CancellationToken.None);
 
-        var saved = await context.WindowPreferences.FirstOrDefaultAsync();
-        saved.ShouldNotBeNull();
+        WindowPreferencesEntity? saved = await context.WindowPreferences.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
+        _ = saved.ShouldNotBeNull();
         saved.X.ShouldBe(100);
         saved.Y.ShouldBe(200);
         saved.Width.ShouldBe(1024);
@@ -39,7 +40,7 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task UpdateExistingPreferencesWhenTheyExist()
     {
-        using var context = CreateInMemoryContext();
+        using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
         var initialPrefs = new WindowPreferences(0, 100, 200, 800, 600, false);
         await service.SaveAsync(initialPrefs, CancellationToken.None);
@@ -47,10 +48,10 @@ public class WindowPreferencesServiceShould
         var updatedPrefs = new WindowPreferences(1, 150, 250, 1280, 720, true);
         await service.SaveAsync(updatedPrefs, CancellationToken.None);
 
-        var allPreferences = await context.WindowPreferences.ToListAsync();
+        List<WindowPreferencesEntity> allPreferences = await context.WindowPreferences.ToListAsync(TestContext.Current.CancellationToken);
         allPreferences.Count.ShouldBe(1);
 
-        var saved = allPreferences[0];
+        WindowPreferencesEntity saved = allPreferences[0];
         saved.X.ShouldBe(150);
         saved.Y.ShouldBe(250);
         saved.Width.ShouldBe(1280);
@@ -61,14 +62,14 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task LoadSavedPreferencesCorrectly()
     {
-        using var context = CreateInMemoryContext();
+        using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
         var preferences = new WindowPreferences(0, 300, 400, 1920, 1080, false);
         await service.SaveAsync(preferences, CancellationToken.None);
 
-        var loaded = await service.LoadAsync(CancellationToken.None);
+        WindowPreferences? loaded = await service.LoadAsync(CancellationToken.None);
 
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded.X.ShouldBe(300);
         loaded.Y.ShouldBe(400);
         loaded.Width.ShouldBe(1920);
@@ -79,14 +80,14 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task SavePreferencesWithNullPositionWhenMaximized()
     {
-        using var context = CreateInMemoryContext();
+        using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
         var preferences = new WindowPreferences(0, null, null, 1024, 768, true);
 
         await service.SaveAsync(preferences, CancellationToken.None);
 
-        var loaded = await service.LoadAsync(CancellationToken.None);
-        loaded.ShouldNotBeNull();
+        WindowPreferences? loaded = await service.LoadAsync(CancellationToken.None);
+        _ = loaded.ShouldNotBeNull();
         loaded.X.ShouldBeNull();
         loaded.Y.ShouldBeNull();
         loaded.Width.ShouldBe(1024);
@@ -97,10 +98,10 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task ThrowArgumentNullExceptionWhenSavingNullPreferences()
     {
-        using var context = CreateInMemoryContext();
+        using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
 
-        var exception = await Should.ThrowAsync<ArgumentNullException>(
+        ArgumentNullException exception = await Should.ThrowAsync<ArgumentNullException>(
             async () => await service.SaveAsync(null!, CancellationToken.None)
         );
 
@@ -110,7 +111,7 @@ public class WindowPreferencesServiceShould
     [Fact]
     public void ThrowArgumentNullExceptionWhenContextIsNull()
     {
-        var exception = Should.Throw<ArgumentNullException>(
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(
             () => new WindowPreferencesService(null!)
         );
 
@@ -120,12 +121,12 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task RespectCancellationTokenWhenLoading()
     {
-        using var context = CreateInMemoryContext();
+        using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(
+        _ = await Should.ThrowAsync<OperationCanceledException>(
             async () => await service.LoadAsync(cts.Token)
         );
     }
@@ -133,21 +134,21 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task RespectCancellationTokenWhenSaving()
     {
-        using var context = CreateInMemoryContext();
+        using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
         var preferences = new WindowPreferences(0, 100, 200, 800, 600, false);
         using var cts = new CancellationTokenSource();
-        cts.Cancel();
+        await cts.CancelAsync();
 
-        await Should.ThrowAsync<OperationCanceledException>(
+        _ = await Should.ThrowAsync<OperationCanceledException>(
             async () => await service.SaveAsync(preferences, cts.Token)
         );
     }
 
     private static SyncDbContext CreateInMemoryContext()
     {
-        var options = new DbContextOptionsBuilder<SyncDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+        DbContextOptions<SyncDbContext> options = new DbContextOptionsBuilder<SyncDbContext>()
+            .UseInMemoryDatabase(Guid.CreateVersion7().ToString())
             .Options;
 
         return new SyncDbContext(options);

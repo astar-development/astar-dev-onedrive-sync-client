@@ -1,5 +1,6 @@
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
@@ -18,45 +19,34 @@ namespace AStarOneDriveClient.ViewModels;
 public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
 {
     private readonly ISyncEngine _syncEngine;
-    private readonly string _accountId;
-    private readonly CompositeDisposable _disposables = new();
+    private readonly CompositeDisposable _disposables = [];
     private readonly ILogger<SyncProgressViewModel> _logger;
-
-    private SyncState? _currentProgress;
-    private bool _isSyncing;
-    private string _statusMessage = "Ready to sync";
 
     /// <summary>
     /// Gets the account ID for this sync progress.
     /// </summary>
-    public string AccountId => _accountId;
+    public string AccountId { get; }
 
     /// <summary>
     /// Gets or sets the current sync progress state.
     /// </summary>
-    public SyncState? CurrentProgress
-    {
-        get => _currentProgress;
-        set => this.RaiseAndSetIfChanged(ref _currentProgress, value);
-    }
+    public SyncState? CurrentProgress { get; set => this.RaiseAndSetIfChanged(ref field, value); }
 
     /// <summary>
     /// Gets or sets a value indicating whether sync is currently running.
     /// </summary>
-    public bool IsSyncing
-    {
-        get => _isSyncing;
-        set => this.RaiseAndSetIfChanged(ref _isSyncing, value);
-    }
+    public bool IsSyncing { get; set => this.RaiseAndSetIfChanged(ref field, value); }
+
+    /// <summary>
+    /// Gets a value indicating whether the progress bar should be indeterminate.
+    /// True only during scanning phase when we don't know the total file count yet.
+    /// </summary>
+    public bool IsProgressIndeterminate => IsSyncing && (CurrentProgress is null || CurrentProgress.TotalFiles == 0);
 
     /// <summary>
     /// Gets or sets the status message to display.
     /// </summary>
-    public string StatusMessage
-    {
-        get => _statusMessage;
-        set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
-    }
+    public string StatusMessage { get; set => this.RaiseAndSetIfChanged(ref field, value); } = "Ready to sync";
 
     /// <summary>
     /// Gets the progress percentage (0-100).
@@ -65,26 +55,16 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     {
         get
         {
-            if (CurrentProgress is null || CurrentProgress.TotalFiles == 0)
-                return 0;
-
-            return (double)CurrentProgress.CompletedFiles / CurrentProgress.TotalFiles * 100;
+            return CurrentProgress is null || CurrentProgress.TotalFiles == 0
+                ? 0
+                : (double)CurrentProgress.CompletedFiles / CurrentProgress.TotalFiles * 100;
         }
     }
 
     /// <summary>
     /// Gets a formatted string showing completed/total files.
     /// </summary>
-    public string FilesProgressText
-    {
-        get
-        {
-            if (CurrentProgress is null)
-                return "No files";
-
-            return $"{CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files";
-        }
-    }
+    public string FilesProgressText => CurrentProgress is null ? "No files" : $"{CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files";
 
     /// <summary>
     /// Gets a formatted string showing upload/download counts.
@@ -94,24 +74,34 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         get
         {
             if (CurrentProgress is null)
+            {
                 return string.Empty;
-
-            var parts = new List<string>
-            {
-                $"↑ {CurrentProgress.FilesUploading} uploading  ↓ {CurrentProgress.FilesDownloading} downloading"
-            };
-
-            // Add transfer speed if available
-            if (CurrentProgress.MegabytesPerSecond > 0.01)
-            {
-                parts.Add($"{CurrentProgress.MegabytesPerSecond:F2} MB/s");
             }
 
-            // Add ETA if available
-            if (CurrentProgress.EstimatedSecondsRemaining.HasValue)
+            var parts = new List<string>();
+
+            // Show scanning folder if currently scanning
+            if (!string.IsNullOrEmpty(CurrentProgress.CurrentScanningFolder))
             {
-                var eta = FormatTimeRemaining(CurrentProgress.EstimatedSecondsRemaining.Value);
-                parts.Add($"ETA: {eta}");
+                parts.Add($"Scanning: {CurrentProgress.CurrentScanningFolder}");
+            }
+            else
+            {
+                // Show upload/download counts during transfer
+                parts.Add($"↑ {CurrentProgress.FilesUploading} uploading  ↓ {CurrentProgress.FilesDownloading} downloading");
+
+                // Add transfer speed if available
+                if (CurrentProgress.MegabytesPerSecond > 0.01)
+                {
+                    parts.Add($"{CurrentProgress.MegabytesPerSecond:F2} MB/s");
+                }
+
+                // Add ETA if available
+                if (CurrentProgress.EstimatedSecondsRemaining.HasValue)
+                {
+                    var eta = FormatTimeRemaining(CurrentProgress.EstimatedSecondsRemaining.Value);
+                    parts.Add($"ETA: {eta}");
+                }
             }
 
             return string.Join("  •  ", parts);
@@ -125,10 +115,9 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     {
         get
         {
-            if (CurrentProgress is null || CurrentProgress.ConflictsDetected == 0)
-                return string.Empty;
-
-            return $"⚠ {CurrentProgress.ConflictsDetected} conflict(s) detected";
+            return CurrentProgress is null || CurrentProgress.ConflictsDetected == 0
+                ? string.Empty
+                : $"⚠ {CurrentProgress.ConflictsDetected} conflict(s) detected";
         }
     }
 
@@ -174,13 +163,13 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         ArgumentNullException.ThrowIfNull(syncEngine);
         ArgumentNullException.ThrowIfNull(logger);
 
-        _accountId = accountId;
+        AccountId = accountId;
         _syncEngine = syncEngine;
         _logger = logger;
 
-        var canStart = this.WhenAnyValue(x => x.IsSyncing, isSyncing => !isSyncing);
-        var canPause = this.WhenAnyValue(x => x.IsSyncing);
-        var hasConflicts = this.WhenAnyValue(x => x.HasConflicts);
+        IObservable<bool> canStart = this.WhenAnyValue(x => x.IsSyncing, isSyncing => !isSyncing);
+        IObservable<bool> canPause = this.WhenAnyValue(x => x.IsSyncing);
+        IObservable<bool> hasConflicts = this.WhenAnyValue(x => x.HasConflicts);
 
         StartSyncCommand = ReactiveCommand.CreateFromTask(StartSyncAsync, canStart);
         PauseSyncCommand = ReactiveCommand.CreateFromTask(PauseSyncAsync, canPause);
@@ -188,7 +177,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         CloseCommand = ReactiveCommand.Create(() => { /* Handled by MainWindowViewModel */ });
 
         // Subscribe to sync progress updates
-        _syncEngine.Progress
+        _ = _syncEngine.Progress
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(progress =>
             {
@@ -203,6 +192,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
                 this.RaisePropertyChanged(nameof(TransferDetailsText));
                 this.RaisePropertyChanged(nameof(ConflictsText));
                 this.RaisePropertyChanged(nameof(HasConflicts));
+                this.RaisePropertyChanged(nameof(IsProgressIndeterminate));
 
                 _logger.LogDebug(
                     "Progress update: {Completed}/{Total} files, {Conflicts} conflicts",
@@ -224,22 +214,24 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         {
             IsSyncing = true;
             StatusMessage = "Starting sync...";
-            _logger.LogInformation("Starting sync for account {AccountId}", _accountId);
+            _logger.LogInformation("Starting sync for account {AccountId}", AccountId);
 
-            await _syncEngine.StartSyncAsync(_accountId, cancellationToken);
+            await _syncEngine.StartSyncAsync(AccountId, cancellationToken);
 
             StatusMessage = "Sync completed successfully";
-            _logger.LogInformation("Sync completed for account {AccountId}", _accountId);
+            _logger.LogInformation("Sync completed for account {AccountId}", AccountId);
         }
         catch (OperationCanceledException)
         {
             StatusMessage = "Sync paused";
-            _logger.LogInformation("Sync paused for account {AccountId}", _accountId);
+#pragma warning disable S6667 // Logging in a catch clause should pass the caught exception as a parameter.
+            _logger.LogInformation("Sync paused for account {AccountId}", AccountId);
+#pragma warning restore S6667 // Logging in a catch clause should pass the caught exception as a parameter.
         }
         catch (Exception ex)
         {
             StatusMessage = $"Sync failed: {ex.Message}";
-            _logger.LogError(ex, "Sync failed for account {AccountId}", _accountId);
+            _logger.LogError(ex, "Sync failed for account {AccountId}", AccountId);
         }
         finally
         {
@@ -255,7 +247,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         try
         {
             StatusMessage = "Pausing sync...";
-            _logger.LogInformation("Pausing sync for account {AccountId}", _accountId);
+            _logger.LogInformation("Pausing sync for account {AccountId}", AccountId);
 
             await _syncEngine.StopSyncAsync();
 
@@ -265,19 +257,14 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         catch (Exception ex)
         {
             StatusMessage = $"Failed to pause sync: {ex.Message}";
-            _logger.LogError(ex, "Failed to pause sync for account {AccountId}", _accountId);
+            _logger.LogError(ex, "Failed to pause sync for account {AccountId}", AccountId);
         }
     }
 
     /// <summary>
     /// Handles the view conflicts command.
     /// </summary>
-    private void OnViewConflicts()
-    {
-        _logger.LogInformation("User requested to view conflicts for account {AccountId}", _accountId);
-        // Navigation logic would go here in a real implementation
-        // e.g., NavigationService.NavigateTo<ConflictResolutionViewModel>(_accountId);
-    }
+    private void OnViewConflicts() => _logger.LogInformation("User requested to view conflicts for account {AccountId}", AccountId);
 
     /// <summary>
     /// Updates the status message based on current progress.
@@ -294,15 +281,16 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         {
             if (CurrentProgress.TotalFiles == 0)
             {
-                StatusMessage = "Scanning for changes...";
-            }
-            else if (CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles)
-            {
-                StatusMessage = "Finalizing sync...";
+                // During scanning phase, show the folder being scanned
+                StatusMessage = string.IsNullOrEmpty(CurrentProgress.CurrentScanningFolder)
+                    ? "Scanning for changes..."
+                    : $"Scanning: {CurrentProgress.CurrentScanningFolder}";
             }
             else
             {
-                StatusMessage = $"Syncing {CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files...";
+                StatusMessage = CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles
+                    ? "Finalizing sync..."
+                    : $"Syncing {CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files...";
             }
         }
         else if (CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles && CurrentProgress.TotalFiles > 0)
@@ -320,9 +308,11 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     public async Task RefreshConflictCountAsync(CancellationToken cancellationToken = default)
     {
         if (CurrentProgress is null)
+        {
             return;
+        }
 
-        var conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
+        IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(AccountId, cancellationToken);
         var conflictCount = conflicts.Count;
 
         CurrentProgress = CurrentProgress with
@@ -333,7 +323,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         this.RaisePropertyChanged(nameof(ConflictsText));
         this.RaisePropertyChanged(nameof(HasConflicts));
 
-        _logger.LogDebug("Refreshed conflict count for account {AccountId}: {Count} conflicts", _accountId, conflictCount);
+        _logger.LogDebug("Refreshed conflict count for account {AccountId}: {Count} conflicts", AccountId, conflictCount);
     }
 
     /// <summary>
@@ -344,7 +334,9 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     private static string FormatTimeRemaining(int seconds)
     {
         if (seconds < 60)
+        {
             return $"{seconds}s";
+        }
 
         if (seconds < 3600)
         {
@@ -353,7 +345,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         }
 
         var hours = seconds / 3600;
-        var remainingMinutes = (seconds % 3600) / 60;
+        var remainingMinutes = seconds % 3600 / 60;
         return remainingMinutes > 0 ? $"{hours}h {remainingMinutes}m" : $"{hours}h";
     }
 
@@ -361,6 +353,6 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     public void Dispose()
     {
         _disposables.Dispose();
-        _logger.LogDebug("SyncProgressViewModel disposed for account {AccountId}", _accountId);
+        _logger.LogDebug("SyncProgressViewModel disposed for account {AccountId}", AccountId);
     }
 }

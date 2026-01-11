@@ -36,6 +36,16 @@ public interface ISyncSelectionService
     void UpdateParentStates(OneDriveFolderNode folder, List<OneDriveFolderNode> rootFolders);
 
     /// <summary>
+    /// Updates the selection state of a single folder based on its children's states.
+    /// </summary>
+    /// <param name="folder">The folder to update.</param>
+    /// <remarks>
+    /// This method calculates the folder's state (Checked/Unchecked/Indeterminate) based on
+    /// the current state of its children. Use this after loading children from the database.
+    /// </remarks>
+    void UpdateParentState(OneDriveFolderNode folder);
+
+    /// <summary>
     /// Gets all folders that are explicitly selected for sync (excludes indeterminate).
     /// </summary>
     /// <param name="rootFolders">The root-level folders to search within.</param>

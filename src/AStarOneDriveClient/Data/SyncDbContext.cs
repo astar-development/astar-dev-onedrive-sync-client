@@ -19,11 +19,6 @@ public sealed class SyncDbContext : DbContext
     public DbSet<SyncConfigurationEntity> SyncConfigurations { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the sync states table.
-    /// </summary>
-    public DbSet<SyncStateEntity> SyncStates { get; set; } = null!;
-
-    /// <summary>
     /// Gets or sets the file metadata table.
     /// </summary>
     public DbSet<FileMetadataEntity> FileMetadata { get; set; } = null!;
@@ -48,6 +43,11 @@ public sealed class SyncDbContext : DbContext
     /// </summary>
     public DbSet<FileOperationLogEntity> FileOperationLogs { get; set; } = null!;
 
+    /// <summary>
+    /// Gets or sets the debug logs table.
+    /// </summary>
+    public DbSet<DebugLogEntity> DebugLogs { get; set; } = null!;
+
     public SyncDbContext(DbContextOptions<SyncDbContext> options) : base(options)
     {
     }
@@ -57,85 +57,64 @@ public sealed class SyncDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configure AccountEntity
-        modelBuilder.Entity<AccountEntity>(entity =>
-        {
-            entity.HasKey(e => e.AccountId);
-            entity.Property(e => e.AccountId).IsRequired();
-            entity.Property(e => e.DisplayName).IsRequired();
-            entity.Property(e => e.LocalSyncPath).IsRequired();
-            entity.HasIndex(e => e.LocalSyncPath).IsUnique();
-        });
+        _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(SyncDbContext).Assembly);
 
         // Configure SyncConfigurationEntity
-        modelBuilder.Entity<SyncConfigurationEntity>(entity =>
+        _ = modelBuilder.Entity<SyncConfigurationEntity>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.AccountId).IsRequired();
-            entity.Property(e => e.FolderPath).IsRequired();
-            entity.HasIndex(e => new { e.AccountId, e.FolderPath });
+            _ = entity.HasKey(e => e.Id);
+            _ = entity.Property(e => e.AccountId).IsRequired();
+            _ = entity.Property(e => e.FolderPath).IsRequired();
+            _ = entity.HasIndex(e => new { e.AccountId, e.FolderPath });
 
             // Foreign key relationship with cascade delete
-            entity.HasOne<AccountEntity>()
-                .WithMany()
-                .HasForeignKey(e => e.AccountId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        // Configure SyncStateEntity
-        modelBuilder.Entity<SyncStateEntity>(entity =>
-        {
-            entity.HasKey(e => e.AccountId);
-            entity.Property(e => e.AccountId).IsRequired();
-
-            // Foreign key relationship with cascade delete
-            entity.HasOne<AccountEntity>()
+            _ = entity.HasOne<AccountEntity>()
                 .WithMany()
                 .HasForeignKey(e => e.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configure FileMetadataEntity
-        modelBuilder.Entity<FileMetadataEntity>(entity =>
+        _ = modelBuilder.Entity<FileMetadataEntity>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).IsRequired();
-            entity.Property(e => e.AccountId).IsRequired();
-            entity.Property(e => e.Name).IsRequired();
-            entity.Property(e => e.Path).IsRequired();
-            entity.Property(e => e.LocalPath).IsRequired();
+            _ = entity.HasKey(e => e.Id);
+            _ = entity.Property(e => e.Id).IsRequired();
+            _ = entity.Property(e => e.AccountId).IsRequired();
+            _ = entity.Property(e => e.Name).IsRequired();
+            _ = entity.Property(e => e.Path).IsRequired();
+            _ = entity.Property(e => e.LocalPath).IsRequired();
 
-            entity.HasIndex(e => e.AccountId);
-            entity.HasIndex(e => new { e.AccountId, e.Path });
+            _ = entity.HasIndex(e => e.AccountId);
+            _ = entity.HasIndex(e => new { e.AccountId, e.Path });
 
             // Foreign key relationship with cascade delete
-            entity.HasOne<AccountEntity>()
+            _ = entity.HasOne<AccountEntity>()
                 .WithMany()
                 .HasForeignKey(e => e.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
         // Configure WindowPreferencesEntity
-        modelBuilder.Entity<WindowPreferencesEntity>(entity =>
+        _ = modelBuilder.Entity<WindowPreferencesEntity>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Width).HasDefaultValue(800);
-            entity.Property(e => e.Height).HasDefaultValue(600);
+            _ = entity.HasKey(e => e.Id);
+            _ = entity.Property(e => e.Width).HasDefaultValue(800);
+            _ = entity.Property(e => e.Height).HasDefaultValue(600);
         });
 
         // Configure SyncConflictEntity
-        modelBuilder.Entity<SyncConflictEntity>(entity =>
+        _ = modelBuilder.Entity<SyncConflictEntity>(entity =>
         {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Id).IsRequired();
-            entity.Property(e => e.AccountId).IsRequired();
-            entity.Property(e => e.FilePath).IsRequired();
+            _ = entity.HasKey(e => e.Id);
+            _ = entity.Property(e => e.Id).IsRequired();
+            _ = entity.Property(e => e.AccountId).IsRequired();
+            _ = entity.Property(e => e.FilePath).IsRequired();
 
-            entity.HasIndex(e => e.AccountId);
-            entity.HasIndex(e => new { e.AccountId, e.IsResolved });
+            _ = entity.HasIndex(e => e.AccountId);
+            _ = entity.HasIndex(e => new { e.AccountId, e.IsResolved });
 
             // Foreign key relationship with cascade delete
-            entity.HasOne(e => e.Account)
+            _ = entity.HasOne(e => e.Account)
                 .WithMany()
                 .HasForeignKey(e => e.AccountId)
                 .OnDelete(DeleteBehavior.Cascade);

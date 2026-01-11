@@ -23,13 +23,13 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.SyncSessionLogs
+        List<SyncSessionLogEntity> entities = await _context.SyncSessionLogs
             .AsNoTracking()
             .Where(s => s.AccountId == accountId)
             .OrderByDescending(s => s.StartedUtc)
             .ToListAsync(cancellationToken);
 
-        return entities.Select(MapToModel).ToList();
+        return [.. entities.Select(MapToModel)];
     }
 
     /// <inheritdoc/>
@@ -37,7 +37,7 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
     {
         ArgumentNullException.ThrowIfNull(id);
 
-        var entity = await _context.SyncSessionLogs
+        SyncSessionLogEntity? entity = await _context.SyncSessionLogs
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
@@ -49,9 +49,9 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
     {
         ArgumentNullException.ThrowIfNull(sessionLog);
 
-        var entity = MapToEntity(sessionLog);
-        _context.SyncSessionLogs.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        SyncSessionLogEntity entity = MapToEntity(sessionLog);
+        _ = _context.SyncSessionLogs.Add(entity);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -59,11 +59,7 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
     {
         ArgumentNullException.ThrowIfNull(sessionLog);
 
-        var entity = await _context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken);
-        if (entity is null)
-        {
-            throw new InvalidOperationException($"Sync session log with ID '{sessionLog.Id}' not found.");
-        }
+        SyncSessionLogEntity entity = await _context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken) ?? throw new InvalidOperationException($"Sync session log with ID '{sessionLog.Id}' not found.");
 
         entity.CompletedUtc = sessionLog.CompletedUtc;
         entity.Status = (int)sessionLog.Status;
@@ -73,7 +69,7 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
         entity.ConflictsDetected = sessionLog.ConflictsDetected;
         entity.TotalBytes = sessionLog.TotalBytes;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -81,7 +77,7 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        await _context.SyncSessionLogs
+        _ = await _context.SyncSessionLogs
             .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
             .ExecuteDeleteAsync(cancellationToken);
     }

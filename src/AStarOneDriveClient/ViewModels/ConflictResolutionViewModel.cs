@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
@@ -24,11 +25,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
     private readonly IConflictResolver _conflictResolver;
     private readonly ILogger<ConflictResolutionViewModel> _logger;
     private readonly string _accountId;
-    private readonly CompositeDisposable _disposables = new();
-
-    private bool _isLoading;
-    private bool _isResolving;
-    private string _statusMessage = string.Empty;
+    private readonly CompositeDisposable _disposables = [];
 
     /// <summary>
     /// Gets the collection of conflicts to display and resolve.
@@ -40,8 +37,8 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
     /// </summary>
     public bool IsLoading
     {
-        get => _isLoading;
-        set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -49,8 +46,8 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
     /// </summary>
     public bool IsResolving
     {
-        get => _isResolving;
-        set => this.RaiseAndSetIfChanged(ref _isResolving, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -58,9 +55,9 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
     /// </summary>
     public string StatusMessage
     {
-        get => _statusMessage;
-        set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
     /// <summary>
     /// Gets a value indicating whether there are any conflicts to display.
@@ -106,7 +103,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
         _conflictResolver = conflictResolver;
         _logger = logger;
 
-        var canResolve = this.WhenAnyValue(
+        IObservable<bool> canResolve = this.WhenAnyValue(
             x => x.IsResolving,
             x => x.HasConflicts,
             (isResolving, hasConflicts) => !isResolving && hasConflicts);
@@ -116,13 +113,10 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
         CancelCommand = ReactiveCommand.Create(OnCancel);
 
         // Observe collection changes to update HasConflicts property
-        Conflicts.CollectionChanged += (_, _) =>
-        {
-            this.RaisePropertyChanged(nameof(HasConflicts));
-        };
+        Conflicts.CollectionChanged += (_, _) => this.RaisePropertyChanged(nameof(HasConflicts));
 
         // Load conflicts on initialization
-        LoadConflictsCommand.Execute().Subscribe().DisposeWith(_disposables);
+        _ = LoadConflictsCommand.Execute().Subscribe().DisposeWith(_disposables);
     }
 
     /// <summary>
@@ -136,9 +130,9 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
             StatusMessage = "Loading conflicts...";
             Conflicts.Clear();
 
-            var conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
+            IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
 
-            foreach (var conflict in conflicts)
+            foreach (SyncConflict conflict in conflicts)
             {
                 Conflicts.Add(new ConflictItemViewModel(conflict));
             }
@@ -176,7 +170,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             for (var i = Conflicts.Count - 1; i >= 0; i--)
             {
-                var conflictVm = Conflicts[i];
+                ConflictItemViewModel conflictVm = Conflicts[i];
 
                 if (conflictVm.SelectedStrategy == ConflictResolutionStrategy.None)
                 {
@@ -242,8 +236,5 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Dispose()
-    {
-        _disposables.Dispose();
-    }
+    public void Dispose() => _disposables.Dispose();
 }

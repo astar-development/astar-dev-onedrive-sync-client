@@ -36,24 +36,21 @@ public sealed class AuthConfiguration
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var authSection = configuration.GetSection("Authentication");
+        IConfigurationSection authSection = configuration.GetSection("Authentication");
         if (!authSection.Exists())
         {
             throw new InvalidOperationException("Authentication configuration section not found. Ensure appsettings.json contains an 'Authentication' section.");
         }
 
         var clientId = authSection["ClientId"];
-        if (string.IsNullOrWhiteSpace(clientId))
-        {
-            throw new InvalidOperationException("Authentication:ClientId is not configured. Please set it in appsettings.json or user secrets.");
-        }
-
-        return new AuthConfiguration
-        {
-            ClientId = clientId,
-            RedirectUri = authSection["RedirectUri"] ?? "http://localhost",
-            Authority = authSection["Authority"] ?? "https://login.microsoftonline.com/common",
-            Scopes = authSection.GetSection("Scopes").Get<string[]>() ?? ["Files.ReadWrite", "User.Read", "offline_access"]
-        };
+        return string.IsNullOrWhiteSpace(clientId)
+            ? throw new InvalidOperationException("Authentication:ClientId is not configured. Please set it in appsettings.json or user secrets.")
+            : new AuthConfiguration
+            {
+                ClientId = clientId,
+                RedirectUri = authSection["RedirectUri"] ?? "http://localhost",
+                Authority = authSection["Authority"] ?? "https://login.microsoftonline.com/common",
+                Scopes = authSection.GetSection("Scopes").Get<string[]>() ?? ["Files.ReadWrite", "User.Read", "offline_access"]
+            };
     }
 }

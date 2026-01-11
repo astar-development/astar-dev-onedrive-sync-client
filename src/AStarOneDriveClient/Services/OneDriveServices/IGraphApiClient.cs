@@ -36,6 +36,7 @@ public interface IGraphApiClient
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>Collection of child drive items.</returns>
     Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, int maxItemsInBatch, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a specific drive item by its ID.

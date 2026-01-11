@@ -68,7 +68,7 @@ public sealed class FileWatcherService : IFileWatcherService
 
             // Debounce buffer for Changed/Created events (500ms throttle)
             var changeBuffer = new Subject<FileSystemEventArgs>();
-            var subscription = changeBuffer
+            IDisposable subscription = changeBuffer
                 .Throttle(TimeSpan.FromMilliseconds(500))
                 .Subscribe(e => ProcessFileChange(accountId, localPath, e));
 
@@ -94,7 +94,7 @@ public sealed class FileWatcherService : IFileWatcherService
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        if (_watchers.Remove(accountId, out var context))
+        if (_watchers.Remove(accountId, out WatcherContext? context))
         {
             context.Dispose();
             _logger.LogInformation("Stopped watching for account {AccountId}", accountId);
@@ -104,7 +104,7 @@ public sealed class FileWatcherService : IFileWatcherService
     private void ProcessFileChange(string accountId, string basePath, FileSystemEventArgs e)
     {
         // Determine if this is a creation or modification
-        var changeType = e.ChangeType == WatcherChangeTypes.Created
+        FileChangeType changeType = e.ChangeType == WatcherChangeTypes.Created
             ? FileChangeType.Created
             : FileChangeType.Modified;
 
@@ -137,7 +137,7 @@ public sealed class FileWatcherService : IFileWatcherService
 
     private void HandleWatcherError(string accountId, ErrorEventArgs e)
     {
-        var exception = e.GetException();
+        Exception exception = e.GetException();
         _logger.LogError(exception, "FileSystemWatcher error for account {AccountId}", accountId);
 
         // Optionally emit an error event or attempt to restart the watcher
@@ -154,7 +154,7 @@ public sealed class FileWatcherService : IFileWatcherService
             return;
         }
 
-        foreach (var context in _watchers.Values)
+        foreach (WatcherContext context in _watchers.Values)
         {
             context.Dispose();
         }

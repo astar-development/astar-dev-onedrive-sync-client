@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
+using AStarOneDriveClient.Services;
 using AStarOneDriveClient.ViewModels;
-using NSubstitute;
-using Shouldly;
 
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 
@@ -12,8 +12,9 @@ public class UpdateAccountDetailsViewModelShould
     [Fact]
     public void ThrowArgumentNullExceptionWhenAccountRepositoryIsNull()
     {
-        var exception = Should.Throw<ArgumentNullException>(() =>
-            new UpdateAccountDetailsViewModel(null!));
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
+            new UpdateAccountDetailsViewModel(null!, mockScheduler));
 
         exception.ParamName.ShouldBe("accountRepository");
     }
@@ -22,10 +23,11 @@ public class UpdateAccountDetailsViewModelShould
     public void InitializeWithEmptyAccountsCollection()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
-        sut.Accounts.ShouldBeOfType<ObservableCollection<AccountInfo>>();
+        _ = sut.Accounts.ShouldBeOfType<ObservableCollection<AccountInfo>>();
         sut.Accounts.ShouldBeEmpty();
     }
 
@@ -33,8 +35,9 @@ public class UpdateAccountDetailsViewModelShould
     public void InitializeWithNullSelectedAccount()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         sut.SelectedAccount.ShouldBeNull();
     }
@@ -43,8 +46,9 @@ public class UpdateAccountDetailsViewModelShould
     public void InitializeWithEmptyLocalSyncPath()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         sut.LocalSyncPath.ShouldBeEmpty();
     }
@@ -53,18 +57,31 @@ public class UpdateAccountDetailsViewModelShould
     public void InitializeWithEnableDetailedSyncLoggingFalse()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         sut.EnableDetailedSyncLogging.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void InitializeWithEnableDebugLoggingFalse()
+    {
+        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
+
+        sut.EnableDebugLogging.ShouldBeFalse();
     }
 
     [Fact]
     public void InitializeWithEmptyStatusMessage()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         sut.StatusMessage.ShouldBeEmpty();
     }
@@ -73,8 +90,9 @@ public class UpdateAccountDetailsViewModelShould
     public void InitializeWithIsSuccessFalse()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         sut.IsSuccess.ShouldBeFalse();
     }
@@ -83,37 +101,41 @@ public class UpdateAccountDetailsViewModelShould
     public void InitializeUpdateCommand()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
-        sut.UpdateCommand.ShouldNotBeNull();
+        _ = sut.UpdateCommand.ShouldNotBeNull();
     }
 
     [Fact]
     public void InitializeCancelCommand()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
-        sut.CancelCommand.ShouldNotBeNull();
+        _ = sut.CancelCommand.ShouldNotBeNull();
     }
 
     [Fact]
     public void InitializeBrowseFolderCommand()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
 
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
-        sut.BrowseFolderCommand.ShouldNotBeNull();
+        _ = sut.BrowseFolderCommand.ShouldNotBeNull();
     }
 
     [Fact]
     public void LoadEditableFieldsWhenAccountIsSelected()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         var account = new AccountInfo(
             "account-123",
@@ -122,7 +144,11 @@ public class UpdateAccountDetailsViewModelShould
             true,
             DateTime.UtcNow,
             "delta-token",
-            true);
+            true,
+            false,
+            3,
+            50,
+            null);
 
         sut.SelectedAccount = account;
 
@@ -132,10 +158,36 @@ public class UpdateAccountDetailsViewModelShould
     }
 
     [Fact]
+    public void LoadEnableDebugLoggingWhenAccountIsSelected()
+    {
+        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
+
+        var account = new AccountInfo(
+            "account-123",
+            "Test User",
+            @"C:\TestPath",
+            true,
+            DateTime.UtcNow,
+            "delta-token",
+            false,
+            true,
+            3,
+            50,
+            null);
+
+        sut.SelectedAccount = account;
+
+        sut.EnableDebugLogging.ShouldBeTrue();
+    }
+
+    [Fact]
     public void ClearStatusMessageWhenAccountIsSelected()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo)
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler)
         {
             StatusMessage = "Previous message"
         };
@@ -147,7 +199,11 @@ public class UpdateAccountDetailsViewModelShould
             true,
             DateTime.UtcNow,
             null,
-            false);
+            false,
+            false,
+            3,
+            50,
+            null);
 
         sut.SelectedAccount = account;
 
@@ -158,7 +214,8 @@ public class UpdateAccountDetailsViewModelShould
     public void RaisePropertyChangedWhenSelectedAccountChanges()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
         var propertyChanged = false;
 
         sut.PropertyChanged += (_, args) =>
@@ -176,7 +233,11 @@ public class UpdateAccountDetailsViewModelShould
             true,
             DateTime.UtcNow,
             null,
-            false);
+            false,
+            false,
+            3,
+            50,
+            null);
 
         sut.SelectedAccount = account;
 
@@ -187,7 +248,8 @@ public class UpdateAccountDetailsViewModelShould
     public void RaisePropertyChangedWhenLocalSyncPathChanges()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
         var propertyChanged = false;
 
         sut.PropertyChanged += (_, args) =>
@@ -208,7 +270,8 @@ public class UpdateAccountDetailsViewModelShould
     public void RaisePropertyChangedWhenEnableDetailedSyncLoggingChanges()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
         var propertyChanged = false;
 
         sut.PropertyChanged += (_, args) =>
@@ -226,10 +289,33 @@ public class UpdateAccountDetailsViewModelShould
     }
 
     [Fact]
+    public void RaisePropertyChangedWhenEnableDebugLoggingChanges()
+    {
+        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
+        var propertyChanged = false;
+
+        sut.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(UpdateAccountDetailsViewModel.EnableDebugLogging))
+            {
+                propertyChanged = true;
+            }
+        };
+
+        sut.EnableDebugLogging = true;
+
+        propertyChanged.ShouldBeTrue();
+        sut.EnableDebugLogging.ShouldBeTrue();
+    }
+
+    [Fact]
     public void RaisePropertyChangedWhenStatusMessageChanges()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
         var propertyChanged = false;
 
         sut.PropertyChanged += (_, args) =>
@@ -250,7 +336,8 @@ public class UpdateAccountDetailsViewModelShould
     public void RaisePropertyChangedWhenIsSuccessChanges()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
         var propertyChanged = false;
 
         sut.PropertyChanged += (_, args) =>
@@ -271,12 +358,13 @@ public class UpdateAccountDetailsViewModelShould
     public void ExecuteCancelCommandAndRaiseRequestCloseEvent()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
         var eventRaised = false;
 
         sut.RequestClose += (_, _) => eventRaised = true;
 
-        sut.CancelCommand.Execute().Subscribe();
+        _ = sut.CancelCommand.Execute().Subscribe();
 
         eventRaised.ShouldBeTrue();
     }
@@ -285,13 +373,13 @@ public class UpdateAccountDetailsViewModelShould
     public void NotLoadEditableFieldsWhenAccountIsSetToNull()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo)
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler)
         {
             LocalSyncPath = @"C:\ExistingPath",
-            EnableDetailedSyncLogging = true
+            EnableDetailedSyncLogging = true,
+            SelectedAccount = null
         };
-
-        sut.SelectedAccount = null;
 
         sut.LocalSyncPath.ShouldBe(@"C:\ExistingPath");
         sut.EnableDetailedSyncLogging.ShouldBeTrue();
@@ -301,10 +389,11 @@ public class UpdateAccountDetailsViewModelShould
     public void DisableUpdateCommandWhenNoAccountIsSelected()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         var canExecute = false;
-        sut.UpdateCommand.CanExecute.Subscribe(x => canExecute = x);
+        _ = sut.UpdateCommand.CanExecute.Subscribe(x => canExecute = x);
 
         canExecute.ShouldBeFalse();
     }
@@ -313,7 +402,8 @@ public class UpdateAccountDetailsViewModelShould
     public void DisableUpdateCommandWhenLocalSyncPathIsEmpty()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         var account = new AccountInfo(
             "account-123",
@@ -322,13 +412,17 @@ public class UpdateAccountDetailsViewModelShould
             true,
             DateTime.UtcNow,
             null,
-            false);
+            false,
+            false,
+            3,
+            50,
+            null);
 
         sut.SelectedAccount = account;
         sut.LocalSyncPath = string.Empty;
 
         var canExecute = true;
-        sut.UpdateCommand.CanExecute.Subscribe(x => canExecute = x);
+        _ = sut.UpdateCommand.CanExecute.Subscribe(x => canExecute = x);
 
         canExecute.ShouldBeFalse();
     }
@@ -337,7 +431,8 @@ public class UpdateAccountDetailsViewModelShould
     public void EnableUpdateCommandWhenAccountIsSelectedAndPathIsNotEmpty()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        var sut = new UpdateAccountDetailsViewModel(mockRepo);
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler);
 
         var account = new AccountInfo(
             "account-123",
@@ -346,14 +441,118 @@ public class UpdateAccountDetailsViewModelShould
             true,
             DateTime.UtcNow,
             null,
-            false);
+            false,
+            false,
+            3,
+            50,
+            null);
 
         sut.SelectedAccount = account;
         sut.LocalSyncPath = @"C:\ValidPath";
 
         var canExecute = false;
-        sut.UpdateCommand.CanExecute.Subscribe(x => canExecute = x);
+        _ = sut.UpdateCommand.CanExecute.Subscribe(x => canExecute = x);
 
         canExecute.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void ClampMaxParallelUpDownloadsToMinimumOf1()
+    {
+        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler)
+        {
+            MaxParallelUpDownloads = 0
+        };
+
+        sut.MaxParallelUpDownloads.ShouldBe(1);
+    }
+
+    [Fact]
+    public void ClampMaxParallelUpDownloadsToMaximumOf10()
+    {
+        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler)
+        {
+            MaxParallelUpDownloads = 20
+        };
+
+        sut.MaxParallelUpDownloads.ShouldBe(10);
+    }
+
+    [Fact]
+    public void ClampMaxItemsInBatchToMinimumOf1()
+    {
+        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler)
+        {
+            MaxItemsInBatch = 0
+        };
+
+        sut.MaxItemsInBatch.ShouldBe(1);
+    }
+
+    [Fact]
+    public void ClampMaxItemsInBatchToMaximumOf100()
+    {
+        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler)
+        {
+            MaxItemsInBatch = 200
+        };
+
+        sut.MaxItemsInBatch.ShouldBe(100);
+    }
+
+    [Fact]
+    public void LoadMaxParallelUpDownloadsWhenAccountSelected()
+    {
+        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler);
+        var account = new AccountInfo(
+            "acc1",
+            "Test User",
+            @"C:\Sync",
+            true,
+            null,
+            null,
+            false,
+            false,
+            5,
+            75,
+            null);
+
+        sut.SelectedAccount = account;
+
+        sut.MaxParallelUpDownloads.ShouldBe(5);
+    }
+
+    [Fact]
+    public void LoadMaxItemsInBatchWhenAccountSelected()
+    {
+        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
+        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
+        var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler);
+        var account = new AccountInfo(
+            "acc1",
+            "Test User",
+            @"C:\Sync",
+            true,
+            null,
+            null,
+            false,
+            false,
+            5,
+            75,
+            null);
+
+        sut.SelectedAccount = account;
+
+        sut.MaxItemsInBatch.ShouldBe(75);
     }
 }

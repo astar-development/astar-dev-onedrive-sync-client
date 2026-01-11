@@ -113,9 +113,10 @@ public class OneDriveFolderNodeShould
     [InlineData(SelectionState.Indeterminate)]
     public void SetAllSelectionStates(SelectionState state)
     {
-        var node = new OneDriveFolderNode();
-
-        node.SelectionState = state;
+        var node = new OneDriveFolderNode
+        {
+            SelectionState = state
+        };
 
         node.SelectionState.ShouldBe(state);
     }
@@ -126,9 +127,10 @@ public class OneDriveFolderNodeShould
     [InlineData(null)]
     public void SetAllIsSelectedValues(bool? value)
     {
-        var node = new OneDriveFolderNode();
-
-        node.IsSelected = value;
+        var node = new OneDriveFolderNode
+        {
+            IsSelected = value
+        };
 
         node.IsSelected.ShouldBe(value);
     }

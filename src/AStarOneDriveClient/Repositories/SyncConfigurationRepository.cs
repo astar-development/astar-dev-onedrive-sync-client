@@ -23,11 +23,11 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.SyncConfigurations
+        List<SyncConfigurationEntity> entities = await _context.SyncConfigurations
             .Where(sc => sc.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
-        return entities.Select(MapToModel).ToList();
+        return [.. entities.Select(MapToModel)];
     }
 
     /// <inheritdoc/>
@@ -37,8 +37,32 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
 
         return await _context.SyncConfigurations
             .Where(sc => sc.AccountId == accountId && sc.IsSelected)
-            .Select(sc => sc.FolderPath)
+            .Select(sc => CleanUpPath(sc.FolderPath))
+            .Distinct()
             .ToListAsync(cancellationToken);
+    }
+    public async Task<AStar.Dev.Functional.Extensions.Result<IReadOnlyList<string>, AStar.Dev.Functional.Extensions.ErrorResponse>> GetSelectedFolders2Async(string accountId, CancellationToken cancellationToken = default)
+            => await _context.SyncConfigurations
+                        .Where(sc => sc.AccountId == accountId && sc.IsSelected)
+                        .Select(sc => CleanUpPath(sc.FolderPath))
+                        .Distinct()
+                        .ToListAsync(cancellationToken);
+
+    private static string CleanUpPath(string localFolderPath)
+    {
+        var indexOfDrives = localFolderPath.IndexOf("drives", StringComparison.OrdinalIgnoreCase);
+        if(indexOfDrives >= 0)
+        {
+            var indexOfColon = localFolderPath.IndexOf(":/", StringComparison.OrdinalIgnoreCase);
+            if(indexOfColon > 0)
+            {
+                var part1 = localFolderPath[..indexOfDrives];
+                var part2 = localFolderPath[(indexOfColon + 2)..];
+                localFolderPath = part1 + part2;
+            }
+        }
+
+        return localFolderPath;
     }
 
     /// <inheritdoc/>
@@ -46,9 +70,9 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var entity = MapToEntity(configuration);
-        _context.SyncConfigurations.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        SyncConfigurationEntity entity = MapToEntity(configuration);
+        _ = _context.SyncConfigurations.Add(entity);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -56,28 +80,24 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var entity = await _context.SyncConfigurations.FindAsync([configuration.Id], cancellationToken);
-        if (entity is null)
-        {
-            throw new InvalidOperationException($"Sync configuration with ID '{configuration.Id}' not found.");
-        }
+        SyncConfigurationEntity entity = await _context.SyncConfigurations.FindAsync([configuration.Id], cancellationToken) ?? throw new InvalidOperationException($"Sync configuration with ID '{configuration.Id}' not found.");
 
         entity.AccountId = configuration.AccountId;
         entity.FolderPath = configuration.FolderPath;
         entity.IsSelected = configuration.IsSelected;
         entity.LastModifiedUtc = configuration.LastModifiedUtc;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await _context.SyncConfigurations.FindAsync([id], cancellationToken);
-        if (entity is not null)
+        SyncConfigurationEntity? entity = await _context.SyncConfigurations.FindAsync([id], cancellationToken);
+        if(entity is not null)
         {
-            _context.SyncConfigurations.Remove(entity);
-            await _context.SaveChangesAsync(cancellationToken);
+            _ = _context.SyncConfigurations.Remove(entity);
+            _ = await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
@@ -86,12 +106,12 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entities = await _context.SyncConfigurations
+        List<SyncConfigurationEntity> entities = await _context.SyncConfigurations
             .Where(sc => sc.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
         _context.SyncConfigurations.RemoveRange(entities);
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -100,7 +120,7 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
         ArgumentNullException.ThrowIfNull(accountId);
         ArgumentNullException.ThrowIfNull(configurations);
 
-        var existingEntities = await _context.SyncConfigurations
+        List<SyncConfigurationEntity> existingEntities = await _context.SyncConfigurations
             .Where(sc => sc.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
@@ -109,11 +129,11 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
         var newEntities = configurations.Select(MapToEntity).ToList();
         _context.SyncConfigurations.AddRange(newEntities);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private static SyncConfiguration MapToModel(SyncConfigurationEntity entity) =>
-        new(
+    private static SyncConfiguration MapToModel(SyncConfigurationEntity entity)
+        => new(
             entity.Id,
             entity.AccountId,
             entity.FolderPath,
@@ -121,8 +141,8 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
             entity.LastModifiedUtc
         );
 
-    private static SyncConfigurationEntity MapToEntity(SyncConfiguration model) =>
-        new()
+    private static SyncConfigurationEntity MapToEntity(SyncConfiguration model)
+        => new()
         {
             Id = model.Id,
             AccountId = model.AccountId,

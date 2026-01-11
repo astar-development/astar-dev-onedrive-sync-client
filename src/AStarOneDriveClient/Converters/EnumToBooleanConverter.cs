@@ -17,13 +17,7 @@ public sealed class EnumToBooleanConverter : IValueConverter
     /// <param name="parameter">The enum value to compare against.</param>
     /// <param name="culture">The culture to use (ignored).</param>
     /// <returns><c>true</c> if the value equals the parameter; otherwise, <c>false</c>.</returns>
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is null || parameter is null)
-            return false;
-
-        return value.Equals(parameter);
-    }
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture) => value is not null && parameter is not null && value.Equals(parameter);
 
     /// <summary>
     /// Converts a boolean back to an enum value.
@@ -33,11 +27,5 @@ public sealed class EnumToBooleanConverter : IValueConverter
     /// <param name="parameter">The enum value to return if true.</param>
     /// <param name="culture">The culture to use (ignored).</param>
     /// <returns>The parameter value if <paramref name="value"/> is true; otherwise, <c>null</c>.</returns>
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is bool boolValue && boolValue && parameter is not null)
-            return parameter;
-
-        return null;
-    }
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => value is bool boolValue && boolValue && parameter is not null ? parameter : null;
 }

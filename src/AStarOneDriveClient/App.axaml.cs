@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using AStarOneDriveClient.Services;
 using AStarOneDriveClient.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,10 +18,7 @@ public sealed class App : Application
     public static ServiceProvider? Services { get; private set; }
 
     /// <inheritdoc/>
-    public override void Initialize()
-    {
-        AvaloniaXamlLoader.Load(this);
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     /// <inheritdoc/>
     public override void OnFrameworkInitializationCompleted()
@@ -29,6 +27,14 @@ public sealed class App : Application
         Services = ServiceConfiguration.ConfigureServices();
         ServiceConfiguration.EnsureDatabaseCreated(Services);
 
+        // Initialize static debug logger
+        IDebugLogger debugLogger = Services.GetRequiredService<IDebugLogger>();
+        DebugLog.Initialize(debugLogger);
+
+        // Start auto-sync scheduler
+        IAutoSyncSchedulerService scheduler = Services.GetRequiredService<IAutoSyncSchedulerService>();
+        _ = scheduler.StartAsync();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow();
@@ -36,6 +42,7 @@ public sealed class App : Application
             // Cleanup on exit
             desktop.Exit += (_, _) =>
             {
+                scheduler.Dispose();
                 Services?.Dispose();
             };
         }

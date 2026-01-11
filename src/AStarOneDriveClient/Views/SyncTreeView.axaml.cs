@@ -28,7 +28,7 @@ public partial class SyncTreeView : UserControl
             viewModel.RootFolders.CollectionChanged += OnRootFoldersChanged;
 
             // Attach to existing items
-            foreach (var node in viewModel.RootFolders)
+            foreach (OneDriveFolderNode node in viewModel.RootFolders)
             {
                 AttachNodeExpansionHandler(node, viewModel);
             }
@@ -38,7 +38,9 @@ public partial class SyncTreeView : UserControl
     private void OnRootFoldersChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (DataContext is not SyncTreeViewModel viewModel)
+        {
             return;
+        }
 
         if (e.NewItems != null)
         {
@@ -58,7 +60,7 @@ public partial class SyncTreeView : UserControl
                 !node.ChildrenLoaded)
             {
                 // Trigger lazy loading when expanded for the first time
-                viewModel.LoadChildrenCommand.Execute(node).Subscribe();
+                _ = viewModel.LoadChildrenCommand.Execute(node).Subscribe();
             }
         };
 

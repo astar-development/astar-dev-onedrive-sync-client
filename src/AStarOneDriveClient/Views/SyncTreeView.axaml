@@ -92,7 +92,7 @@
               <Viewbox Width="16" Height="16" VerticalAlignment="Center"
                        IsVisible="{Binding IsLoading}">
                 <Path Data="M 8,2 A 6,6 0 1 1 2,8"
-                      Stroke="{DynamicResource SystemAccentColor}"
+                      Stroke="#00E5FF"
                       StrokeThickness="1.5"
                       StrokeLineCap="Round"
                       Classes="spinner"/>
@@ -130,6 +130,17 @@
                 Command="{Binding CancelSyncCommand}"
                 MinWidth="120"/>
 
+        <!-- Unresolved Conflicts Button -->
+        <Button Content="⚠️ View Conflicts"
+                Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).ViewConflictsCommand}"
+                Background="#FFF3E0"
+                BorderBrush="#FF6F00"
+                Foreground="#E65100"
+                FontWeight="SemiBold"
+                MinWidth="140"
+                IsVisible="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).HasUnresolvedConflicts}"
+                ToolTip.Tip="There are unresolved sync conflicts that need your attention"/>
+
         <!-- Sync Progress -->
         <StackPanel Orientation="Vertical"
                     Spacing="4"
@@ -153,13 +164,6 @@
                    Margin="24,0,0,0"
                    VerticalAlignment="Center"
                    IsVisible="{Binding LastSyncResult, Converter={x:Static ObjectConverters.IsNotNull}}"/>
-      </StackPanel>
-    </Border>
-
-    <!-- Loading Indicator & Error Message -->
-    <StackPanel Grid.Row="3"
-                Spacing="8"
-                Margin="16,8">
       <!-- Loading -->
       <StackPanel Orientation="Horizontal"
                   Spacing="8"
@@ -167,7 +171,8 @@
         <ProgressBar IsIndeterminate="True"
                      Width="200"
                      Height="4"
-                     VerticalAlignment="Center"/>
+                     VerticalAlignment="Center"
+                     Foreground="#00E5FF"/>
         <TextBlock Text="Loading folders..."
                    VerticalAlignment="Center"
                    FontSize="12"
@@ -192,6 +197,13 @@
                      FontSize="12"/>
         </StackPanel>
       </Border>
+      </StackPanel>
+    </Border>
+
+    <!-- Loading Indicator & Error Message -->
+    <StackPanel Grid.Row="3"
+                Spacing="8"
+                Margin="16,8">
     </StackPanel>
   </Grid>
 </UserControl>

@@ -17,8 +17,8 @@ public sealed partial class ViewSyncHistoryWindow : Window
         // Retrieve dependencies from DI container and create ViewModel
         if (App.Services is not null)
         {
-            var accountRepo = App.Services.GetRequiredService<IAccountRepository>();
-            var fileOpLogRepo = App.Services.GetRequiredService<IFileOperationLogRepository>();
+            IAccountRepository accountRepo = App.Services.GetRequiredService<IAccountRepository>();
+            IFileOperationLogRepository fileOpLogRepo = App.Services.GetRequiredService<IFileOperationLogRepository>();
             DataContext = new ViewSyncHistoryViewModel(accountRepo, fileOpLogRepo);
         }
     }

@@ -8,7 +8,9 @@
         <vm:SyncProgressViewModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20">
+    <!-- Semi-transparent background overlay (80% opacity) -->
+    <Border Background="#CC000000">
+        <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="20">
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Spacing="10" Margin="0,0,0,20">
@@ -34,8 +36,9 @@
                              Minimum="0"
                              Maximum="100"
                              Height="30"
-                             IsIndeterminate="{Binding IsSyncing}"
-                             ShowProgressText="True" />
+                             IsIndeterminate="{Binding IsProgressIndeterminate}"
+                             ShowProgressText="True"
+                             Foreground="#00E5FF" />
             </StackPanel>
 
             <!-- Transfer Details -->
@@ -108,5 +111,6 @@
                        FontSize="14"
                        TextWrapping="Wrap" />
         </Border>
-    </Grid>
+        </Grid>
+    </Border>
 </UserControl>

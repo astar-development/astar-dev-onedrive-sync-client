@@ -25,7 +25,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
             .OrderByDescending(c => c.DetectedUtc)
             .ToListAsync(cancellationToken);
 
-        return entities.Select(MapToDomain).ToList();
+        return [.. entities.Select(MapToDomain)];
     }
 
     /// <inheritdoc/>
@@ -36,7 +36,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
             .OrderByDescending(c => c.DetectedUtc)
             .ToListAsync(cancellationToken);
 
-        return entities.Select(MapToDomain).ToList();
+        return [.. entities.Select(MapToDomain)];
     }
 
     /// <inheritdoc/>
@@ -63,25 +63,20 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
     public async Task AddAsync(SyncConflict conflict, CancellationToken cancellationToken = default)
     {
         SyncConflictEntity entity = MapToEntity(conflict);
-        await _context.SyncConflicts.AddAsync(entity, cancellationToken);
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SyncConflicts.AddAsync(entity, cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
     public async Task UpdateAsync(SyncConflict conflict, CancellationToken cancellationToken = default)
     {
-        SyncConflictEntity? existingEntity = await _context.SyncConflicts
-            .FirstOrDefaultAsync(c => c.Id == conflict.Id, cancellationToken);
-
-        if (existingEntity is null)
-        {
-            throw new InvalidOperationException($"Conflict not found: {conflict.Id}");
-        }
+        SyncConflictEntity existingEntity = await _context.SyncConflicts
+            .FirstOrDefaultAsync(c => c.Id == conflict.Id, cancellationToken) ?? throw new InvalidOperationException($"Conflict not found: {conflict.Id}");
 
         existingEntity.ResolutionStrategy = conflict.ResolutionStrategy;
         existingEntity.IsResolved = conflict.IsResolved;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -92,18 +87,15 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
 
         if (entity is not null)
         {
-            _context.SyncConflicts.Remove(entity);
-            await _context.SaveChangesAsync(cancellationToken);
+            _ = _context.SyncConflicts.Remove(entity);
+            _ = await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
     /// <inheritdoc/>
-    public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
-    {
-        await _context.SyncConflicts
+    public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default) => _ = await _context.SyncConflicts
             .Where(c => c.AccountId == accountId)
             .ExecuteDeleteAsync(cancellationToken);
-    }
 
     private static SyncConflict MapToDomain(SyncConflictEntity entity) =>
         new(

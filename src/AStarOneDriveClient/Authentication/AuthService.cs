@@ -34,7 +34,7 @@ public sealed class AuthService : IAuthService
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
-        var app = PublicClientApplicationBuilder
+        IPublicClientApplication app = PublicClientApplicationBuilder
             .Create(configuration.ClientId)
             .WithAuthority(configuration.Authority)
             .WithRedirectUri(configuration.RedirectUri)
@@ -53,11 +53,11 @@ public sealed class AuthService : IAuthService
         // Windows and macOS use platform-specific secure storage (DPAPI and Keychain)
         if (OperatingSystem.IsLinux())
         {
-            storagePropertiesBuilder.WithUnprotectedFile();
+            _ = storagePropertiesBuilder.WithUnprotectedFile();
         }
 
-        var storageProperties = storagePropertiesBuilder.Build();
-        var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);
+        StorageCreationProperties storageProperties = storagePropertiesBuilder.Build();
+        MsalCacheHelper cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);
         cacheHelper.RegisterCache(app.UserTokenCache);
 
         return new AuthService(new AuthenticationClient(app), configuration);
@@ -68,8 +68,11 @@ public sealed class AuthService : IAuthService
     {
         try
         {
-            var result = await _authClient
-                .AcquireTokenInteractiveAsync(_configuration.Scopes, cancellationToken);
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            cts.CancelAfter(TimeSpan.FromSeconds(30));
+
+            MsalAuthResult result = await _authClient
+                .AcquireTokenInteractiveAsync(_configuration.Scopes, cts.Token);
 
             return new AuthenticationResult(
                 Success: true,
@@ -89,11 +92,15 @@ public sealed class AuthService : IAuthService
         }
         catch (OperationCanceledException)
         {
+            var message = cancellationToken.IsCancellationRequested
+                ? "Login was cancelled."
+                : "Login timed out after 30 seconds.";
+
             return new AuthenticationResult(
                 Success: false,
                 AccountId: null,
                 DisplayName: null,
-                ErrorMessage: "Login was cancelled."
+                ErrorMessage: message
             );
         }
     }
@@ -105,8 +112,8 @@ public sealed class AuthService : IAuthService
 
         try
         {
-            var accounts = await _authClient.GetAccountsAsync(cancellationToken);
-            var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+            IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
+            IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
             if (account is not null)
             {
@@ -127,14 +134,14 @@ public sealed class AuthService : IAuthService
     {
         try
         {
-            var accounts = await _authClient.GetAccountsAsync(cancellationToken);
+            IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
             return accounts
                 .Select(a => (a.HomeAccountId.Identifier, a.Username))
                 .ToList();
         }
         catch (MsalException)
         {
-            return Array.Empty<(string, string)>();
+            return [];
         }
     }
 
@@ -145,15 +152,15 @@ public sealed class AuthService : IAuthService
 
         try
         {
-            var accounts = await _authClient.GetAccountsAsync(cancellationToken);
-            var account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+            IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
+            IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
             if (account is null)
             {
                 return null;
             }
 
-            var result = await _authClient
+            MsalAuthResult result = await _authClient
                 .AcquireTokenSilentAsync(_configuration.Scopes, account, cancellationToken);
 
             return result.AccessToken;
@@ -175,7 +182,7 @@ public sealed class AuthService : IAuthService
 
         try
         {
-            var accounts = await _authClient.GetAccountsAsync(cancellationToken);
+            IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
             return accounts.Any(a => a.HomeAccountId.Identifier == accountId);
         }
         catch (MsalException)
@@ -185,8 +192,5 @@ public sealed class AuthService : IAuthService
     }
 
     /// <inheritdoc/>
-    public async Task<string?> AcquireTokenSilentAsync(string accountId, CancellationToken cancellationToken = default)
-    {
-        return await GetAccessTokenAsync(accountId, cancellationToken);
-    }
+    public async Task<string?> AcquireTokenSilentAsync(string accountId, CancellationToken cancellationToken = default) => await GetAccessTokenAsync(accountId, cancellationToken);
 }

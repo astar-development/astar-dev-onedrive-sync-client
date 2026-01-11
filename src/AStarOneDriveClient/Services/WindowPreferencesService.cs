@@ -21,7 +21,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
     /// <inheritdoc/>
     public async Task<WindowPreferences?> LoadAsync(CancellationToken cancellationToken = default)
     {
-        var entity = await _context.WindowPreferences
+        WindowPreferencesEntity? entity = await _context.WindowPreferences
             .FirstOrDefaultAsync(cancellationToken);
 
         return entity is null ? null : MapToModel(entity);
@@ -32,7 +32,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
     {
         ArgumentNullException.ThrowIfNull(preferences);
 
-        var entity = await _context.WindowPreferences.FirstOrDefaultAsync(cancellationToken);
+        WindowPreferencesEntity? entity = await _context.WindowPreferences.FirstOrDefaultAsync(cancellationToken);
 
         if (entity is null)
         {
@@ -44,7 +44,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
                 Height = preferences.Height,
                 IsMaximized = preferences.IsMaximized
             };
-            _context.WindowPreferences.Add(entity);
+            _ = _context.WindowPreferences.Add(entity);
         }
         else
         {
@@ -55,7 +55,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
             entity.IsMaximized = preferences.IsMaximized;
         }
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     private static WindowPreferences MapToModel(WindowPreferencesEntity entity) =>

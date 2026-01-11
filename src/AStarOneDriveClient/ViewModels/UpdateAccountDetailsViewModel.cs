@@ -1,10 +1,8 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Reactive;
-using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
-using Avalonia.Controls;
+using AStarOneDriveClient.Services;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
 
@@ -16,25 +14,26 @@ namespace AStarOneDriveClient.ViewModels;
 public sealed class UpdateAccountDetailsViewModel : ReactiveObject
 {
     private readonly IAccountRepository _accountRepository;
-    private AccountInfo? _selectedAccount;
-    private string _localSyncPath = string.Empty;
-    private bool _enableDetailedSyncLogging;
-    private string _statusMessage = string.Empty;
-    private bool _isSuccess;
+    private readonly IAutoSyncSchedulerService _schedulerService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="UpdateAccountDetailsViewModel"/> class.
     /// </summary>
     /// <param name="accountRepository">Repository for account data.</param>
-    public UpdateAccountDetailsViewModel(IAccountRepository accountRepository)
+    /// <param name="schedulerService">Service for scheduling automatic syncs.</param>
+    public UpdateAccountDetailsViewModel(
+        IAccountRepository accountRepository,
+        IAutoSyncSchedulerService schedulerService)
     {
         ArgumentNullException.ThrowIfNull(accountRepository);
+        ArgumentNullException.ThrowIfNull(schedulerService);
         _accountRepository = accountRepository;
+        _schedulerService = schedulerService;
 
-        Accounts = new ObservableCollection<AccountInfo>();
+        Accounts = [];
 
         // Update command - enabled when account is selected and path is valid
-        var canUpdate = this.WhenAnyValue(
+        IObservable<bool> canUpdate = this.WhenAnyValue(
             x => x.SelectedAccount,
             x => x.LocalSyncPath,
             (account, path) => account is not null && !string.IsNullOrWhiteSpace(path));
@@ -57,15 +56,19 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     /// </summary>
     public AccountInfo? SelectedAccount
     {
-        get => _selectedAccount;
+        get;
         set
         {
-            this.RaiseAndSetIfChanged(ref _selectedAccount, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             if (value is not null)
             {
                 // Load editable fields when account is selected
                 LocalSyncPath = value.LocalSyncPath;
                 EnableDetailedSyncLogging = value.EnableDetailedSyncLogging;
+                EnableDebugLogging = value.EnableDebugLogging;
+                MaxParallelUpDownloads = value.MaxParallelUpDownloads;
+                MaxItemsInBatch = value.MaxItemsInBatch;
+                AutoSyncIntervalMinutes = value.AutoSyncIntervalMinutes;
                 StatusMessage = string.Empty;
             }
         }
@@ -76,17 +79,65 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     /// </summary>
     public string LocalSyncPath
     {
-        get => _localSyncPath;
-        set => this.RaiseAndSetIfChanged(ref _localSyncPath, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets a value indicating whether detailed sync logging is enabled.
     /// </summary>
     public bool EnableDetailedSyncLogging
     {
-        get => _enableDetailedSyncLogging;
-        set => this.RaiseAndSetIfChanged(ref _enableDetailedSyncLogging, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether debug logging is enabled.
+    /// </summary>
+    public bool EnableDebugLogging
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the maximum number of parallel upload/download operations (1-10).
+    /// </summary>
+    public int MaxParallelUpDownloads
+    {
+        get;
+        set
+        {
+            var clampedValue = Math.Clamp(value, 1, 10);
+            _ = this.RaiseAndSetIfChanged(ref field, clampedValue);
+        }
+    } = 3;
+
+    /// <summary>
+    /// Gets or sets the maximum number of items to process in a single batch (1-100).
+    /// </summary>
+    public int MaxItemsInBatch
+    {
+        get;
+        set
+        {
+            var clampedValue = Math.Clamp(value, 1, 100);
+            _ = this.RaiseAndSetIfChanged(ref field, clampedValue);
+        }
+    } = 50;
+
+    /// <summary>
+    /// Gets or sets the auto-sync interval in minutes (60-1440, null = disabled).
+    /// </summary>
+    public int? AutoSyncIntervalMinutes
+    {
+        get;
+        set
+        {
+            var clampedValue = value.HasValue ? Math.Clamp(value.Value, 60, 1440) : (int?)null;
+            _ = this.RaiseAndSetIfChanged(ref field, clampedValue);
+        }
     }
 
     /// <summary>
@@ -94,17 +145,17 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     /// </summary>
     public string StatusMessage
     {
-        get => _statusMessage;
-        set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets a value indicating whether the last operation was successful.
     /// </summary>
     public bool IsSuccess
     {
-        get => _isSuccess;
-        set => this.RaiseAndSetIfChanged(ref _isSuccess, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -131,11 +182,13 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     {
         try
         {
-            var accounts = await _accountRepository.GetAllAsync();
+            IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (var account in accounts)
+            foreach (AccountInfo account in accounts)
             {
-                Accounts.Add(account);
+                AccountInfo? acc = await _accountRepository.GetByIdAsync(account.AccountId);
+                AccountInfo accountWithSync = account with { LastSyncUtc = acc?.LastSyncUtc };
+                Accounts.Add(accountWithSync);
             }
         }
         catch (Exception ex)
@@ -163,13 +216,20 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         try
         {
             // Create updated account with new values
-            var updatedAccount = SelectedAccount with
+            AccountInfo updatedAccount = SelectedAccount with
             {
                 LocalSyncPath = LocalSyncPath,
-                EnableDetailedSyncLogging = EnableDetailedSyncLogging
+                EnableDetailedSyncLogging = EnableDetailedSyncLogging,
+                EnableDebugLogging = EnableDebugLogging,
+                MaxParallelUpDownloads = MaxParallelUpDownloads,
+                MaxItemsInBatch = MaxItemsInBatch,
+                AutoSyncIntervalMinutes = AutoSyncIntervalMinutes
             };
 
             await _accountRepository.UpdateAsync(updatedAccount);
+
+            // Update the scheduler with new auto-sync interval
+            _schedulerService.UpdateSchedule(updatedAccount.AccountId, updatedAccount.AutoSyncIntervalMinutes);
 
             // Update the account in the collection
             var index = Accounts.IndexOf(SelectedAccount);
@@ -195,10 +255,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         }
     }
 
-    private void Cancel()
-    {
-        RequestClose?.Invoke(this, EventArgs.Empty);
-    }
+    private void Cancel() => RequestClose?.Invoke(this, EventArgs.Empty);
 
     private async Task BrowseFolderAsync()
     {
@@ -206,7 +263,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow?.StorageProvider is { } storageProvider)
         {
-            var result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+            IReadOnlyList<IStorageFolder> result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
                 Title = "Select Local Sync Path",
                 AllowMultiple = false

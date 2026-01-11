@@ -21,8 +21,8 @@ public sealed class AccountRepository : IAccountRepository
     /// <inheritdoc/>
     public async Task<IReadOnlyList<AccountInfo>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var entities = await _context.Accounts.ToListAsync(cancellationToken);
-        return entities.Select(MapToModel).ToList();
+        List<AccountEntity> entities = await _context.Accounts.ToListAsync(cancellationToken);
+        return [.. entities.Select(MapToModel)];
     }
 
     /// <inheritdoc/>
@@ -30,7 +30,7 @@ public sealed class AccountRepository : IAccountRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entity = await _context.Accounts.FindAsync([accountId], cancellationToken);
+        AccountEntity? entity = await _context.Accounts.FindAsync([accountId], cancellationToken);
         return entity is null ? null : MapToModel(entity);
     }
 
@@ -39,9 +39,9 @@ public sealed class AccountRepository : IAccountRepository
     {
         ArgumentNullException.ThrowIfNull(account);
 
-        var entity = MapToEntity(account);
-        _context.Accounts.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        AccountEntity entity = MapToEntity(account);
+        _ = _context.Accounts.Add(entity);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -49,11 +49,7 @@ public sealed class AccountRepository : IAccountRepository
     {
         ArgumentNullException.ThrowIfNull(account);
 
-        var entity = await _context.Accounts.FindAsync([account.AccountId], cancellationToken);
-        if (entity is null)
-        {
-            throw new InvalidOperationException($"Account with ID '{account.AccountId}' not found.");
-        }
+        AccountEntity entity = await _context.Accounts.FindAsync([account.AccountId], cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.AccountId}' not found.");
 
         entity.DisplayName = account.DisplayName;
         entity.LocalSyncPath = account.LocalSyncPath;
@@ -61,8 +57,12 @@ public sealed class AccountRepository : IAccountRepository
         entity.LastSyncUtc = account.LastSyncUtc;
         entity.DeltaToken = account.DeltaToken;
         entity.EnableDetailedSyncLogging = account.EnableDetailedSyncLogging;
+        entity.EnableDebugLogging = account.EnableDebugLogging;
+        entity.MaxParallelUpDownloads = account.MaxParallelUpDownloads;
+        entity.MaxItemsInBatch = account.MaxItemsInBatch;
+        entity.AutoSyncIntervalMinutes = account.AutoSyncIntervalMinutes;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
@@ -70,11 +70,11 @@ public sealed class AccountRepository : IAccountRepository
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        var entity = await _context.Accounts.FindAsync([accountId], cancellationToken);
+        AccountEntity? entity = await _context.Accounts.FindAsync([accountId], cancellationToken);
         if (entity is not null)
         {
-            _context.Accounts.Remove(entity);
-            await _context.SaveChangesAsync(cancellationToken);
+            _ = _context.Accounts.Remove(entity);
+            _ = await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
@@ -94,7 +94,11 @@ public sealed class AccountRepository : IAccountRepository
             entity.IsAuthenticated,
             entity.LastSyncUtc,
             entity.DeltaToken,
-            entity.EnableDetailedSyncLogging
+            entity.EnableDetailedSyncLogging,
+            entity.EnableDebugLogging,
+            entity.MaxParallelUpDownloads,
+            entity.MaxItemsInBatch,
+            entity.AutoSyncIntervalMinutes
         );
 
     private static AccountEntity MapToEntity(AccountInfo model) =>
@@ -106,6 +110,10 @@ public sealed class AccountRepository : IAccountRepository
             IsAuthenticated = model.IsAuthenticated,
             LastSyncUtc = model.LastSyncUtc,
             DeltaToken = model.DeltaToken,
-            EnableDetailedSyncLogging = model.EnableDetailedSyncLogging
+            EnableDetailedSyncLogging = model.EnableDetailedSyncLogging,
+            EnableDebugLogging = model.EnableDebugLogging,
+            MaxParallelUpDownloads = model.MaxParallelUpDownloads,
+            MaxItemsInBatch = model.MaxItemsInBatch,
+            AutoSyncIntervalMinutes = model.AutoSyncIntervalMinutes
         };
 }

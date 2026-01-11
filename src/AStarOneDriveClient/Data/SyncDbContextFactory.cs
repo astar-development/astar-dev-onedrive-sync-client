@@ -16,7 +16,7 @@ public sealed class SyncDbContextFactory : IDesignTimeDbContextFactory<SyncDbCon
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var dbPath = Path.Combine(appDataPath, "AStarOneDriveClient", "sync.db");
 
-        optionsBuilder.UseSqlite($"Data Source={dbPath}");
+        _ = optionsBuilder.UseSqlite($"Data Source={dbPath}");
 
         return new SyncDbContext(optionsBuilder.Options);
     }

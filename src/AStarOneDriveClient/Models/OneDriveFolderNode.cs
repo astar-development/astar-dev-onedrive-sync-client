@@ -56,27 +56,24 @@ public sealed class OneDriveFolderNode : ReactiveObject
     /// </remarks>
     public bool ChildrenLoaded { get; set; }
 
-    private bool _isExpanded;
     /// <summary>
     /// Gets or sets a value indicating whether this node is expanded in the tree view.
     /// </summary>
     public bool IsExpanded
     {
-        get => _isExpanded;
-        set => this.RaiseAndSetIfChanged(ref _isExpanded, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
-    private bool _isLoading;
     /// <summary>
     /// Gets or sets a value indicating whether this node is currently loading its children.
     /// </summary>
     public bool IsLoading
     {
-        get => _isLoading;
-        set => this.RaiseAndSetIfChanged(ref _isLoading, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
-    private SelectionState _selectionState;
     /// <summary>
     /// Gets or sets the selection state for sync operations.
     /// </summary>
@@ -86,11 +83,10 @@ public sealed class OneDriveFolderNode : ReactiveObject
     /// </remarks>
     public SelectionState SelectionState
     {
-        get => _selectionState;
-        set => this.RaiseAndSetIfChanged(ref _selectionState, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
-    private bool? _isSelected;
     /// <summary>
     /// Gets or sets a nullable boolean representing the selection state.
     /// </summary>
@@ -100,8 +96,8 @@ public sealed class OneDriveFolderNode : ReactiveObject
     /// </remarks>
     public bool? IsSelected
     {
-        get => _isSelected;
-        set => this.RaiseAndSetIfChanged(ref _isSelected, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
