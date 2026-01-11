@@ -163,13 +163,17 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             var allLocalFiles = new List<FileMetadata>();
             foreach (var folder in selectedFolders)
             {
+                if (string.IsNullOrEmpty(folder)) continue;
                 var localFolderPath = Path.Combine(account.LocalSyncPath, folder.TrimStart('/'));
                 var localFiles = await _localFileScanner.ScanFolderAsync(
                     accountId,
                     localFolderPath,
                     folder,
                     _syncCancellation.Token);
-                allLocalFiles.AddRange(localFiles);
+                if (localFiles?.Count > 0)
+                {
+                    allLocalFiles.AddRange(localFiles);
+                }
             }
 
             // Get existing file metadata from database
@@ -178,7 +182,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             // Handle duplicate records (data corruption from previous bugs)
             // Group by Path and keep only the most relevant record
             var existingFilesDict = existingFiles
-                .GroupBy(f => f.Path)
+                .GroupBy(f => f.Path ?? "")
                 .Select(g =>
                 {
                     if (g.Count() > 1)
@@ -205,7 +209,11 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                             try
                             {
                                 System.Diagnostics.Debug.WriteLine($"[SyncEngine] Deleting duplicate record with ID={duplicate.Id}");
-                                _fileMetadataRepository.DeleteAsync(duplicate.Id, cancellationToken).GetAwaiter().GetResult();
+                                var dupId = duplicate.Id ?? "";
+                                if (!string.IsNullOrEmpty(dupId))
+                                {
+                                    _fileMetadataRepository.DeleteAsync(dupId, _syncCancellation.Token).GetAwaiter().GetResult();
+                                }
                             }
                             catch (Exception ex)
                             {
@@ -218,12 +226,14 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
                     return g.First();
                 })
-                .ToDictionary(f => f.Path, f => f);
+                .Where(f => f != null)
+                .ToDictionary(f => f!.Path ?? "", f => f);
 
             // Detect remote changes in selected folders FIRST (before deciding what to upload)
             var allRemoteFiles = new List<FileMetadata>();
             foreach (var folder in selectedFolders)
             {
+                if (string.IsNullOrEmpty(folder)) continue;
                 // Report scanning progress with cleaned folder path
                 var displayFolder = FormatScanningFolderForDisplay(folder);
                 ReportProgress(accountId, SyncStatus.Running, 0, 0, 0, 0, currentScanningFolder: displayFolder);
@@ -233,23 +243,26 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     folder,
                     previousDeltaLink: null,
                     _syncCancellation.Token);
-                System.Diagnostics.Debug.WriteLine($"[SyncEngine] Folder '{folder}' returned {remoteFiles.Count} remote files");
-                allRemoteFiles.AddRange(remoteFiles);
+                System.Diagnostics.Debug.WriteLine($"[SyncEngine] Folder '{folder}' returned {remoteFiles?.Count ?? 0} remote files");
+                if (remoteFiles?.Count > 0)
+                {
+                    allRemoteFiles.AddRange(remoteFiles);
+                }
             }
 
             System.Diagnostics.Debug.WriteLine($"[SyncEngine] Total remote files before deduplication: {allRemoteFiles.Count}");
 
             // Deduplicate remote files by Path (in case overlapping folder selections return same files)
             allRemoteFiles = [.. allRemoteFiles
-                .GroupBy(f => f.Path)
+                .GroupBy(f => f.Path ?? "")
                 .Select(g => g.First())];
 
             System.Diagnostics.Debug.WriteLine($"[SyncEngine] Total remote files after deduplication: {allRemoteFiles.Count}");
             System.Diagnostics.Debug.WriteLine($"[SyncEngine] Remote file paths: {string.Join(", ", allRemoteFiles.Select(f => f.Path))}");
 
             // Create dictionaries for fast lookup
-            var remoteFilesDict = allRemoteFiles.ToDictionary(f => f.Path, f => f);
-            var localFilesDict = allLocalFiles.ToDictionary(f => f.Path, f => f);
+            var remoteFilesDict = allRemoteFiles.ToDictionary(f => f.Path ?? "", f => f);
+            var localFilesDict = allLocalFiles.ToDictionary(f => f.Path ?? "", f => f);
 
             // Determine which files need uploading
             var filesToUpload = new List<FileMetadata>();
@@ -945,82 +958,18 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             await DebugLog.ExitAsync("SyncEngine.StartSyncAsync", cancellationToken);
 
             // Finalize sync session log if detailed logging is enabled
-            if (_currentSessionId is not null)
-            {
-                try
-                {
-                    var session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
-                    if (session is not null)
-                    {
-                        var updatedSession = session with
-                        {
-                            CompletedUtc = DateTime.UtcNow,
-                            Status = SyncStatus.Completed,
-                            FilesUploaded = filesToUpload.Count,
-                            FilesDownloaded = filesToDownload.Count,
-                            FilesDeleted = filesToDelete.Count,
-                            ConflictsDetected = conflictCount,
-                            TotalBytes = completedBytes
-                        };
-                        await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
-                    }
-
-                    await UpdateLastAccountSyncAsync(account, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[SyncEngine] Failed to finalize sync session log: {ex.Message}");
-                    // Don't fail the entire sync if session log update fails
-                }
-                finally
-                {
-                    _currentSessionId = null;
-                }
-            }
+            await FinalizeSyncSessionAsync(_currentSessionId, filesToUpload.Count, filesToDownload.Count, filesToDelete.Count, conflictCount, completedBytes, account, cancellationToken);
         }
         catch (OperationCanceledException)
         {
-            // Finalize sync session log as paused if detailed logging is enabled
-            if (_currentSessionId is not null)
-            {
-                var session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
-                if (session is not null)
-                {
-                    var updatedSession = session with
-                    {
-                        CompletedUtc = DateTime.UtcNow,
-                        Status = SyncStatus.Paused
-                    };
-                    await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
-                }
-
-                _currentSessionId = null;
-            }
-
+            await HandleSyncCancelledAsync(_currentSessionId, cancellationToken);
             ReportProgress(accountId, SyncStatus.Paused, 0, 0, 0, 0);
             throw;
         }
         catch (Exception ex)
         {
             await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", $"Sync failed: {ex.Message}", ex, cancellationToken);
-
-            // Finalize sync session log as failed if detailed logging is enabled
-            if (_currentSessionId is not null)
-            {
-                var session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
-                if (session is not null)
-                {
-                    var updatedSession = session with
-                    {
-                        CompletedUtc = DateTime.UtcNow,
-                        Status = SyncStatus.Failed
-                    };
-                    await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
-                }
-
-                _currentSessionId = null;
-            }
-
+            await HandleSyncFailedAsync(_currentSessionId, cancellationToken);
             ReportProgress(accountId, SyncStatus.Failed, 0, 0, 0, 0);
             throw;
         }
@@ -1031,6 +980,67 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
             // Always reset the sync-in-progress flag
             Interlocked.Exchange(ref _syncInProgress, 0);
+        }
+    }
+
+    private async Task FinalizeSyncSessionAsync(string? sessionId, int uploadCount, int downloadCount, int deleteCount, int conflictCount, long completedBytes, AccountInfo account, CancellationToken cancellationToken)
+    {
+        if (sessionId is null)
+            return;
+
+        try
+        {
+            var session = await _syncSessionLogRepository.GetByIdAsync(sessionId, cancellationToken);
+            if (session is not null)
+            {
+                var updatedSession = session with
+                {
+                    CompletedUtc = DateTime.UtcNow,
+                    Status = SyncStatus.Completed,
+                    FilesUploaded = uploadCount,
+                    FilesDownloaded = downloadCount,
+                    FilesDeleted = deleteCount,
+                    ConflictsDetected = conflictCount,
+                    TotalBytes = completedBytes
+                };
+                await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
+            }
+
+            await UpdateLastAccountSyncAsync(account, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SyncEngine] Failed to finalize sync session log: {ex.Message}");
+        }
+        finally
+        {
+            _currentSessionId = null;
+        }
+    }
+
+    private async Task HandleSyncCancelledAsync(string? sessionId, CancellationToken cancellationToken)
+    {
+        if (sessionId is null)
+            return;
+
+        var session = await _syncSessionLogRepository.GetByIdAsync(sessionId, cancellationToken);
+        if (session is not null)
+        {
+            var updatedSession = session with { CompletedUtc = DateTime.UtcNow, Status = SyncStatus.Paused };
+            await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
+        }
+    }
+
+    private async Task HandleSyncFailedAsync(string? sessionId, CancellationToken cancellationToken)
+    {
+        if (sessionId is null)
+            return;
+
+        var session = await _syncSessionLogRepository.GetByIdAsync(sessionId, cancellationToken);
+        if (session is not null)
+        {
+            var updatedSession = session with { CompletedUtc = DateTime.UtcNow, Status = SyncStatus.Failed };
+            await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
         }
     }
 
