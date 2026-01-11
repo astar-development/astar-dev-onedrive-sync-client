@@ -28,9 +28,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     private readonly BehaviorSubject<SyncState> _progressSubject;
     private CancellationTokenSource? _syncCancellation;
     private string? _currentSessionId;
-    private int _syncInProgress; // 0 = not syncing, 1 = syncing
-
-    // Progress tracking for speed/ETA calculations
+    private int _syncInProgress;
     private DateTime _lastProgressUpdate = DateTime.UtcNow;
     private long _lastCompletedBytes;
     private readonly List<(DateTime Timestamp, long Bytes)> _transferHistory = [];
@@ -125,11 +123,10 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             {
                 if (string.IsNullOrEmpty(folder))
                     continue;
-                // Report scanning progress with cleaned folder path
                 var displayFolder = FormatScanningFolderForDisplay(folder);
                 ReportProgress(accountId, SyncStatus.Running, 0, 0, 0, 0, currentScanningFolder: displayFolder);
 
-                var (remoteFiles, _) = await _remoteChangeDetector.DetectChangesAsync(accountId, folder, previousDeltaLink: null, _syncCancellation.Token);
+                var (remoteFiles, _) = await _remoteChangeDetector.DetectChangesAsync(accountId, folder, previousDeltaLink: null, _syncCancellation!.Token);
                 await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Folder '{folder}' returned {remoteFiles?.Count ?? 0} remote files", cancellationToken);
                 if (remoteFiles?.Count > 0)
                 {
@@ -139,7 +136,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
             await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Total remote files before deduplication: {allRemoteFiles.Count}", cancellationToken);
 
-            // Deduplicate remote files by Path (in case overlapping folder selections return same files)
             allRemoteFiles = [.. allRemoteFiles
                 .GroupBy(f => f.Path ?? "")
                 .Select(g => g.First())];
@@ -147,23 +143,17 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Total remote files after deduplication: {allRemoteFiles.Count}", cancellationToken);
             await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Remote file paths: {string.Join(", ", allRemoteFiles.Select(f => f.Path))}", cancellationToken);
 
-            // Create dictionaries for fast lookup
             var remoteFilesDict = allRemoteFiles.ToDictionary(f => f.Path ?? "", f => f);
             var localFilesDict = allLocalFiles.ToDictionary(f => f.Path ?? "", f => f);
 
-            // Determine which files need uploading
             var filesToUpload = new List<FileMetadata>();
             foreach (var localFile in allLocalFiles)
             {
                 if (existingFilesDict.TryGetValue(localFile.Path, out var existingFile))
                 {
-                    // File exists in DB - check if it needs uploading
-
-                    // Case 1: File has pending upload or failed status - needs (re)upload
                     if (existingFile.SyncStatus is FileSyncStatus.PendingUpload or FileSyncStatus.Failed)
                     {
                         await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"File needs upload (status={existingFile.SyncStatus}): {localFile.Name}", cancellationToken);
-                        // Use existing DB record (preserves ID and status) but update with current local file info
                         var fileToUpload = existingFile with
                         {
                             LocalPath = localFile.LocalPath,
@@ -173,7 +163,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                         };
                         filesToUpload.Add(fileToUpload);
                     }
-                    // Case 2: File was synced - check if it changed locally
                     else
                     {
                         var bothHaveHashes = !string.IsNullOrEmpty(existingFile.LocalHash) && !string.IsNullOrEmpty(localFile.LocalHash);
@@ -204,26 +193,22 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 }
                 else if (!remoteFilesDict.ContainsKey(localFile.Path))
                 {
-                    // File NOT in DB AND NOT on remote - new local file, needs upload
                     await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"New local file to upload: {localFile.Name}", cancellationToken);
                     filesToUpload.Add(localFile);
                 }
-                // If file NOT in DB BUT exists on remote - will be handled in conflict detection below
             }
 
-            // Determine which files need downloading and detect conflicts
             var filesToDownload = new List<FileMetadata>();
             var remotePathsSet = allRemoteFiles.Select(f => f.Path).ToHashSet();
             var conflictCount = 0;
             var conflictPaths = new HashSet<string>();
-            var filesToRecordWithoutTransfer = new List<FileMetadata>(); // Files that match, just need DB record
+            var filesToRecordWithoutTransfer = new List<FileMetadata>();
 
             foreach (var remoteFile in allRemoteFiles)
             {
                 if (existingFilesDict.TryGetValue(remoteFile.Path, out var existingFile))
                 {
                     await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Found file in DB: {remoteFile.Path}, DB Status={existingFile.SyncStatus}", cancellationToken);
-                    // File exists in DB - check if remote changed
                     var timeDiff = Math.Abs((existingFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
                     var remoteHasChanged = (!string.IsNullOrWhiteSpace(existingFile.CTag) ||
                                          timeDiff > 3600.0 ||
@@ -233,7 +218,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
                     if (remoteHasChanged)
                     {
-                        // Check if local file also changed - conflict detection
                         var localFileHasChanged = false;
 
                         if (localFilesDict.TryGetValue(remoteFile.Path, out var localFile))
@@ -395,336 +379,26 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             var maxParallelUploads = Math.Max(1, account.MaxParallelUpDownloads);
             using var uploadSemaphore = new SemaphoreSlim(maxParallelUploads, maxParallelUploads);
             var activeUploads = 0;
-            var uploadTasks = filesToUpload.Select(async file =>
-            {
-                await uploadSemaphore.WaitAsync(_syncCancellation.Token);
-                Interlocked.Increment(ref activeUploads);
-
-                try
-                {
-                    _syncCancellation.Token.ThrowIfCancellationRequested();
-
-                    // Determine if this is an update or new file
-                    // Check if file exists in DB with PendingUpload/Failed status (resuming upload)
-                    // OR exists in DB with a valid OneDrive ID (updating existing file)
-                    var isExistingFile = existingFilesDict.TryGetValue(file.Path, out var existingFile) &&
-                        (!string.IsNullOrEmpty(existingFile.Id) ||
-                         existingFile.SyncStatus == FileSyncStatus.PendingUpload ||
-                         existingFile.SyncStatus == FileSyncStatus.Failed);
-
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Uploading {file.Name}: Path={file.Path}, IsExisting={isExistingFile}, LocalPath={file.LocalPath}", cancellationToken);
-
-                    // Save file to database BEFORE upload starts (with PendingUpload status)
-                    // This prevents the file from being deleted if sync is cancelled mid-upload
-                    // But ONLY if the file doesn't already exist in DB (avoid duplicate insert)
-                    if (!isExistingFile)
-                    {
-                        var pendingFile = file with
-                        {
-                            SyncStatus = FileSyncStatus.PendingUpload
-                        };
-                        await _fileMetadataRepository.AddAsync(pendingFile, cancellationToken);
-                        await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Added pending upload record to database: {file.Name}", cancellationToken);
-                    }
-
-                    // Log file operation if detailed logging is enabled
-                    if (_currentSessionId is not null)
-                    {
-                        var reason = isExistingFile ? "File changed locally" : "New file";
-                        var operationLog = new FileOperationLog(
-                            Id: Guid.CreateVersion7().ToString(),
-                            SyncSessionId: _currentSessionId,
-                            AccountId: accountId,
-                            Timestamp: DateTime.UtcNow,
-                            Operation: FileOperation.Upload,
-                            FilePath: file.Path,
-                            LocalPath: file.LocalPath,
-                            OneDriveId: existingFile?.Id,
-                            FileSize: file.Size,
-                            LocalHash: file.LocalHash,
-                            RemoteHash: existingFile?.LocalHash,
-                            LastModifiedUtc: file.LastModifiedUtc,
-                            Reason: reason);
-                        await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
-                    }
-
-                    // Upload file to OneDrive via Graph API with progress reporting
-                    var baseCompletedBytes = Interlocked.Read(ref completedBytes);
-                    var currentActiveUploads = Interlocked.CompareExchange(ref activeUploads, 0, 0);
-                    var uploadProgress = new Progress<long>(bytesUploaded =>
-                    {
-                        // Update completedBytes with current upload progress
-                        var currentCompletedBytes = baseCompletedBytes + bytesUploaded;
-                        var currentCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
-                        ReportProgress(accountId, SyncStatus.Running, totalFiles, currentCompleted, totalBytes, currentCompletedBytes, filesUploading: currentActiveUploads, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes);
-                    });
-
-                    var uploadedItem = await _graphApiClient.UploadFileAsync(
-                        accountId,
-                        file.LocalPath,
-                        file.Path,
-                        uploadProgress,
-                        _syncCancellation.Token);
-
-                    // Synchronize local file timestamp to match OneDrive's timestamp
-                    // This prevents false "file changed" detection on next sync
-                    if (uploadedItem.LastModifiedDateTime.HasValue && File.Exists(file.LocalPath))
-                    {
-                        File.SetLastWriteTimeUtc(file.LocalPath, uploadedItem.LastModifiedDateTime.Value.UtcDateTime);
-                        await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Synchronized local timestamp to OneDrive: {file.Name}, OldTime={file.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, NewTime={uploadedItem.LastModifiedDateTime.Value.UtcDateTime:yyyy-MM-dd HH:mm:ss}", cancellationToken);
-                    }
-
-                    // Use OneDrive's timestamp in database to match the file system
-                    var oneDriveTimestamp = uploadedItem.LastModifiedDateTime?.UtcDateTime ?? file.LastModifiedUtc;
-
-                    // Update file metadata with uploaded status and OneDrive metadata
-                    FileMetadata uploadedFile;
-                    if (isExistingFile)
-                    {
-                        // For existing files, update with new OneDrive metadata from upload
-                        uploadedFile = existingFile! with
-                        {
-                            Id = uploadedItem.Id ?? existingFile.Id, // Preserve ID if upload doesn't return one
-                            CTag = uploadedItem.CTag,
-                            ETag = uploadedItem.ETag,
-                            LocalPath = file.LocalPath,
-                            LocalHash = file.LocalHash,
-                            Size = file.Size,
-                            LastModifiedUtc = oneDriveTimestamp, // Use OneDrive's timestamp
-                            SyncStatus = FileSyncStatus.Synced,
-                            LastSyncDirection = SyncDirection.Upload
-                        };
-                    }
-                    else
-                    {
-                        // New file - use OneDrive ID and metadata from upload response
-                        uploadedFile = file with
-                        {
-                            Id = uploadedItem.Id ?? throw new InvalidOperationException($"Upload succeeded but no ID returned for {file.Name}"),
-                            CTag = uploadedItem.CTag,
-                            ETag = uploadedItem.ETag,
-                            LastModifiedUtc = oneDriveTimestamp, // Use OneDrive's timestamp
-                            SyncStatus = FileSyncStatus.Synced,
-                            LastSyncDirection = SyncDirection.Upload
-                        };
-                    }
-
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Upload successful: {file.Name}, OneDrive ID={uploadedFile.Id}, CTag={uploadedFile.CTag}", cancellationToken);
-
-                    // Save to database - always UPDATE because we either:
-                    // 1. Saved as PendingUpload before upload started, OR
-                    // 2. File already existed in DB (isExistingFile = true)
-                    // So the record should already exist - never ADD after upload
-                    await _fileMetadataRepository.UpdateAsync(uploadedFile, cancellationToken);
-
-                    Interlocked.Increment(ref completedFiles);
-                    Interlocked.Add(ref completedBytes, file.Size);
-                    var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
-                    var finalBytes = Interlocked.Read(ref completedBytes);
-                    var finalActiveUploads = Interlocked.CompareExchange(ref activeUploads, 0, 0);
-                    ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, filesUploading: finalActiveUploads, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes);
-                }
-                catch (Exception ex)
-                {
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Upload failed for {file.Name}: {ex.Message}", cancellationToken);
-
-                    // Mark file as failed in database
-                    var failedFile = file with
-                    {
-                        SyncStatus = FileSyncStatus.Failed
-                    };
-
-                    // Check if file exists in DB (by ID or by path) before adding
-                    var existingDbFile = !string.IsNullOrEmpty(failedFile.Id)
-                        ? await _fileMetadataRepository.GetByIdAsync(failedFile.Id, cancellationToken)
-                        : await _fileMetadataRepository.GetByPathAsync(accountId, failedFile.Path, cancellationToken);
-
-                    if (existingDbFile is not null)
-                    {
-                        await _fileMetadataRepository.UpdateAsync(failedFile, cancellationToken);
-                    }
-                    else
-                    {
-                        await _fileMetadataRepository.AddAsync(failedFile, cancellationToken);
-                    }
-
-                    // Continue with next file (don't fail entire sync)
-                    Interlocked.Increment(ref completedFiles);
-                    var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
-                    var finalBytes = Interlocked.Read(ref completedBytes);
-                    ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes);
-                }
-                finally
-                {
-                    Interlocked.Decrement(ref activeUploads);
-                    uploadSemaphore.Release();
-                }
-            }).ToList();
+            var uploadTasks = CreateUploadTasks(accountId, existingFilesDict, filesToUpload, conflictCount, totalFiles, totalBytes, uploadBytes, completedFiles, completedBytes, uploadSemaphore, activeUploads, cancellationToken);
 
             await Task.WhenAll(uploadTasks);
 
-            // Reset transfer tracking for download phase
-            _transferHistory.Clear();
-            _lastProgressUpdate = DateTime.UtcNow;
-            _lastCompletedBytes = completedBytes;
+            ResetTrackingDetails(completedBytes);
 
-            // Download files with parallel execution
-            // Ensure we have a valid value (defensive check in case of data migration issues)
             var maxParallelDownloads = Math.Max(1, account.MaxParallelUpDownloads);
             using var downloadSemaphore = new SemaphoreSlim(maxParallelDownloads, maxParallelDownloads);
             var activeDownloads = 0;
-            var downloadTasks = filesToDownload.Select(async file =>
-            {
-                await downloadSemaphore.WaitAsync(_syncCancellation.Token);
-                Interlocked.Increment(ref activeDownloads);
-
-                try
-                {
-                    _syncCancellation.Token.ThrowIfCancellationRequested();
-
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Starting download: {file.Name} (ID: {file.Id}) to {file.LocalPath}", cancellationToken);
-                    await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Starting download: {file.Name} (ID: {file.Id}) to {file.LocalPath}", _syncCancellation.Token);
-
-                    // Create directory if it doesn't exist
-                    var directory = Path.GetDirectoryName(file.LocalPath);
-                    if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
-                    {
-                        await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Creating directory: {directory}", _syncCancellation.Token);
-                        Directory.CreateDirectory(directory);
-                    }
-
-                    // Log file operation if detailed logging is enabled
-                    if (_currentSessionId is not null)
-                    {
-                        var existingLocal = existingFilesDict.TryGetValue(file.Path, out var existingFile);
-                        var reason = existingLocal ? "Remote file changed" : "New remote file";
-                        var operationLog = new FileOperationLog(
-                            Id: Guid.CreateVersion7().ToString(),
-                            SyncSessionId: _currentSessionId,
-                            AccountId: accountId,
-                            Timestamp: DateTime.UtcNow,
-                            Operation: FileOperation.Download,
-                            FilePath: file.Path,
-                            LocalPath: file.LocalPath,
-                            OneDriveId: file.Id,
-                            FileSize: file.Size,
-                            LocalHash: existingFile?.LocalHash,
-                            RemoteHash: null,
-                            LastModifiedUtc: file.LastModifiedUtc,
-                            Reason: reason);
-                        await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
-                    }
-
-                    // Download file from OneDrive using Graph API
-                    await _graphApiClient.DownloadFileAsync(accountId, file.Id, file.LocalPath, _syncCancellation.Token);
-
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Download complete: {file.Name}, computing hash...", cancellationToken);
-                    await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Download complete: {file.Name}, computing hash...", _syncCancellation.Token);
-
-                    // Compute hash of downloaded file
-                    var downloadedHash = await _localFileScanner.ComputeFileHashAsync(file.LocalPath, _syncCancellation.Token);
-
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Hash computed for {file.Name}: {downloadedHash}", cancellationToken);
-
-                    // Update file metadata with downloaded status
-                    var downloadedFile = file with
-                    {
-                        SyncStatus = FileSyncStatus.Synced,
-                        LastSyncDirection = SyncDirection.Download,
-                        LocalHash = downloadedHash
-                    };
-
-                    // Save to database - check if record exists
-                    FileMetadata? existingRecord = null;
-                    if (!string.IsNullOrEmpty(downloadedFile.Id))
-                    {
-                        existingRecord = await _fileMetadataRepository.GetByIdAsync(downloadedFile.Id, cancellationToken);
-                    }
-                    // If not found by ID, try by path (for files that might have empty IDs)
-                    existingRecord ??= await _fileMetadataRepository.GetByPathAsync(accountId, downloadedFile.Path, cancellationToken);
-
-                    await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Saving {file.Name}: ExistingRecord={(existingRecord is not null ? "Found" : "NotFound")}, ID={downloadedFile.Id}, Path={downloadedFile.Path}", _syncCancellation.Token);
-
-                    try
-                    {
-                        if (existingRecord is not null)
-                        {
-                            await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Updating existing record: ExistingID={existingRecord.Id}, NewID={downloadedFile.Id}", _syncCancellation.Token);
-                            await _fileMetadataRepository.UpdateAsync(downloadedFile, cancellationToken);
-                        }
-                        else
-                        {
-                            await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Adding new record: ID={downloadedFile.Id}", _syncCancellation.Token);
-                            await _fileMetadataRepository.AddAsync(downloadedFile, cancellationToken);
-                        }
-
-                        await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Successfully saved {file.Name} to database", _syncCancellation.Token);
-                    }
-                    catch (Exception dbEx)
-                    {
-                        await DebugLog.ErrorAsync("SyncEngine.SaveFileMetadata", $"FAILED to save {file.Name} to database: {dbEx.Message}", dbEx, _syncCancellation.Token);
-                        throw; // Re-throw to trigger outer catch handler
-                    }
-
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Successfully synced: {file.Name}", cancellationToken);
-
-                    Interlocked.Increment(ref completedFiles);
-                    Interlocked.Add(ref completedBytes, file.Size);
-                    var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
-                    var finalBytes = Interlocked.Read(ref completedBytes);
-                    var finalActiveDownloads = Interlocked.CompareExchange(ref activeDownloads, 0, 0);
-                    ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, filesDownloading: finalActiveDownloads, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes + downloadBytes);
-                }
-                catch (Exception ex)
-                {
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"ERROR downloading {file.Name}: {ex.GetType().Name} - {ex.Message}", cancellationToken);
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Stack trace: {ex.StackTrace}", cancellationToken);
-                    await DebugLog.ErrorAsync("SyncEngine.DownloadFile", $"ERROR downloading {file.Name}: {ex.Message}", ex, _syncCancellation.Token);
-
-                    // Log download failure and mark file as failed
-                    var failedFile = file with { SyncStatus = FileSyncStatus.Failed };
-
-                    // Check if file exists in DB (by ID or by path) before adding
-                    var existingDbFile = !string.IsNullOrEmpty(failedFile.Id)
-                        ? await _fileMetadataRepository.GetByIdAsync(failedFile.Id, cancellationToken)
-                        : await _fileMetadataRepository.GetByPathAsync(accountId, failedFile.Path, cancellationToken);
-
-                    if (existingDbFile is not null)
-                    {
-                        await _fileMetadataRepository.UpdateAsync(failedFile, cancellationToken);
-                    }
-                    else
-                    {
-                        await _fileMetadataRepository.AddAsync(failedFile, cancellationToken);
-                    }
-
-                    Interlocked.Increment(ref completedFiles);
-                    Interlocked.Add(ref completedBytes, file.Size);
-                    var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
-                    var finalBytes = Interlocked.Read(ref completedBytes);
-                    ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes + downloadBytes);
-                }
-                finally
-                {
-                    Interlocked.Decrement(ref activeDownloads);
-                    downloadSemaphore.Release();
-                }
-            }).ToList();
+            var downloadTasks = GenerateDownloadTasks(accountId, existingFilesDict, filesToDownload, conflictCount, totalFiles, totalBytes, uploadBytes, downloadBytes, completedFiles, completedBytes, downloadSemaphore, activeDownloads, cancellationToken);
 
             await Task.WhenAll(downloadTasks);
 
-            // Handle deletions
-            foreach (var fileToDelete in filesToDelete)
-            {
-                await _fileMetadataRepository.DeleteAsync(fileToDelete.Id, cancellationToken);
-            }
+            await DeleteDeletedFilesFromDatabase(filesToDelete, cancellationToken);
 
             ReportProgress(accountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes, completedBytes, filesDeleted: filesToDelete.Count, conflictsDetected: conflictCount);
 
             await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Sync completed: {completedFiles}/{totalFiles} files, {completedBytes} bytes", cancellationToken);
             await DebugLog.ExitAsync("SyncEngine.StartSyncAsync", cancellationToken);
 
-            // Finalize sync session log if detailed logging is enabled
             await FinalizeSyncSessionAsync(_currentSessionId, filesToUpload.Count, filesToDownload.Count, filesToDelete.Count, conflictCount, completedBytes, account, cancellationToken);
         }
         catch (OperationCanceledException)
@@ -742,12 +416,307 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         }
         finally
         {
-            // Clear debug log context
             DebugLogContext.Clear();
-
-            // Always reset the sync-in-progress flag
             Interlocked.Exchange(ref _syncInProgress, 0);
         }
+    }
+
+    private async Task DeleteDeletedFilesFromDatabase(List<FileMetadata> filesToDelete, CancellationToken cancellationToken)
+    {
+        foreach (var fileToDelete in filesToDelete)
+        {
+            await _fileMetadataRepository.DeleteAsync(fileToDelete.Id, cancellationToken);
+        }
+    }
+
+    private List<Task> GenerateDownloadTasks(string accountId, Dictionary<string, FileMetadata> existingFilesDict, List<FileMetadata> filesToDownload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, long downloadBytes, int completedFiles, long completedBytes, SemaphoreSlim downloadSemaphore, int activeDownloads, CancellationToken cancellationToken)
+    {
+        var downloadTasks = filesToDownload.Select(async file =>
+        {
+            await downloadSemaphore.WaitAsync(_syncCancellation!.Token);
+            Interlocked.Increment(ref activeDownloads);
+
+            try
+            {
+                _syncCancellation!.Token.ThrowIfCancellationRequested();
+
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Starting download: {file.Name} (ID: {file.Id}) to {file.LocalPath}", cancellationToken);
+                await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Starting download: {file.Name} (ID: {file.Id}) to {file.LocalPath}", _syncCancellation!.Token);
+
+                var directory = Path.GetDirectoryName(file.LocalPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Creating directory: {directory}", _syncCancellation!.Token);
+                    Directory.CreateDirectory(directory);
+                }
+
+                if (_currentSessionId is not null)
+                {
+                    var existingLocal = existingFilesDict.TryGetValue(file.Path, out var existingFile);
+                    var reason = existingLocal ? "Remote file changed" : "New remote file";
+                    var operationLog = new FileOperationLog(
+                        Id: Guid.CreateVersion7().ToString(),
+                        SyncSessionId: _currentSessionId,
+                        AccountId: accountId,
+                        Timestamp: DateTime.UtcNow,
+                        Operation: FileOperation.Download,
+                        FilePath: file.Path,
+                        LocalPath: file.LocalPath,
+                        OneDriveId: file.Id,
+                        FileSize: file.Size,
+                        LocalHash: existingFile?.LocalHash,
+                        RemoteHash: null,
+                        LastModifiedUtc: file.LastModifiedUtc,
+                        Reason: reason);
+                    await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                }
+
+                await _graphApiClient.DownloadFileAsync(accountId, file.Id, file.LocalPath, _syncCancellation!.Token);
+
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Download complete: {file.Name}, computing hash...", cancellationToken);
+                await DebugLog.InfoAsync("SyncEngine.DownloadFile", $"Download complete: {file.Name}, computing hash...", _syncCancellation!.Token);
+
+                var downloadedHash = await _localFileScanner.ComputeFileHashAsync(file.LocalPath, _syncCancellation!.Token);
+
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Hash computed for {file.Name}: {downloadedHash}", cancellationToken);
+
+                var downloadedFile = file with
+                {
+                    SyncStatus = FileSyncStatus.Synced,
+                    LastSyncDirection = SyncDirection.Download,
+                    LocalHash = downloadedHash
+                };
+
+                FileMetadata? existingRecord = null;
+                if (!string.IsNullOrEmpty(downloadedFile.Id))
+                {
+                    existingRecord = await _fileMetadataRepository.GetByIdAsync(downloadedFile.Id, cancellationToken);
+                }
+
+                existingRecord ??= await _fileMetadataRepository.GetByPathAsync(accountId, downloadedFile.Path, cancellationToken);
+
+                await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Saving {file.Name}: ExistingRecord={(existingRecord is not null ? "Found" : "NotFound")}, ID={downloadedFile.Id}, Path={downloadedFile.Path}", _syncCancellation!.Token);
+
+                try
+                {
+                    if (existingRecord is not null)
+                    {
+                        await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Updating existing record: ExistingID={existingRecord.Id}, NewID={downloadedFile.Id}", _syncCancellation!.Token);
+                        await _fileMetadataRepository.UpdateAsync(downloadedFile, cancellationToken);
+                    }
+                    else
+                    {
+                        await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Adding new record: ID={downloadedFile.Id}", _syncCancellation!.Token);
+                        await _fileMetadataRepository.AddAsync(downloadedFile, cancellationToken);
+                    }
+
+                    await DebugLog.InfoAsync("SyncEngine.SaveFileMetadata", $"Successfully saved {file.Name} to database", _syncCancellation!.Token);
+                }
+                catch (Exception dbEx)
+                {
+                    await DebugLog.ErrorAsync("SyncEngine.SaveFileMetadata", $"FAILED to save {file.Name} to database: {dbEx.Message}", dbEx, _syncCancellation!.Token);
+                    throw;
+                }
+
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Successfully synced: {file.Name}", cancellationToken);
+
+                Interlocked.Increment(ref completedFiles);
+                Interlocked.Add(ref completedBytes, file.Size);
+                var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
+                var finalBytes = Interlocked.Read(ref completedBytes);
+                var finalActiveDownloads = Interlocked.CompareExchange(ref activeDownloads, 0, 0);
+                ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, filesDownloading: finalActiveDownloads, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes + downloadBytes);
+            }
+            catch (Exception ex)
+            {
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"ERROR downloading {file.Name}: {ex.GetType().Name} - {ex.Message}", cancellationToken);
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Stack trace: {ex.StackTrace}", cancellationToken);
+                await DebugLog.ErrorAsync("SyncEngine.DownloadFile", $"ERROR downloading {file.Name}: {ex.Message}", ex, _syncCancellation!.Token);
+
+                var failedFile = file with { SyncStatus = FileSyncStatus.Failed };
+
+                var existingDbFile = !string.IsNullOrEmpty(failedFile.Id)
+                    ? await _fileMetadataRepository.GetByIdAsync(failedFile.Id, cancellationToken)
+                    : await _fileMetadataRepository.GetByPathAsync(accountId, failedFile.Path, cancellationToken);
+
+                if (existingDbFile is not null)
+                {
+                    await _fileMetadataRepository.UpdateAsync(failedFile, cancellationToken);
+                }
+                else
+                {
+                    await _fileMetadataRepository.AddAsync(failedFile, cancellationToken);
+                }
+
+                Interlocked.Increment(ref completedFiles);
+                Interlocked.Add(ref completedBytes, file.Size);
+                var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
+                var finalBytes = Interlocked.Read(ref completedBytes);
+                ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes + downloadBytes);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref activeDownloads);
+                downloadSemaphore.Release();
+            }
+        }).ToList();
+        return downloadTasks;
+    }
+
+    private void ResetTrackingDetails(long completedBytes)
+    {
+        _transferHistory.Clear();
+        _lastProgressUpdate = DateTime.UtcNow;
+        _lastCompletedBytes = completedBytes;
+    }
+
+    private List<Task> CreateUploadTasks(string accountId, Dictionary<string, FileMetadata> existingFilesDict, List<FileMetadata> filesToUpload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, int completedFiles, long completedBytes, SemaphoreSlim uploadSemaphore, int activeUploads, CancellationToken cancellationToken)
+    {
+        var uploadTasks = filesToUpload.Select(async file =>
+        {
+            await uploadSemaphore.WaitAsync(_syncCancellation!.Token);
+            Interlocked.Increment(ref activeUploads);
+
+            try
+            {
+                _syncCancellation!.Token.ThrowIfCancellationRequested();
+
+                var isExistingFile = existingFilesDict.TryGetValue(file.Path, out var existingFile) &&
+                    (!string.IsNullOrEmpty(existingFile.Id) ||
+                     existingFile.SyncStatus == FileSyncStatus.PendingUpload ||
+                     existingFile.SyncStatus == FileSyncStatus.Failed);
+
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Uploading {file.Name}: Path={file.Path}, IsExisting={isExistingFile}, LocalPath={file.LocalPath}", cancellationToken);
+
+                if (!isExistingFile)
+                {
+                    var pendingFile = file with
+                    {
+                        SyncStatus = FileSyncStatus.PendingUpload
+                    };
+                    await _fileMetadataRepository.AddAsync(pendingFile, cancellationToken);
+                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Added pending upload record to database: {file.Name}", cancellationToken);
+                }
+
+                if (_currentSessionId is not null)
+                {
+                    var reason = isExistingFile ? "File changed locally" : "New file";
+                    var operationLog = new FileOperationLog(
+                        Id: Guid.CreateVersion7().ToString(),
+                        SyncSessionId: _currentSessionId,
+                        AccountId: accountId,
+                        Timestamp: DateTime.UtcNow,
+                        Operation: FileOperation.Upload,
+                        FilePath: file.Path,
+                        LocalPath: file.LocalPath,
+                        OneDriveId: existingFile?.Id,
+                        FileSize: file.Size,
+                        LocalHash: file.LocalHash,
+                        RemoteHash: existingFile?.LocalHash,
+                        LastModifiedUtc: file.LastModifiedUtc,
+                        Reason: reason);
+                    await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                }
+
+                var baseCompletedBytes = Interlocked.Read(ref completedBytes);
+                var currentActiveUploads = Interlocked.CompareExchange(ref activeUploads, 0, 0);
+                var uploadProgress = new Progress<long>(bytesUploaded =>
+                {
+                    var currentCompletedBytes = baseCompletedBytes + bytesUploaded;
+                    var currentCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
+                    ReportProgress(accountId, SyncStatus.Running, totalFiles, currentCompleted, totalBytes, currentCompletedBytes, filesUploading: currentActiveUploads, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes);
+                });
+
+                var uploadedItem = await _graphApiClient.UploadFileAsync(
+                    accountId,
+                    file.LocalPath,
+                    file.Path,
+                    uploadProgress,
+                    _syncCancellation!.Token);
+
+                if (uploadedItem.LastModifiedDateTime.HasValue && File.Exists(file.LocalPath))
+                {
+                    File.SetLastWriteTimeUtc(file.LocalPath, uploadedItem.LastModifiedDateTime.Value.UtcDateTime);
+                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Synchronized local timestamp to OneDrive: {file.Name}, OldTime={file.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, NewTime={uploadedItem.LastModifiedDateTime.Value.UtcDateTime:yyyy-MM-dd HH:mm:ss}", cancellationToken);
+                }
+
+                var oneDriveTimestamp = uploadedItem.LastModifiedDateTime?.UtcDateTime ?? file.LastModifiedUtc;
+
+                FileMetadata uploadedFile;
+                if (isExistingFile)
+                {
+                    uploadedFile = existingFile! with
+                    {
+                        Id = uploadedItem.Id ?? existingFile.Id, // Preserve ID if upload doesn't return one
+                        CTag = uploadedItem.CTag,
+                        ETag = uploadedItem.ETag,
+                        LocalPath = file.LocalPath,
+                        LocalHash = file.LocalHash,
+                        Size = file.Size,
+                        LastModifiedUtc = oneDriveTimestamp, // Use OneDrive's timestamp
+                        SyncStatus = FileSyncStatus.Synced,
+                        LastSyncDirection = SyncDirection.Upload
+                    };
+                }
+                else
+                {
+                    uploadedFile = file with
+                    {
+                        Id = uploadedItem.Id ?? throw new InvalidOperationException($"Upload succeeded but no ID returned for {file.Name}"),
+                        CTag = uploadedItem.CTag,
+                        ETag = uploadedItem.ETag,
+                        LastModifiedUtc = oneDriveTimestamp, // Use OneDrive's timestamp
+                        SyncStatus = FileSyncStatus.Synced,
+                        LastSyncDirection = SyncDirection.Upload
+                    };
+                }
+
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Upload successful: {file.Name}, OneDrive ID={uploadedFile.Id}, CTag={uploadedFile.CTag}", cancellationToken);
+
+                await _fileMetadataRepository.UpdateAsync(uploadedFile, cancellationToken);
+
+                Interlocked.Increment(ref completedFiles);
+                Interlocked.Add(ref completedBytes, file.Size);
+                var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
+                var finalBytes = Interlocked.Read(ref completedBytes);
+                var finalActiveUploads = Interlocked.CompareExchange(ref activeUploads, 0, 0);
+                ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, filesUploading: finalActiveUploads, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes);
+            }
+            catch (Exception ex)
+            {
+                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"Upload failed for {file.Name}: {ex.Message}", cancellationToken);
+
+                var failedFile = file with
+                {
+                    SyncStatus = FileSyncStatus.Failed
+                };
+
+                var existingDbFile = !string.IsNullOrEmpty(failedFile.Id)
+                    ? await _fileMetadataRepository.GetByIdAsync(failedFile.Id, cancellationToken)
+                    : await _fileMetadataRepository.GetByPathAsync(accountId, failedFile.Path, cancellationToken);
+
+                if (existingDbFile is not null)
+                {
+                    await _fileMetadataRepository.UpdateAsync(failedFile, cancellationToken);
+                }
+                else
+                {
+                    await _fileMetadataRepository.AddAsync(failedFile, cancellationToken);
+                }
+
+                // Continue with next file (don't fail entire sync)
+                Interlocked.Increment(ref completedFiles);
+                var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
+                var finalBytes = Interlocked.Read(ref completedBytes);
+                ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes);
+            }
+            finally
+            {
+                Interlocked.Decrement(ref activeUploads);
+                uploadSemaphore.Release();
+            }
+        }).ToList();
+        return uploadTasks;
     }
 
     private static async Task<(List<FileMetadata> filesToDownload, int totalFiles, long totalBytes, long downloadBytes)> RemoveDuplicatesFromDownloadList(List<FileMetadata> filesToUpload, List<FileMetadata> filesToDownload, int totalFiles, long totalBytes, long downloadBytes, CancellationToken cancellationToken)
@@ -761,11 +730,9 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"  Duplicate: {dup.Key} appears {dup.Count()} times", cancellationToken);
             }
 
-            // Deduplicate: Keep first occurrence of each path
             filesToDownload = [.. filesToDownload.GroupBy(f => f.Path).Select(g => g.First())];
             await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"After deduplication: {filesToDownload.Count} files to download", cancellationToken);
 
-            // Recalculate totals after deduplication
             totalFiles = filesToUpload.Count + filesToDownload.Count;
             totalBytes = filesToUpload.Sum(f => f.Size) + filesToDownload.Sum(f => f.Size);
             downloadBytes = filesToDownload.Sum(f => f.Size);
@@ -776,13 +743,12 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
     private static List<FileMetadata> GetFilesToDelete(IReadOnlyList<FileMetadata> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet, HashSet<string> alreadyProcessedDeletions)
     {
-        return existingFiles
+        return [.. existingFiles
             .Where(f => !remotePathsSet.Contains(f.Path) &&
                        !localPathsSet.Contains(f.Path) &&
                        !string.IsNullOrWhiteSpace(f.Id) &&
                        !alreadyProcessedDeletions.Contains(f.Id))
-            .Where(f => f.Id is not null)
-            .ToList();
+            .Where(f => f.Id is not null)];
     }
 
     private static List<FileMetadata> GetFilesDeletedLocally(List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet)
@@ -796,20 +762,18 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         // 4. It has a valid OneDrive ID (can't delete without ID)
         // Note: We check SyncStatus=Synced OR remote contains it, because newly uploaded files
         // might not appear in remote scan immediately due to OneDrive propagation delays
-        return allLocalFiles
+        return [.. allLocalFiles
             .Where(f => !localPathsSet.Contains(f.Path) &&
                        (remotePathsSet.Contains(f.Path) || f.SyncStatus == FileSyncStatus.Synced) &&
-                       !string.IsNullOrEmpty(f.Id))
-            .ToList();
+                       !string.IsNullOrEmpty(f.Id))];
     }
 
     private static List<FileMetadata> SelectFilesDeletedFromOneDriveButSyncedLocally(IReadOnlyList<FileMetadata> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet)
     {
-        return existingFiles
+        return [.. existingFiles
             .Where(f => !remotePathsSet.Contains(f.Path) &&
                        localPathsSet.Contains(f.Path) &&
-                       f.SyncStatus == FileSyncStatus.Synced)
-            .ToList();
+                       f.SyncStatus == FileSyncStatus.Synced)];
     }
 
     private async Task<List<FileMetadata>> GetAllLocalFiles(string accountId, IReadOnlyList<string> selectedFolders, AccountInfo account)
