@@ -169,6 +169,16 @@
                        Maximum="100"
                        Width="200"
                        Height="4"/>
+          <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,4,0,0">
+            <TextBlock Text="{Binding EstimatedSecondsRemaining, StringFormat='ETA: {0:N0} sec'}"
+                       FontSize="11"
+                       Foreground="#666"
+                       IsVisible="{Binding EstimatedSecondsRemaining, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+            <TextBlock Text="{Binding MegabytesPerSecond, StringFormat='Speed: {0:N2} MB/sec'}"
+                       FontSize="11"
+                       Foreground="#666"
+                       Margin="16,0,0,0"/>
+          </StackPanel>
         </StackPanel>
 
         <!-- Last Sync Result -->

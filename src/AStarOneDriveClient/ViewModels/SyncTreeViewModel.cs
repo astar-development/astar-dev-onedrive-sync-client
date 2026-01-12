@@ -15,7 +15,16 @@ namespace AStarOneDriveClient.ViewModels;
 /// ViewModel for the sync tree view, managing folder hierarchy and selection.
 /// </summary>
 public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
-{    
+{
+    /// <summary>
+    /// Gets the estimated seconds remaining for sync (ETA).
+    /// </summary>
+    public double? EstimatedSecondsRemaining => SyncState.EstimatedSecondsRemaining;
+
+    /// <summary>
+    /// Gets the current sync speed in megabytes per second.
+    /// </summary>
+    public double MegabytesPerSecond => SyncState.MegabytesPerSecond;
     /// <summary>
     /// Gets or sets a value indicating whether the SyncProgressView is open.
     /// </summary>

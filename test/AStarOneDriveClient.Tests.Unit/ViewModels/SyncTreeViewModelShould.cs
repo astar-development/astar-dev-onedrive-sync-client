@@ -1,5 +1,6 @@
 using System.Reactive.Subjects;
 using AStarOneDriveClient.Models;
+using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.ViewModels;
 
@@ -7,6 +8,49 @@ namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 
 public class SyncTreeViewModelShould : IDisposable
 {
+    [Fact]
+    public void ExposeEstimatedSecondsRemainingFromSyncState()
+    {
+        var syncState = new SyncState(
+            AccountId: "acc1",
+            Status: SyncStatus.Running,
+            TotalFiles: 10,
+            CompletedFiles: 5,
+            TotalBytes: 1000,
+            CompletedBytes: 500,
+            FilesDownloading: 2,
+            FilesUploading: 1,
+            FilesDeleted: 0,
+            ConflictsDetected: 0,
+            MegabytesPerSecond: 3.5,
+            EstimatedSecondsRemaining: 42,
+            CurrentScanningFolder: null,
+            LastUpdateUtc: null);
+        _progressSubject.OnNext(syncState);
+        _viewModel.EstimatedSecondsRemaining.ShouldBe(42);
+    }
+
+    [Fact]
+    public void ExposeMegabytesPerSecondFromSyncState()
+    {
+        var syncState = new SyncState(
+            AccountId: "acc1",
+            Status: SyncStatus.Running,
+            TotalFiles: 10,
+            CompletedFiles: 5,
+            TotalBytes: 1000,
+            CompletedBytes: 500,
+            FilesDownloading: 2,
+            FilesUploading: 1,
+            FilesDeleted: 0,
+            ConflictsDetected: 0,
+            MegabytesPerSecond: 7.25,
+            EstimatedSecondsRemaining: 10,
+            CurrentScanningFolder: null,
+            LastUpdateUtc: null);
+        _progressSubject.OnNext(syncState);
+        _viewModel.MegabytesPerSecond.ShouldBe(7.25);
+    }
     private readonly IFolderTreeService _mockFolderService;
     private readonly ISyncSelectionService _mockSelectionService;
     private readonly ISyncEngine _mockSyncEngine;
