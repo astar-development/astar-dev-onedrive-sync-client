@@ -51,15 +51,9 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <summary>
     /// Gets the progress percentage (0-100).
     /// </summary>
-    public double ProgressPercentage
-    {
-        get
-        {
-            return CurrentProgress is null || CurrentProgress.TotalFiles == 0
+    public double ProgressPercentage => CurrentProgress is null || CurrentProgress.TotalFiles == 0
                 ? 0
                 : (double)CurrentProgress.CompletedFiles / CurrentProgress.TotalFiles * 100;
-        }
-    }
 
     /// <summary>
     /// Gets a formatted string showing completed/total files.
@@ -111,15 +105,9 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <summary>
     /// Gets a formatted string showing conflicts detected.
     /// </summary>
-    public string ConflictsText
-    {
-        get
-        {
-            return CurrentProgress is null || CurrentProgress.ConflictsDetected == 0
+    public string ConflictsText => CurrentProgress is null || CurrentProgress.ConflictsDetected == 0
                 ? string.Empty
                 : $"⚠ {CurrentProgress.ConflictsDetected} conflict(s) detected";
-        }
-    }
 
     /// <summary>
     /// Gets a value indicating whether conflicts were detected.

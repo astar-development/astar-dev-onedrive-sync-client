@@ -5,8 +5,8 @@
 [ ] Not proven but imagine empty local folders are also not created
 [ ] account.EnableDetailedSyncLogging is only checked once (and thus not exactly detailed) - in SyncEngine
 [ ] update UI to include "Updating database with X new items from OneDrive" or similar
-[ ] batch db updates to reduce load / wasted time
-[ ] add scheduled clean-up of debug logs and sync logs
+[x] batch db updates to reduce load / wasted time
+[x] add scheduled clean-up of debug logs and sync logs - currently hardcoded to 14 days & runs every 12 hours
 [ ] sync logs doesn't include a great deal of data - investigate
 [ ] sync view overlay can be closed without affecting the current downloads / uploads so tell the user that!
 [ ] also tell them that selecting additional folders when a sync is running will not affect the current sync!

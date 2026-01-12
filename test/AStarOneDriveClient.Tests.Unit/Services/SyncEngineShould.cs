@@ -9,6 +9,95 @@ namespace AStarOneDriveClient.Tests.Unit.Services;
 public class SyncEngineShould
 {
     [Fact]
+    public async Task UploadFiles_BatchedDbUpdates_UsesSaveBatchAsync()
+    {
+            (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+            var filesToUpload = new List<FileMetadata>();
+            for (int i = 0; i < 120; i++)
+            {
+                filesToUpload.Add(new FileMetadata(
+                    $"id_{i}", "acc1", $"file_{i}.txt", $"/Documents/file_{i}.txt", 100,
+                    DateTime.UtcNow, $"C:\\Sync\\Documents\\file_{i}.txt", null, null, $"hash_{i}",
+                    FileSyncStatus.PendingUpload, null));
+            }
+
+            _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
+                .Returns(["/Documents"]);
+            _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
+                .Returns(new AccountInfo("acc1", "Test", @"C:\\Sync", true, null, null, false, false, 3, 50, null));
+            _ = mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+                .Returns(filesToUpload);
+            _ = mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+                .Returns((new List<FileMetadata>().AsReadOnly(), "delta_123"));
+            _ = mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+                .Returns([]);
+
+            // Mock upload
+            _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+                .Returns(callInfo => Task.FromResult(new Microsoft.Graph.Models.DriveItem
+                {
+                    Id = $"uploaded_{Guid.CreateVersion7():N}",
+                    Name = callInfo.ArgAt<string>(1).Split('\\', '/').Last(),
+                    CTag = $"ctag_{Guid.CreateVersion7():N}",
+                    ETag = $"etag_{Guid.CreateVersion7():N}",
+                    LastModifiedDateTime = DateTimeOffset.UtcNow
+                }));
+
+            await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+
+            // Should call SaveBatchAsync 3 times: 50, 50, 20
+            await mocks.FileMetadataRepo.Received(3).SaveBatchAsync(Arg.Any<IEnumerable<FileMetadata>>(), Arg.Any<CancellationToken>());
+            // Check batch sizes
+            Received.InOrder(() =>
+            {
+                mocks.FileMetadataRepo.SaveBatchAsync(Arg.Is<IEnumerable<FileMetadata>>(batch => batch.Count() == 50), Arg.Any<CancellationToken>());
+                mocks.FileMetadataRepo.SaveBatchAsync(Arg.Is<IEnumerable<FileMetadata>>(batch => batch.Count() == 50), Arg.Any<CancellationToken>());
+                mocks.FileMetadataRepo.SaveBatchAsync(Arg.Is<IEnumerable<FileMetadata>>(batch => batch.Count() == 20), Arg.Any<CancellationToken>());
+            });
+    }
+    [Fact]
+    public async Task DownloadFiles_BatchedDbUpdates_UsesSaveBatchAsync()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+        var filesToDownload = new List<FileMetadata>();
+        for (int i = 0; i < 120; i++)
+        {
+            filesToDownload.Add(new FileMetadata(
+                $"id_{i}", "acc1", $"file_{i}.txt", $"/Documents/file_{i}.txt", 100,
+                DateTime.UtcNow, $"C:\\Sync\\Documents\\file_{i}.txt", null, null, $"hash_{i}",
+                FileSyncStatus.PendingDownload, null));
+        }
+
+        _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(["/Documents"]);
+        _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(new AccountInfo("acc1", "Test", @"C:\\Sync", true, null, null, false, false, 3, 50, null));
+        _ = mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _ = mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns((filesToDownload.AsReadOnly(), "delta_123"));
+        _ = mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        // Mock download and hash
+        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        _ = mocks.LocalScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns("hash_downloaded");
+
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+
+        // Should call SaveBatchAsync 3 times: 50, 50, 20
+        await mocks.FileMetadataRepo.Received(3).SaveBatchAsync(Arg.Any<IEnumerable<FileMetadata>>(), Arg.Any<CancellationToken>());
+        // Check batch sizes
+        Received.InOrder(() =>
+        {
+            mocks.FileMetadataRepo.SaveBatchAsync(Arg.Is<IEnumerable<FileMetadata>>(batch => batch.Count() == 50), Arg.Any<CancellationToken>());
+            mocks.FileMetadataRepo.SaveBatchAsync(Arg.Is<IEnumerable<FileMetadata>>(batch => batch.Count() == 50), Arg.Any<CancellationToken>());
+            mocks.FileMetadataRepo.SaveBatchAsync(Arg.Is<IEnumerable<FileMetadata>>(batch => batch.Count() == 20), Arg.Any<CancellationToken>());
+        });
+    }
+    [Fact]
     public async Task StartSyncAndReportProgress()
     {
         (SyncEngine? engine, TestMocks? mocks) = CreateTestEngine();

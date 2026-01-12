@@ -84,6 +84,9 @@ public static class ServiceConfiguration
             _ = builder.SetMinimumLevel(LogLevel.Information);
         });
 
+        // Background Services
+        _ = services.AddHostedService<LogCleanupBackgroundService>();
+
         return services.BuildServiceProvider();
     }
 
