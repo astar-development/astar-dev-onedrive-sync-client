@@ -332,6 +332,11 @@ public sealed partial class SyncSelectionService : ISyncSelectionService
     {
         foreach (OneDriveFolderNode folder in folders)
         {
+            if( string.IsNullOrEmpty(folder.Path))
+            {
+                continue;
+            }
+            
             pathMap[folder.Path] = folder;
 
             if (folder.Children.Count > 0)

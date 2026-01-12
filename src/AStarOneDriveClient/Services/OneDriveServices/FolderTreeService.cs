@@ -1,5 +1,6 @@
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Models;
+using AStarOneDriveClient.Repositories;
 using Microsoft.Graph.Models;
 
 namespace AStarOneDriveClient.Services.OneDriveServices;
@@ -11,18 +12,21 @@ public sealed class FolderTreeService : IFolderTreeService
 {
     private readonly IGraphApiClient _graphApiClient;
     private readonly IAuthService _authService;
+    private readonly ISyncConfigurationRepository _syncConfigurationRepository;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FolderTreeService"/> class.
     /// </summary>
     /// <param name="graphApiClient">The Graph API client.</param>
     /// <param name="authService">The authentication service.</param>
-    public FolderTreeService(IGraphApiClient graphApiClient, IAuthService authService)
+    /// <param name="syncConfigurationRepository">The sync configuration repository.</param>
+    public FolderTreeService(IGraphApiClient graphApiClient, IAuthService authService, ISyncConfigurationRepository syncConfigurationRepository)
     {
         ArgumentNullException.ThrowIfNull(graphApiClient);
         ArgumentNullException.ThrowIfNull(authService);
         _graphApiClient = graphApiClient;
         _authService = authService;
+        _syncConfigurationRepository = syncConfigurationRepository;
     }
 
     /// <inheritdoc/>
@@ -62,6 +66,14 @@ public sealed class FolderTreeService : IFolderTreeService
             node.Children.Add(new OneDriveFolderNode());
 
             nodes.Add(node);
+            _syncConfigurationRepository.AddAsync(new SyncConfiguration
+            (
+                Id: 0,
+                AccountId: accountId,
+                FolderPath: node.Path,
+                IsSelected: false,
+                LastModifiedUtc: DateTime.UtcNow
+            ), cancellationToken).Wait(cancellationToken);
         }
 
         return nodes;
@@ -97,6 +109,15 @@ public sealed class FolderTreeService : IFolderTreeService
                 continue;
             }
 
+            SyncConfiguration updatedSyncConfiguration = await _syncConfigurationRepository.AddAsync(new SyncConfiguration
+            (
+                Id: 0,
+                AccountId: accountId,
+                FolderPath: $"{parentPath}/{item.Name}",
+                IsSelected: false,
+                LastModifiedUtc: DateTime.UtcNow
+            ), cancellationToken);
+
             var node = new OneDriveFolderNode(
                 id: item.Id,
                 name: item.Name,
@@ -104,7 +125,7 @@ public sealed class FolderTreeService : IFolderTreeService
                 parentId: parentFolderId,
                 isFolder: true)
             {
-                IsSelected = false
+                IsSelected = updatedSyncConfiguration.IsSelected
             };
 
             // Add placeholder child so expansion toggle appears
