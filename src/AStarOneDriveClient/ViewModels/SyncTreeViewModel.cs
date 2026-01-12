@@ -1,3 +1,4 @@
+
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
@@ -14,7 +15,20 @@ namespace AStarOneDriveClient.ViewModels;
 /// ViewModel for the sync tree view, managing folder hierarchy and selection.
 /// </summary>
 public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
-{
+{    
+    /// <summary>
+    /// Gets or sets a value indicating whether the SyncProgressView is open.
+    /// </summary>
+    public bool IsSyncProgressOpen
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>
+    /// Command to open the SyncProgressView.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> OpenSyncProgressCommand { get; }
     private readonly IFolderTreeService _folderTreeService;
     private readonly ISyncSelectionService _selectionService;
     private readonly ISyncEngine _syncEngine;
@@ -166,6 +180,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         _selectionService = selectionService ?? throw new ArgumentNullException(nameof(selectionService));
         _syncEngine = syncEngine ?? throw new ArgumentNullException(nameof(syncEngine));
 
+
         LoadFoldersCommand = ReactiveCommand.CreateFromTask(LoadFoldersAsync);
         LoadChildrenCommand = ReactiveCommand.CreateFromTask<OneDriveFolderNode>(LoadChildrenAsync);
         ToggleSelectionCommand = ReactiveCommand.Create<OneDriveFolderNode>(ToggleSelection);
@@ -175,6 +190,11 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 (accountId, isSyncing) => !string.IsNullOrEmpty(accountId) && !isSyncing));
         CancelSyncCommand = ReactiveCommand.CreateFromTask(CancelSyncAsync,
             this.WhenAnyValue(x => x.IsSyncing));
+
+        // Only allow opening if syncing and not already open
+        OpenSyncProgressCommand = ReactiveCommand.Create(
+            () => { IsSyncProgressOpen = true; },
+            this.WhenAnyValue(x => x.IsSyncing, x => x.IsSyncProgressOpen, (syncing, open) => syncing && !open));
 
         _ = this.WhenAnyValue(x => x.SelectedAccountId)
             .Subscribe(_ => LoadFoldersCommand.Execute().Subscribe())

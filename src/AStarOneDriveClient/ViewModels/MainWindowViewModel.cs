@@ -78,15 +78,53 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         IAccountRepository accountRepository,
         ISyncConflictRepository conflictRepository)
     {
-        ArgumentNullException.ThrowIfNull(accountManagementViewModel);
-        ArgumentNullException.ThrowIfNull(syncTreeViewModel);
-        ArgumentNullException.ThrowIfNull(serviceProvider);
-        ArgumentNullException.ThrowIfNull(autoSyncCoordinator);
-        ArgumentNullException.ThrowIfNull(accountRepository);
-        ArgumentNullException.ThrowIfNull(conflictRepository);
-
         AccountManagement = accountManagementViewModel;
         SyncTree = syncTreeViewModel;
+        _serviceProvider = serviceProvider;
+        _autoSyncCoordinator = autoSyncCoordinator;
+        _accountRepository = accountRepository;
+        _conflictRepository = conflictRepository;
+
+        // Wire up: When user requests SyncProgressView via button
+        _ = syncTreeViewModel
+            .WhenAnyValue(x => x.IsSyncProgressOpen, x => x.SelectedAccountId)
+            .Where(tuple => tuple.Item1 && !string.IsNullOrEmpty(tuple.Item2))
+            .Subscribe(tuple =>
+            {
+                var (isOpen, accountId) = tuple;
+                if (SyncProgress is null || SyncProgress.AccountId != accountId)
+                {
+                    SyncProgress?.Dispose();
+                    SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
+                        _serviceProvider,
+                        accountId!);
+
+                                _ = syncProgressVm.ViewConflictsCommand
+                                    .Subscribe(_ => ShowConflictResolutionView(accountId!))
+                                    .DisposeWith(_disposables);
+
+                                _ = syncProgressVm.CloseCommand
+                                    .Subscribe(_ => CloseSyncProgressView())
+                                    .DisposeWith(_disposables);
+
+                                _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
+                                    .Where(progress => progress is not null &&
+                                           progress.Status == SyncStatus.Completed &&
+                                           progress.ConflictsDetected == 0)
+                                    .Delay(TimeSpan.FromSeconds(2))
+                                    .ObserveOn(RxApp.MainThreadScheduler)
+                                    .Subscribe(_ => CloseSyncProgressView())
+                                    .DisposeWith(_disposables);
+
+                                _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
+                                    .Where(progress => progress is not null && progress.Status == SyncStatus.Completed)
+                                    .Subscribe(async _ => await UpdateConflictStatusAsync(accountId!))
+                                    .DisposeWith(_disposables);
+
+                                SyncProgress = syncProgressVm;
+                            }
+                        })
+                        .DisposeWith(_disposables);
         _serviceProvider = serviceProvider;
         _autoSyncCoordinator = autoSyncCoordinator;
         _accountRepository = accountRepository;

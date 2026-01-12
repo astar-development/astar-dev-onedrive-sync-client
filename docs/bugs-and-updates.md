@@ -16,3 +16,4 @@
 [x] if account login is cancelled, the UI never resets / cancels the attempt
 [ ] cancel function needs rethinking (again) as it can produce 100,000s of exceptions for a large sync!
 [ ] conflict adds a record to the db but the download errors saying not found... also, the original, local file is not updated...
+[x] need to disable the "Start Sync" button when the "loading folders" is running

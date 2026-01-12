@@ -1,12 +1,18 @@
+
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:AStarOneDriveClient.ViewModels"
              xmlns:models="using:AStarOneDriveClient.Models"
+             xmlns:converters="using:AStarOneDriveClient.Converters"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="AStarOneDriveClient.Views.SyncTreeView"
              x:DataType="vm:SyncTreeViewModel">
+
+  <UserControl.Resources>
+    <converters:BooleanNegationConverter x:Key="BooleanNegationConverter" />
+  </UserControl.Resources>
 
   <Design.DataContext>
     <vm:SyncTreeViewModel />
@@ -123,9 +129,18 @@
             Padding="16,12">
       <StackPanel Orientation="Horizontal" Spacing="12">
         <Button Content="Start Sync"
-                Command="{Binding StartSyncCommand}"
-                Classes="accent"
-                MinWidth="120"/>
+          Command="{Binding StartSyncCommand}"
+          Classes="accent"
+          MinWidth="120"
+          IsEnabled="{Binding IsLoading, Converter={StaticResource BooleanNegationConverter}}"/>
+
+        <!-- Open Sync Progress Button -->
+        <Button Content="Show Sync Progress"
+          Command="{Binding OpenSyncProgressCommand}"
+          MinWidth="140"
+          IsVisible="{Binding IsSyncing}"
+          IsEnabled="{Binding IsSyncProgressOpen, Converter={StaticResource BooleanNegationConverter}}"
+          ToolTip.Tip="Show sync progress window"/>
         <Button Content="Cancel Sync"
                 Command="{Binding CancelSyncCommand}"
                 MinWidth="120"/>
