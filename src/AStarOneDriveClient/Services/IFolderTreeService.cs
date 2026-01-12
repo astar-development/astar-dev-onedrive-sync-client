@@ -28,7 +28,7 @@ public interface IFolderTreeService
     /// <remarks>
     /// Used for lazy loading tree nodes - only loads children when a node is expanded.
     /// </remarks>
-    Task<IReadOnlyList<OneDriveFolderNode>> GetChildFoldersAsync(string accountId, string parentFolderId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<OneDriveFolderNode>> GetChildFoldersAsync(string accountId, string parentFolderId, bool? parentIsSelected = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the complete folder hierarchy for the specified account.

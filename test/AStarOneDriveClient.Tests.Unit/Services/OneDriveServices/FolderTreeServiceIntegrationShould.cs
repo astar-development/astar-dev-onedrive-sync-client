@@ -96,7 +96,7 @@ public class FolderTreeServiceIntegrationShould
         OneDriveFolderNode parentFolder = rootFolders[0];
 
         // Act
-        IReadOnlyList<OneDriveFolderNode> childFolders = await service.GetChildFoldersAsync(loginResult.AccountId, parentFolder.Id, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> childFolders = await service.GetChildFoldersAsync(loginResult.AccountId, parentFolder.Id, Arg.Any<bool?>(), TestContext.Current.CancellationToken);
 
         // Assert - may be empty if folder has no subfolders, but should succeed
         _ = childFolders.ShouldNotBeNull();
@@ -171,7 +171,7 @@ public class FolderTreeServiceIntegrationShould
         // Act - try to get children from each root folder
         foreach (OneDriveFolderNode folder in rootFolders)
         {
-            IReadOnlyList<OneDriveFolderNode> children = await service.GetChildFoldersAsync(loginResult.AccountId, folder.Id, TestContext.Current.CancellationToken);
+            IReadOnlyList<OneDriveFolderNode> children = await service.GetChildFoldersAsync(loginResult.AccountId, folder.Id, Arg.Any<bool?>(),TestContext.Current.CancellationToken);
 
             // Assert - should not throw, even if empty
             _ = children.ShouldNotBeNull();

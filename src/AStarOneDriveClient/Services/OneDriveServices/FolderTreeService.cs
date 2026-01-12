@@ -80,7 +80,7 @@ public sealed class FolderTreeService : IFolderTreeService
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<OneDriveFolderNode>> GetChildFoldersAsync(string accountId, string parentFolderId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<OneDriveFolderNode>> GetChildFoldersAsync(string accountId, string parentFolderId, bool? parentIsSelected = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
         ArgumentNullException.ThrowIfNull(parentFolderId);
@@ -109,6 +109,7 @@ public sealed class FolderTreeService : IFolderTreeService
                 continue;
             }
 
+            // Retrieve or create sync config for this folder
             SyncConfiguration updatedSyncConfiguration = await _syncConfigurationRepository.AddAsync(new SyncConfiguration
             (
                 Id: 0,
@@ -118,6 +119,9 @@ public sealed class FolderTreeService : IFolderTreeService
                 LastModifiedUtc: DateTime.UtcNow
             ), cancellationToken);
 
+            // If parent is selected, propagate selection to children
+            bool? isSelected = parentIsSelected == true || updatedSyncConfiguration.IsSelected;
+
             var node = new OneDriveFolderNode(
                 id: item.Id,
                 name: item.Name,
@@ -125,7 +129,7 @@ public sealed class FolderTreeService : IFolderTreeService
                 parentId: parentFolderId,
                 isFolder: true)
             {
-                IsSelected = updatedSyncConfiguration.IsSelected
+                IsSelected = isSelected
             };
 
             // Add placeholder child so expansion toggle appears
@@ -175,7 +179,7 @@ public sealed class FolderTreeService : IFolderTreeService
             return;
         }
 
-        IReadOnlyList<OneDriveFolderNode> children = await GetChildFoldersAsync(accountId, parentNode.Id, cancellationToken);
+        IReadOnlyList<OneDriveFolderNode> children = await GetChildFoldersAsync(accountId, parentNode.Id, parentNode.IsSelected, cancellationToken);
         foreach (OneDriveFolderNode child in children)
         {
             parentNode.Children.Add(child);

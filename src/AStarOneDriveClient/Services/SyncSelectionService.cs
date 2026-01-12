@@ -258,9 +258,20 @@ public sealed partial class SyncSelectionService : ISyncSelectionService
             await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Normalized: {path}", cancellationToken);
         }
 
-        // Build lookup dictionary for fast path-to-node resolution
+        // Build lookup dictionary for fast path-to-node resolution, using normalized paths
         var pathToNodeMap = new Dictionary<string, OneDriveFolderNode>(StringComparer.OrdinalIgnoreCase);
         BuildPathLookup(rootFolders, pathToNodeMap);
+
+        // Build a normalized path-to-node map for robust matching
+        var normalizedPathToNodeMap = new Dictionary<string, OneDriveFolderNode>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kvp in pathToNodeMap)
+        {
+            var normalized = NormalizePathForComparison(kvp.Key);
+            if (!normalizedPathToNodeMap.ContainsKey(normalized))
+            {
+                normalizedPathToNodeMap[normalized] = kvp.Value;
+            }
+        }
 
         // Initialize ALL folders to Unchecked first
         foreach (OneDriveFolderNode folder in pathToNodeMap.Values)
@@ -269,17 +280,13 @@ public sealed partial class SyncSelectionService : ISyncSelectionService
             folder.IsSelected = false;
         }
 
-        // Then set saved selections to Checked
+        // Then set saved selections to Checked using normalized matching
         if (savedFolderPaths.Count > 0)
         {
             for (var i = 0; i < savedFolderPaths.Count; i++)
             {
-                var originalPath = savedFolderPaths[i];
                 var normalizedPath = normalizedSavedPaths[i];
-
-                // Try both original and normalized paths for backward compatibility
-                if (pathToNodeMap.TryGetValue(originalPath, out OneDriveFolderNode? folder) ||
-                    pathToNodeMap.TryGetValue(normalizedPath, out folder))
+                if (normalizedPathToNodeMap.TryGetValue(normalizedPath, out OneDriveFolderNode? folder))
                 {
                     SetSelection(folder, true);
                 }

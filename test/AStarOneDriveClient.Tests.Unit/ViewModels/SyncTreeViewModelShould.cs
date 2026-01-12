@@ -116,7 +116,7 @@ public class SyncTreeViewModelShould : IDisposable
             new() { Id = "child1", Name = "Child 1", ParentId = "parent", IsFolder = true }
         };
 
-        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<bool?>(),Arg.Any<CancellationToken>())
             .Returns(children);
 
         _viewModel.SelectedAccountId = "account123";
@@ -145,7 +145,7 @@ public class SyncTreeViewModelShould : IDisposable
         _ = _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        _ = await _mockFolderService.DidNotReceive().GetChildFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = await _mockFolderService.DidNotReceive().GetChildFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public class SyncTreeViewModelShould : IDisposable
             new() { Id = "child1", Name = "Child 1", ParentId = "parent", IsFolder = true }
         };
 
-        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns(children);
 
         _viewModel.SelectedAccountId = "account123";
