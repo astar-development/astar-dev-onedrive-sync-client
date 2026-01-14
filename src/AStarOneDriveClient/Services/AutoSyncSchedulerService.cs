@@ -45,9 +45,9 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
         _logger.LogInformation("Starting auto-sync scheduler");
 
         IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync(cancellationToken);
-        foreach (AccountInfo account in accounts)
+        foreach(AccountInfo account in accounts)
         {
-            if (account.AutoSyncIntervalMinutes.HasValue && account.IsAuthenticated)
+            if(account.AutoSyncIntervalMinutes.HasValue && account.IsAuthenticated)
             {
                 UpdateSchedule(account.AccountId, account.AutoSyncIntervalMinutes.Value);
             }
@@ -61,7 +61,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
     {
         _logger.LogInformation("Stopping auto-sync scheduler");
 
-        foreach ((var accountId, System.Timers.Timer? timer) in _timers)
+        foreach((var accountId, System.Timers.Timer? timer) in _timers)
         {
             timer.Stop();
             timer.Dispose();
@@ -80,7 +80,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
         ArgumentNullException.ThrowIfNull(accountId);
 
         // Remove existing timer if present
-        if (_timers.TryRemove(accountId, out System.Timers.Timer? existingTimer))
+        if(_timers.TryRemove(accountId, out System.Timers.Timer? existingTimer))
         {
             existingTimer.Stop();
             existingTimer.Dispose();
@@ -88,7 +88,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
         }
 
         // Create new timer if interval is specified
-        if (intervalMinutes.HasValue)
+        if(intervalMinutes.HasValue)
         {
             var clampedInterval = Math.Clamp(intervalMinutes.Value, 60, 1440); // 1 hour to 24 hours
             var intervalMs = clampedInterval * 60 * 1000; // Convert to milliseconds
@@ -105,7 +105,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
                     _logger.LogInformation("Auto-sync triggered for account {AccountId}", accountId);
                     await _syncEngine.StartSyncAsync(accountId, CancellationToken.None);
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     _logger.LogError(ex, "Auto-sync failed for account {AccountId}", accountId);
                 }
@@ -124,7 +124,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        if (_timers.TryRemove(accountId, out System.Timers.Timer? timer))
+        if(_timers.TryRemove(accountId, out System.Timers.Timer? timer))
         {
             timer.Stop();
             timer.Dispose();
@@ -135,7 +135,7 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
     /// <inheritdoc/>
     public void Dispose()
     {
-        if (_isDisposed)
+        if(_isDisposed)
         {
             return;
         }

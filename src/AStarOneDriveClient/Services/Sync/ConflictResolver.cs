@@ -46,7 +46,7 @@ public sealed class ConflictResolver : IConflictResolver
     {
         ArgumentNullException.ThrowIfNull(conflict);
 
-        if (_logger.IsEnabled(LogLevel.Information))
+        if(_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation(
                 "Resolving conflict for file {FilePath} in account {AccountId} with strategy {Strategy}",
@@ -61,7 +61,7 @@ public sealed class ConflictResolver : IConflictResolver
         var relativePath = conflict.FilePath.TrimStart('/');
         var localPath = Path.Combine(account.LocalSyncPath, relativePath);
 
-        switch (strategy)
+        switch(strategy)
         {
             case ConflictResolutionStrategy.KeepLocal:
                 await KeepLocalVersionAsync(account, conflict, localPath, cancellationToken);
@@ -76,7 +76,7 @@ public sealed class ConflictResolver : IConflictResolver
                 break;
 
             case ConflictResolutionStrategy.None:
-                if (_logger.IsEnabled(LogLevel.Information))
+                if(_logger.IsEnabled(LogLevel.Information))
                 {
                     _logger.LogInformation("Skipping conflict resolution for {FilePath}", conflict.FilePath);
                 }
@@ -96,7 +96,7 @@ public sealed class ConflictResolver : IConflictResolver
         };
         await _conflictRepo.UpdateAsync(resolvedConflict, cancellationToken);
 
-        if (_logger.IsEnabled(LogLevel.Information))
+        if(_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation(
                 "Successfully resolved conflict for {FilePath} with strategy {Strategy}",
@@ -111,12 +111,12 @@ public sealed class ConflictResolver : IConflictResolver
         string localPath,
         CancellationToken cancellationToken)
     {
-        if (_logger.IsEnabled(LogLevel.Information))
+        if(_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation("Keeping local version of {FilePath}", conflict.FilePath);
         }
 
-        if (!File.Exists(localPath))
+        if(!File.Exists(localPath))
         {
             throw new FileNotFoundException($"Local file not found: {localPath}");
         }
@@ -153,7 +153,7 @@ public sealed class ConflictResolver : IConflictResolver
         string localPath,
         CancellationToken cancellationToken)
     {
-        if (_logger.IsEnabled(LogLevel.Information))
+        if(_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation("Keeping remote version of {FilePath}", conflict.FilePath);
         }
@@ -168,7 +168,7 @@ public sealed class ConflictResolver : IConflictResolver
 
         // Download remote file from OneDrive (overwrite local)
         var localDirectory = Path.GetDirectoryName(localPath);
-        if (!string.IsNullOrEmpty(localDirectory))
+        if(!string.IsNullOrEmpty(localDirectory))
         {
             _ = Directory.CreateDirectory(localDirectory);
         }
@@ -181,7 +181,7 @@ public sealed class ConflictResolver : IConflictResolver
 
         // Get remote metadata to get accurate timestamp
         DriveItem? remoteItem = await _graphApiClient.GetDriveItemAsync(account.AccountId, fileId, cancellationToken);
-        if (remoteItem?.LastModifiedDateTime.HasValue == true)
+        if(remoteItem?.LastModifiedDateTime.HasValue == true)
         {
             // Set local file timestamp to match OneDrive's timestamp
             File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
@@ -209,12 +209,12 @@ public sealed class ConflictResolver : IConflictResolver
         string localPath,
         CancellationToken cancellationToken)
     {
-        if (_logger.IsEnabled(LogLevel.Information))
+        if(_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation("Keeping both versions of {FilePath}", conflict.FilePath);
         }
 
-        if (!File.Exists(localPath))
+        if(!File.Exists(localPath))
         {
             throw new FileNotFoundException($"Local file not found: {localPath}");
         }
@@ -237,14 +237,14 @@ public sealed class ConflictResolver : IConflictResolver
 
         File.Move(localPath, conflictPath);
 
-        if (_logger.IsEnabled(LogLevel.Information))
+        if(_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation("Renamed local file to {ConflictPath}", conflictPath);
         }
 
         // Download remote version to original path
         var localDirectory = Path.GetDirectoryName(localPath);
-        if (!string.IsNullOrEmpty(localDirectory))
+        if(!string.IsNullOrEmpty(localDirectory))
         {
             _ = Directory.CreateDirectory(localDirectory);
         }
@@ -259,7 +259,7 @@ public sealed class ConflictResolver : IConflictResolver
         DriveItem remoteItem = await _graphApiClient.GetDriveItemAsync(account.AccountId, fileId, cancellationToken) ?? throw new InvalidOperationException($"Failed to retrieve metadata for remote file {fileId}");
 
         // Set local file timestamp to match OneDrive's timestamp
-        if (remoteItem.LastModifiedDateTime.HasValue)
+        if(remoteItem.LastModifiedDateTime.HasValue)
         {
             File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
         }
@@ -281,7 +281,7 @@ public sealed class ConflictResolver : IConflictResolver
         };
         await _metadataRepo.UpdateAsync(updatedMetadata, cancellationToken);
 
-        if (_logger.IsEnabled(LogLevel.Information))
+        if(_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation(
                 "Successfully kept both versions: {LocalPath} (remote) and {ConflictPath} (local)",

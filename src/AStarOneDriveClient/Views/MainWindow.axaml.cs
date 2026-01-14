@@ -1,9 +1,9 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Threading;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Services;
 using AStarOneDriveClient.ViewModels;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarOneDriveClient.Views;
@@ -21,7 +21,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
 
         // Retrieve the MainWindowViewModel from DI container
-        if (App.Services is not null)
+        if(App.Services is not null)
         {
             DataContext = App.Services.GetRequiredService<MainWindowViewModel>();
             _preferencesService = App.Services.GetService<IWindowPreferencesService>();
@@ -48,7 +48,7 @@ public sealed partial class MainWindow : Window
 
     private async Task LoadWindowPreferencesAsync()
     {
-        if (_preferencesService is null)
+        if(_preferencesService is null)
         {
             return;
         }
@@ -56,14 +56,14 @@ public sealed partial class MainWindow : Window
         try
         {
             WindowPreferences? preferences = await _preferencesService.LoadAsync();
-            if (preferences is not null)
+            if(preferences is not null)
             {
                 // Apply saved preferences
-                if (preferences.IsMaximized)
+                if(preferences.IsMaximized)
                 {
                     WindowState = WindowState.Maximized;
                 }
-                else if (preferences.X.HasValue && preferences.Y.HasValue)
+                else if(preferences.X.HasValue && preferences.Y.HasValue)
                 {
                     Position = new PixelPoint((int)preferences.X.Value, (int)preferences.Y.Value);
                     Width = preferences.Width;
@@ -86,7 +86,7 @@ public sealed partial class MainWindow : Window
 
     private void OnWindowPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {
-        if (e.Property == WindowStateProperty || e.Property == WidthProperty || e.Property == HeightProperty)
+        if(e.Property == WindowStateProperty || e.Property == WidthProperty || e.Property == HeightProperty)
         {
             // Restart timer - this debounces the save operation
             _savePreferencesTimer?.Stop();
@@ -96,7 +96,7 @@ public sealed partial class MainWindow : Window
 
     private async Task SaveWindowPreferencesAsync()
     {
-        if (_preferencesService is null)
+        if(_preferencesService is null)
         {
             return;
         }

@@ -59,7 +59,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         set
         {
             _ = this.RaiseAndSetIfChanged(ref field, value);
-            if (value is not null)
+            if(value is not null)
             {
                 CurrentPage = 1;
                 _ = LoadDebugLogsAsync();
@@ -147,12 +147,12 @@ public sealed class DebugLogViewModel : ReactiveObject
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (AccountInfo account in accounts)
+            foreach(AccountInfo account in accounts)
             {
                 Accounts.Add(account);
             }
         }
-        catch (Exception)
+        catch(Exception)
         {
             // Log or handle error if needed
         }
@@ -160,7 +160,7 @@ public sealed class DebugLogViewModel : ReactiveObject
 
     private async Task LoadDebugLogsAsync()
     {
-        if (SelectedAccount is null)
+        if(SelectedAccount is null)
         {
             return;
         }
@@ -185,13 +185,13 @@ public sealed class DebugLogViewModel : ReactiveObject
 
             // Only show PageSize records
             IEnumerable<DebugLogEntry> logsToDisplay = logs.Take(_pageSize);
-            foreach (DebugLogEntry? log in logsToDisplay)
+            foreach(DebugLogEntry? log in logsToDisplay)
             {
                 DebugLogs.Add(log);
             }
 
             // Update total count estimate based on current position
-            if (HasMoreRecords)
+            if(HasMoreRecords)
             {
                 // We know there are at least (CurrentPage * PageSize) + 1 records
                 TotalRecordCount = Math.Max(TotalRecordCount, (CurrentPage * _pageSize) + 1);
@@ -206,7 +206,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
         }
-        catch (Exception)
+        catch(Exception)
         {
             // Log or handle error if needed
         }
@@ -218,7 +218,7 @@ public sealed class DebugLogViewModel : ReactiveObject
 
     private async Task LoadNextPageAsync()
     {
-        if (!HasMoreRecords || SelectedAccount is null)
+        if(!HasMoreRecords || SelectedAccount is null)
         {
             return;
         }
@@ -229,7 +229,7 @@ public sealed class DebugLogViewModel : ReactiveObject
 
     private async Task LoadPreviousPageAsync()
     {
-        if (CurrentPage <= 1 || SelectedAccount is null)
+        if(CurrentPage <= 1 || SelectedAccount is null)
         {
             return;
         }
@@ -240,7 +240,7 @@ public sealed class DebugLogViewModel : ReactiveObject
 
     private async Task ClearLogsAsync()
     {
-        if (SelectedAccount is null)
+        if(SelectedAccount is null)
         {
             return;
         }
@@ -252,7 +252,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             CurrentPage = 1;
             await LoadDebugLogsAsync();
         }
-        catch (Exception)
+        catch(Exception)
         {
             // Log or handle error if needed
         }

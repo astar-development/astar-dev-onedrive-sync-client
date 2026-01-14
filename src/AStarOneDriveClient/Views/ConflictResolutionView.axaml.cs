@@ -10,8 +10,5 @@ public partial class ConflictResolutionView : UserControl
     /// <summary>
     /// Initializes a new instance of <see cref="ConflictResolutionView"/>.
     /// </summary>
-    public ConflictResolutionView()
-    {
-        InitializeComponent();
-    }
+    public ConflictResolutionView() => InitializeComponent();
 }

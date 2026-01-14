@@ -271,7 +271,7 @@ public class FileWatcherServiceShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Make rapid changes to the same file
-        for (var i = 0; i < 5; i++)
+        for(var i = 0; i < 5; i++)
         {
             await File.AppendAllTextAsync(testFile, $"update{i}", TestContext.Current.CancellationToken);
             await Task.Delay(50, TestContext.Current.CancellationToken); // 50ms between writes (within 500ms debounce window)
@@ -294,7 +294,7 @@ public class FileWatcherServiceShould : IDisposable
         _sut.Dispose();
 
         // Clean up test directory
-        if (Directory.Exists(_testDirectory))
+        if(Directory.Exists(_testDirectory))
         {
             Directory.Delete(_testDirectory, recursive: true);
         }

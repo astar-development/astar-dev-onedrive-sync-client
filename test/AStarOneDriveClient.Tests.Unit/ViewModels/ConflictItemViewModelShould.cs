@@ -53,7 +53,7 @@ public class ConflictItemViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(ConflictItemViewModel.SelectedStrategy))
+            if(e.PropertyName == nameof(ConflictItemViewModel.SelectedStrategy))
             {
                 propertyChanged = true;
             }
@@ -74,7 +74,7 @@ public class ConflictItemViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(ConflictItemViewModel.SelectedStrategy))
+            if(e.PropertyName == nameof(ConflictItemViewModel.SelectedStrategy))
             {
                 propertyChangedCount++;
             }

@@ -13,10 +13,7 @@ public sealed class FileOperationLogRepository : IFileOperationLogRepository
 {
     private readonly SyncDbContext _context;
 
-    public FileOperationLogRepository(SyncDbContext context)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
+    public FileOperationLogRepository(SyncDbContext context) => _context = context ?? throw new ArgumentNullException(nameof(context));
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<FileOperationLog>> GetBySessionIdAsync(string syncSessionId, CancellationToken cancellationToken = default)

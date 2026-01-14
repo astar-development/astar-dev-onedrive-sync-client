@@ -60,7 +60,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         set
         {
             _ = this.RaiseAndSetIfChanged(ref field, value);
-            if (value is not null)
+            if(value is not null)
             {
                 _currentPage = 1;
                 _ = LoadSyncHistoryAsync();
@@ -121,7 +121,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (AccountInfo account in accounts)
+            foreach(AccountInfo account in accounts)
             {
                 Accounts.Add(account);
             }
@@ -134,7 +134,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
     private async Task LoadSyncHistoryAsync()
     {
-        if (SelectedAccount is null)
+        if(SelectedAccount is null)
         {
             SyncHistory.Clear();
             return;
@@ -154,7 +154,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
             // Only add PageSize records (exclude the extra one used for hasMore check)
             IEnumerable<FileOperationLog> recordsToShow = HasMoreRecords ? records.Take(PageSize) : records;
-            foreach (FileOperationLog? record in recordsToShow)
+            foreach(FileOperationLog? record in recordsToShow)
             {
                 SyncHistory.Add(record);
             }
@@ -174,7 +174,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
     private async Task LoadNextPageAsync()
     {
-        if (!HasMoreRecords || SelectedAccount is null)
+        if(!HasMoreRecords || SelectedAccount is null)
         {
             return;
         }
@@ -185,7 +185,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
     private async Task LoadPreviousPageAsync()
     {
-        if (CurrentPage <= 1 || SelectedAccount is null)
+        if(CurrentPage <= 1 || SelectedAccount is null)
         {
             return;
         }

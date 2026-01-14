@@ -189,7 +189,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         _selectionService = selectionService ?? throw new ArgumentNullException(nameof(selectionService));
         _syncEngine = syncEngine ?? throw new ArgumentNullException(nameof(syncEngine));
 
-
         LoadFoldersCommand = ReactiveCommand.CreateFromTask(LoadFoldersAsync);
         LoadChildrenCommand = ReactiveCommand.CreateFromTask<OneDriveFolderNode>(LoadChildrenAsync);
         ToggleSelectionCommand = ReactiveCommand.Create<OneDriveFolderNode>(ToggleSelection);
@@ -228,7 +227,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// </summary>
     private async Task LoadFoldersAsync(CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrEmpty(SelectedAccountId))
+        if(string.IsNullOrEmpty(SelectedAccountId))
         {
             RootFolders.Clear();
             return;
@@ -249,12 +248,12 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
             // Now add folders to UI with correct selection states already applied
             RootFolders.Clear();
-            foreach (OneDriveFolderNode? folder in folderList)
+            foreach(OneDriveFolderNode? folder in folderList)
             {
                 RootFolders.Add(folder);
             }
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             ErrorMessage = $"Failed to load folders: {ex.Message}";
         }
@@ -272,7 +271,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     {
         ArgumentNullException.ThrowIfNull(folder);
 
-        if (folder.ChildrenLoaded || string.IsNullOrEmpty(SelectedAccountId))
+        if(folder.ChildrenLoaded || string.IsNullOrEmpty(SelectedAccountId))
         {
             return;
         }
@@ -285,7 +284,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             folder.Children.Clear();
 
             IReadOnlyList<OneDriveFolderNode> children = await _folderTreeService.GetChildFoldersAsync(SelectedAccountId, folder.Id, folder.IsSelected, cancellationToken);
-            foreach (OneDriveFolderNode child in children)
+            foreach(OneDriveFolderNode child in children)
             {
                 folder.Children.Add(child);
             }
@@ -300,7 +299,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
             folder.ChildrenLoaded = true;
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             ErrorMessage = $"Failed to load child folders: {ex.Message}";
         }
@@ -330,7 +329,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         _selectionService.UpdateParentStates(folder, [.. RootFolders]);
 
         // Save selections to database (fire and forget for UI responsiveness)
-        if (!string.IsNullOrEmpty(SelectedAccountId))
+        if(!string.IsNullOrEmpty(SelectedAccountId))
         {
             _ = Task.Run(async () =>
             {
@@ -354,7 +353,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         _selectionService.ClearAllSelections([.. RootFolders]);
 
         // Clear selections from database (fire and forget for UI responsiveness)
-        if (!string.IsNullOrEmpty(SelectedAccountId))
+        if(!string.IsNullOrEmpty(SelectedAccountId))
         {
             _ = Task.Run(async () =>
             {
@@ -381,7 +380,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// </summary>
     private async Task StartSyncAsync()
     {
-        if (string.IsNullOrEmpty(SelectedAccountId))
+        if(string.IsNullOrEmpty(SelectedAccountId))
         {
             return;
         }
@@ -392,7 +391,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             await _syncEngine.StartSyncAsync(SelectedAccountId);
 
             // Display result after sync completes
-            if (SyncState.Status == SyncStatus.Completed)
+            if(SyncState.Status == SyncStatus.Completed)
             {
                 var totalChanges = SyncState.TotalFiles + SyncState.FilesDeleted;
 
@@ -400,12 +399,12 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 totalChanges > 1 ? $"✓ Sync complete: {totalChanges} change(s) synchronized" : $"✓ Sync complete: {totalChanges} change synchronized";
             }
         }
-        catch (OperationCanceledException)
+        catch(OperationCanceledException)
         {
             // Sync was cancelled - this is expected, don't show error
             // The cancel command already set the LastSyncResult message
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             ErrorMessage = $"Sync failed: {ex.Message}";
             LastSyncResult = null;

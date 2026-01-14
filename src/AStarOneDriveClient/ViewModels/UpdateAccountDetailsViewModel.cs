@@ -60,7 +60,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         set
         {
             _ = this.RaiseAndSetIfChanged(ref field, value);
-            if (value is not null)
+            if(value is not null)
             {
                 // Load editable fields when account is selected
                 LocalSyncPath = value.LocalSyncPath;
@@ -184,14 +184,14 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (AccountInfo account in accounts)
+            foreach(AccountInfo account in accounts)
             {
                 AccountInfo? acc = await _accountRepository.GetByIdAsync(account.AccountId);
                 AccountInfo accountWithSync = account with { LastSyncUtc = acc?.LastSyncUtc };
                 Accounts.Add(accountWithSync);
             }
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             StatusMessage = $"Failed to load accounts: {ex.Message}";
             IsSuccess = false;
@@ -200,13 +200,13 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
 
     private async Task UpdateAccountAsync()
     {
-        if (SelectedAccount is null)
+        if(SelectedAccount is null)
         {
             return;
         }
 
         // Validate LocalSyncPath exists
-        if (!Directory.Exists(LocalSyncPath))
+        if(!Directory.Exists(LocalSyncPath))
         {
             StatusMessage = "Local sync path does not exist. Please select a valid directory.";
             IsSuccess = false;
@@ -233,7 +233,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
 
             // Update the account in the collection
             var index = Accounts.IndexOf(SelectedAccount);
-            if (index >= 0)
+            if(index >= 0)
             {
                 Accounts[index] = updatedAccount;
                 SelectedAccount = updatedAccount;
@@ -247,7 +247,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
             await Task.Delay(2000);
             RequestClose?.Invoke(this, EventArgs.Empty);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             StatusMessage = $"Failed to update account: {ex.Message}";
             IsSuccess = false;
@@ -260,7 +260,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     private async Task BrowseFolderAsync()
     {
         // Get the top level from the current application
-        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop &&
+        if(Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow?.StorageProvider is { } storageProvider)
         {
             IReadOnlyList<IStorageFolder> result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
@@ -269,7 +269,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
                 AllowMultiple = false
             });
 
-            if (result.Count > 0)
+            if(result.Count > 0)
             {
                 LocalSyncPath = result[0].Path.LocalPath;
             }

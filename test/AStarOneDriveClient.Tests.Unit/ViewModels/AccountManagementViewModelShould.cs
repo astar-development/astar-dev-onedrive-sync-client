@@ -65,7 +65,7 @@ public class AccountManagementViewModelShould
 
         viewModel.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(AccountManagementViewModel.SelectedAccount))
+            if(args.PropertyName == nameof(AccountManagementViewModel.SelectedAccount))
             {
                 propertyChanged = true;
             }
@@ -112,7 +112,7 @@ public class AccountManagementViewModelShould
 
         viewModel.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(AccountManagementViewModel.IsLoading))
+            if(args.PropertyName == nameof(AccountManagementViewModel.IsLoading))
             {
                 propertyChanged = true;
             }

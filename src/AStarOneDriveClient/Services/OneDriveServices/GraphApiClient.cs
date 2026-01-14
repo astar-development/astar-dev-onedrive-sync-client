@@ -29,7 +29,7 @@ public sealed class GraphApiClient : IGraphApiClient
 
     private async Task<GraphServiceClient> CreateGraphClientAsync(string accountId, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(accountId))
+        if(string.IsNullOrEmpty(accountId))
         {
             throw new ArgumentException("Account ID cannot be null or empty", nameof(accountId));
         }
@@ -90,7 +90,7 @@ public sealed class GraphApiClient : IGraphApiClient
 
         GraphServiceClient graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if (drive?.Id is null)
+        if(drive?.Id is null)
         {
             await DebugLog.ErrorAsync("GraphApiClient.GetDriveItemChildrenAsync", "Drive ID is null", null, cancellationToken);
             await DebugLog.ExitAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
@@ -103,17 +103,9 @@ public sealed class GraphApiClient : IGraphApiClient
         string? nextLink = null;
         do
         {
-            Microsoft.Graph.Models.DriveItemCollectionResponse? response;
-            if (nextLink is null)
-            {
-                response = await graphClient.Drives[drive.Id].Items[itemId].Children.GetAsync(q =>
-                {
-                    q.QueryParameters.Top = maxItemsInBatch;
-                }, cancellationToken: cancellationToken);
-            }
-            else
-            {
-                response = await graphClient.RequestAdapter.SendAsync<Microsoft.Graph.Models.DriveItemCollectionResponse>(
+            DriveItemCollectionResponse? response = nextLink is null
+                ? await graphClient.Drives[drive.Id].Items[itemId].Children.GetAsync(q => q.QueryParameters.Top = maxItemsInBatch, cancellationToken: cancellationToken)
+                : await graphClient.RequestAdapter.SendAsync<Microsoft.Graph.Models.DriveItemCollectionResponse>(
                     new Microsoft.Kiota.Abstractions.RequestInformation
                     {
                         HttpMethod = Microsoft.Kiota.Abstractions.Method.GET,
@@ -122,7 +114,6 @@ public sealed class GraphApiClient : IGraphApiClient
                     Microsoft.Graph.Models.DriveItemCollectionResponse.CreateFromDiscriminatorValue,
                     null,
                     cancellationToken);
-            }
 
             await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"Response received - Value count: {response?.Value?.Count ?? 0}, NextLink: {response?.OdataNextLink}", cancellationToken);
 
@@ -130,7 +121,7 @@ public sealed class GraphApiClient : IGraphApiClient
             itemsList.AddRange(items);
 
             nextLink = response?.OdataNextLink;
-        } while (!string.IsNullOrEmpty(nextLink));
+        } while(!string.IsNullOrEmpty(nextLink));
 
         await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"After filtering deleted items: {itemsList.Count} items", cancellationToken);
         await DebugLog.ExitAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
@@ -152,13 +143,13 @@ public sealed class GraphApiClient : IGraphApiClient
     {
         GraphServiceClient graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if (drive?.Id is null)
+        if(drive?.Id is null)
         {
             return [];
         }
 
         DriveItem? root = await graphClient.Drives[drive.Id].Root.GetAsync(cancellationToken: cancellationToken);
-        if (root?.Id is null)
+        if(root?.Id is null)
         {
             return [];
         }
@@ -175,7 +166,7 @@ public sealed class GraphApiClient : IGraphApiClient
 
         GraphServiceClient graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if (drive?.Id is null)
+        if(drive?.Id is null)
         {
             throw new InvalidOperationException("Unable to access user's drive");
         }
@@ -185,7 +176,7 @@ public sealed class GraphApiClient : IGraphApiClient
 
         // Ensure the directory exists
         var directory = Path.GetDirectoryName(localFilePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        if(!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
         {
             _ = Directory.CreateDirectory(directory);
         }
@@ -201,14 +192,14 @@ public sealed class GraphApiClient : IGraphApiClient
         ArgumentNullException.ThrowIfNull(localFilePath);
         ArgumentNullException.ThrowIfNull(remotePath);
 
-        if (!File.Exists(localFilePath))
+        if(!File.Exists(localFilePath))
         {
             throw new FileNotFoundException($"Local file not found: {localFilePath}", localFilePath);
         }
 
         GraphServiceClient graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if (drive?.Id is null)
+        if(drive?.Id is null)
         {
             throw new InvalidOperationException("Unable to access user's drive");
         }
@@ -219,7 +210,7 @@ public sealed class GraphApiClient : IGraphApiClient
         // Normalize remote path (remove leading slash, Graph API uses root:/{path} format)
         var normalizedPath = remotePath.TrimStart('/');
 
-        if (fileInfo.Length < SmallFileThreshold)
+        if(fileInfo.Length < SmallFileThreshold)
         {
             // Simple upload for small files - use path-based addressing
             using var fileStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
@@ -254,7 +245,7 @@ public sealed class GraphApiClient : IGraphApiClient
                 .CreateUploadSession
                 .PostAsync(requestBody, cancellationToken: cancellationToken);
 
-            if (uploadSession?.UploadUrl is null)
+            if(uploadSession?.UploadUrl is null)
             {
                 throw new InvalidOperationException($"Failed to create upload session for file: {localFilePath}");
             }
@@ -268,7 +259,7 @@ public sealed class GraphApiClient : IGraphApiClient
 
             using var httpClient = new HttpClient();
 
-            while (position < totalLength)
+            while(position < totalLength)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -276,7 +267,7 @@ public sealed class GraphApiClient : IGraphApiClient
                 var chunk = new byte[chunkSize];
                 var bytesRead = await fileStream.ReadAsync(chunk.AsMemory(0, chunkSize), cancellationToken);
 
-                if (bytesRead != chunkSize)
+                if(bytesRead != chunkSize)
                 {
                     throw new InvalidOperationException($"Failed to read expected bytes from file. Expected: {chunkSize}, Read: {bytesRead}");
                 }
@@ -289,7 +280,7 @@ public sealed class GraphApiClient : IGraphApiClient
 
                 HttpResponseMessage response = await httpClient.PutAsync(uploadSession.UploadUrl, content, cancellationToken);
 
-                if (!response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.Accepted)
+                if(!response.IsSuccessStatusCode && response.StatusCode != System.Net.HttpStatusCode.Accepted)
                 {
                     throw new InvalidOperationException($"Chunk upload failed. Status: {response.StatusCode}, Range: {contentRange}");
                 }
@@ -300,7 +291,7 @@ public sealed class GraphApiClient : IGraphApiClient
                 progress?.Report(position);
 
                 // If this is the last chunk, parse the response to get the DriveItem
-                if (position >= totalLength && response.IsSuccessStatusCode)
+                if(position >= totalLength && response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
                     DriveItem uploadedItem = System.Text.Json.JsonSerializer.Deserialize<DriveItem>(responseContent) ?? throw new InvalidOperationException("Failed to deserialize uploaded DriveItem from response");
@@ -323,7 +314,7 @@ public sealed class GraphApiClient : IGraphApiClient
 
         GraphServiceClient graphClient = await CreateGraphClientAsync(accountId, cancellationToken);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if (drive?.Id is null)
+        if(drive?.Id is null)
         {
             await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", "Drive ID is null. Cannot delete file.", null, cancellationToken);
             await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", cancellationToken);
@@ -336,7 +327,7 @@ public sealed class GraphApiClient : IGraphApiClient
             await graphClient.Drives[drive.Id].Items[itemId].DeleteAsync(cancellationToken: cancellationToken);
             await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", $"Successfully deleted remote file. AccountId: {accountId}, ItemId: {itemId}", cancellationToken);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", $"Exception during remote file deletion. AccountId: {accountId}, ItemId: {itemId}", ex, cancellationToken);
             throw;

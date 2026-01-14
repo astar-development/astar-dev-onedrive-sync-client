@@ -43,12 +43,12 @@ public sealed class FileWatcherService : IFileWatcherService
         ArgumentNullException.ThrowIfNull(accountId);
         ArgumentNullException.ThrowIfNull(localPath);
 
-        if (!Directory.Exists(localPath))
+        if(!Directory.Exists(localPath))
         {
             throw new DirectoryNotFoundException($"Directory not found: {localPath}");
         }
 
-        if (_watchers.ContainsKey(accountId))
+        if(_watchers.ContainsKey(accountId))
         {
             _logger.LogWarning("Already watching path for account {AccountId}. Stopping existing watcher first.", accountId);
             StopWatching(accountId);
@@ -82,7 +82,7 @@ public sealed class FileWatcherService : IFileWatcherService
             _watchers[accountId] = new WatcherContext(watcher, changeBuffer, subscription);
             _logger.LogInformation("Started watching {Path} for account {AccountId}", localPath, accountId);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             _logger.LogError(ex, "Failed to start watching {Path} for account {AccountId}", localPath, accountId);
             throw;
@@ -94,7 +94,7 @@ public sealed class FileWatcherService : IFileWatcherService
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        if (_watchers.Remove(accountId, out WatcherContext? context))
+        if(_watchers.Remove(accountId, out WatcherContext? context))
         {
             context.Dispose();
             _logger.LogInformation("Stopped watching for account {AccountId}", accountId);
@@ -129,7 +129,7 @@ public sealed class FileWatcherService : IFileWatcherService
             _logger.LogDebug("File change detected: {ChangeType} - {RelativePath} (Account: {AccountId})",
                 changeType, relativePath, accountId);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             _logger.LogError(ex, "Error emitting file change event for {Path}", e.FullPath);
         }
@@ -149,12 +149,12 @@ public sealed class FileWatcherService : IFileWatcherService
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        if(_disposed)
         {
             return;
         }
 
-        foreach (WatcherContext context in _watchers.Values)
+        foreach(WatcherContext context in _watchers.Values)
         {
             context.Dispose();
         }

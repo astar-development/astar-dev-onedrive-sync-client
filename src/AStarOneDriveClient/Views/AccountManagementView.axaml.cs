@@ -10,8 +10,5 @@ public partial class AccountManagementView : UserControl
     /// <summary>
     /// Initializes a new instance of the <see cref="AccountManagementView"/> class.
     /// </summary>
-    public AccountManagementView()
-    {
-        InitializeComponent();
-    }
+    public AccountManagementView() => InitializeComponent();
 }

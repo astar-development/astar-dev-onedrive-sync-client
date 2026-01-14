@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Services.OneDriveServices;
@@ -52,7 +51,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if (!loginResult.Success || loginResult.AccountId is null)
+        if(!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
@@ -80,7 +79,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if (!loginResult.Success || loginResult.AccountId is null)
+        if(!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
@@ -99,7 +98,7 @@ public class FolderTreeServiceIntegrationShould
 
         // Assert - may be empty if folder has no subfolders, but should succeed
         _ = childFolders.ShouldNotBeNull();
-        if (childFolders.Count > 0)
+        if(childFolders.Count > 0)
         {
             childFolders.All(f => f.IsFolder).ShouldBeTrue();
             childFolders.All(f => f.ParentId == parentFolder.Id).ShouldBeTrue();
@@ -116,7 +115,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if (!loginResult.Success || loginResult.AccountId is null)
+        if(!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
@@ -132,12 +131,12 @@ public class FolderTreeServiceIntegrationShould
         hierarchy.All(f => f.IsFolder).ShouldBeTrue();
 
         // Check that ChildrenLoaded flag is set on folders that were loaded
-        foreach (OneDriveFolderNode folder in hierarchy)
+        foreach(OneDriveFolderNode folder in hierarchy)
         {
             folder.ChildrenLoaded.ShouldBeTrue();
 
             // If there are children, verify they're also properly loaded
-            if (folder.Children.Count > 0)
+            if(folder.Children.Count > 0)
             {
                 folder.Children.All(c => c.IsFolder).ShouldBeTrue();
                 folder.Children.All(c => c.ParentId == folder.Id).ShouldBeTrue();
@@ -153,7 +152,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if (!loginResult.Success || loginResult.AccountId is null)
+        if(!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }
@@ -168,7 +167,7 @@ public class FolderTreeServiceIntegrationShould
         rootFolders.ShouldNotBeEmpty();
 
         // Act - try to get children from each root folder
-        foreach (OneDriveFolderNode folder in rootFolders)
+        foreach(OneDriveFolderNode folder in rootFolders)
         {
             IReadOnlyList<OneDriveFolderNode> children = await service.GetChildFoldersAsync(loginResult.AccountId, folder.Id, Arg.Any<bool?>(),TestContext.Current.CancellationToken);
 
@@ -185,7 +184,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config, TestContext.Current.CancellationToken);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if (!loginResult.Success || loginResult.AccountId is null)
+        if(!loginResult.Success || loginResult.AccountId is null)
         {
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
         }

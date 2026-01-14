@@ -181,7 +181,7 @@ public class FolderTreeServiceShould
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
         _ = await Should.ThrowAsync<ArgumentNullException>(async () =>
-            await service.GetChildFoldersAsync("account1", null!, Arg.Any<bool?>(),TestContext.Current.CancellationToken));
+            await service.GetChildFoldersAsync("account1", null!, Arg.Any<bool?>(), TestContext.Current.CancellationToken));
     }
 
     [Fact]

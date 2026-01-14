@@ -12,10 +12,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
 {
     private readonly SyncDbContext _context;
 
-    public SyncConflictRepository(SyncDbContext context)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
+    public SyncConflictRepository(SyncDbContext context) => _context = context ?? throw new ArgumentNullException(nameof(context));
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<SyncConflict>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
@@ -85,7 +82,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
         SyncConflictEntity? entity = await _context.SyncConflicts
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
-        if (entity is not null)
+        if(entity is not null)
         {
             _ = _context.SyncConflicts.Remove(entity);
             _ = await _context.SaveChangesAsync(cancellationToken);

@@ -26,10 +26,10 @@ public sealed class LocalFileScanner : ILocalFileScanner
         CancellationToken cancellationToken = default)
     {
         var indexOfDrives = localFolderPath.IndexOf("drives", StringComparison.OrdinalIgnoreCase);
-        if (indexOfDrives >= 0)
+        if(indexOfDrives >= 0)
         {
             var indexOfColon = localFolderPath.IndexOf(":/", StringComparison.OrdinalIgnoreCase);
-            if (indexOfColon > 0)
+            if(indexOfColon > 0)
             {
                 var part1 = localFolderPath[..indexOfDrives];
                 var part2 = localFolderPath[(indexOfColon + 2)..];
@@ -42,7 +42,7 @@ public sealed class LocalFileScanner : ILocalFileScanner
         ArgumentNullException.ThrowIfNull(localFolderPath);
         ArgumentNullException.ThrowIfNull(oneDriveFolderPath);
 
-        if (!_fileSystem.Directory.Exists(localFolderPath))
+        if(!_fileSystem.Directory.Exists(localFolderPath))
         {
             return [];
         }
@@ -73,14 +73,14 @@ public sealed class LocalFileScanner : ILocalFileScanner
         try
         {
             var files = _fileSystem.Directory.GetFiles(currentLocalPath);
-            foreach (var filePath in files)
+            foreach(var filePath in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
                     IFileInfo fileInfo = _fileSystem.FileInfo.New(filePath);
-                    if (!fileInfo.Exists)
+                    if(!fileInfo.Exists)
                     {
                         continue;
                     }
@@ -105,12 +105,12 @@ public sealed class LocalFileScanner : ILocalFileScanner
 
                     fileMetadataList.Add(metadata);
                 }
-                catch (UnauthorizedAccessException)
+                catch(UnauthorizedAccessException)
                 {
                     // Skip files we don't have access to
                     continue;
                 }
-                catch (IOException)
+                catch(IOException)
                 {
                     // Skip files that are locked or in use
                     continue;
@@ -118,7 +118,7 @@ public sealed class LocalFileScanner : ILocalFileScanner
             }
 
             var directories = _fileSystem.Directory.GetDirectories(currentLocalPath);
-            foreach (var directory in directories)
+            foreach(var directory in directories)
             {
                 var relativePath = GetRelativePath(currentLocalPath, directory);
                 var oneDrivePath = CombinePaths(currentOneDrivePath, relativePath);
@@ -131,11 +131,11 @@ public sealed class LocalFileScanner : ILocalFileScanner
                     cancellationToken);
             }
         }
-        catch (UnauthorizedAccessException)
+        catch(UnauthorizedAccessException)
         {
             // Skip directories we don't have access to
         }
-        catch (DirectoryNotFoundException)
+        catch(DirectoryNotFoundException)
         {
             // Directory was deleted during scan
         }
@@ -169,12 +169,12 @@ public sealed class LocalFileScanner : ILocalFileScanner
         basePath = basePath.Replace('\\', '/');
         relativePath = relativePath.Replace('\\', '/');
 
-        if (!basePath.EndsWith('/'))
+        if(!basePath.EndsWith('/'))
         {
             basePath += '/';
         }
 
-        if (relativePath.StartsWith('/'))
+        if(relativePath.StartsWith('/'))
         {
             relativePath = relativePath[1..];
         }

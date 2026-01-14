@@ -213,7 +213,7 @@ public class ConflictResolutionViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(ConflictResolutionViewModel.IsResolving))
+            if(e.PropertyName == nameof(ConflictResolutionViewModel.IsResolving))
             {
                 isResolvingValues.Add(viewModel.IsResolving);
             }

@@ -104,7 +104,7 @@ public sealed class ConflictItemViewModel : ReactiveObject
         var order = 0;
         var size = (double)bytes;
 
-        while (size >= 1024 && order < suffixes.Length - 1)
+        while(size >= 1024 && order < suffixes.Length - 1)
         {
             order++;
             size /= 1024;

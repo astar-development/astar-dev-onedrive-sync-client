@@ -1,17 +1,10 @@
-using System;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Data.Entities;
 using AStarOneDriveClient.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Shouldly;
-using Testably.Abstractions.Testing;
-using Xunit;
 
 namespace AStarOneDriveClient.Tests.Unit.Services;
 
@@ -25,14 +18,16 @@ public class LogCleanupBackgroundServiceShould
             options.UseInMemoryDatabase(Guid.NewGuid().ToString()));
         ServiceProvider provider = services.BuildServiceProvider();
         SyncDbContext db = provider.GetRequiredService<SyncDbContext>();
-        foreach (var entity in seedEntities)
+        foreach(var entity in seedEntities)
         {
-            switch (entity)
+            switch(entity)
             {
                 case SyncSessionLogEntity session:
-                    _ = db.SyncSessionLogs.Add(session); break;
+                    _ = db.SyncSessionLogs.Add(session);
+                    break;
                 case DebugLogEntity debug:
-                    _ = db.DebugLogs.Add(debug); break;
+                    _ = db.DebugLogs.Add(debug);
+                    break;
             }
         }
 
@@ -84,14 +79,16 @@ public class LogCleanupBackgroundServiceShould
     // Helper logger for assertions
     private class TestLogger : ILogger<LogCleanupBackgroundService>
     {
-        public readonly List<string> Infos = new();
-        public readonly List<string> Errors = new();
+        public readonly List<string> Infos = [];
+        public readonly List<string> Errors = [];
         public IDisposable BeginScope<TState>(TState state) where TState : notnull => Substitute.For<IDisposable>();
         public bool IsEnabled(LogLevel logLevel) => true;
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
         {
-            if (logLevel == LogLevel.Information) Infos.Add(formatter(state, exception));
-            if (logLevel == LogLevel.Error) Errors.Add(formatter(state, exception) + (exception != null ? $": {exception.Message}" : ""));
+            if(logLevel == LogLevel.Information)
+                Infos.Add(formatter(state, exception));
+            if(logLevel == LogLevel.Error)
+                Errors.Add(formatter(state, exception) + (exception != null ? $": {exception.Message}" : ""));
         }
     }
 }
@@ -104,12 +101,14 @@ public static class LogCleanupBackgroundServiceTestExtensions
         // Use reflection to call the private ExecuteAsync logic once, but only the cleanup logic
         MethodInfo? method = typeof(LogCleanupBackgroundService).GetMethod("ExecuteAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         CancellationToken token = TestContext.Current.CancellationToken;
-        if (method != null)
+        if(method != null)
         {
             var result = method.Invoke(service, new object[] { token });
-            if (result is Task task)
+            if(result is Task task)
             {
-                try { await task; } catch { }
+                try
+                { await task; }
+                catch { }
             }
         }
     }

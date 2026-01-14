@@ -66,12 +66,12 @@ public class ServiceConfigurationShould
         IAccountRepository? repo1;
         IAccountRepository? repo2;
 
-        using (IServiceScope scope1 = serviceProvider.CreateScope())
+        using(IServiceScope scope1 = serviceProvider.CreateScope())
         {
             repo1 = scope1.ServiceProvider.GetService<IAccountRepository>();
         }
 
-        using (IServiceScope scope2 = serviceProvider.CreateScope())
+        using(IServiceScope scope2 = serviceProvider.CreateScope())
         {
             repo2 = scope2.ServiceProvider.GetService<IAccountRepository>();
         }

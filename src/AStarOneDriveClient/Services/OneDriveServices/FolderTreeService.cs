@@ -36,7 +36,7 @@ public sealed class FolderTreeService : IFolderTreeService
 
         // Verify account is authenticated
         var isAuthenticated = await _authService.IsAuthenticatedAsync(accountId, cancellationToken);
-        if (!isAuthenticated)
+        if(!isAuthenticated)
         {
             return [];
         }
@@ -45,9 +45,9 @@ public sealed class FolderTreeService : IFolderTreeService
         IEnumerable<DriveItem> folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
-        foreach (DriveItem? item in folders)
+        foreach(DriveItem? item in folders)
         {
-            if (item.Id is null || item.Name is null)
+            if(item.Id is null || item.Name is null)
             {
                 continue;
             }
@@ -87,7 +87,7 @@ public sealed class FolderTreeService : IFolderTreeService
 
         // Verify account is authenticated
         var isAuthenticated = await _authService.IsAuthenticatedAsync(accountId, cancellationToken);
-        if (!isAuthenticated)
+        if(!isAuthenticated)
         {
             return [];
         }
@@ -102,9 +102,9 @@ public sealed class FolderTreeService : IFolderTreeService
         IEnumerable<DriveItem> folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
-        foreach (DriveItem? item in folders)
+        foreach(DriveItem? item in folders)
         {
-            if (item.Id is null || item.Name is null)
+            if(item.Id is null || item.Name is null)
             {
                 continue;
             }
@@ -148,7 +148,7 @@ public sealed class FolderTreeService : IFolderTreeService
 
         // Verify account is authenticated
         var isAuthenticated = await _authService.IsAuthenticatedAsync(accountId, cancellationToken);
-        if (!isAuthenticated)
+        if(!isAuthenticated)
         {
             return [];
         }
@@ -156,9 +156,9 @@ public sealed class FolderTreeService : IFolderTreeService
         IReadOnlyList<OneDriveFolderNode> rootFolders = await GetRootFoldersAsync(accountId, cancellationToken);
         var rootList = rootFolders.ToList();
 
-        if (maxDepth is null or > 0)
+        if(maxDepth is null or > 0)
         {
-            foreach (OneDriveFolderNode? folder in rootList)
+            foreach(OneDriveFolderNode? folder in rootList)
             {
                 await LoadChildrenRecursiveAsync(accountId, folder, maxDepth, 1, cancellationToken);
             }
@@ -174,13 +174,13 @@ public sealed class FolderTreeService : IFolderTreeService
         int currentDepth,
         CancellationToken cancellationToken)
     {
-        if (maxDepth.HasValue && currentDepth >= maxDepth.Value)
+        if(maxDepth.HasValue && currentDepth >= maxDepth.Value)
         {
             return;
         }
 
         IReadOnlyList<OneDriveFolderNode> children = await GetChildFoldersAsync(accountId, parentNode.Id, parentNode.IsSelected, cancellationToken);
-        foreach (OneDriveFolderNode child in children)
+        foreach(OneDriveFolderNode child in children)
         {
             parentNode.Children.Add(child);
             await LoadChildrenRecursiveAsync(accountId, child, maxDepth, currentDepth + 1, cancellationToken);

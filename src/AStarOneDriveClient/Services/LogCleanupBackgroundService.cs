@@ -1,11 +1,8 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using AStarOneDriveClient.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using AStarOneDriveClient.Data;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace AStarOneDriveClient.Services;
 
@@ -27,7 +24,7 @@ public sealed class LogCleanupBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        while(!stoppingToken.IsCancellationRequested)
         {
             try
             {
@@ -45,7 +42,7 @@ public sealed class LogCleanupBackgroundService : BackgroundService
 
                 _logger.LogInformation("LogCleanupBackgroundService: Deleted {SessionLogs} session logs and {DebugLogs} debug logs older than {Cutoff}", sessionLogsDeleted, debugLogsDeleted, cutoff);
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 _logger.LogError(ex, "LogCleanupBackgroundService: Error during cleanup");
             }
@@ -54,7 +51,7 @@ public sealed class LogCleanupBackgroundService : BackgroundService
             {
                 await Task.Delay(CleanupInterval, stoppingToken);
             }
-            catch (TaskCanceledException)
+            catch(TaskCanceledException)
             {
                 // Service is stopping
                 break;

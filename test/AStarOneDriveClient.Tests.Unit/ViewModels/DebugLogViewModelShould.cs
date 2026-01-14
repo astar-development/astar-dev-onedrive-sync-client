@@ -108,7 +108,7 @@ public class DebugLogViewModelShould
 
         sut.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(DebugLogViewModel.SelectedAccount))
+            if(args.PropertyName == nameof(DebugLogViewModel.SelectedAccount))
             {
                 propertyChanged = true;
             }
@@ -134,7 +134,7 @@ public class DebugLogViewModelShould
         _ = mockAccountRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns([account]);
 
         var logs = new List<DebugLogEntry>();
-        for (var i = 0; i < 51; i++)
+        for(var i = 0; i < 51; i++)
         {
             logs.Add(new DebugLogEntry(i, "acc1", DateTime.UtcNow, "Info", "Test", $"Message {i}", null));
         }
@@ -147,7 +147,7 @@ public class DebugLogViewModelShould
         // Now subscribe to property changes
         sut.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(DebugLogViewModel.CurrentPage))
+            if(args.PropertyName == nameof(DebugLogViewModel.CurrentPage))
             {
                 propertyChanged = true;
             }

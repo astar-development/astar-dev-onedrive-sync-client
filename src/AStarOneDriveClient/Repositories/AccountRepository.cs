@@ -71,7 +71,7 @@ public sealed class AccountRepository : IAccountRepository
         ArgumentNullException.ThrowIfNull(accountId);
 
         AccountEntity? entity = await _context.Accounts.FindAsync([accountId], cancellationToken);
-        if (entity is not null)
+        if(entity is not null)
         {
             _ = _context.Accounts.Remove(entity);
             _ = await _context.SaveChangesAsync(cancellationToken);

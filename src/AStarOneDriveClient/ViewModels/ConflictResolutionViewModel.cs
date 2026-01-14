@@ -132,7 +132,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
 
-            foreach (SyncConflict conflict in conflicts)
+            foreach(SyncConflict conflict in conflicts)
             {
                 Conflicts.Add(new ConflictItemViewModel(conflict));
             }
@@ -143,7 +143,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             _logger.LogInformation("Loaded {Count} conflicts for account {AccountId}", Conflicts.Count, _accountId);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             _logger.LogError(ex, "Failed to load conflicts for account {AccountId}", _accountId);
             StatusMessage = $"Error loading conflicts: {ex.Message}";
@@ -168,11 +168,11 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             _logger.LogInformation("Starting resolution of {Count} conflicts for account {AccountId}", totalConflicts, _accountId);
 
-            for (var i = Conflicts.Count - 1; i >= 0; i--)
+            for(var i = Conflicts.Count - 1; i >= 0; i--)
             {
                 ConflictItemViewModel conflictVm = Conflicts[i];
 
-                if (conflictVm.SelectedStrategy == ConflictResolutionStrategy.None)
+                if(conflictVm.SelectedStrategy == ConflictResolutionStrategy.None)
                 {
                     _logger.LogDebug("Skipping conflict {FilePath} with strategy None", conflictVm.FilePath);
                     skippedCount++;
@@ -214,7 +214,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
                 resolvedCount,
                 skippedCount);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             _logger.LogError(ex, "Error during conflict resolution for account {AccountId}", _accountId);
             StatusMessage = $"Error resolving conflicts: {ex.Message}";

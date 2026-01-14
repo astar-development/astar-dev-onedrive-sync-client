@@ -220,7 +220,7 @@ public class UpdateAccountDetailsViewModelShould
 
         sut.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(UpdateAccountDetailsViewModel.SelectedAccount))
+            if(args.PropertyName == nameof(UpdateAccountDetailsViewModel.SelectedAccount))
             {
                 propertyChanged = true;
             }
@@ -254,7 +254,7 @@ public class UpdateAccountDetailsViewModelShould
 
         sut.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(UpdateAccountDetailsViewModel.LocalSyncPath))
+            if(args.PropertyName == nameof(UpdateAccountDetailsViewModel.LocalSyncPath))
             {
                 propertyChanged = true;
             }
@@ -276,7 +276,7 @@ public class UpdateAccountDetailsViewModelShould
 
         sut.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(UpdateAccountDetailsViewModel.EnableDetailedSyncLogging))
+            if(args.PropertyName == nameof(UpdateAccountDetailsViewModel.EnableDetailedSyncLogging))
             {
                 propertyChanged = true;
             }
@@ -298,7 +298,7 @@ public class UpdateAccountDetailsViewModelShould
 
         sut.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(UpdateAccountDetailsViewModel.EnableDebugLogging))
+            if(args.PropertyName == nameof(UpdateAccountDetailsViewModel.EnableDebugLogging))
             {
                 propertyChanged = true;
             }
@@ -320,7 +320,7 @@ public class UpdateAccountDetailsViewModelShould
 
         sut.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(UpdateAccountDetailsViewModel.StatusMessage))
+            if(args.PropertyName == nameof(UpdateAccountDetailsViewModel.StatusMessage))
             {
                 propertyChanged = true;
             }
@@ -342,7 +342,7 @@ public class UpdateAccountDetailsViewModelShould
 
         sut.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(UpdateAccountDetailsViewModel.IsSuccess))
+            if(args.PropertyName == nameof(UpdateAccountDetailsViewModel.IsSuccess))
             {
                 propertyChanged = true;
             }

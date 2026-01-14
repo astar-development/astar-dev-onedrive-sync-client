@@ -71,7 +71,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         ArgumentNullException.ThrowIfNull(fileMetadata);
 
         FileMetadataEntity entity = MapToEntity(fileMetadata);
-        if (_context.FileMetadata.Any(fm => fm.Id == entity.Id))
+        if(_context.FileMetadata.Any(fm => fm.Id == entity.Id))
         {
             await UpdateAsync(fileMetadata, cancellationToken);
             return;
@@ -109,7 +109,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         ArgumentNullException.ThrowIfNull(id);
 
         FileMetadataEntity? entity = await _context.FileMetadata.FindAsync([id], cancellationToken);
-        if (entity is not null)
+        if(entity is not null)
         {
             _ = _context.FileMetadata.Remove(entity);
             _ = await _context.SaveChangesAsync(cancellationToken);
@@ -136,10 +136,10 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
 
         var entities = fileMetadataList.Select(MapToEntity).ToList();
 
-        foreach (FileMetadataEntity? entity in entities)
+        foreach(FileMetadataEntity? entity in entities)
         {
             FileMetadataEntity? existing = await _context.FileMetadata.FindAsync([entity.Id], cancellationToken);
-            if (existing is null)
+            if(existing is null)
             {
                 _ = _context.FileMetadata.Add(entity);
             }

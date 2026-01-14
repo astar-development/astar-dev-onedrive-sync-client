@@ -270,7 +270,7 @@ public class SyncProgressViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(SyncProgressViewModel.IsSyncing))
+            if(e.PropertyName == nameof(SyncProgressViewModel.IsSyncing))
             {
                 isSyncingValues.Add(viewModel.IsSyncing);
             }
@@ -429,7 +429,7 @@ public class SyncProgressViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName is not null)
+            if(e.PropertyName is not null)
             {
                 changedProperties.Add(e.PropertyName);
             }

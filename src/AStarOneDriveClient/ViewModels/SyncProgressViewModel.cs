@@ -67,7 +67,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     {
         get
         {
-            if (CurrentProgress is null)
+            if(CurrentProgress is null)
             {
                 return string.Empty;
             }
@@ -75,7 +75,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
             var parts = new List<string>();
 
             // Show scanning folder if currently scanning
-            if (!string.IsNullOrEmpty(CurrentProgress.CurrentScanningFolder))
+            if(!string.IsNullOrEmpty(CurrentProgress.CurrentScanningFolder))
             {
                 parts.Add($"Scanning: {CurrentProgress.CurrentScanningFolder}");
             }
@@ -85,13 +85,13 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
                 parts.Add($"↑ {CurrentProgress.FilesUploading} uploading  ↓ {CurrentProgress.FilesDownloading} downloading");
 
                 // Add transfer speed if available
-                if (CurrentProgress.MegabytesPerSecond > 0.01)
+                if(CurrentProgress.MegabytesPerSecond > 0.01)
                 {
                     parts.Add($"{CurrentProgress.MegabytesPerSecond:F2} MB/s");
                 }
 
                 // Add ETA if available
-                if (CurrentProgress.EstimatedSecondsRemaining.HasValue)
+                if(CurrentProgress.EstimatedSecondsRemaining.HasValue)
                 {
                     var eta = FormatTimeRemaining(CurrentProgress.EstimatedSecondsRemaining.Value);
                     parts.Add($"ETA: {eta}");
@@ -209,14 +209,14 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
             StatusMessage = "Sync completed successfully";
             _logger.LogInformation("Sync completed for account {AccountId}", AccountId);
         }
-        catch (OperationCanceledException)
+        catch(OperationCanceledException)
         {
             StatusMessage = "Sync paused";
 #pragma warning disable S6667 // Logging in a catch clause should pass the caught exception as a parameter.
             _logger.LogInformation("Sync paused for account {AccountId}", AccountId);
 #pragma warning restore S6667 // Logging in a catch clause should pass the caught exception as a parameter.
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             StatusMessage = $"Sync failed: {ex.Message}";
             _logger.LogError(ex, "Sync failed for account {AccountId}", AccountId);
@@ -242,7 +242,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
             StatusMessage = "Sync paused";
             IsSyncing = false;
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             StatusMessage = $"Failed to pause sync: {ex.Message}";
             _logger.LogError(ex, "Failed to pause sync for account {AccountId}", AccountId);
@@ -259,15 +259,15 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// </summary>
     private void UpdateStatusMessage()
     {
-        if (CurrentProgress is null)
+        if(CurrentProgress is null)
         {
             StatusMessage = "Ready to sync";
             return;
         }
 
-        if (IsSyncing)
+        if(IsSyncing)
         {
-            if (CurrentProgress.TotalFiles == 0)
+            if(CurrentProgress.TotalFiles == 0)
             {
                 // During scanning phase, show the folder being scanned
                 StatusMessage = string.IsNullOrEmpty(CurrentProgress.CurrentScanningFolder)
@@ -281,7 +281,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
                     : $"Syncing {CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files...";
             }
         }
-        else if (CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles && CurrentProgress.TotalFiles > 0)
+        else if(CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles && CurrentProgress.TotalFiles > 0)
         {
             StatusMessage = $"Sync completed - {CurrentProgress.TotalFiles} file(s) processed";
         }
@@ -295,7 +295,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// </remarks>
     public async Task RefreshConflictCountAsync(CancellationToken cancellationToken = default)
     {
-        if (CurrentProgress is null)
+        if(CurrentProgress is null)
         {
             return;
         }
@@ -321,12 +321,12 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <returns>Formatted time string (e.g., "2h 15m", "45m", "30s").</returns>
     private static string FormatTimeRemaining(int seconds)
     {
-        if (seconds < 60)
+        if(seconds < 60)
         {
             return $"{seconds}s";
         }
 
-        if (seconds < 3600)
+        if(seconds < 3600)
         {
             var minutes = seconds / 60;
             return $"{minutes}m";

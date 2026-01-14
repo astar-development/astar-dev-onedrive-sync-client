@@ -34,7 +34,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
 
         WindowPreferencesEntity? entity = await _context.WindowPreferences.FirstOrDefaultAsync(cancellationToken);
 
-        if (entity is null)
+        if(entity is null)
         {
             entity = new WindowPreferencesEntity
             {

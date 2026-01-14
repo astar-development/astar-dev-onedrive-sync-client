@@ -36,14 +36,14 @@ public sealed class DebugLogger : IDebugLogger
     private async Task LogAsync(string logLevel, string source, string message, Exception? exception, CancellationToken cancellationToken)
     {
         var accountId = DebugLogContext.CurrentAccountId;
-        if (string.IsNullOrEmpty(accountId))
+        if(string.IsNullOrEmpty(accountId))
         {
             return; // No account context, skip logging
         }
 
         // Check if debug logging is enabled for this account
         AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
-        if (account is null || !account.EnableDebugLogging)
+        if(account is null || !account.EnableDebugLogging)
         {
             return; // Debug logging not enabled for this account
         }

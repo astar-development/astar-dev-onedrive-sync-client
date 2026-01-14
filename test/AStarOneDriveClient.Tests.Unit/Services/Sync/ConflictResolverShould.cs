@@ -164,7 +164,7 @@ public sealed class ConflictResolverShould
         }
         finally
         {
-            if (File.Exists(localPath))
+            if(File.Exists(localPath))
             {
                 File.Delete(localPath);
             }

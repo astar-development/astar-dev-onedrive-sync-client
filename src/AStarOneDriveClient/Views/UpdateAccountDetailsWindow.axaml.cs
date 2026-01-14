@@ -1,5 +1,5 @@
-using Avalonia.Controls;
 using AStarOneDriveClient.ViewModels;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarOneDriveClient.Views;
@@ -14,7 +14,7 @@ public sealed partial class UpdateAccountDetailsWindow : Window
         InitializeComponent();
 
         // Retrieve the UpdateAccountDetailsViewModel from DI container
-        if (App.Services is not null)
+        if(App.Services is not null)
         {
             UpdateAccountDetailsViewModel viewModel = App.Services.GetRequiredService<UpdateAccountDetailsViewModel>();
             DataContext = viewModel;

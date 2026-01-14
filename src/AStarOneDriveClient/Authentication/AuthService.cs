@@ -51,7 +51,7 @@ public sealed class AuthService : IAuthService
 
         // Use plaintext storage on Linux due to keyring/libsecret compatibility issues
         // Windows and macOS use platform-specific secure storage (DPAPI and Keychain)
-        if (OperatingSystem.IsLinux())
+        if(OperatingSystem.IsLinux())
         {
             _ = storagePropertiesBuilder.WithUnprotectedFile();
         }
@@ -81,7 +81,7 @@ public sealed class AuthService : IAuthService
                 ErrorMessage: null
             );
         }
-        catch (MsalException ex)
+        catch(MsalException ex)
         {
             return new AuthenticationResult(
                 Success: false,
@@ -90,7 +90,7 @@ public sealed class AuthService : IAuthService
                 ErrorMessage: ex.Message
             );
         }
-        catch (OperationCanceledException)
+        catch(OperationCanceledException)
         {
             var message = cancellationToken.IsCancellationRequested
                 ? "Login was cancelled."
@@ -115,7 +115,7 @@ public sealed class AuthService : IAuthService
             IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
             IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
-            if (account is not null)
+            if(account is not null)
             {
                 await _authClient.RemoveAsync(account, cancellationToken);
                 return true;
@@ -123,7 +123,7 @@ public sealed class AuthService : IAuthService
 
             return false;
         }
-        catch (MsalException)
+        catch(MsalException)
         {
             return false;
         }
@@ -139,7 +139,7 @@ public sealed class AuthService : IAuthService
                 .Select(a => (a.HomeAccountId.Identifier, a.Username))
                 .ToList();
         }
-        catch (MsalException)
+        catch(MsalException)
         {
             return [];
         }
@@ -155,7 +155,7 @@ public sealed class AuthService : IAuthService
             IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
             IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
-            if (account is null)
+            if(account is null)
             {
                 return null;
             }
@@ -165,11 +165,11 @@ public sealed class AuthService : IAuthService
 
             return result.AccessToken;
         }
-        catch (MsalUiRequiredException)
+        catch(MsalUiRequiredException)
         {
             return null;
         }
-        catch (MsalException)
+        catch(MsalException)
         {
             return null;
         }
@@ -185,7 +185,7 @@ public sealed class AuthService : IAuthService
             IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
             return accounts.Any(a => a.HomeAccountId.Identifier == accountId);
         }
-        catch (MsalException)
+        catch(MsalException)
         {
             return false;
         }

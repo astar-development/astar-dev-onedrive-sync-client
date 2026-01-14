@@ -13,10 +13,7 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
 {
     private readonly SyncDbContext _context;
 
-    public SyncSessionLogRepository(SyncDbContext context)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
+    public SyncSessionLogRepository(SyncDbContext context) => _context = context ?? throw new ArgumentNullException(nameof(context));
 
     /// <inheritdoc/>
     public async Task<IReadOnlyList<SyncSessionLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)

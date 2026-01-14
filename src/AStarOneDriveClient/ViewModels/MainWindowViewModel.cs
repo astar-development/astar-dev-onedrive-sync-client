@@ -92,38 +92,38 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             .Subscribe(tuple =>
             {
                 (var isOpen, var accountId) = tuple;
-                if (SyncProgress is null || SyncProgress.AccountId != accountId)
+                if(SyncProgress is null || SyncProgress.AccountId != accountId)
                 {
                     SyncProgress?.Dispose();
                     SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
                         _serviceProvider,
                         accountId!);
 
-                                _ = syncProgressVm.ViewConflictsCommand
-                                    .Subscribe(_ => ShowConflictResolutionView(accountId!))
-                                    .DisposeWith(_disposables);
+                    _ = syncProgressVm.ViewConflictsCommand
+                        .Subscribe(_ => ShowConflictResolutionView(accountId!))
+                        .DisposeWith(_disposables);
 
-                                _ = syncProgressVm.CloseCommand
-                                    .Subscribe(_ => CloseSyncProgressView())
-                                    .DisposeWith(_disposables);
+                    _ = syncProgressVm.CloseCommand
+                        .Subscribe(_ => CloseSyncProgressView())
+                        .DisposeWith(_disposables);
 
-                                _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
-                                    .Where(progress => progress is not null &&
-                                           progress.Status == SyncStatus.Completed &&
-                                           progress.ConflictsDetected == 0)
-                                    .Delay(TimeSpan.FromSeconds(2))
-                                    .ObserveOn(RxApp.MainThreadScheduler)
-                                    .Subscribe(_ => CloseSyncProgressView())
-                                    .DisposeWith(_disposables);
+                    _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
+                        .Where(progress => progress is not null &&
+                               progress.Status == SyncStatus.Completed &&
+                               progress.ConflictsDetected == 0)
+                        .Delay(TimeSpan.FromSeconds(2))
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(_ => CloseSyncProgressView())
+                        .DisposeWith(_disposables);
 
-                                _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
-                                    .Where(progress => progress is not null && progress.Status == SyncStatus.Completed)
-                                    .Subscribe(async _ => await UpdateConflictStatusAsync(accountId!))
-                                    .DisposeWith(_disposables);
+                    _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
+                        .Where(progress => progress is not null && progress.Status == SyncStatus.Completed)
+                        .Subscribe(async _ => await UpdateConflictStatusAsync(accountId!))
+                        .DisposeWith(_disposables);
 
-                                SyncProgress = syncProgressVm;
-                            }
-                        })
+                    SyncProgress = syncProgressVm;
+                }
+            })
                         .DisposeWith(_disposables);
         _serviceProvider = serviceProvider;
         _autoSyncCoordinator = autoSyncCoordinator;
@@ -320,13 +320,13 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         this.RaisePropertyChanged(nameof(ShowConflictResolution));
 
         // Refresh conflict count after resolving conflicts
-        if (SyncProgress is not null)
+        if(SyncProgress is not null)
         {
             await SyncProgress.RefreshConflictCountAsync();
         }
 
         // Update main window conflict status
-        if (AccountManagement.SelectedAccount is not null)
+        if(AccountManagement.SelectedAccount is not null)
         {
             await UpdateConflictStatusAsync(AccountManagement.SelectedAccount.AccountId);
         }
@@ -347,7 +347,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// </summary>
     private void ViewConflicts()
     {
-        if (AccountManagement.SelectedAccount is not null)
+        if(AccountManagement.SelectedAccount is not null)
         {
             ShowConflictResolutionView(AccountManagement.SelectedAccount.AccountId);
         }
@@ -373,7 +373,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new UpdateAccountDetailsWindow();
 
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow is not null)
         {
             _ = window.ShowDialog(desktop.MainWindow);
@@ -387,7 +387,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new ViewSyncHistoryWindow();
 
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow is not null)
         {
             _ = window.ShowDialog(desktop.MainWindow);
@@ -401,7 +401,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new DebugLogWindow();
 
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
             desktop.MainWindow is not null)
         {
             _ = window.ShowDialog(desktop.MainWindow);
@@ -413,7 +413,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// </summary>
     private void CloseApplication()
     {
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.Shutdown();
         }

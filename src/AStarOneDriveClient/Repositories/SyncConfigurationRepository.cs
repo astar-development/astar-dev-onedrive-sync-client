@@ -1,5 +1,4 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.Utilities;
 using AStarOneDriveClient.Data;
 using AStarOneDriveClient.Data.Entities;
 using AStarOneDriveClient.Models;
@@ -77,30 +76,30 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
         SyncConfigurationEntity? existingEntity = await _context.SyncConfigurations
             .FirstOrDefaultAsync(sc => sc.AccountId == configuration.AccountId && sc.FolderPath == configuration.FolderPath, cancellationToken);
 
-        if (existingEntity is not null)
+        if(existingEntity is not null)
         {
             return configuration;
         }
 
         var lastIndexOf = configuration.FolderPath.LastIndexOf('/');
-        if (lastIndexOf > 0)
+        if(lastIndexOf > 0)
         {
             var parentPath = configuration.FolderPath[..lastIndexOf];
             var test =  SyncEngine.FormatScanningFolderForDisplay(parentPath)!.Replace("OneDrive: ", string.Empty);
             SyncConfigurationEntity? parentEntity = await _context.SyncConfigurations
                 .FirstOrDefaultAsync(sc => sc.AccountId == configuration.AccountId && (sc.FolderPath == parentPath || sc.FolderPath == test), cancellationToken);
 
-           if(parentEntity is not null)
-           {
-            var updatedPath = SyncEngine.FormatScanningFolderForDisplay(configuration.FolderPath)!.Replace("OneDrive: ", string.Empty);
-            configuration = configuration with { FolderPath = updatedPath, IsSelected = parentEntity.IsSelected };
-           }
+            if(parentEntity is not null)
+            {
+                var updatedPath = SyncEngine.FormatScanningFolderForDisplay(configuration.FolderPath)!.Replace("OneDrive: ", string.Empty);
+                configuration = configuration with { FolderPath = updatedPath, IsSelected = parentEntity.IsSelected };
+            }
         }
-        
+
         SyncConfigurationEntity entity = MapToEntity(configuration);
         _ = _context.SyncConfigurations.Add(entity);
         _ = await _context.SaveChangesAsync(cancellationToken);
-        
+
         return configuration;
     }
 

@@ -212,4 +212,4 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
             SelectionState = SelectionState.Unchecked,
             IsSelected = false
         };
-    }
+}

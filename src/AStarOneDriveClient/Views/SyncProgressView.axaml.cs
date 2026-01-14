@@ -10,8 +10,5 @@ public partial class SyncProgressView : UserControl
     /// <summary>
     /// Initializes a new instance of <see cref="SyncProgressView"/>.
     /// </summary>
-    public SyncProgressView()
-    {
-        InitializeComponent();
-    }
+    public SyncProgressView() => InitializeComponent();
 }

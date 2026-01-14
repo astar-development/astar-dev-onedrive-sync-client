@@ -1,8 +1,8 @@
+using AStarOneDriveClient.Services;
+using AStarOneDriveClient.Views;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using AStarOneDriveClient.Services;
-using AStarOneDriveClient.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarOneDriveClient;
@@ -35,7 +35,7 @@ public sealed class App : Application
         IAutoSyncSchedulerService scheduler = Services.GetRequiredService<IAutoSyncSchedulerService>();
         _ = scheduler.StartAsync();
 
-        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow();
 

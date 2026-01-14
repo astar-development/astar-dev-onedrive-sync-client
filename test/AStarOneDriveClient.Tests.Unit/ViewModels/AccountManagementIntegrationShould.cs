@@ -195,12 +195,12 @@ public class AccountManagementIntegrationShould : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed)
+        if(_disposed)
         {
             return;
         }
 
-        if (disposing)
+        if(disposing)
         {
             _dbContext?.Dispose();
         }

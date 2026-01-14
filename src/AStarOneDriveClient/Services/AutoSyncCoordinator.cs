@@ -91,7 +91,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
             _logger.LogInformation("Started auto-sync monitoring for account {AccountId} at {Path}",
                 accountId, localPath);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             _logger.LogError(ex, "Failed to start auto-sync monitoring for account {AccountId}", accountId);
             throw;
@@ -108,7 +108,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        if (_accountSubscriptions.Remove(accountId, out IDisposable? subscription))
+        if(_accountSubscriptions.Remove(accountId, out IDisposable? subscription))
         {
             subscription.Dispose();
             _fileWatcherService.StopWatching(accountId);
@@ -122,7 +122,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
     /// </summary>
     public void StopAll()
     {
-        foreach (var accountId in _accountSubscriptions.Keys.ToList())
+        foreach(var accountId in _accountSubscriptions.Keys.ToList())
         {
             StopMonitoring(accountId);
         }

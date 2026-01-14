@@ -120,7 +120,7 @@ public class SyncTreeViewModelShould : IDisposable
         var isLoadingValues = new List<bool>();
         _viewModel.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(SyncTreeViewModel.IsLoading))
+            if(args.PropertyName == nameof(SyncTreeViewModel.IsLoading))
             {
                 isLoadingValues.Add(_viewModel.IsLoading);
             }
@@ -160,7 +160,7 @@ public class SyncTreeViewModelShould : IDisposable
             new() { Id = "child1", Name = "Child 1", ParentId = "parent", IsFolder = true }
         };
 
-        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<bool?>(),Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns(children);
 
         _viewModel.SelectedAccountId = "account123";
@@ -299,7 +299,7 @@ public class SyncTreeViewModelShould : IDisposable
         var propertyChangedRaised = false;
         _viewModel.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(SyncTreeViewModel.SelectedAccountId))
+            if(args.PropertyName == nameof(SyncTreeViewModel.SelectedAccountId))
             {
                 propertyChangedRaised = true;
             }

@@ -3,8 +3,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
@@ -142,7 +140,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (AccountInfo account in accounts)
+            foreach(AccountInfo account in accounts)
             {
                 Accounts.Add(account);
             }
@@ -164,7 +162,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if (result.Success && result.AccountId is not null && result.DisplayName is not null)
+            if(result.Success && result.AccountId is not null && result.DisplayName is not null)
             {
                 // Create new account with default sync path
                 var defaultPath = Path.Combine(
@@ -189,7 +187,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                 Accounts.Add(newAccount);
                 SelectedAccount = newAccount;
             }
-            else if (!result.Success && result.ErrorMessage is not null)
+            else if(!result.Success && result.ErrorMessage is not null)
             {
                 _ = ShowToastAsync(result.ErrorMessage);
             }
@@ -202,7 +200,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task RemoveAccountAsync()
     {
-        if (SelectedAccount is null)
+        if(SelectedAccount is null)
         {
             return;
         }
@@ -222,7 +220,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task LoginAsync()
     {
-        if (SelectedAccount is null)
+        if(SelectedAccount is null)
         {
             return;
         }
@@ -236,19 +234,19 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if (result.Success)
+            if(result.Success)
             {
                 AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = true };
                 await _accountRepository.UpdateAsync(updatedAccount);
 
                 var index = Accounts.IndexOf(SelectedAccount);
-                if (index >= 0)
+                if(index >= 0)
                 {
                     Accounts[index] = updatedAccount;
                     SelectedAccount = updatedAccount;
                 }
             }
-            else if (!result.Success && result.ErrorMessage is not null)
+            else if(!result.Success && result.ErrorMessage is not null)
             {
                 _ = ShowToastAsync(result.ErrorMessage);
             }
@@ -274,7 +272,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
             ToastMessage = null;
         }
-        catch (TaskCanceledException)
+        catch(TaskCanceledException)
         {
             // Ignore - a new toast was requested
         }
@@ -287,7 +285,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task LogoutAsync()
     {
-        if (SelectedAccount is null)
+        if(SelectedAccount is null)
         {
             return;
         }
@@ -296,13 +294,13 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         try
         {
             var success = await _authService.LogoutAsync(SelectedAccount.AccountId);
-            if (success)
+            if(success)
             {
                 AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };
                 await _accountRepository.UpdateAsync(updatedAccount);
 
                 var index = Accounts.IndexOf(SelectedAccount);
-                if (index >= 0)
+                if(index >= 0)
                 {
                     Accounts[index] = updatedAccount;
                     SelectedAccount = updatedAccount;
