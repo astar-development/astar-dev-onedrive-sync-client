@@ -99,7 +99,7 @@ public static class LogCleanupBackgroundServiceTestExtensions
     public static async Task TestCleanupOnce(this LogCleanupBackgroundService service)
     {
         // Use reflection to call the private ExecuteAsync logic once, but only the cleanup logic
-        MethodInfo? method = typeof(LogCleanupBackgroundService).GetMethod("ExecuteAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        MethodInfo? method = typeof(LogCleanupBackgroundService).GetMethod("ExecuteAsync", BindingFlags.NonPublic | BindingFlags.Instance);
         CancellationToken token = TestContext.Current.CancellationToken;
         if(method != null)
         {

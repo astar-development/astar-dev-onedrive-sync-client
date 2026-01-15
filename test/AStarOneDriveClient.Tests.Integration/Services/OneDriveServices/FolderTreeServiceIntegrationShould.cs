@@ -43,7 +43,7 @@ public class FolderTreeServiceIntegrationShould
         return AuthConfiguration.LoadFromConfiguration(configuration);
     }
 
-    [Fact]
+    [Fact(Skip = "Integration test - requires real OneDrive account authentication")]
     public async Task GetRootFoldersFromRealOneDriveAccount()
     {
         // Arrange
@@ -71,7 +71,7 @@ public class FolderTreeServiceIntegrationShould
         folders.All(f => f.ParentId == null).ShouldBeTrue();
     }
 
-    [Fact]
+    [Fact(Skip = "Integration test - requires real OneDrive account authentication")]
     public async Task GetChildFoldersFromRealOneDriveFolder()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class FolderTreeServiceIntegrationShould
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Integration test - requires real OneDrive account authentication")]
     public async Task GetFolderHierarchyWithLimitedDepth()
     {
         // Arrange
@@ -144,7 +144,7 @@ public class FolderTreeServiceIntegrationShould
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Integration test - requires real OneDrive account authentication")]
     public async Task HandleEmptyFoldersGracefully()
     {
         // Arrange
@@ -176,7 +176,7 @@ public class FolderTreeServiceIntegrationShould
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Integration test - requires real OneDrive account authentication")]
     public async Task GraphApiClientCanAccessDrive()
     {
         // Arrange

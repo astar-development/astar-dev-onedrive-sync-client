@@ -14,7 +14,7 @@ namespace AStarOneDriveClient.Services;
 /// Supports bidirectional sync with conflict detection and resolution.
 /// Uses LastWriteWins strategy: when both local and remote files change, the newer timestamp wins.
 /// </remarks>
-public sealed partial class SyncEngine : ISyncEngine, IDisposable
+public sealed partial class SyncEngineForTestingOnly : ISyncEngine, IDisposable
 {
     private const double AllowedTimeDifference = 60.0;
     private readonly ILocalFileScanner _localFileScanner;
@@ -34,7 +34,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     private long _lastCompletedBytes;
     private readonly List<(DateTime Timestamp, long Bytes)> _transferHistory = [];
 
-    public SyncEngine(
+    public SyncEngineForTestingOnly(
         ILocalFileScanner localFileScanner,
         IRemoteChangeDetector remoteChangeDetector,
         IFileMetadataRepository fileMetadataRepository,
@@ -494,7 +494,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
                 var finalBytes = Interlocked.Read(ref completedBytes);
                 var finalActiveDownloads = Interlocked.CompareExchange(ref activeDownloads, 0, 0);
-                ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, finalActiveDownloads, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes + downloadBytes);
+                ReportProgress(accountId, SyncStatus.Running, totalFiles, finalCompleted, totalBytes, finalBytes, filesDownloading: finalActiveDownloads, conflictsDetected: conflictCount, phaseTotalBytes: uploadBytes + downloadBytes);
             }
             catch (Exception ex)
             {
@@ -851,10 +851,9 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         string? currentScanningFolder = null,
         long? phaseTotalBytes = null)
     {
-       
         DateTime now = DateTime.UtcNow;
         var elapsedSeconds = (now - _lastProgressUpdate).TotalSeconds;
-       
+
         double megabytesPerSecond = 0;
         if(elapsedSeconds > 0.1)
         {
@@ -885,7 +884,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             }
         }
 
-        int? estimatedSecondsRemaining = null;
+        int? estimatedSecondsRemaining = null; // the update below doesn't run for the current test
         var bytesForEta = phaseTotalBytes ?? totalBytes;
         if(megabytesPerSecond > 0.01 && completedBytes < bytesForEta)
         {

@@ -111,7 +111,7 @@ public sealed class GraphApiClient : IGraphApiClient
                         HttpMethod = Microsoft.Kiota.Abstractions.Method.GET,
                         URI = new Uri(nextLink)
                     },
-                    Microsoft.Graph.Models.DriveItemCollectionResponse.CreateFromDiscriminatorValue,
+                    DriveItemCollectionResponse.CreateFromDiscriminatorValue,
                     null,
                     cancellationToken);
 

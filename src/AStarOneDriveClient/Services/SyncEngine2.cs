@@ -50,6 +50,18 @@ public class SyncEngine2 : ISyncEngine, IDisposable
             async folders => await CreateDetectionTasksAsync(accountId, folders, detectionSemaphore),
             error => Task.FromResult<(IReadOnlyList<FileMetadata>, string?)>((Array.Empty<FileMetadata>(), error.Message))
         );
+
+        await Task.Delay(5000, cancellationToken); // Simulate some work
+        SyncState finalState = syncState with // this is just to simulate final state, currently the updates are not showing in the UI
+        {
+            CompletedBytes = 100,
+            TotalBytes = 100,
+            MegabytesPerSecond = 1.5,
+            EstimatedSecondsRemaining = 0,
+            LastUpdateUtc = DateTime.UtcNow
+        };
+
+        _ = ProgressReporterService.ReportProgress(finalState, _progressSubject, _lastProgressUpdate, _lastCompletedBytes, _transferHistory);
     }
 
     private async Task<(IReadOnlyList<FileMetadata>, string?)> CreateDetectionTasksAsync(string accountId, IList<string> folders, SemaphoreSlim detectionSemaphore)
