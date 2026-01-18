@@ -1,6 +1,6 @@
 using System.IO.Abstractions;
 using AStar.Dev.OneDrive.Client.Authentication;
-using AStar.Dev.OneDrive.Client.Data;
+using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Repositories;
 using AStar.Dev.OneDrive.Client.Services;
 using AStar.Dev.OneDrive.Client.Services.OneDriveServices;

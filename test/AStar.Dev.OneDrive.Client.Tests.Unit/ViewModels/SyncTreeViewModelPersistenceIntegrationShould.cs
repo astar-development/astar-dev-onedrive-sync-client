@@ -1,5 +1,5 @@
 using System.Reactive.Subjects;
-using AStar.Dev.OneDrive.Client.Data;
+using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Models;
 using AStar.Dev.OneDrive.Client.Repositories;
 using AStar.Dev.OneDrive.Client.Services;
