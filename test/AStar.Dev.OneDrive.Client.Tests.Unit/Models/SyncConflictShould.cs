@@ -1,7 +1,8 @@
+using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Models.Enums;
 
-namespace AStarOneDriveClient.Models;
+namespace AStar.Dev.OneDrive.Client.Tests.Unit.Models;
 
 public class SyncConflictShould
 {

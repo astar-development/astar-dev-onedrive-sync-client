@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Client.Data;
+using AStar.Dev.OneDrive.Client.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

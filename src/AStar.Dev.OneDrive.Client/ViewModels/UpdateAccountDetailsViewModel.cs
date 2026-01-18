@@ -1,7 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
+using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Repositories;
 using AStar.Dev.OneDrive.Client.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;

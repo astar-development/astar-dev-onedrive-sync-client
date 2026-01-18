@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1848 // Use LoggerMessage delegates

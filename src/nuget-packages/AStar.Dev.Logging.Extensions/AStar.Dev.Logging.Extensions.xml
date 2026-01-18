@@ -6,6 +6,7 @@
     <members>
         <member name="T:AStar.Dev.Logging.Extensions.AStarLogger`1">
             <summary>
+
             </summary>
             <typeparam name="TCategoryName"></typeparam>
         </member>
@@ -88,8 +89,7 @@
                 values for logging application lifecycle events such as start and
                 stopped.
             </summary>
-            <remarks>
-                Use the
+            <remarks>Use the
                 <see cref="F:AStar.Dev.Logging.Extensions.EventIds.AStarEventIds.Application.Started"/>
                 and
                 <see cref="F:AStar.Dev.Logging.Extensions.EventIds.AStarEventIds.Application.Stopped"/>
@@ -122,8 +122,7 @@
             <summary>
                 Provides the event identifier used for logging the start of a OneDrive synchronization operation.
             </summary>
-            <remarks>
-                Use this constant when emitting log entries to indicate that a OneDriveSync process has
+            <remarks>Use this constant when emitting log entries to indicate that a OneDriveSync process has
                 begun. This value is intended for integration with structured logging systems that support event IDs, such as
                 Microsoft.Extensions.Logging.
             </remarks>
@@ -180,6 +179,7 @@
         </member>
         <member name="T:AStar.Dev.Logging.Extensions.LogExtensions`1">
             <summary>
+
             </summary>
             <typeparam name="T"></typeparam>
         </member>
@@ -246,8 +246,7 @@
             <summary>
                 Provides logging methods for application lifecycle events, including startup, shutdown, and error conditions.
             </summary>
-            <remarks>
-                This class offers static methods to log key application events using structured logging. All
+            <remarks>This class offers static methods to log key application events using structured logging. All
                 methods require an
                 <see cref="T:Microsoft.Extensions.Logging.ILogger"/>
                 instance and are intended to be used within application startup and
@@ -296,8 +295,7 @@
             <summary>
                 Provides static methods and utilities for web-related operations.
             </summary>
-            <remarks>
-                This class serves as a central entry point for web functionality. All members are static and
+            <remarks>This class serves as a central entry point for web functionality. All members are static and
                 can be accessed without instantiating the class.
             </remarks>
         </member>
@@ -562,8 +560,7 @@
             <summary>
                 Gets or sets the list of enrichment operations to apply to the data.
             </summary>
-            <remarks>
-                Each entry specifies an enrichment type or transformation that will be performed. The order
+            <remarks>Each entry specifies an enrichment type or transformation that will be performed. The order
                 of operations in the array determines the sequence in which enrichments are applied.
             </remarks>
         </member>
@@ -571,8 +568,7 @@
             <summary>
                 Gets or sets the collection of sinks to which log events are written.
             </summary>
-            <remarks>
-                Each element in the array specifies a destination and configuration for log output. Common
+            <remarks>Each element in the array specifies a destination and configuration for log output. Common
                 sinks include file, console, or external log servers. The order of sinks in the array determines the sequence in
                 which log events are dispatched.
             </remarks>
@@ -581,8 +577,7 @@
             <summary>
                 Gets or sets the minimum log level that must be met for log events to be recorded.
             </summary>
-            <remarks>
-                Adjust this property to control which log messages are processed based on their severity. Log
+            <remarks>Adjust this property to control which log messages are processed based on their severity. Log
                 events below the specified level will be ignored.
             </remarks>
         </member>
@@ -597,8 +592,7 @@
             <summary>
                 Gets or sets the Serilog configuration and logger instance used for structured logging within the application.
             </summary>
-            <remarks>
-                Configure this property to customize logging behavior, such as output sinks, log levels, and
+            <remarks>Configure this property to customize logging behavior, such as output sinks, log levels, and
                 enrichment. Changing the Serilog instance affects how log events are processed and where they are
                 written.
             </remarks>
@@ -607,8 +601,7 @@
             <summary>
                 Gets or sets the logging configuration for the application.
             </summary>
-            <remarks>
-                Use this property to customize logging behavior, such as log levels, output destinations, and
+            <remarks>Use this property to customize logging behavior, such as log levels, output destinations, and
                 formatting options. Changes to the logging configuration take effect immediately and may impact how diagnostic
                 information is recorded.
             </remarks>

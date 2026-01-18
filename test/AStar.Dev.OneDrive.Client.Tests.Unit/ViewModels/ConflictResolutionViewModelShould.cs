@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Models.Enums;
 using AStar.Dev.OneDrive.Client.Services;
 using AStar.Dev.OneDrive.Client.Services.Sync;
 using AStar.Dev.OneDrive.Client.ViewModels;

@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Client.Models.Enums;
+using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 
 namespace AStar.Dev.OneDrive.Client.Models;
 

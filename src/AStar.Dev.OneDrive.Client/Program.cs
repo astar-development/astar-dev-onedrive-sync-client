@@ -1,19 +1,33 @@
 using Avalonia;
 using ReactiveUI.Avalonia;
+using Serilog;
+using static AStar.Dev.Logging.Extensions.Serilog.SerilogExtensions;
 
 namespace AStar.Dev.OneDrive.Client;
 
-internal sealed class Program
+internal static class Program
 {
-    private Program()
+    [STAThread]
+    public static void Main(string[] args)
     {
+        Log.Logger = CreateMinimalLogger();
+
+        try
+        {
+            BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
+        }
+        catch(Exception ex)
+        {
+            Log.Fatal(ex, "Application terminated unexpectedly");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
     }
 
-    [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
-
-    public static AppBuilder BuildAvaloniaApp()
+    private static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()

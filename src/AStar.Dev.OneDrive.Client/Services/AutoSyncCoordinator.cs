@@ -1,6 +1,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using AStar.Dev.OneDrive.Client.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Services;

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace AStar.Dev.Logging.Extensions;
 
 /// <summary>
+/// 
 /// </summary>
 /// <typeparam name="TCategoryName"></typeparam>
 public sealed class AStarLogger<TCategoryName> : ILoggerAstar<TCategoryName>

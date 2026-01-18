@@ -1,7 +1,8 @@
 using System.Reactive.Linq;
 using AStar.Dev.OneDrive.Client.Authentication;
+using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Repositories;
 using AStar.Dev.OneDrive.Client.ViewModels;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.ViewModels;

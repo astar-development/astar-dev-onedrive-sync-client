@@ -1,6 +1,6 @@
 using System.Reflection;
-using AStar.Dev.OneDrive.Client.Data;
-using AStar.Dev.OneDrive.Client.Data.Entities;
+using AStar.Dev.OneDrive.Client.Core.Data;
+using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

@@ -5,14 +5,19 @@
     </Folder>
     <Folder Name="/docs/"/>
     <Folder Name="/src/">
+        <Project Path="src\AStar.Dev.OneDrive.Client.Core\AStar.Dev.OneDrive.Client.Core.csproj" Type="Classic C#"/>
+        <Project Path="src\AStar.Dev.OneDrive.Client.Infrastructure\AStar.Dev.OneDrive.Client.Infrastructure.csproj" Type="Classic C#"/>
         <Project Path="src\AStar.Dev.OneDrive.Client\AStar.Dev.OneDrive.Client.csproj"/>
     </Folder>
     <Folder Name="/src/nuget-packages/">
         <Project Path="src/nuget-packages/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj"/>
         <Project Path="src/nuget-packages/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj"/>
         <Project Path="src/nuget-packages/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj"/>
+        <Project Path="src\nuget-packages\AStar.Dev.Logging.Extensions.Serilog\AStar.Dev.Logging.Extensions.Serilog.csproj" Type="Classic C#"/>
     </Folder>
     <Folder Name="/test/">
+        <Project Path="test\AStar.Dev.OneDrive.Client.Core.Tests.Unit\AStar.Dev.OneDrive.Client.Core.Tests.Unit.csproj" Type="Classic C#"/>
+        <Project Path="test\AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit\AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.csproj" Type="Classic C#"/>
         <Project Path="test\AStar.Dev.OneDrive.Client.Tests.Integration\AStar.Dev.OneDrive.Client.Tests.Integration.csproj"/>
         <Project Path="test\AStar.Dev.OneDrive.Client.Tests.Unit\AStar.Dev.OneDrive.Client.Tests.Unit.csproj"/>
     </Folder>
@@ -20,5 +25,6 @@
         <Project Path="test/nuget-packages/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj"/>
         <Project Path="test/nuget-packages/AStar.Dev.Logging.Extensions.Tests.Unit/AStar.Dev.Logging.Extensions.Tests.Unit.csproj"/>
         <Project Path="test/nuget-packages/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj"/>
+        <Project Path="test\nuget-packages\AStar.Dev.Logging.Extensions.Serilog.Tests.Unit\AStar.Dev.Logging.Extensions.Serilog.Tests.Unit.csproj" Type="Classic C#"/>
     </Folder>
 </Solution>

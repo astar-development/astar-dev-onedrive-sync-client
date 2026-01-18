@@ -1,6 +1,8 @@
 using AStar.Dev.OneDrive.Client.Authentication;
+using AStar.Dev.OneDrive.Client.Core.Data.Entities;
+using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Repositories;
 using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Client.Services.OneDriveServices;
@@ -57,17 +59,33 @@ public sealed class FolderTreeService : IFolderTreeService
             node.Children.Add(new OneDriveFolderNode());
 
             nodes.Add(node);
-            _syncConfigurationRepository.AddAsync(new SyncConfiguration
-            (
-                0,
-                accountId,
-                node.Path,
-                false,
-                DateTime.UtcNow
-            ), cancellationToken).Wait(cancellationToken);
+            var possibleParentPath = SyncEngine.FormatScanningFolderForDisplay(item.Name)!.Replace("OneDrive: ", string.Empty);
+            SyncConfiguration configuration = await UpdateParentPathIfExistsAsync(accountId, node, possibleParentPath, cancellationToken);
+
+            await _syncConfigurationRepository.AddAsync(configuration, cancellationToken);
         }
 
         return nodes;
+    }
+
+    private async Task<SyncConfiguration> UpdateParentPathIfExistsAsync(string accountId, OneDriveFolderNode node, string possibleParentPath, CancellationToken cancellationToken)
+    {
+        var configuration = new SyncConfiguration(0, accountId, node.Path, false, DateTime.UtcNow);
+
+        var lastIndexOf = configuration.FolderPath.LastIndexOf('/');
+        if(lastIndexOf > 0)
+        {
+            var parentPath = configuration.FolderPath[..lastIndexOf];
+            SyncConfigurationEntity? parentEntity = await _syncConfigurationRepository.GetParentFolderAsync(accountId, parentPath, possibleParentPath, cancellationToken);
+
+            if(parentEntity is not null)
+            {
+                var updatedPath = SyncEngine.FormatScanningFolderForDisplay(configuration.FolderPath)!.Replace("OneDrive: ", string.Empty);
+                configuration = configuration with { FolderPath = updatedPath, IsSelected = parentEntity.IsSelected };
+            }
+        }
+
+        return configuration;
     }
 
     /// <inheritdoc />
@@ -80,7 +98,7 @@ public sealed class FolderTreeService : IFolderTreeService
         var isAuthenticated = await _authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated) return [];
 
-        // Get parent folder to build paths
+        // Get the parent folder to build paths
         DriveItem? parentItem = await _graphApiClient.GetDriveItemAsync(accountId, parentFolderId, cancellationToken);
         var parentPath = parentItem?.ParentReference?.Path is not null
             ? $"{parentItem.ParentReference.Path}/{parentItem.Name}"
@@ -94,20 +112,19 @@ public sealed class FolderTreeService : IFolderTreeService
         {
             if(item.Id is null || item.Name is null) continue;
 
-            // Retrieve or create sync config for this folder
-            SyncConfiguration updatedSyncConfiguration = await _syncConfigurationRepository.AddAsync(new SyncConfiguration
-            (
-                0,
-                accountId,
+            // If the parent is selected, propagate the selection to children
+            var node = new OneDriveFolderNode(
+                item.Id,
+                item.Name,
                 $"{parentPath}/{item.Name}",
-                false,
-                DateTime.UtcNow
-            ), cancellationToken);
+                parentFolderId,
+                true);
 
-            // If parent is selected, propagate selection to children
+            var possibleParentPath = SyncEngine.FormatScanningFolderForDisplay(item.Name)!.Replace("OneDrive: ", string.Empty);
+            SyncConfiguration updatedSyncConfiguration = await UpdateParentPathIfExistsAsync(accountId, node, possibleParentPath, cancellationToken);
             bool? isSelected = parentIsSelected == true || updatedSyncConfiguration.IsSelected;
 
-            var node = new OneDriveFolderNode(
+            node = new OneDriveFolderNode(
                 item.Id,
                 item.Name,
                 $"{parentPath}/{item.Name}",
