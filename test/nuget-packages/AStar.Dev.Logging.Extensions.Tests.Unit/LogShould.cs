@@ -1,3 +1,4 @@
+using AStar.Dev.Logging.Extensions.Messages;
 using NSubstitute;
 
 namespace AStar.Dev.Logging.Extensions.Tests.Unit;
@@ -11,7 +12,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.BadRequest(logger, path);
+        AStarLog.Web.BadRequest(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Warning,
@@ -29,7 +30,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.Unauthorized(logger, path);
+        AStarLog.Web.Unauthorized(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Warning,
@@ -47,7 +48,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.Forbidden(logger, path);
+        AStarLog.Web.Forbidden(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Warning,
@@ -65,7 +66,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.NotFound(logger, path);
+        AStarLog.Web.NotFound(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Warning,
@@ -83,7 +84,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.Conflict(logger, path);
+        AStarLog.Web.Conflict(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Warning,
@@ -101,7 +102,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.UnprocessableEntity(logger, path);
+        AStarLog.Web.UnprocessableEntity(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Warning,
@@ -119,7 +120,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.TooManyRequests(logger, path);
+        AStarLog.Web.TooManyRequests(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Warning,
@@ -137,7 +138,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.InternalServerError(logger, path);
+        AStarLog.Web.InternalServerError(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Error,
@@ -155,7 +156,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.BadGateway(logger, path);
+        AStarLog.Web.BadGateway(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Error,
@@ -173,7 +174,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.ServiceUnavailable(logger, path);
+        AStarLog.Web.ServiceUnavailable(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Error,
@@ -191,7 +192,7 @@ public class LogShould
         ILogger logger = Substitute.For<ILogger>();
         logger.IsEnabled(Arg.Any<LogLevel>()).Returns(true);
 
-        Messages.AStarLog.Web.GatewayTimeout(logger, path);
+        AStarLog.Web.GatewayTimeout(logger, path);
 
         logger.Received(1).Log(
             LogLevel.Error,

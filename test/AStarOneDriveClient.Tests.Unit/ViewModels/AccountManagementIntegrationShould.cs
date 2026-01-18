@@ -8,12 +8,12 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 
 /// <summary>
-/// Integration tests for AccountManagementViewModel with real repository and in-memory database.
+///     Integration tests for AccountManagementViewModel with real repository and in-memory database.
 /// </summary>
 public class AccountManagementIntegrationShould : IDisposable
 {
-    private readonly SyncDbContext _dbContext;
     private readonly AccountRepository _accountRepository;
+    private readonly SyncDbContext _dbContext;
     private readonly IAuthService _mockAuthService;
     private bool _disposed;
 
@@ -26,6 +26,12 @@ public class AccountManagementIntegrationShould : IDisposable
         _dbContext = new SyncDbContext(options);
         _accountRepository = new AccountRepository(_dbContext);
         _mockAuthService = Substitute.For<IAuthService>();
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     [Fact]
@@ -187,23 +193,11 @@ public class AccountManagementIntegrationShould : IDisposable
         _ = loadedAccount.LastSyncUtc.ShouldNotBeNull();
     }
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-
     protected virtual void Dispose(bool disposing)
     {
-        if (_disposed)
-        {
-            return;
-        }
+        if(_disposed) return;
 
-        if (disposing)
-        {
-            _dbContext?.Dispose();
-        }
+        if(disposing) _dbContext?.Dispose();
 
         _disposed = true;
     }

@@ -3,7 +3,7 @@ using AStarOneDriveClient.Models.Enums;
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents a local file system change event detected by the file watcher.
+///     Represents a local file system change event detected by the file watcher.
 /// </summary>
 /// <param name="AccountId">Account identifier.</param>
 /// <param name="LocalPath">Full local file system path.</param>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository implementation for managing account data.
+///     Repository implementation for managing account data.
 /// </summary>
 public sealed class AccountRepository : IAccountRepository
 {
@@ -18,14 +18,14 @@ public sealed class AccountRepository : IAccountRepository
         _context = context;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<AccountInfo>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         List<AccountEntity> entities = await _context.Accounts.ToListAsync(cancellationToken);
         return [.. entities.Select(MapToModel)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<AccountInfo?> GetByIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -34,7 +34,7 @@ public sealed class AccountRepository : IAccountRepository
         return entity is null ? null : MapToModel(entity);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task AddAsync(AccountInfo account, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(account);
@@ -44,7 +44,7 @@ public sealed class AccountRepository : IAccountRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task UpdateAsync(AccountInfo account, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(account);
@@ -65,20 +65,20 @@ public sealed class AccountRepository : IAccountRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task DeleteAsync(string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
         AccountEntity? entity = await _context.Accounts.FindAsync([accountId], cancellationToken);
-        if (entity is not null)
+        if(entity is not null)
         {
             _ = _context.Accounts.Remove(entity);
             _ = await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<bool> ExistsAsync(string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -86,8 +86,8 @@ public sealed class AccountRepository : IAccountRepository
         return await _context.Accounts.AnyAsync(a => a.AccountId == accountId, cancellationToken);
     }
 
-    private static AccountInfo MapToModel(AccountEntity entity) =>
-        new(
+    private static AccountInfo MapToModel(AccountEntity entity)
+        => new(
             entity.AccountId,
             entity.DisplayName,
             entity.LocalSyncPath,
@@ -101,8 +101,8 @@ public sealed class AccountRepository : IAccountRepository
             entity.AutoSyncIntervalMinutes
         );
 
-    private static AccountEntity MapToEntity(AccountInfo model) =>
-        new()
+    private static AccountEntity MapToEntity(AccountInfo model)
+        => new()
         {
             AccountId = model.AccountId,
             DisplayName = model.DisplayName,

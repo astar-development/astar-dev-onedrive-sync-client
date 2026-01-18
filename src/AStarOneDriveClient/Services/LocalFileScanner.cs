@@ -6,7 +6,7 @@ using AStarOneDriveClient.Models.Enums;
 namespace AStarOneDriveClient.Services;
 
 /// <summary>
-/// Service for scanning local file system and detecting file changes.
+///     Service for scanning local file system and detecting file changes.
 /// </summary>
 public sealed class LocalFileScanner : ILocalFileScanner
 {
@@ -18,7 +18,7 @@ public sealed class LocalFileScanner : ILocalFileScanner
         _fileSystem = fileSystem;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<FileMetadata>> ScanFolderAsync(
         string accountId,
         string localFolderPath,
@@ -26,10 +26,10 @@ public sealed class LocalFileScanner : ILocalFileScanner
         CancellationToken cancellationToken = default)
     {
         var indexOfDrives = localFolderPath.IndexOf("drives", StringComparison.OrdinalIgnoreCase);
-        if (indexOfDrives >= 0)
+        if(indexOfDrives >= 0)
         {
             var indexOfColon = localFolderPath.IndexOf(":/", StringComparison.OrdinalIgnoreCase);
-            if (indexOfColon > 0)
+            if(indexOfColon > 0)
             {
                 var part1 = localFolderPath[..indexOfDrives];
                 var part2 = localFolderPath[(indexOfColon + 2)..];
@@ -42,10 +42,7 @@ public sealed class LocalFileScanner : ILocalFileScanner
         ArgumentNullException.ThrowIfNull(localFolderPath);
         ArgumentNullException.ThrowIfNull(oneDriveFolderPath);
 
-        if (!_fileSystem.Directory.Exists(localFolderPath))
-        {
-            return [];
-        }
+        if(!_fileSystem.Directory.Exists(localFolderPath)) return [];
 
         await DebugLog.InfoAsync("LocalFileScanner.ScanFolderAsync", $"Scanning folder: {localFolderPath}", cancellationToken);
         var fileMetadataList = new List<FileMetadata>();
@@ -58,6 +55,14 @@ public sealed class LocalFileScanner : ILocalFileScanner
         await DebugLog.ExitAsync("LocalFileScanner.ScanFolderAsync", cancellationToken);
 
         return fileMetadataList;
+    }
+
+    /// <inheritdoc />
+    public async Task<string> ComputeFileHashAsync(string filePath, CancellationToken cancellationToken)
+    {
+        using FileSystemStream stream = _fileSystem.File.OpenRead(filePath);
+        var hashBytes = await SHA256.HashDataAsync(stream, cancellationToken);
+        return Convert.ToHexString(hashBytes);
     }
 
     private async Task ScanDirectoryRecursiveAsync(
@@ -73,52 +78,47 @@ public sealed class LocalFileScanner : ILocalFileScanner
         try
         {
             var files = _fileSystem.Directory.GetFiles(currentLocalPath);
-            foreach (var filePath in files)
+            foreach(var filePath in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
                     IFileInfo fileInfo = _fileSystem.FileInfo.New(filePath);
-                    if (!fileInfo.Exists)
-                    {
-                        continue;
-                    }
+                    if(!fileInfo.Exists) continue;
 
                     var relativePath = GetRelativePath(currentLocalPath, filePath);
                     var oneDrivePath = CombinePaths(currentOneDrivePath, relativePath);
                     var hash = await ComputeFileHashAsync(filePath, cancellationToken);
 
                     var metadata = new FileMetadata(
-                        Id: string.Empty, // Will be populated from OneDrive after upload
-                        AccountId: accountId,
-                        Name: fileInfo.Name,
-                        Path: oneDrivePath,
-                        Size: fileInfo.Length,
-                        LastModifiedUtc: fileInfo.LastWriteTimeUtc,
-                        LocalPath: filePath,
-                        CTag: null,
-                        ETag: null,
-                        LocalHash: hash,
-                        SyncStatus: FileSyncStatus.PendingUpload,
-                        LastSyncDirection: null);
+                        string.Empty, // Will be populated from OneDrive after upload
+                        accountId,
+                        fileInfo.Name,
+                        oneDrivePath,
+                        fileInfo.Length,
+                        fileInfo.LastWriteTimeUtc,
+                        filePath,
+                        null,
+                        null,
+                        hash,
+                        FileSyncStatus.PendingUpload,
+                        null);
 
                     fileMetadataList.Add(metadata);
                 }
-                catch (UnauthorizedAccessException)
+                catch(UnauthorizedAccessException)
                 {
                     // Skip files we don't have access to
-                    continue;
                 }
-                catch (IOException)
+                catch(IOException)
                 {
                     // Skip files that are locked or in use
-                    continue;
                 }
             }
 
             var directories = _fileSystem.Directory.GetDirectories(currentLocalPath);
-            foreach (var directory in directories)
+            foreach(var directory in directories)
             {
                 var relativePath = GetRelativePath(currentLocalPath, directory);
                 var oneDrivePath = CombinePaths(currentOneDrivePath, relativePath);
@@ -131,24 +131,16 @@ public sealed class LocalFileScanner : ILocalFileScanner
                     cancellationToken);
             }
         }
-        catch (UnauthorizedAccessException)
+        catch(UnauthorizedAccessException)
         {
             // Skip directories we don't have access to
         }
-        catch (DirectoryNotFoundException)
+        catch(DirectoryNotFoundException)
         {
             // Directory was deleted during scan
         }
 
         await DebugLog.ExitAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public async Task<string> ComputeFileHashAsync(string filePath, CancellationToken cancellationToken)
-    {
-        using FileSystemStream stream = _fileSystem.File.OpenRead(filePath);
-        var hashBytes = await SHA256.HashDataAsync(stream, cancellationToken);
-        return Convert.ToHexString(hashBytes);
     }
 
     private static string GetRelativePath(string basePath, string fullPath)
@@ -161,23 +153,17 @@ public sealed class LocalFileScanner : ILocalFileScanner
 
     private static string EnsureTrailingSlash(string path)
         => !path.EndsWith(Path.DirectorySeparatorChar) && !path.EndsWith(Path.AltDirectorySeparatorChar)
-                ? path + Path.DirectorySeparatorChar
-                : path;
+            ? path + Path.DirectorySeparatorChar
+            : path;
 
     private static string CombinePaths(string basePath, string relativePath)
     {
         basePath = basePath.Replace('\\', '/');
         relativePath = relativePath.Replace('\\', '/');
 
-        if (!basePath.EndsWith('/'))
-        {
-            basePath += '/';
-        }
+        if(!basePath.EndsWith('/')) basePath += '/';
 
-        if (relativePath.StartsWith('/'))
-        {
-            relativePath = relativePath[1..];
-        }
+        if(relativePath.StartsWith('/')) relativePath = relativePath[1..];
 
         return basePath + relativePath;
     }

@@ -7,17 +7,17 @@ using ReactiveUI;
 namespace AStarOneDriveClient.ViewModels;
 
 /// <summary>
-/// ViewModel for the View Sync History window.
+///     ViewModel for the View Sync History window.
 /// </summary>
 public sealed class ViewSyncHistoryViewModel : ReactiveObject
 {
+    private const int PageSize = 20;
     private readonly IAccountRepository _accountRepository;
     private readonly IFileOperationLogRepository _fileOperationLogRepository;
     private int _currentPage = 1;
-    private const int PageSize = 20;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ViewSyncHistoryViewModel"/> class.
+    ///     Initializes a new instance of the <see cref="ViewSyncHistoryViewModel" /> class.
     /// </summary>
     /// <param name="accountRepository">Repository for account data.</param>
     /// <param name="fileOperationLogRepository">Repository for file operation logs.</param>
@@ -42,17 +42,17 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     }
 
     /// <summary>
-    /// Gets the collection of accounts.
+    ///     Gets the collection of accounts.
     /// </summary>
     public ObservableCollection<AccountInfo> Accounts { get; }
 
     /// <summary>
-    /// Gets the collection of sync history records.
+    ///     Gets the collection of sync history records.
     /// </summary>
     public ObservableCollection<FileOperationLog> SyncHistory { get; }
 
     /// <summary>
-    /// Gets or sets the selected account.
+    ///     Gets or sets the selected account.
     /// </summary>
     public AccountInfo? SelectedAccount
     {
@@ -60,7 +60,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         set
         {
             _ = this.RaiseAndSetIfChanged(ref field, value);
-            if (value is not null)
+            if(value is not null)
             {
                 _currentPage = 1;
                 _ = LoadSyncHistoryAsync();
@@ -69,7 +69,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     }
 
     /// <summary>
-    /// Gets the current page number.
+    ///     Gets the current page number.
     /// </summary>
     public int CurrentPage
     {
@@ -78,7 +78,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     }
 
     /// <summary>
-    /// Gets a value indicating whether there are more records to load.
+    ///     Gets a value indicating whether there are more records to load.
     /// </summary>
     public bool HasMoreRecords
     {
@@ -87,7 +87,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     } = true;
 
     /// <summary>
-    /// Gets a value indicating whether data is currently loading.
+    ///     Gets a value indicating whether data is currently loading.
     /// </summary>
     public bool IsLoading
     {
@@ -96,22 +96,22 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     }
 
     /// <summary>
-    /// Gets a value indicating whether the previous page button should be enabled.
+    ///     Gets a value indicating whether the previous page button should be enabled.
     /// </summary>
     public bool CanGoToPreviousPage => CurrentPage > 1 && !IsLoading;
 
     /// <summary>
-    /// Gets a value indicating whether the next page button should be enabled.
+    ///     Gets a value indicating whether the next page button should be enabled.
     /// </summary>
     public bool CanGoToNextPage => HasMoreRecords && !IsLoading;
 
     /// <summary>
-    /// Gets the command to load the next page.
+    ///     Gets the command to load the next page.
     /// </summary>
     public ReactiveCommand<Unit, Unit> LoadNextPageCommand { get; }
 
     /// <summary>
-    /// Gets the command to load the previous page.
+    ///     Gets the command to load the previous page.
     /// </summary>
     public ReactiveCommand<Unit, Unit> LoadPreviousPageCommand { get; }
 
@@ -121,10 +121,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (AccountInfo account in accounts)
-            {
-                Accounts.Add(account);
-            }
+            foreach(AccountInfo account in accounts) Accounts.Add(account);
         }
         catch
         {
@@ -134,7 +131,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
     private async Task LoadSyncHistoryAsync()
     {
-        if (SelectedAccount is null)
+        if(SelectedAccount is null)
         {
             SyncHistory.Clear();
             return;
@@ -154,10 +151,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
             // Only add PageSize records (exclude the extra one used for hasMore check)
             IEnumerable<FileOperationLog> recordsToShow = HasMoreRecords ? records.Take(PageSize) : records;
-            foreach (FileOperationLog? record in recordsToShow)
-            {
-                SyncHistory.Add(record);
-            }
+            foreach(FileOperationLog? record in recordsToShow) SyncHistory.Add(record);
 
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
@@ -174,10 +168,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
     private async Task LoadNextPageAsync()
     {
-        if (!HasMoreRecords || SelectedAccount is null)
-        {
-            return;
-        }
+        if(!HasMoreRecords || SelectedAccount is null) return;
 
         CurrentPage++;
         await LoadSyncHistoryAsync();
@@ -185,10 +176,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
     private async Task LoadPreviousPageAsync()
     {
-        if (CurrentPage <= 1 || SelectedAccount is null)
-        {
-            return;
-        }
+        if(CurrentPage <= 1 || SelectedAccount is null) return;
 
         CurrentPage--;
         await LoadSyncHistoryAsync();

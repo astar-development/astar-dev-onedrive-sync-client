@@ -4,55 +4,51 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Data;
 
 /// <summary>
-/// Database context for the OneDrive sync application.
+///     Database context for the OneDrive sync application.
 /// </summary>
-public sealed class SyncDbContext : DbContext
+public sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : DbContext(options)
 {
     /// <summary>
-    /// Gets or sets the accounts table.
+    ///     Gets or sets the accounts table.
     /// </summary>
     public DbSet<AccountEntity> Accounts { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the sync configurations table.
+    ///     Gets or sets the sync configurations table.
     /// </summary>
     public DbSet<SyncConfigurationEntity> SyncConfigurations { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the file metadata table.
+    ///     Gets or sets the file metadata table.
     /// </summary>
     public DbSet<FileMetadataEntity> FileMetadata { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the window preferences table.
+    ///     Gets or sets the window preferences table.
     /// </summary>
     public DbSet<WindowPreferencesEntity> WindowPreferences { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the sync conflicts table.
+    ///     Gets or sets the sync conflicts table.
     /// </summary>
     public DbSet<SyncConflictEntity> SyncConflicts { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the sync session logs table.
+    ///     Gets or sets the sync session logs table.
     /// </summary>
     public DbSet<SyncSessionLogEntity> SyncSessionLogs { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the file operation logs table.
+    ///     Gets or sets the file operation logs table.
     /// </summary>
     public DbSet<FileOperationLogEntity> FileOperationLogs { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the debug logs table.
+    ///     Gets or sets the debug logs table.
     /// </summary>
     public DbSet<DebugLogEntity> DebugLogs { get; set; } = null!;
 
-    public SyncDbContext(DbContextOptions<SyncDbContext> options) : base(options)
-    {
-    }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

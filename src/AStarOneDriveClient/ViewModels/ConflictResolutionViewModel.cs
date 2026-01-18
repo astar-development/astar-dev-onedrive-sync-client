@@ -2,7 +2,6 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Services;
@@ -16,71 +15,19 @@ using ReactiveUI;
 namespace AStarOneDriveClient.ViewModels;
 
 /// <summary>
-/// ViewModel for the conflict resolution UI, displaying all unresolved conflicts
-/// for a specific account and allowing the user to choose resolution strategies.
+///     ViewModel for the conflict resolution UI, displaying all unresolved conflicts
+///     for a specific account and allowing the user to choose resolution strategies.
 /// </summary>
 public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 {
-    private readonly ISyncEngine _syncEngine;
-    private readonly IConflictResolver _conflictResolver;
-    private readonly ILogger<ConflictResolutionViewModel> _logger;
     private readonly string _accountId;
+    private readonly IConflictResolver _conflictResolver;
     private readonly CompositeDisposable _disposables = [];
+    private readonly ILogger<ConflictResolutionViewModel> _logger;
+    private readonly ISyncEngine _syncEngine;
 
     /// <summary>
-    /// Gets the collection of conflicts to display and resolve.
-    /// </summary>
-    public ObservableCollection<ConflictItemViewModel> Conflicts { get; } = [];
-
-    /// <summary>
-    /// Gets or sets a value indicating whether conflicts are being loaded from the database.
-    /// </summary>
-    public bool IsLoading
-    {
-        get;
-        set => this.RaiseAndSetIfChanged(ref field, value);
-    }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether conflict resolution is in progress.
-    /// </summary>
-    public bool IsResolving
-    {
-        get;
-        set => this.RaiseAndSetIfChanged(ref field, value);
-    }
-
-    /// <summary>
-    /// Gets or sets a status message to display to the user.
-    /// </summary>
-    public string StatusMessage
-    {
-        get;
-        set => this.RaiseAndSetIfChanged(ref field, value);
-    } = string.Empty;
-
-    /// <summary>
-    /// Gets a value indicating whether there are any conflicts to display.
-    /// </summary>
-    public bool HasConflicts => Conflicts.Count > 0;
-
-    /// <summary>
-    /// Gets the command to load conflicts from the database.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> LoadConflictsCommand { get; }
-
-    /// <summary>
-    /// Gets the command to resolve all conflicts with user-selected strategies.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> ResolveAllCommand { get; }
-
-    /// <summary>
-    /// Gets the command to cancel conflict resolution and return to the previous view.
-    /// </summary>
-    public ReactiveCommand<Unit, Unit> CancelCommand { get; }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ConflictResolutionViewModel"/>.
+    ///     Initializes a new instance of <see cref="ConflictResolutionViewModel" />.
     /// </summary>
     /// <param name="accountId">The account ID to load conflicts for.</param>
     /// <param name="syncEngine">The sync engine for retrieving conflicts.</param>
@@ -120,7 +67,62 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
     }
 
     /// <summary>
-    /// Loads all unresolved conflicts for the account from the database.
+    ///     Gets the collection of conflicts to display and resolve.
+    /// </summary>
+    public ObservableCollection<ConflictItemViewModel> Conflicts { get; } = [];
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether conflicts are being loaded from the database.
+    /// </summary>
+    public bool IsLoading
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>
+    ///     Gets or sets a value indicating whether conflict resolution is in progress.
+    /// </summary>
+    public bool IsResolving
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    /// <summary>
+    ///     Gets or sets a status message to display to the user.
+    /// </summary>
+    public string StatusMessage
+    {
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
+
+    /// <summary>
+    ///     Gets a value indicating whether there are any conflicts to display.
+    /// </summary>
+    public bool HasConflicts => Conflicts.Count > 0;
+
+    /// <summary>
+    ///     Gets the command to load conflicts from the database.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> LoadConflictsCommand { get; }
+
+    /// <summary>
+    ///     Gets the command to resolve all conflicts with user-selected strategies.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> ResolveAllCommand { get; }
+
+    /// <summary>
+    ///     Gets the command to cancel conflict resolution and return to the previous view.
+    /// </summary>
+    public ReactiveCommand<Unit, Unit> CancelCommand { get; }
+
+    /// <inheritdoc />
+    public void Dispose() => _disposables.Dispose();
+
+    /// <summary>
+    ///     Loads all unresolved conflicts for the account from the database.
     /// </summary>
     private async Task LoadConflictsAsync(CancellationToken cancellationToken = default)
     {
@@ -132,10 +134,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
 
-            foreach (SyncConflict conflict in conflicts)
-            {
-                Conflicts.Add(new ConflictItemViewModel(conflict));
-            }
+            foreach(SyncConflict conflict in conflicts) Conflicts.Add(new ConflictItemViewModel(conflict));
 
             StatusMessage = Conflicts.Count > 0
                 ? $"Found {Conflicts.Count} conflict(s) requiring resolution."
@@ -143,7 +142,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             _logger.LogInformation("Loaded {Count} conflicts for account {AccountId}", Conflicts.Count, _accountId);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             _logger.LogError(ex, "Failed to load conflicts for account {AccountId}", _accountId);
             StatusMessage = $"Error loading conflicts: {ex.Message}";
@@ -155,7 +154,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
     }
 
     /// <summary>
-    /// Resolves all conflicts using the user-selected strategies.
+    ///     Resolves all conflicts using the user-selected strategies.
     /// </summary>
     private async Task ResolveAllAsync(CancellationToken cancellationToken = default)
     {
@@ -168,11 +167,11 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             _logger.LogInformation("Starting resolution of {Count} conflicts for account {AccountId}", totalConflicts, _accountId);
 
-            for (var i = Conflicts.Count - 1; i >= 0; i--)
+            for(var i = Conflicts.Count - 1; i >= 0; i--)
             {
                 ConflictItemViewModel conflictVm = Conflicts[i];
 
-                if (conflictVm.SelectedStrategy == ConflictResolutionStrategy.None)
+                if(conflictVm.SelectedStrategy == ConflictResolutionStrategy.None)
                 {
                     _logger.LogDebug("Skipping conflict {FilePath} with strategy None", conflictVm.FilePath);
                     skippedCount++;
@@ -214,7 +213,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
                 resolvedCount,
                 skippedCount);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             _logger.LogError(ex, "Error during conflict resolution for account {AccountId}", _accountId);
             StatusMessage = $"Error resolving conflicts: {ex.Message}";
@@ -226,7 +225,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
     }
 
     /// <summary>
-    /// Handles the cancel command by clearing the status message.
+    ///     Handles the cancel command by clearing the status message.
     /// </summary>
     private void OnCancel()
     {
@@ -234,7 +233,4 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
         StatusMessage = "Conflict resolution cancelled.";
         // Navigation logic would go here in a real implementation
     }
-
-    /// <inheritdoc/>
-    public void Dispose() => _disposables.Dispose();
 }

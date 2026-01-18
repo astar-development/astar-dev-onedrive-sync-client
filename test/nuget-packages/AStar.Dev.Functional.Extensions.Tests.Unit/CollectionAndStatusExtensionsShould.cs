@@ -8,6 +8,7 @@ public class CollectionAndStatusExtensionsShould
     public async Task ReplaceTheTargetCollectionItemsOnSuccess()
     {
         var target = new ObservableCollection<int> { 1, 2, 3 };
+
         static Task<Result<IEnumerable<int>, Exception>> ResultTask()
         {
             return Task.FromResult<Result<IEnumerable<int>, Exception>>(new Result<IEnumerable<int>, Exception>.Ok([10, 20]));

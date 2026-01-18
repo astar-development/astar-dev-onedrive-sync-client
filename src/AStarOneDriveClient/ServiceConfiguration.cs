@@ -15,12 +15,12 @@ using Testably.Abstractions;
 namespace AStarOneDriveClient;
 
 /// <summary>
-/// Configures dependency injection services for the application.
+///     Configures dependency injection services for the application.
 /// </summary>
 public static class ServiceConfiguration
 {
     /// <summary>
-    /// Configures and returns the service provider with all application services.
+    ///     Configures and returns the service provider with all application services.
     /// </summary>
     /// <returns>Configured service provider.</returns>
     public static ServiceProvider ConfigureServices()
@@ -28,8 +28,7 @@ public static class ServiceConfiguration
         var services = new ServiceCollection();
 
         // Database
-        _ = services.AddDbContext<SyncDbContext>(options =>
-            options.UseSqlite(DatabaseConfiguration.ConnectionString));
+        _ = services.AddDbContext<SyncDbContext>(options => options.UseSqlite(DatabaseConfiguration.ConnectionString));
 
         // Repositories
         _ = services.AddScoped<IAccountRepository, AccountRepository>();
@@ -43,7 +42,7 @@ public static class ServiceConfiguration
         // Load authentication configuration
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .SetBasePath(AppContext.BaseDirectory)
-            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.json", false)
             .Build();
 
         var authConfig = AuthConfiguration.LoadFromConfiguration(configuration);
@@ -84,11 +83,14 @@ public static class ServiceConfiguration
             _ = builder.SetMinimumLevel(LogLevel.Information);
         });
 
+        // Background Services
+        _ = services.AddHostedService<LogCleanupBackgroundService>();
+
         return services.BuildServiceProvider();
     }
 
     /// <summary>
-    /// Ensures the database is created and migrations are applied.
+    ///     Ensures the database is created and migrations are applied.
     /// </summary>
     /// <param name="serviceProvider">The service provider.</param>
     public static void EnsureDatabaseCreated(ServiceProvider serviceProvider)

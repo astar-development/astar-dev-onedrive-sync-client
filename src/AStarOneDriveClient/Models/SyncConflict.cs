@@ -3,7 +3,7 @@ using AStarOneDriveClient.Models.Enums;
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents a file synchronization conflict.
+///     Represents a file synchronization conflict.
 /// </summary>
 /// <param name="Id">Unique identifier for the conflict.</param>
 /// <param name="AccountId">Account identifier.</param>
@@ -29,14 +29,14 @@ public sealed record SyncConflict(
 )
 {
     public static SyncConflict CreateUnresolvedConflict(string accountId, string filePath, DateTime localModifiedUtc, DateTime remoteModifiedUtc, long localSize, long remoteSize) => new(
-            Id: Guid.CreateVersion7().ToString(),
-            AccountId: accountId,
-            FilePath: filePath,
-            LocalModifiedUtc: localModifiedUtc,
-            RemoteModifiedUtc: remoteModifiedUtc,
-            LocalSize: localSize,
-            RemoteSize: remoteSize,
-            DetectedUtc: DateTime.UtcNow,
-            ResolutionStrategy: ConflictResolutionStrategy.None,
-            IsResolved: false);
+        Guid.CreateVersion7().ToString(),
+        accountId,
+        filePath,
+        localModifiedUtc,
+        remoteModifiedUtc,
+        localSize,
+        remoteSize,
+        DateTime.UtcNow,
+        ConflictResolutionStrategy.None,
+        false);
 }

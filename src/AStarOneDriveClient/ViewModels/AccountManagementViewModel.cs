@@ -3,8 +3,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using AStarOneDriveClient.Authentication;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Repositories;
@@ -13,16 +11,18 @@ using ReactiveUI;
 namespace AStarOneDriveClient.ViewModels;
 
 /// <summary>
-/// ViewModel for managing OneDrive accounts.
+///     ViewModel for managing OneDrive accounts.
 /// </summary>
 public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 {
-    private readonly CompositeDisposable _disposables = [];
-    private readonly IAuthService _authService;
     private readonly IAccountRepository _accountRepository;
+    private readonly IAuthService _authService;
+    private readonly CompositeDisposable _disposables = [];
+
+    private CancellationTokenSource? _toastCts;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="AccountManagementViewModel"/> class.
+    ///     Initializes a new instance of the <see cref="AccountManagementViewModel" /> class.
     /// </summary>
     /// <param name="authService">The authentication service.</param>
     /// <param name="accountRepository">The account repository.</param>
@@ -74,12 +74,12 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
     }
 
     /// <summary>
-    /// Gets the collection of accounts.
+    ///     Gets the collection of accounts.
     /// </summary>
     public ObservableCollection<AccountInfo> Accounts { get; }
 
     /// <summary>
-    /// Gets or sets the transient toast message to show to the user.
+    ///     Gets or sets the transient toast message to show to the user.
     /// </summary>
     public string? ToastMessage
     {
@@ -88,7 +88,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
     }
 
     /// <summary>
-    /// Gets or sets whether the toast is currently visible.
+    ///     Gets or sets whether the toast is currently visible.
     /// </summary>
     public bool ToastVisible
     {
@@ -96,9 +96,8 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
-    private CancellationTokenSource? _toastCts;
     /// <summary>
-    /// Gets or sets the currently selected account.
+    ///     Gets or sets the currently selected account.
     /// </summary>
     public AccountInfo? SelectedAccount
     {
@@ -107,7 +106,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
     }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the view is loading data.
+    ///     Gets or sets a value indicating whether the view is loading data.
     /// </summary>
     public bool IsLoading
     {
@@ -116,24 +115,27 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
     }
 
     /// <summary>
-    /// Gets the command to add a new account.
+    ///     Gets the command to add a new account.
     /// </summary>
     public ReactiveCommand<Unit, Unit> AddAccountCommand { get; }
 
     /// <summary>
-    /// Gets the command to remove the selected account.
+    ///     Gets the command to remove the selected account.
     /// </summary>
     public ReactiveCommand<Unit, Unit> RemoveAccountCommand { get; }
 
     /// <summary>
-    /// Gets the command to login to the selected account.
+    ///     Gets the command to login to the selected account.
     /// </summary>
     public ReactiveCommand<Unit, Unit> LoginCommand { get; }
 
     /// <summary>
-    /// Gets the command to logout from the selected account.
+    ///     Gets the command to logout from the selected account.
     /// </summary>
     public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
+
+    /// <inheritdoc />
+    public void Dispose() => _disposables.Dispose();
 
     private async Task LoadAccountsAsync()
     {
@@ -142,10 +144,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach (AccountInfo account in accounts)
-            {
-                Accounts.Add(account);
-            }
+            foreach(AccountInfo account in accounts) Accounts.Add(account);
         }
         finally
         {
@@ -164,7 +163,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if (result.Success && result.AccountId is not null && result.DisplayName is not null)
+            if(result.Success && result.AccountId is not null && result.DisplayName is not null)
             {
                 // Create new account with default sync path
                 var defaultPath = Path.Combine(
@@ -173,26 +172,23 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                     result.DisplayName.Replace("@", "_").Replace(".", "_"));
 
                 var newAccount = new AccountInfo(
-                    AccountId: result.AccountId,
-                    DisplayName: result.DisplayName,
-                    LocalSyncPath: defaultPath,
-                    IsAuthenticated: true,
-                    LastSyncUtc: null,
-                    DeltaToken: null,
-                    EnableDetailedSyncLogging: false,
-                    EnableDebugLogging: false,
-                    MaxParallelUpDownloads: 3,
-                    MaxItemsInBatch: 50,
-                    AutoSyncIntervalMinutes: null);
+                    result.AccountId,
+                    result.DisplayName,
+                    defaultPath,
+                    true,
+                    null,
+                    null,
+                    false,
+                    false,
+                    3,
+                    50,
+                    null);
 
                 await _accountRepository.AddAsync(newAccount);
                 Accounts.Add(newAccount);
                 SelectedAccount = newAccount;
             }
-            else if (!result.Success && result.ErrorMessage is not null)
-            {
-                _ = ShowToastAsync(result.ErrorMessage);
-            }
+            else if(!result.Success && result.ErrorMessage is not null) _ = ShowToastAsync(result.ErrorMessage);
         }
         finally
         {
@@ -202,10 +198,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task RemoveAccountAsync()
     {
-        if (SelectedAccount is null)
-        {
-            return;
-        }
+        if(SelectedAccount is null) return;
 
         IsLoading = true;
         try
@@ -222,10 +215,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task LoginAsync()
     {
-        if (SelectedAccount is null)
-        {
-            return;
-        }
+        if(SelectedAccount is null) return;
 
         IsLoading = true;
         try
@@ -236,22 +226,19 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if (result.Success)
+            if(result.Success)
             {
                 AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = true };
                 await _accountRepository.UpdateAsync(updatedAccount);
 
                 var index = Accounts.IndexOf(SelectedAccount);
-                if (index >= 0)
+                if(index >= 0)
                 {
                     Accounts[index] = updatedAccount;
                     SelectedAccount = updatedAccount;
                 }
             }
-            else if (!result.Success && result.ErrorMessage is not null)
-            {
-                _ = ShowToastAsync(result.ErrorMessage);
-            }
+            else if(!result.Success && result.ErrorMessage is not null) _ = ShowToastAsync(result.ErrorMessage);
         }
         finally
         {
@@ -274,7 +261,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
             ToastMessage = null;
         }
-        catch (TaskCanceledException)
+        catch(TaskCanceledException)
         {
             // Ignore - a new toast was requested
         }
@@ -287,22 +274,19 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task LogoutAsync()
     {
-        if (SelectedAccount is null)
-        {
-            return;
-        }
+        if(SelectedAccount is null) return;
 
         IsLoading = true;
         try
         {
             var success = await _authService.LogoutAsync(SelectedAccount.AccountId);
-            if (success)
+            if(success)
             {
                 AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };
                 await _accountRepository.UpdateAsync(updatedAccount);
 
                 var index = Accounts.IndexOf(SelectedAccount);
-                if (index >= 0)
+                if(index >= 0)
                 {
                     Accounts[index] = updatedAccount;
                     SelectedAccount = updatedAccount;
@@ -314,7 +298,4 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             IsLoading = false;
         }
     }
-
-    /// <inheritdoc/>
-    public void Dispose() => _disposables.Dispose();
 }

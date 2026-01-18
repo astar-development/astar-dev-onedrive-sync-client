@@ -5,17 +5,18 @@ using AStarOneDriveClient.Services;
 using AStarOneDriveClient.Services.OneDriveServices;
 using AStarOneDriveClient.Services.Sync;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph.Models;
 
 namespace AStarOneDriveClient.Tests.Unit.Services.Sync;
 
 public sealed class ConflictResolverShould
 {
-    private readonly IGraphApiClient _graphApiClient = Substitute.For<IGraphApiClient>();
-    private readonly IFileMetadataRepository _metadataRepo = Substitute.For<IFileMetadataRepository>();
     private readonly IAccountRepository _accountRepo = Substitute.For<IAccountRepository>();
     private readonly ISyncConflictRepository _conflictRepo = Substitute.For<ISyncConflictRepository>();
+    private readonly IGraphApiClient _graphApiClient = Substitute.For<IGraphApiClient>();
     private readonly ILocalFileScanner _localFileScanner = Substitute.For<ILocalFileScanner>();
     private readonly ILogger<ConflictResolver> _logger = Substitute.For<ILogger<ConflictResolver>>();
+    private readonly IFileMetadataRepository _metadataRepo = Substitute.For<IFileMetadataRepository>();
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenConflictIsNull()
@@ -37,8 +38,8 @@ public sealed class ConflictResolverShould
         _ = _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns((AccountInfo?)null);
 
-        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken));
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () => await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal,
+            TestContext.Current.CancellationToken));
 
         exception.Message.ShouldContain("Account not found");
     }
@@ -73,17 +74,15 @@ public sealed class ConflictResolverShould
                 Arg.Any<CancellationToken>());
 
             await _metadataRepo.Received(1).UpdateAsync(
-                Arg.Is<FileMetadata>(m =>
-                    m.Id == metadata.Id &&
-                    m.SyncStatus == FileSyncStatus.Synced &&
-                    m.LastSyncDirection == SyncDirection.Upload),
+                Arg.Is<FileMetadata>(m => m.Id == metadata.Id &&
+                                          m.SyncStatus == FileSyncStatus.Synced &&
+                                          m.LastSyncDirection == SyncDirection.Upload),
                 Arg.Any<CancellationToken>());
 
             await _conflictRepo.Received(1).UpdateAsync(
-                Arg.Is<SyncConflict>(c =>
-                    c.Id == conflict.Id &&
-                    c.IsResolved &&
-                    c.ResolutionStrategy == ConflictResolutionStrategy.KeepLocal),
+                Arg.Is<SyncConflict>(c => c.Id == conflict.Id &&
+                                          c.IsResolved &&
+                                          c.ResolutionStrategy == ConflictResolutionStrategy.KeepLocal),
                 Arg.Any<CancellationToken>());
         }
         finally
@@ -106,8 +105,8 @@ public sealed class ConflictResolverShould
         _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns(metadata);
 
-        FileNotFoundException exception = await Should.ThrowAsync<FileNotFoundException>(async () =>
-            await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken));
+        FileNotFoundException exception = await Should.ThrowAsync<FileNotFoundException>(async () => await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal,
+            TestContext.Current.CancellationToken));
 
         exception.Message.ShouldContain("Local file not found");
     }
@@ -131,10 +130,10 @@ public sealed class ConflictResolverShould
 
         // Mock the download to create the file
         _ = _graphApiClient.DownloadFileAsync(
-            account.AccountId,
-            metadata.Id,
-            localPath,
-            Arg.Any<CancellationToken>())
+                account.AccountId,
+                metadata.Id,
+                localPath,
+                Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
             .AndDoes(_ => File.WriteAllText(localPath, "remote content"));
 
@@ -149,25 +148,20 @@ public sealed class ConflictResolverShould
                 Arg.Any<CancellationToken>());
 
             await _metadataRepo.Received(1).UpdateAsync(
-                Arg.Is<FileMetadata>(m =>
-                    m.Id == metadata.Id &&
-                    m.SyncStatus == FileSyncStatus.Synced &&
-                    m.LastSyncDirection == SyncDirection.Download),
+                Arg.Is<FileMetadata>(m => m.Id == metadata.Id &&
+                                          m.SyncStatus == FileSyncStatus.Synced &&
+                                          m.LastSyncDirection == SyncDirection.Download),
                 Arg.Any<CancellationToken>());
 
             await _conflictRepo.Received(1).UpdateAsync(
-                Arg.Is<SyncConflict>(c =>
-                    c.Id == conflict.Id &&
-                    c.IsResolved &&
-                    c.ResolutionStrategy == ConflictResolutionStrategy.KeepRemote),
+                Arg.Is<SyncConflict>(c => c.Id == conflict.Id &&
+                                          c.IsResolved &&
+                                          c.ResolutionStrategy == ConflictResolutionStrategy.KeepRemote),
                 Arg.Any<CancellationToken>());
         }
         finally
         {
-            if (File.Exists(localPath))
-            {
-                File.Delete(localPath);
-            }
+            if(File.Exists(localPath)) File.Delete(localPath);
 
             Directory.Delete(account.LocalSyncPath, true);
         }
@@ -193,15 +187,15 @@ public sealed class ConflictResolverShould
 
         // Mock the download to create the file
         _ = _graphApiClient.DownloadFileAsync(
-            account.AccountId,
-            metadata.Id,
-            localPath,
-            Arg.Any<CancellationToken>())
+                account.AccountId,
+                metadata.Id,
+                localPath,
+                Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
             .AndDoes(_ => File.WriteAllText(localPath, "remote content"));
 
         // Mock GetDriveItemAsync to return remote file metadata
-        var remoteItem = new Microsoft.Graph.Models.DriveItem
+        var remoteItem = new DriveItem
         {
             Id = metadata.Id,
             Name = "test.txt",
@@ -247,18 +241,16 @@ public sealed class ConflictResolverShould
                 Arg.Any<CancellationToken>());
 
             await _metadataRepo.Received(1).UpdateAsync(
-                Arg.Is<FileMetadata>(m =>
-                    m.Id == metadata.Id &&
-                    m.SyncStatus == FileSyncStatus.Synced &&
-                    m.LastSyncDirection == SyncDirection.Download &&
-                    m.LocalHash == "computed-hash-123"),
+                Arg.Is<FileMetadata>(m => m.Id == metadata.Id &&
+                                          m.SyncStatus == FileSyncStatus.Synced &&
+                                          m.LastSyncDirection == SyncDirection.Download &&
+                                          m.LocalHash == "computed-hash-123"),
                 Arg.Any<CancellationToken>());
 
             await _conflictRepo.Received(1).UpdateAsync(
-                Arg.Is<SyncConflict>(c =>
-                    c.Id == conflict.Id &&
-                    c.IsResolved &&
-                    c.ResolutionStrategy == ConflictResolutionStrategy.KeepBoth),
+                Arg.Is<SyncConflict>(c => c.Id == conflict.Id &&
+                                          c.IsResolved &&
+                                          c.ResolutionStrategy == ConflictResolutionStrategy.KeepBoth),
                 Arg.Any<CancellationToken>());
         }
         finally
@@ -286,8 +278,8 @@ public sealed class ConflictResolverShould
 
         try
         {
-            InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () =>
-                await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken));
+            InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () => await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal,
+                TestContext.Current.CancellationToken));
 
             exception.Message.ShouldContain("File metadata not found");
         }
@@ -330,48 +322,48 @@ public sealed class ConflictResolverShould
             Arg.Any<CancellationToken>());
     }
 
-    private ConflictResolver CreateResolver() =>
-        new(_graphApiClient, _metadataRepo, _accountRepo, _conflictRepo, _localFileScanner, _logger);
+    private ConflictResolver CreateResolver()
+        => new(_graphApiClient, _metadataRepo, _accountRepo, _conflictRepo, _localFileScanner, _logger);
 
-    private static SyncConflict CreateTestConflict() =>
-        new(
-            Id: "conflict-123",
-            AccountId: "account-456",
-            FilePath: "Documents/test.txt",
-            LocalModifiedUtc: DateTime.UtcNow.AddHours(-1),
-            RemoteModifiedUtc: DateTime.UtcNow,
-            LocalSize: 100,
-            RemoteSize: 200,
-            DetectedUtc: DateTime.UtcNow,
-            ResolutionStrategy: ConflictResolutionStrategy.None,
-            IsResolved: false);
+    private static SyncConflict CreateTestConflict()
+        => new(
+            "conflict-123",
+            "account-456",
+            "Documents/test.txt",
+            DateTime.UtcNow.AddHours(-1),
+            DateTime.UtcNow,
+            100,
+            200,
+            DateTime.UtcNow,
+            ConflictResolutionStrategy.None,
+            false);
 
-    private static AccountInfo CreateTestAccount() =>
-        new(
-            AccountId: "account-456",
-            DisplayName: "Test User",
-            LocalSyncPath: Path.Combine(Path.GetTempPath(), Guid.CreateVersion7().ToString()),
-            IsAuthenticated: true,
-            LastSyncUtc: DateTime.UtcNow,
-            DeltaToken: null,
-            EnableDetailedSyncLogging: false,
-            EnableDebugLogging: false,
-            MaxParallelUpDownloads: 3,
-            MaxItemsInBatch: 50,
-            AutoSyncIntervalMinutes: null);
+    private static AccountInfo CreateTestAccount()
+        => new(
+            "account-456",
+            "Test User",
+            Path.Combine(Path.GetTempPath(), Guid.CreateVersion7().ToString()),
+            true,
+            DateTime.UtcNow,
+            null,
+            false,
+            false,
+            3,
+            50,
+            null);
 
-    private static FileMetadata CreateTestMetadata(string accountId, string filePath) =>
-        new(
-            Id: "file-789",
-            AccountId: accountId,
-            Name: Path.GetFileName(filePath),
-            Path: filePath,
-            Size: 100,
-            LastModifiedUtc: DateTime.UtcNow,
-            LocalPath: filePath,
-            CTag: "ctag-123",
-            ETag: "etag-456",
-            LocalHash: "hash-789",
-            SyncStatus: FileSyncStatus.Synced,
-            LastSyncDirection: SyncDirection.Download);
+    private static FileMetadata CreateTestMetadata(string accountId, string filePath)
+        => new(
+            "file-789",
+            accountId,
+            Path.GetFileName(filePath),
+            filePath,
+            100,
+            DateTime.UtcNow,
+            filePath,
+            "ctag-123",
+            "etag-456",
+            "hash-789",
+            FileSyncStatus.Synced,
+            SyncDirection.Download);
 }

@@ -5,7 +5,6 @@ public class ViewModelResultExtensionsShould
     [Fact]
     public void ApplyInvokeOnSuccessForOk()
     {
-
         var ok = new Result<string, Exception>.Ok("value");
         string? captured = null;
         var errorCalled = false;
@@ -19,7 +18,6 @@ public class ViewModelResultExtensionsShould
     [Fact]
     public void ApplyInvokeOnErrorWhenErrorAndHandlerProvided()
     {
-
         var ex = new InvalidOperationException("boom");
         var err = new Result<int, Exception>.Error(ex);
         Exception? captured = null;
@@ -34,7 +32,6 @@ public class ViewModelResultExtensionsShould
     [Fact]
     public void ApplyDoNothingOnErrorWhenNoOnErrorProvided()
     {
-
         var err = new Result<int, Exception>.Error(new Exception("x"));
         var successCalled = false;
 
@@ -46,7 +43,6 @@ public class ViewModelResultExtensionsShould
     [Fact]
     public async Task ApplyAsyncWithActionHandlersInvokesSuccessForOk()
     {
-
         static Task<Result<int, Exception>> TaskOk()
         {
             return Task.FromResult<Result<int, Exception>>(new Result<int, Exception>.Ok(7));
@@ -64,7 +60,6 @@ public class ViewModelResultExtensionsShould
     [Fact]
     public async Task ApplyAsyncWithActionHandlersInvokesErrorForError()
     {
-
         var ex = new Exception("bad");
 
         Task<Result<int, Exception>> TaskErr()
@@ -84,7 +79,6 @@ public class ViewModelResultExtensionsShould
     [Fact]
     public async Task ApplyAsyncWithAsyncHandlersInvokesSuccessForOk()
     {
-
         static Task<Result<string, Exception>> TaskOk()
         {
             return Task.FromResult<Result<string, Exception>>(new Result<string, Exception>.Ok("ok"));
@@ -110,7 +104,6 @@ public class ViewModelResultExtensionsShould
     [Fact]
     public async Task ApplyAsyncWithAsyncHandlersInvokesErrorWhenProvided()
     {
-
         var ex = new InvalidOperationException("nope");
 
         Task<Result<bool, Exception>> TaskErr()
@@ -138,7 +131,6 @@ public class ViewModelResultExtensionsShould
     [Fact]
     public async Task ApplyAsyncWithAsyncHandlersDoNothingOnErrorWhenNoOnErrorProvided()
     {
-
         static Task<Result<int, Exception>> TaskErr()
         {
             return Task.FromResult<Result<int, Exception>>(new Result<int, Exception>.Error(new Exception("err")));

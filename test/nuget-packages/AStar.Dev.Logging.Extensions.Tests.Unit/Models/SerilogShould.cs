@@ -19,7 +19,7 @@ public class SerilogShould
     [Fact]
     public void SetTheEnrichPropertyToTheProvidedValues()
     {
-        var serilog       = new Extensions.Models.Serilog();
+        var serilog = new Extensions.Models.Serilog();
         var testEnrichers = new[] { "Enricher1", "Enricher2" };
 
         serilog.Enrich = testEnrichers;
@@ -43,7 +43,7 @@ public class SerilogShould
     {
         var serilog = new Extensions.Models.Serilog();
 
-        WriteTo[] writeToConfigs = [new WriteTo { Name = "Console", Args = new() { ServerUrl = "http://localhost" } }, new WriteTo { Name = "File", Args = new() { ServerUrl = "C:\\Logs" } }];
+        WriteTo[] writeToConfigs = [new() { Name = "Console", Args = new Args { ServerUrl = "http://localhost" } }, new() { Name = "File", Args = new Args { ServerUrl = "C:\\Logs" } }];
 
         serilog.WriteTo = writeToConfigs;
 
@@ -65,8 +65,8 @@ public class SerilogShould
     [Fact]
     public void SetTheMinimumLevelPropertyToTheProvidedValues()
     {
-        var serilog              = new Extensions.Models.Serilog();
-        var modifiedMinimumLevel = new MinimumLevel { Default = "Error", Override = new() { MicrosoftAspNetCore = "Warning", SystemNetHttp = "Information", AStar = "Debug" } };
+        var serilog = new Extensions.Models.Serilog();
+        var modifiedMinimumLevel = new MinimumLevel { Default = "Error", Override = new Override { MicrosoftAspNetCore = "Warning", SystemNetHttp = "Information", AStar = "Debug" } };
 
         serilog.MinimumLevel = modifiedMinimumLevel;
 

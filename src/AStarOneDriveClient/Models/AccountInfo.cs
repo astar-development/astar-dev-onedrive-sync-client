@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents account information for a OneDrive account.
+///     Represents account information for a OneDrive account.
 /// </summary>
 /// <param name="AccountId">Unique identifier for the account.</param>
 /// <param name="DisplayName">Display name of the account holder.</param>

@@ -45,7 +45,7 @@ public abstract class Option<T>
     /// <returns>
     ///     <c>true</c> if the specified object is equal to the current instance; otherwise, <c>false</c>.
     /// </returns>
-    public override bool Equals(object? obj)
+    public override bool Equals(object obj)
         => obj is Option<T> other && this switch
         {
             Some some => other is Some otherSome && EqualityComparer<T>.Default.Equals(some.Value, otherSome.Value),

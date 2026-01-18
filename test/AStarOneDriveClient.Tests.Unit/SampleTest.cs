@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Tests.Unit;
 
 /// <summary>
-/// Sample test to verify test infrastructure is working.
+///     Sample test to verify test infrastructure is working.
 /// </summary>
 public class SampleTestShould
 {

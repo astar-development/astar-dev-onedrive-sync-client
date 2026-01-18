@@ -10,8 +10,7 @@ public class ViewSyncHistoryViewModelShould
     {
         IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
 
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
-            new ViewSyncHistoryViewModel(null!, mockFileOpLogRepo));
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new ViewSyncHistoryViewModel(null!, mockFileOpLogRepo));
 
         exception.ParamName.ShouldBe("accountRepository");
     }
@@ -21,8 +20,7 @@ public class ViewSyncHistoryViewModelShould
     {
         IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
 
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
-            new ViewSyncHistoryViewModel(mockAccountRepo, null!));
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new ViewSyncHistoryViewModel(mockAccountRepo, null!));
 
         exception.ParamName.ShouldBe("fileOperationLogRepository");
     }

@@ -11,7 +11,7 @@ public static class ViewModelResultExtensions
     /// <summary>
     ///     Applies a Result to onSuccess/onError handlers.
     /// </summary>
-    public static void Apply<T>(this Result<T, Exception> result, Action<T> onSuccess, Action<Exception>? onError = null)
+    public static void Apply<T>(this Result<T, Exception> result, Action<T> onSuccess, Action<Exception> onError = null)
     {
         switch(result)
         {
@@ -27,18 +27,18 @@ public static class ViewModelResultExtensions
     /// <summary>
     ///     Awaits a task Result and applies handlers.
     /// </summary>
-    public static async Task ApplyAsync<T>(this Task<Result<T, Exception>> resultTask, Action<T> onSuccess, Action<Exception>? onError = null)
+    public static async Task ApplyAsync<T>(this Task<Result<T, Exception>> resultTask, Action<T> onSuccess, Action<Exception> onError = null)
     {
-        Result<T, Exception>? result = await resultTask.ConfigureAwait(false);
+        Result<T, Exception> result = await resultTask.ConfigureAwait(false);
         result.Apply(onSuccess, onError);
     }
 
     /// <summary>
     ///     Awaits a task Result and applies async handlers.
     /// </summary>
-    public static async Task ApplyAsync<T>(this Task<Result<T, Exception>> resultTask, Func<T, Task> onSuccessAsync, Func<Exception, Task>? onErrorAsync = null)
+    public static async Task ApplyAsync<T>(this Task<Result<T, Exception>> resultTask, Func<T, Task> onSuccessAsync, Func<Exception, Task> onErrorAsync = null)
     {
-        Result<T, Exception>? result = await resultTask.ConfigureAwait(false);
+        Result<T, Exception> result = await resultTask.ConfigureAwait(false);
         switch(result)
         {
             case Result<T, Exception>.Ok ok:

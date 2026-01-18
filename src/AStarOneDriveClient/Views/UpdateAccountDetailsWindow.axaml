@@ -1,7 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:AStarOneDriveClient.ViewModels"
-        xmlns:controls="using:Avalonia.Controls"
         x:Class="AStarOneDriveClient.Views.UpdateAccountDetailsWindow"
         x:DataType="vm:UpdateAccountDetailsViewModel"
         Title="Update Account Details"

@@ -3,7 +3,7 @@ using AStarOneDriveClient.Models.Enums;
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents metadata for a synchronized file.
+///     Represents metadata for a synchronized file.
 /// </summary>
 /// <param name="Id">Unique identifier (typically OneDrive item ID).</param>
 /// <param name="AccountId">Account identifier.</param>

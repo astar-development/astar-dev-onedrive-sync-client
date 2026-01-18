@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Authentication;
 
 /// <summary>
-/// Result of an authentication operation.
+///     Result of an authentication operation.
 /// </summary>
 /// <param name="Success">Indicates whether the operation was successful.</param>
 /// <param name="AccountId">The authenticated account identifier.</param>

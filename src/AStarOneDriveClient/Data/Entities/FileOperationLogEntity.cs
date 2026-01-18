@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Data.Entities;
 
 /// <summary>
-/// Database entity for file operation log.
+///     Database entity for file operation log.
 /// </summary>
 public class FileOperationLogEntity
 {

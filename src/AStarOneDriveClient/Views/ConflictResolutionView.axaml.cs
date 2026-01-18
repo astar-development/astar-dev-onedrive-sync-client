@@ -3,15 +3,12 @@ using Avalonia.Controls;
 namespace AStarOneDriveClient.Views;
 
 /// <summary>
-/// Code-behind for the conflict resolution view.
+///     Code-behind for the conflict resolution view.
 /// </summary>
 public partial class ConflictResolutionView : UserControl
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="ConflictResolutionView"/>.
+    ///     Initializes a new instance of <see cref="ConflictResolutionView" />.
     /// </summary>
-    public ConflictResolutionView()
-    {
-        InitializeComponent();
-    }
+    public ConflictResolutionView() => InitializeComponent();
 }

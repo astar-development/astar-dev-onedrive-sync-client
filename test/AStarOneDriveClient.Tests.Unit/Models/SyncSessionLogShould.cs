@@ -1,3 +1,5 @@
+using AStarOneDriveClient.Models.Enums;
+
 namespace AStarOneDriveClient.Models;
 
 public class SyncSessionLogShould
@@ -11,7 +13,7 @@ public class SyncSessionLogShould
         syncSessionLog.AccountId.ShouldBe("test-account-id");
         syncSessionLog.StartedUtc.ShouldBe(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         syncSessionLog.CompletedUtc.ShouldBeNull();
-        syncSessionLog.Status.ShouldBe(Enums.SyncStatus.Running);
+        syncSessionLog.Status.ShouldBe(SyncStatus.Running);
         syncSessionLog.FilesUploaded.ShouldBe(0);
         syncSessionLog.FilesDownloaded.ShouldBe(0);
         syncSessionLog.FilesDeleted.ShouldBe(0);

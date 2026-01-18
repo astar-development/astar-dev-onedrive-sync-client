@@ -3,12 +3,12 @@ using AStarOneDriveClient.Models;
 namespace AStarOneDriveClient.Services;
 
 /// <summary>
-/// Service for detecting changes on OneDrive using delta queries.
+///     Service for detecting changes on OneDrive using delta queries.
 /// </summary>
 public interface IRemoteChangeDetector
 {
     /// <summary>
-    /// Detects changes on OneDrive for the specified account and folder.
+    ///     Detects changes on OneDrive for the specified account and folder.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="folderPath">The OneDrive folder path to monitor.</param>

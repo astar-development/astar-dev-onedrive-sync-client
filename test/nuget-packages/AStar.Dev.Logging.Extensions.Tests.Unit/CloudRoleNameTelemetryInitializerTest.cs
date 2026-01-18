@@ -11,11 +11,11 @@ public class CloudRoleNameTelemetryInitializerTest
     [Fact]
     public void Initialize_ShouldSetRoleNameAndInstrumentationKey()
     {
-        var roleName             = "TestRole";
-        var instrumentationKey   = "TestKey";
+        var roleName = "TestRole";
+        var instrumentationKey = "TestKey";
         var telemetryInitializer = new CloudRoleNameTelemetryInitializer(roleName, instrumentationKey);
-        ITelemetry mockTelemetry        = Substitute.For<ITelemetry>();
-        var telemetryContext     = new TelemetryContext();
+        ITelemetry mockTelemetry = Substitute.For<ITelemetry>();
+        var telemetryContext = new TelemetryContext();
         mockTelemetry.Context.Returns(telemetryContext);
 
         telemetryInitializer.Initialize(mockTelemetry);
@@ -27,8 +27,8 @@ public class CloudRoleNameTelemetryInitializerTest
     [Fact]
     public void Initialize_ShouldNotThrowForNullTelemetry()
     {
-        var roleName             = "TestRole";
-        var instrumentationKey   = "TestKey";
+        var roleName = "TestRole";
+        var instrumentationKey = "TestKey";
         var telemetryInitializer = new CloudRoleNameTelemetryInitializer(roleName, instrumentationKey);
 
         Exception exception = Record.Exception(() => telemetryInitializer.Initialize(null!))!;
@@ -38,11 +38,11 @@ public class CloudRoleNameTelemetryInitializerTest
     [Fact]
     public void Initialize_ShouldHandleDifferentRoleNameAndInstrumentationKey()
     {
-        var roleName             = "DifferentRole";
-        var instrumentationKey   = "DifferentKey";
+        var roleName = "DifferentRole";
+        var instrumentationKey = "DifferentKey";
         var telemetryInitializer = new CloudRoleNameTelemetryInitializer(roleName, instrumentationKey);
-        ITelemetry mockTelemetry        = Substitute.For<ITelemetry>();
-        var telemetryContext     = new TelemetryContext();
+        ITelemetry mockTelemetry = Substitute.For<ITelemetry>();
+        var telemetryContext = new TelemetryContext();
         mockTelemetry.Context.Returns(telemetryContext);
 
         telemetryInitializer.Initialize(mockTelemetry);
@@ -54,11 +54,11 @@ public class CloudRoleNameTelemetryInitializerTest
     [Fact]
     public void Initialize_ShouldNotOverrideExistingRoleNameOrInstrumentationKey()
     {
-        var roleName             = "NewRole";
-        var instrumentationKey   = "NewKey";
+        var roleName = "NewRole";
+        var instrumentationKey = "NewKey";
         var telemetryInitializer = new CloudRoleNameTelemetryInitializer(roleName, instrumentationKey);
-        ITelemetry mockTelemetry        = Substitute.For<ITelemetry>();
-        var telemetryContext     = new TelemetryContext { Cloud = { RoleName = "ExistingRole" }, InstrumentationKey = "ExistingKey" };
+        ITelemetry mockTelemetry = Substitute.For<ITelemetry>();
+        var telemetryContext = new TelemetryContext { Cloud = { RoleName = "ExistingRole" }, InstrumentationKey = "ExistingKey" };
         mockTelemetry.Context.Returns(telemetryContext);
 
         telemetryInitializer.Initialize(mockTelemetry);
@@ -70,11 +70,11 @@ public class CloudRoleNameTelemetryInitializerTest
     [Fact]
     public void Initialize_WithEmptyRoleNameAndInstrumentationKey_ShouldSetEmptyValues()
     {
-        var roleName             = string.Empty;
-        var instrumentationKey   = string.Empty;
+        var roleName = string.Empty;
+        var instrumentationKey = string.Empty;
         var telemetryInitializer = new CloudRoleNameTelemetryInitializer(roleName, instrumentationKey);
-        ITelemetry mockTelemetry        = Substitute.For<ITelemetry>();
-        var telemetryContext     = new TelemetryContext();
+        ITelemetry mockTelemetry = Substitute.For<ITelemetry>();
+        var telemetryContext = new TelemetryContext();
         mockTelemetry.Context.Returns(telemetryContext);
 
         telemetryInitializer.Initialize(mockTelemetry);

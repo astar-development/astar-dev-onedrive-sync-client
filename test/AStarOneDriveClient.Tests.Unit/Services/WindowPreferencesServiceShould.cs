@@ -101,8 +101,7 @@ public class WindowPreferencesServiceShould
         using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
 
-        ArgumentNullException exception = await Should.ThrowAsync<ArgumentNullException>(
-            async () => await service.SaveAsync(null!, CancellationToken.None)
+        ArgumentNullException exception = await Should.ThrowAsync<ArgumentNullException>(async () => await service.SaveAsync(null!, CancellationToken.None)
         );
 
         exception.ParamName.ShouldBe("preferences");
@@ -111,8 +110,7 @@ public class WindowPreferencesServiceShould
     [Fact]
     public void ThrowArgumentNullExceptionWhenContextIsNull()
     {
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(
-            () => new WindowPreferencesService(null!)
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new WindowPreferencesService(null!)
         );
 
         exception.ParamName.ShouldBe("context");
@@ -126,8 +124,7 @@ public class WindowPreferencesServiceShould
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        _ = await Should.ThrowAsync<OperationCanceledException>(
-            async () => await service.LoadAsync(cts.Token)
+        _ = await Should.ThrowAsync<OperationCanceledException>(async () => await service.LoadAsync(cts.Token)
         );
     }
 
@@ -140,8 +137,7 @@ public class WindowPreferencesServiceShould
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        _ = await Should.ThrowAsync<OperationCanceledException>(
-            async () => await service.SaveAsync(preferences, cts.Token)
+        _ = await Should.ThrowAsync<OperationCanceledException>(async () => await service.SaveAsync(preferences, cts.Token)
         );
     }
 

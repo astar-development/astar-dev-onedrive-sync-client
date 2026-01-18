@@ -53,10 +53,7 @@ public class ConflictItemViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(ConflictItemViewModel.SelectedStrategy))
-            {
-                propertyChanged = true;
-            }
+            if(e.PropertyName == nameof(ConflictItemViewModel.SelectedStrategy)) propertyChanged = true;
         };
 
         viewModel.SelectedStrategy = ConflictResolutionStrategy.KeepRemote;
@@ -74,10 +71,7 @@ public class ConflictItemViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(ConflictItemViewModel.SelectedStrategy))
-            {
-                propertyChangedCount++;
-            }
+            if(e.PropertyName == nameof(ConflictItemViewModel.SelectedStrategy)) propertyChangedCount++;
         };
 
         viewModel.SelectedStrategy = ConflictResolutionStrategy.None;
@@ -104,11 +98,7 @@ public class ConflictItemViewModelShould
     public void DisplayLocalDetailsWithTimestampAndSize()
     {
         var localModified = new DateTime(2026, 1, 5, 10, 30, 45, DateTimeKind.Utc);
-        SyncConflict conflict = CreateTestConflict() with
-        {
-            LocalModifiedUtc = localModified,
-            LocalSize = 2048
-        };
+        SyncConflict conflict = CreateTestConflict() with { LocalModifiedUtc = localModified, LocalSize = 2048 };
 
         var viewModel = new ConflictItemViewModel(conflict);
 
@@ -119,11 +109,7 @@ public class ConflictItemViewModelShould
     public void DisplayRemoteDetailsWithTimestampAndSize()
     {
         var remoteModified = new DateTime(2026, 1, 6, 14, 20, 30, DateTimeKind.Utc);
-        SyncConflict conflict = CreateTestConflict() with
-        {
-            RemoteModifiedUtc = remoteModified,
-            RemoteSize = 3072
-        };
+        SyncConflict conflict = CreateTestConflict() with { RemoteModifiedUtc = remoteModified, RemoteSize = 3072 };
 
         var viewModel = new ConflictItemViewModel(conflict);
 

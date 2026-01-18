@@ -3,7 +3,7 @@ using AStarOneDriveClient.Models.Enums;
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents the current state of synchronization for an account.
+///     Represents the current state of synchronization for an account.
 /// </summary>
 /// <param name="AccountId">Account identifier.</param>
 /// <param name="Status">Current synchronization status.</param>
@@ -36,20 +36,20 @@ public sealed record SyncState(
     DateTime? LastUpdateUtc
 )
 {
-    public static SyncState CreateInitial(string accountId) =>
-        new(
-            AccountId: accountId,
-            Status: SyncStatus.Idle,
-            TotalFiles: 0,
-            CompletedFiles: 0,
-            TotalBytes: 0,
-            CompletedBytes: 0,
-            FilesDownloading: 0,
-            FilesUploading: 0,
-            FilesDeleted: 0,
-            ConflictsDetected: 0,
-            MegabytesPerSecond: 0,
-            EstimatedSecondsRemaining: null,
-            CurrentScanningFolder: null,
-            LastUpdateUtc: null);
-};
+    public static SyncState CreateInitial(string accountId)
+        => new(
+            accountId,
+            SyncStatus.Idle,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            null,
+            null,
+            null);
+}

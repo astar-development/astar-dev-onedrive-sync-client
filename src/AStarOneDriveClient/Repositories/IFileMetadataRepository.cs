@@ -4,12 +4,12 @@ using AStarOneDriveClient.Models.Enums;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository for managing file metadata.
+///     Repository for managing file metadata.
 /// </summary>
 public interface IFileMetadataRepository
 {
     /// <summary>
-    /// Gets all file metadata for a specific account.
+    ///     Gets all file metadata for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -17,7 +17,7 @@ public interface IFileMetadataRepository
     Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets file metadata by its ID.
+    ///     Gets file metadata by its ID.
     /// </summary>
     /// <param name="id">The file identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -25,7 +25,7 @@ public interface IFileMetadataRepository
     Task<FileMetadata?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets file metadata by account ID and path.
+    ///     Gets file metadata by account ID and path.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="path">The file path.</param>
@@ -34,7 +34,7 @@ public interface IFileMetadataRepository
     Task<FileMetadata?> GetByPathAsync(string accountId, string path, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all files with a specific sync status for an account.
+    ///     Gets all files with a specific sync status for an account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="status">The sync status to filter by.</param>
@@ -43,35 +43,35 @@ public interface IFileMetadataRepository
     Task<IReadOnlyList<FileMetadata>> GetByStatusAsync(string accountId, FileSyncStatus status, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds new file metadata.
+    ///     Adds new file metadata.
     /// </summary>
     /// <param name="fileMetadata">The file metadata to add.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task AddAsync(FileMetadata fileMetadata, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Updates existing file metadata.
+    ///     Updates existing file metadata.
     /// </summary>
     /// <param name="fileMetadata">The file metadata to update.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task UpdateAsync(FileMetadata fileMetadata, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes file metadata by its ID.
+    ///     Deletes file metadata by its ID.
     /// </summary>
     /// <param name="id">The file identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes all file metadata for a specific account.
+    ///     Deletes all file metadata for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Saves multiple file metadata entries in a batch operation.
+    ///     Saves multiple file metadata entries in a batch operation.
     /// </summary>
     /// <param name="fileMetadataList">The file metadata entries to save.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

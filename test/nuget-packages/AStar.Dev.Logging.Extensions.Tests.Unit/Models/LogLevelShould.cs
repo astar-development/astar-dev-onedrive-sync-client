@@ -1,14 +1,15 @@
 using AStar.Dev.Utilities;
+using LogLevel = AStar.Dev.Logging.Extensions.Models.LogLevel;
 
 namespace AStar.Dev.Logging.Extensions.Tests.Unit.Models;
 
-[TestSubject(typeof(Extensions.Models.LogLevel))]
+[TestSubject(typeof(LogLevel))]
 public class LogLevelShould
 {
     [Fact]
     public void Default_ShouldHaveInitialValue_EmptyString()
     {
-        var logLevel = new Extensions.Models.LogLevel();
+        var logLevel = new LogLevel();
 
         var result = logLevel.Default;
 
@@ -19,7 +20,7 @@ public class LogLevelShould
     [Fact]
     public void Default_ShouldAllowSettingValue()
     {
-        var logLevel      = new Extensions.Models.LogLevel();
+        var logLevel = new LogLevel();
         var expectedValue = "Info";
 
         logLevel.Default = expectedValue;
@@ -31,7 +32,7 @@ public class LogLevelShould
     [Fact]
     public void MicrosoftAspNetCore_ShouldHaveInitialValue_EmptyString()
     {
-        var logLevel = new Extensions.Models.LogLevel();
+        var logLevel = new LogLevel();
 
         var result = logLevel.MicrosoftAspNetCore;
 
@@ -42,7 +43,7 @@ public class LogLevelShould
     [Fact]
     public void MicrosoftAspNetCore_ShouldAllowSettingValue()
     {
-        var logLevel      = new Extensions.Models.LogLevel();
+        var logLevel = new LogLevel();
         var expectedValue = "Warning";
 
         logLevel.MicrosoftAspNetCore = expectedValue;
@@ -54,7 +55,7 @@ public class LogLevelShould
     [Fact]
     public void AStar_ShouldHaveInitialValue_EmptyString()
     {
-        var logLevel = new Extensions.Models.LogLevel();
+        var logLevel = new LogLevel();
 
         var result = logLevel.AStar;
 
@@ -65,7 +66,7 @@ public class LogLevelShould
     [Fact]
     public void AStar_ShouldAllowSettingValue()
     {
-        var logLevel      = new Extensions.Models.LogLevel();
+        var logLevel = new LogLevel();
         var expectedValue = "Error";
 
         logLevel.AStar = expectedValue;
@@ -77,7 +78,7 @@ public class LogLevelShould
     [Fact]
     public void ToString_ShouldListAllProperties()
     {
-        var logLevel = new Extensions.Models.LogLevel { Default = "Debug", MicrosoftAspNetCore = "Information", AStar = "Error" };
+        var logLevel = new LogLevel { Default = "Debug", MicrosoftAspNetCore = "Information", AStar = "Error" };
 
         var result = logLevel.ToJson();
 
@@ -87,9 +88,9 @@ public class LogLevelShould
     [Fact]
     public void Equals_ShouldReturnTrueForIdenticalValues()
     {
-        var logLevel1 = new Extensions.Models.LogLevel { Default = "Info", MicrosoftAspNetCore = "Debug", AStar = "Trace" };
+        var logLevel1 = new LogLevel { Default = "Info", MicrosoftAspNetCore = "Debug", AStar = "Trace" };
 
-        var logLevel2 = new Extensions.Models.LogLevel { Default = "Info", MicrosoftAspNetCore = "Debug", AStar = "Trace" };
+        var logLevel2 = new LogLevel { Default = "Info", MicrosoftAspNetCore = "Debug", AStar = "Trace" };
 
         logLevel1.ToJson().ShouldBeEquivalentTo(logLevel2.ToJson());
     }
@@ -97,9 +98,9 @@ public class LogLevelShould
     [Fact]
     public void Equals_ShouldReturnFalseForDifferentValues()
     {
-        var logLevel1 = new Extensions.Models.LogLevel { Default = "Info", MicrosoftAspNetCore = "Debug", AStar = "Trace" };
+        var logLevel1 = new LogLevel { Default = "Info", MicrosoftAspNetCore = "Debug", AStar = "Trace" };
 
-        var logLevel2 = new Extensions.Models.LogLevel { Default = "Warn", MicrosoftAspNetCore = "Error", AStar = "Fatal" };
+        var logLevel2 = new LogLevel { Default = "Warn", MicrosoftAspNetCore = "Error", AStar = "Fatal" };
 
         var areEqual = logLevel1.Equals(logLevel2);
 

@@ -65,10 +65,7 @@ public class AccountManagementViewModelShould
 
         viewModel.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(AccountManagementViewModel.SelectedAccount))
-            {
-                propertyChanged = true;
-            }
+            if(args.PropertyName == nameof(AccountManagementViewModel.SelectedAccount)) propertyChanged = true;
         };
 
         viewModel.SelectedAccount = account;
@@ -112,10 +109,7 @@ public class AccountManagementViewModelShould
 
         viewModel.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(AccountManagementViewModel.IsLoading))
-            {
-                propertyChanged = true;
-            }
+            if(args.PropertyName == nameof(AccountManagementViewModel.IsLoading)) propertyChanged = true;
         };
 
         viewModel.IsLoading = true;
@@ -273,7 +267,7 @@ public class AccountManagementViewModelShould
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
-        AccountInfo account = CreateAccount("acc1", "User 1", isAuthenticated: false);
+        AccountInfo account = CreateAccount("acc1", "User 1", false);
 
         viewModel.SelectedAccount = account;
 
@@ -291,7 +285,7 @@ public class AccountManagementViewModelShould
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
-        AccountInfo account = CreateAccount("acc1", "User 1", isAuthenticated: true);
+        AccountInfo account = CreateAccount("acc1", "User 1", true);
 
         viewModel.SelectedAccount = account;
 
@@ -312,7 +306,7 @@ public class AccountManagementViewModelShould
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
-        AccountInfo account = CreateAccount("acc1", "User 1", isAuthenticated: false);
+        AccountInfo account = CreateAccount("acc1", "User 1", false);
         viewModel.SelectedAccount = account;
 
         _ = await viewModel.LoginCommand.Execute();
@@ -346,7 +340,7 @@ public class AccountManagementViewModelShould
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
-        AccountInfo account = CreateAccount("acc1", "User 1", isAuthenticated: true);
+        AccountInfo account = CreateAccount("acc1", "User 1", true);
 
         viewModel.SelectedAccount = account;
 
@@ -364,7 +358,7 @@ public class AccountManagementViewModelShould
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
-        AccountInfo account = CreateAccount("acc1", "User 1", isAuthenticated: false);
+        AccountInfo account = CreateAccount("acc1", "User 1", false);
 
         viewModel.SelectedAccount = account;
 
@@ -384,7 +378,7 @@ public class AccountManagementViewModelShould
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
-        AccountInfo account = CreateAccount("acc1", "User 1", isAuthenticated: true);
+        AccountInfo account = CreateAccount("acc1", "User 1", true);
         viewModel.SelectedAccount = account;
 
         _ = await viewModel.LogoutCommand.Execute();
@@ -445,6 +439,6 @@ public class AccountManagementViewModelShould
         Should.NotThrow(viewModel.Dispose);
     }
 
-    private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false) =>
-        new(id, displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, null);
+    private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false)
+        => new(id, displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, null);
 }

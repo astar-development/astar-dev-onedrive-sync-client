@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Data.Entities;
 
 /// <summary>
-/// Entity for storing debug log entries in the database.
+///     Entity for storing debug log entries in the database.
 /// </summary>
 public sealed class DebugLogEntity
 {

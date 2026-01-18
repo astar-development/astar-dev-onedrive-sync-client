@@ -9,12 +9,14 @@ namespace AStar.Dev.Logging.Extensions.EventIds;
 public static partial class AStarEventIds
 {
     /// <summary>
-    /// Provides the event identifier used for logging the start of a OneDrive synchronization operation.
+    ///     Provides the event identifier used for logging the start of a OneDrive synchronization operation.
     /// </summary>
-    /// <remarks>Use this constant when emitting log entries to indicate that a OneDriveSync process has
-    /// begun. This value is intended for integration with structured logging systems that support event IDs, such as
-    /// Microsoft.Extensions.Logging.</remarks>
-    public static partial class OneDriveSync
+    /// <remarks>
+    ///     Use this constant when emitting log entries to indicate that a OneDriveSync process has
+    ///     begun. This value is intended for integration with structured logging systems that support event IDs, such as
+    ///     Microsoft.Extensions.Logging.
+    /// </remarks>
+    public static class OneDriveSync
     {
         /// <summary>
         ///     Gets the <see cref="EventId" /> preconfigured for logging OneDriveSync start

@@ -1,24 +1,18 @@
 using AStarOneDriveClient.Authentication;
 using Microsoft.Identity.Client;
+using AuthenticationResult = AStarOneDriveClient.Authentication.AuthenticationResult;
 
 namespace AStarOneDriveClient.Tests.Unit.Authentication;
 
 public class AuthServiceShould
 {
-    private static AuthConfiguration CreateTestConfiguration() =>
-        new()
-        {
-            ClientId = "test-client-id",
-            RedirectUri = "http://localhost",
-            Authority = "https://login.microsoftonline.com/common",
-            Scopes = ["test.scope"]
-        };
+    private static AuthConfiguration CreateTestConfiguration()
+        => new() { ClientId = "test-client-id", RedirectUri = "http://localhost", Authority = "https://login.microsoftonline.com/common", Scopes = ["test.scope"] };
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenAuthClientIsNull()
     {
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(
-            () => new AuthService(null!, CreateTestConfiguration())
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new AuthService(null!, CreateTestConfiguration())
         );
 
         exception.ParamName.ShouldBe("authClient");
@@ -36,7 +30,7 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AStarOneDriveClient.Authentication.AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
+        AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
         result.Success.ShouldBeTrue();
         result.AccountId.ShouldBe("acc1");
@@ -53,7 +47,7 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AStarOneDriveClient.Authentication.AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
+        AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
         result.Success.ShouldBeFalse();
         result.AccountId.ShouldBeNull();
@@ -73,7 +67,7 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AStarOneDriveClient.Authentication.AuthenticationResult result = await service.LoginAsync(cts.Token);
+        AuthenticationResult result = await service.LoginAsync(cts.Token);
 
         result.Success.ShouldBeFalse();
         result.ErrorMessage.ShouldBe("Login was cancelled.");

@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Data.Entities;
 
 /// <summary>
-/// Database entity for sync session log.
+///     Database entity for sync session log.
 /// </summary>
 public class SyncSessionLogEntity
 {

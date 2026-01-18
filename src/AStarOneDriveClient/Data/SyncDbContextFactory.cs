@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Design;
 namespace AStarOneDriveClient.Data;
 
 /// <summary>
-/// Design-time factory for creating SyncDbContext instances during migrations.
+///     Design-time factory for creating SyncDbContext instances during migrations.
 /// </summary>
 public sealed class SyncDbContextFactory : IDesignTimeDbContextFactory<SyncDbContext>
 {

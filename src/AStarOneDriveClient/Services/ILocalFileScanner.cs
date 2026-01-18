@@ -3,12 +3,12 @@ using AStarOneDriveClient.Models;
 namespace AStarOneDriveClient.Services;
 
 /// <summary>
-/// Service for scanning local file system and detecting file changes.
+///     Service for scanning local file system and detecting file changes.
 /// </summary>
 public interface ILocalFileScanner
 {
     /// <summary>
-    /// Scans a local folder and returns metadata for all files found.
+    ///     Scans a local folder and returns metadata for all files found.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="localFolderPath">The local folder path to scan.</param>
@@ -22,7 +22,7 @@ public interface ILocalFileScanner
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Computes the SHA256 hash of a file.
+    ///     Computes the SHA256 hash of a file.
     /// </summary>
     /// <param name="filePath">The path to the file.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

@@ -7,18 +7,13 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository implementation for managing sync session logs.
+///     Repository implementation for managing sync session logs.
 /// </summary>
-public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
+public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessionLogRepository
 {
-    private readonly SyncDbContext _context;
+    private readonly SyncDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
-    public SyncSessionLogRepository(SyncDbContext context)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<SyncSessionLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -32,7 +27,7 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
         return [.. entities.Select(MapToModel)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<SyncSessionLog?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(id);
@@ -44,7 +39,7 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
         return entity is not null ? MapToModel(entity) : null;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task AddAsync(SyncSessionLog sessionLog, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sessionLog);
@@ -54,12 +49,13 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task UpdateAsync(SyncSessionLog sessionLog, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(sessionLog);
 
-        SyncSessionLogEntity entity = await _context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken) ?? throw new InvalidOperationException($"Sync session log with ID '{sessionLog.Id}' not found.");
+        SyncSessionLogEntity entity = await _context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken) ??
+                                      throw new InvalidOperationException($"Sync session log with ID '{sessionLog.Id}' not found.");
 
         entity.CompletedUtc = sessionLog.CompletedUtc;
         entity.Status = (int)sessionLog.Status;
@@ -72,7 +68,7 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task DeleteOldSessionsAsync(string accountId, DateTime olderThan, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -82,8 +78,8 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
             .ExecuteDeleteAsync(cancellationToken);
     }
 
-    private static SyncSessionLog MapToModel(SyncSessionLogEntity entity) =>
-        new(
+    private static SyncSessionLog MapToModel(SyncSessionLogEntity entity)
+        => new(
             entity.Id,
             entity.AccountId,
             entity.StartedUtc,
@@ -95,8 +91,8 @@ public sealed class SyncSessionLogRepository : ISyncSessionLogRepository
             entity.ConflictsDetected,
             entity.TotalBytes);
 
-    private static SyncSessionLogEntity MapToEntity(SyncSessionLog model) =>
-        new()
+    private static SyncSessionLogEntity MapToEntity(SyncSessionLog model)
+        => new()
         {
             Id = model.Id,
             AccountId = model.AccountId,

@@ -7,7 +7,6 @@ internal sealed class Program
 {
     private Program()
     {
-
     }
 
     [STAThread]

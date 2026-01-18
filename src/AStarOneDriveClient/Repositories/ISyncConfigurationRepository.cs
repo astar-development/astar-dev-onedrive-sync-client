@@ -4,12 +4,12 @@ using AStarOneDriveClient.Models;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository for managing sync configuration data.
+///     Repository for managing sync configuration data.
 /// </summary>
 public interface ISyncConfigurationRepository
 {
     /// <summary>
-    /// Gets all sync configurations for a specific account.
+    ///     Gets all sync configurations for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -17,7 +17,7 @@ public interface ISyncConfigurationRepository
     Task<IReadOnlyList<SyncConfiguration>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all selected folder paths for a specific account.
+    ///     Gets all selected folder paths for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -27,7 +27,7 @@ public interface ISyncConfigurationRepository
     Task<Result<IList<string>, ErrorResponse>> GetSelectedFolders2Async(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds a new sync configuration.
+    ///     Adds a new sync configuration.
     /// </summary>
     /// <param name="configuration">The configuration to add.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -35,7 +35,7 @@ public interface ISyncConfigurationRepository
     Task<SyncConfiguration> AddAsync(SyncConfiguration configuration, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Updates an existing sync configuration.
+    ///     Updates an existing sync configuration.
     /// </summary>
     /// <param name="configuration">The configuration to update.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -43,21 +43,21 @@ public interface ISyncConfigurationRepository
     Task UpdateAsync(SyncConfiguration configuration, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes a sync configuration by its ID.
+    ///     Deletes a sync configuration by its ID.
     /// </summary>
     /// <param name="id">The configuration identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes all sync configurations for a specific account.
+    ///     Deletes all sync configurations for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Saves multiple sync configurations for an account in a batch operation.
+    ///     Saves multiple sync configurations for an account in a batch operation.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="configurations">The configurations to save.</param>

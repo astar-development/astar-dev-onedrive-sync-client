@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Data.Entities;
 
 /// <summary>
-/// Entity for storing sync configuration (folder selections) in the database.
+///     Entity for storing sync configuration (folder selections) in the database.
 /// </summary>
 public sealed class SyncConfigurationEntity
 {

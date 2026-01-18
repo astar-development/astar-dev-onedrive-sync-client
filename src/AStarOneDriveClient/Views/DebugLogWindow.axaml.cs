@@ -1,12 +1,12 @@
-using Avalonia.Controls;
 using AStarOneDriveClient.Repositories;
 using AStarOneDriveClient.ViewModels;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStarOneDriveClient.Views;
 
 /// <summary>
-/// Window for viewing debug logs.
+///     Window for viewing debug logs.
 /// </summary>
 public partial class DebugLogWindow : Window
 {
@@ -14,7 +14,7 @@ public partial class DebugLogWindow : Window
     {
         InitializeComponent();
 
-        if (App.Services is not null)
+        if(App.Services is not null)
         {
             IAccountRepository accountRepository = App.Services.GetRequiredService<IAccountRepository>();
             IDebugLogRepository debugLogRepository = App.Services.GetRequiredService<IDebugLogRepository>();

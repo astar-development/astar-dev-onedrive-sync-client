@@ -23,9 +23,12 @@ public sealed class LoggingExtensionsShould
     [Fact]
     public void AddTheExpectedNumberOfSerilogServices()
     {
-        WebApplicationBuilder builder              = WebApplication.CreateBuilder();
+        WebApplicationBuilder builder = WebApplication.CreateBuilder();
         const int minimumNumberOfExpectedServices = 4;
-        var       testConfig           = new SerilogConfig { Serilog = { WriteTo = [new() { Args = new() { ServerUrl = "https://example.com" } }], MinimumLevel = new (){ Default = "Information"} } };
+        var testConfig = new SerilogConfig
+        {
+            Serilog = { WriteTo = [new WriteTo { Args = new Args { ServerUrl = "https://example.com" } }], MinimumLevel = new MinimumLevel { Default = "Information" } }
+        };
 
         File.WriteAllText("serilog.config", testConfig.ToJson()); // OK, not a true unit test but...
         var serviceCount = builder.Services.Count;

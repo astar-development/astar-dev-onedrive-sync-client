@@ -14,17 +14,17 @@ public abstract class Result<TSuccess, TError>
     {
     }
 
-        /// <summary>
-        /// Implicit conversion from a success value to a <see cref="Result{TSuccess,TError}"/> representing <c>Ok</c>.
-        /// </summary>
-        /// <param name="value">The success value.</param>
-        public static implicit operator Result<TSuccess, TError>(TSuccess value) => new Ok(value);
+    /// <summary>
+    ///     Implicit conversion from a success value to a <see cref="Result{TSuccess,TError}" /> representing <c>Ok</c>.
+    /// </summary>
+    /// <param name="value">The success value.</param>
+    public static implicit operator Result<TSuccess, TError>(TSuccess value) => new Ok(value);
 
-        /// <summary>
-        /// Implicit conversion from an error value to a <see cref="Result{TSuccess,TError}"/> representing <c>Error</c>.
-        /// </summary>
-        /// <param name="error">The error reason.</param>
-        public static implicit operator Result<TSuccess, TError>(TError error) => new Error(error);
+    /// <summary>
+    ///     Implicit conversion from an error value to a <see cref="Result{TSuccess,TError}" /> representing <c>Error</c>.
+    /// </summary>
+    /// <param name="error">The error reason.</param>
+    public static implicit operator Result<TSuccess, TError>(TError error) => new Error(error);
 
     /// <summary>
     ///     Matches the result to the appropriate function based on whether it is a success or failure.
@@ -105,7 +105,6 @@ public abstract class Result<TSuccess, TError>
     /// <param name="value">The result value.</param>
     public sealed class Ok(TSuccess value) : Result<TSuccess, TError>
     {
-
         /// <summary>
         ///     The successful value.
         /// </summary>
@@ -123,7 +122,6 @@ public abstract class Result<TSuccess, TError>
     public sealed class Error(TError reason) : Result<TSuccess, TError>
 #pragma warning restore CA1716
     {
-
         /// <summary>
         ///     The error reason.
         /// </summary>

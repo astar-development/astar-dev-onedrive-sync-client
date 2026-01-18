@@ -3,19 +3,19 @@ using AStarOneDriveClient.Models;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository for managing account data.
+///     Repository for managing account data.
 /// </summary>
 public interface IAccountRepository
 {
     /// <summary>
-    /// Gets all accounts.
+    ///     Gets all accounts.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of all accounts.</returns>
     Task<IReadOnlyList<AccountInfo>> GetAllAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets an account by its ID.
+    ///     Gets an account by its ID.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -23,28 +23,28 @@ public interface IAccountRepository
     Task<AccountInfo?> GetByIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds a new account.
+    ///     Adds a new account.
     /// </summary>
     /// <param name="account">The account to add.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task AddAsync(AccountInfo account, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Updates an existing account.
+    ///     Updates an existing account.
     /// </summary>
     /// <param name="account">The account to update.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task UpdateAsync(AccountInfo account, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes an account by its ID.
+    ///     Deletes an account by its ID.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task DeleteAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Checks if an account with the specified ID exists.
+    ///     Checks if an account with the specified ID exists.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

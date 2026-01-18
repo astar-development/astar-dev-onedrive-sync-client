@@ -1,17 +1,17 @@
-using Avalonia.Controls;
+using System.Collections.Specialized;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.ViewModels;
-using System.Collections.Specialized;
+using Avalonia.Controls;
 
 namespace AStarOneDriveClient.Views;
 
 /// <summary>
-/// View for displaying and managing the OneDrive folder sync tree.
+///     View for displaying and managing the OneDrive folder sync tree.
 /// </summary>
 public partial class SyncTreeView : UserControl
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="SyncTreeView"/> class.
+    ///     Initializes a new instance of the <see cref="SyncTreeView" /> class.
     /// </summary>
     public SyncTreeView()
     {
@@ -22,32 +22,24 @@ public partial class SyncTreeView : UserControl
 
     private void OnDataContextChanged(object? sender, EventArgs e)
     {
-        if (DataContext is SyncTreeViewModel viewModel)
+        if(DataContext is SyncTreeViewModel viewModel)
         {
             // Subscribe to RootFolders collection changes to attach property change handlers
             viewModel.RootFolders.CollectionChanged += OnRootFoldersChanged;
 
             // Attach to existing items
-            foreach (OneDriveFolderNode node in viewModel.RootFolders)
-            {
-                AttachNodeExpansionHandler(node, viewModel);
-            }
+            foreach(OneDriveFolderNode node in viewModel.RootFolders) AttachNodeExpansionHandler(node, viewModel);
         }
     }
 
     private void OnRootFoldersChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if (DataContext is not SyncTreeViewModel viewModel)
-        {
-            return;
-        }
+        if(DataContext is not SyncTreeViewModel viewModel) return;
 
-        if (e.NewItems != null)
+        if(e.NewItems != null)
         {
-            foreach (OneDriveFolderNode node in e.NewItems)
-            {
+            foreach(OneDriveFolderNode node in e.NewItems)
                 AttachNodeExpansionHandler(node, viewModel);
-            }
         }
     }
 
@@ -55,9 +47,9 @@ public partial class SyncTreeView : UserControl
     {
         node.PropertyChanged += (s, e) =>
         {
-            if (e.PropertyName == nameof(OneDriveFolderNode.IsExpanded) &&
-                node.IsExpanded &&
-                !node.ChildrenLoaded)
+            if(e.PropertyName == nameof(OneDriveFolderNode.IsExpanded) &&
+               node.IsExpanded &&
+               !node.ChildrenLoaded)
             {
                 // Trigger lazy loading when expanded for the first time
                 _ = viewModel.LoadChildrenCommand.Execute(node).Subscribe();
@@ -67,12 +59,10 @@ public partial class SyncTreeView : UserControl
         // Recursively attach to children as they're added
         node.Children.CollectionChanged += (s, e) =>
         {
-            if (e.NewItems != null)
+            if(e.NewItems != null)
             {
-                foreach (OneDriveFolderNode child in e.NewItems)
-                {
+                foreach(OneDriveFolderNode child in e.NewItems)
                     AttachNodeExpansionHandler(child, viewModel);
-                }
             }
         };
     }

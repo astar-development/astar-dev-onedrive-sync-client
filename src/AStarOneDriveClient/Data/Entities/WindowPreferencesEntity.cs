@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Data.Entities;
 
 /// <summary>
-/// Entity for storing window position and size preferences in the database.
+///     Entity for storing window position and size preferences in the database.
 /// </summary>
 public sealed class WindowPreferencesEntity
 {

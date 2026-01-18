@@ -3,32 +3,32 @@ using Microsoft.Extensions.Configuration;
 namespace AStarOneDriveClient.Authentication;
 
 /// <summary>
-/// Configuration settings for MSAL authentication.
+///     Configuration settings for MSAL authentication.
 /// </summary>
 public sealed class AuthConfiguration
 {
     /// <summary>
-    /// Gets or sets the Azure AD client ID for the application.
+    ///     Gets or sets the Azure AD client ID for the application.
     /// </summary>
     public required string ClientId { get; init; }
 
     /// <summary>
-    /// Gets or sets the redirect URI for OAuth callbacks.
+    ///     Gets or sets the redirect URI for OAuth callbacks.
     /// </summary>
     public required string RedirectUri { get; init; }
 
     /// <summary>
-    /// Gets or sets the Microsoft Graph API scopes required for OneDrive access.
+    ///     Gets or sets the Microsoft Graph API scopes required for OneDrive access.
     /// </summary>
     public required string[] Scopes { get; init; }
 
     /// <summary>
-    /// Gets or sets the authority URL for Microsoft identity platform.
+    ///     Gets or sets the authority URL for Microsoft identity platform.
     /// </summary>
     public required string Authority { get; init; }
 
     /// <summary>
-    /// Loads authentication configuration from IConfiguration.
+    ///     Loads authentication configuration from IConfiguration.
     /// </summary>
     /// <param name="configuration">The configuration source.</param>
     /// <returns>Configured AuthConfiguration instance.</returns>
@@ -37,10 +37,7 @@ public sealed class AuthConfiguration
         ArgumentNullException.ThrowIfNull(configuration);
 
         IConfigurationSection authSection = configuration.GetSection("Authentication");
-        if (!authSection.Exists())
-        {
-            throw new InvalidOperationException("Authentication configuration section not found. Ensure appsettings.json contains an 'Authentication' section.");
-        }
+        if(!authSection.Exists()) throw new InvalidOperationException("Authentication configuration section not found. Ensure appsettings.json contains an 'Authentication' section.");
 
         var clientId = authSection["ClientId"];
         return string.IsNullOrWhiteSpace(clientId)

@@ -95,11 +95,7 @@ public class ConflictResolutionViewModelShould
     [Fact]
     public async Task LoadConflictsFromSyncEngineOnInitialization()
     {
-        var conflicts = new List<SyncConflict>
-        {
-            CreateTestConflict("file1.txt"),
-            CreateTestConflict("file2.txt")
-        };
+        var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt"), CreateTestConflict("file2.txt") };
 
         (ConflictResolutionViewModel? viewModel, ISyncEngine? syncEngine, IConflictResolver _, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
@@ -136,11 +132,7 @@ public class ConflictResolutionViewModelShould
     [Fact]
     public async Task ResolveConflictsWithSelectedStrategies()
     {
-        var conflicts = new List<SyncConflict>
-        {
-            CreateTestConflict("file1.txt"),
-            CreateTestConflict("file2.txt")
-        };
+        var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt"), CreateTestConflict("file2.txt") };
 
         (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver? conflictResolver, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
@@ -160,11 +152,7 @@ public class ConflictResolutionViewModelShould
     [Fact]
     public async Task SkipConflictsWithNoneStrategy()
     {
-        var conflicts = new List<SyncConflict>
-        {
-            CreateTestConflict("file1.txt"),
-            CreateTestConflict("file2.txt")
-        };
+        var conflicts = new List<SyncConflict> { CreateTestConflict("file1.txt"), CreateTestConflict("file2.txt") };
 
         (ConflictResolutionViewModel? viewModel, ISyncEngine _, IConflictResolver? conflictResolver, ILogger<ConflictResolutionViewModel> _) = CreateTestViewModel(conflicts);
 
@@ -213,10 +201,7 @@ public class ConflictResolutionViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName == nameof(ConflictResolutionViewModel.IsResolving))
-            {
-                isResolvingValues.Add(viewModel.IsResolving);
-            }
+            if(e.PropertyName == nameof(ConflictResolutionViewModel.IsResolving)) isResolvingValues.Add(viewModel.IsResolving);
         };
 
         _ = conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())

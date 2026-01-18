@@ -3,12 +3,12 @@ using AStarOneDriveClient.Models;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository for managing sync conflicts.
+///     Repository for managing sync conflicts.
 /// </summary>
 public interface ISyncConflictRepository
 {
     /// <summary>
-    /// Gets all conflicts for a specific account.
+    ///     Gets all conflicts for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -16,7 +16,7 @@ public interface ISyncConflictRepository
     Task<IReadOnlyList<SyncConflict>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets unresolved conflicts for a specific account.
+    ///     Gets unresolved conflicts for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -24,7 +24,7 @@ public interface ISyncConflictRepository
     Task<IReadOnlyList<SyncConflict>> GetUnresolvedByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets a conflict by its ID.
+    ///     Gets a conflict by its ID.
     /// </summary>
     /// <param name="id">The conflict identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -32,7 +32,7 @@ public interface ISyncConflictRepository
     Task<SyncConflict?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets a conflict by account ID and file path.
+    ///     Gets a conflict by account ID and file path.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="filePath">The file path.</param>
@@ -41,28 +41,28 @@ public interface ISyncConflictRepository
     Task<SyncConflict?> GetByFilePathAsync(string accountId, string filePath, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds a new conflict.
+    ///     Adds a new conflict.
     /// </summary>
     /// <param name="conflict">The conflict to add.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task AddAsync(SyncConflict conflict, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Updates an existing conflict.
+    ///     Updates an existing conflict.
     /// </summary>
     /// <param name="conflict">The conflict to update.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task UpdateAsync(SyncConflict conflict, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes a conflict by its ID.
+    ///     Deletes a conflict by its ID.
     /// </summary>
     /// <param name="id">The conflict identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task DeleteAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes all conflicts for a specific account.
+    ///     Deletes all conflicts for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

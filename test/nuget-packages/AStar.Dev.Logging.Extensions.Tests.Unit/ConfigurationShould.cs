@@ -37,6 +37,6 @@ public class ConfigurationShould
         var result = Configuration.ExternalSettingsFile;
 
         string.Equals(result, comparisonValue, StringComparison.OrdinalIgnoreCase)
-              .ShouldBeTrue($"Expected {comparisonValue}, but got {result}.");
+            .ShouldBeTrue($"Expected {comparisonValue}, but got {result}.");
     }
 }

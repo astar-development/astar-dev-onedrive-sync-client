@@ -1,12 +1,12 @@
 namespace AStarOneDriveClient.Data;
 
 /// <summary>
-/// Configuration for database connection settings.
+///     Configuration for database connection settings.
 /// </summary>
 public sealed class DatabaseConfiguration
 {
     /// <summary>
-    /// Gets the database file path.
+    ///     Gets the database file path.
     /// </summary>
     public static string DatabasePath
     {
@@ -22,7 +22,7 @@ public sealed class DatabaseConfiguration
     }
 
     /// <summary>
-    /// Gets the SQLite connection string.
+    ///     Gets the SQLite connection string.
     /// </summary>
     public static string ConnectionString => $"Data Source={DatabasePath}";
 }

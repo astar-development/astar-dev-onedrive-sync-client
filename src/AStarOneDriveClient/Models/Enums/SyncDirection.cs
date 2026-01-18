@@ -1,17 +1,17 @@
 namespace AStarOneDriveClient.Models.Enums;
 
 /// <summary>
-/// Represents the direction of file synchronization.
+///     Represents the direction of file synchronization.
 /// </summary>
 public enum SyncDirection
 {
     /// <summary>
-    /// File was uploaded to OneDrive.
+    ///     File was uploaded to OneDrive.
     /// </summary>
     Upload = 0,
 
     /// <summary>
-    /// File was downloaded from OneDrive.
+    ///     File was downloaded from OneDrive.
     /// </summary>
     Download = 1
 }

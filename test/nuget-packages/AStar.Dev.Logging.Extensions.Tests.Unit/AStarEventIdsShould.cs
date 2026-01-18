@@ -8,7 +8,7 @@ public class AStarEventIdsShould
     [Fact]
     public void HaveTheExpectedId()
     {
-        const int    expectedId   = 1000;
+        const int expectedId = 1000;
 
         EventId eventId = AStarEventIds.Website.PageView;
 

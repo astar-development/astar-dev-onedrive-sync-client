@@ -25,7 +25,6 @@ public class TryShould
     [Fact]
     public void ReturnOkTrueWhenActionSucceeds()
     {
-
         Result<bool, Exception> result = Try.Run(() =>
         {
             /* no-op */
@@ -40,7 +39,6 @@ public class TryShould
     [Fact]
     public void ReturnErrorWhenActionThrows()
     {
-
         var expected = new InvalidOperationException("sync boom");
 
         Result<bool, Exception> result = Try.Run(() => throw expected);
@@ -56,7 +54,6 @@ public class TryShould
     [Fact]
     public async Task ReturnOkTrueWhenActionSucceedsAsync()
     {
-
         Result<bool, Exception> result = await Try.RunAsync(async () => await Task.Delay(1));
 
         _ = result.ShouldBeOfType<Result<bool, Exception>.Ok>();
@@ -68,7 +65,6 @@ public class TryShould
     [Fact]
     public async Task RunAsyncActionShouldReturnErrorWhenActionThrowsAsync()
     {
-
         var expected = new InvalidOperationException("async boom");
 
         Result<bool, Exception> result = await Try.RunAsync(async () =>

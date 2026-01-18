@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<AnalysisLevel>latest-recommended</AnalysisLevel>
-		<LangVersion>latest</LangVersion>
-		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+        <TargetFramework>net10.0</TargetFramework>
+        <AnalysisLevel>latest-recommended</AnalysisLevel>
+        <LangVersion>latest</LangVersion>
+        <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ApplicationIcon>astar.ico</ApplicationIcon>
@@ -30,25 +30,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="astar.png" Pack="true" PackagePath="" />
-        <None Include="LICENSE" Pack="true" PackagePath="" />
-        <None Include="Readme.md" Pack="true" PackagePath="" />
+        <None Include="astar.png" Pack="true" PackagePath=""/>
+        <None Include="LICENSE" Pack="true" PackagePath=""/>
+        <None Include="Readme.md" Pack="true" PackagePath=""/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
-        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
-        <PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0" />
-        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
-        <PackageReference Include="Serilog.Expressions" Version="5.0.0" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
-        <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
-        <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.1.0" />
+        <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="10.0.0"/>
+        <PackageReference Include="Serilog.Enrichers.Span" Version="3.1.0"/>
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1"/>
+        <PackageReference Include="Serilog.Expressions" Version="5.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0"/>
+        <PackageReference Include="Serilog.Exceptions" Version="8.4.0"/>
+        <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="5.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
+        <ProjectReference Include="..\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj"/>
     </ItemGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

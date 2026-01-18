@@ -3,12 +3,12 @@ using AStarOneDriveClient.Models;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository for managing file operation logs.
+///     Repository for managing file operation logs.
 /// </summary>
 public interface IFileOperationLogRepository
 {
     /// <summary>
-    /// Gets all file operations for a sync session.
+    ///     Gets all file operations for a sync session.
     /// </summary>
     /// <param name="syncSessionId">The sync session identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -16,7 +16,7 @@ public interface IFileOperationLogRepository
     Task<IReadOnlyList<FileOperationLog>> GetBySessionIdAsync(string syncSessionId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all file operations for an account.
+    ///     Gets all file operations for an account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -24,7 +24,7 @@ public interface IFileOperationLogRepository
     Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets file operations for an account with paging support.
+    ///     Gets file operations for an account with paging support.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="pageSize">Number of records to return.</param>
@@ -34,14 +34,14 @@ public interface IFileOperationLogRepository
     Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(string accountId, int pageSize, int skip, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Adds a new file operation log.
+    ///     Adds a new file operation log.
     /// </summary>
     /// <param name="operationLog">The operation log to add.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task AddAsync(FileOperationLog operationLog, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Deletes old file operation logs for an account.
+    ///     Deletes old file operation logs for an account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="olderThan">Delete operations older than this date.</param>

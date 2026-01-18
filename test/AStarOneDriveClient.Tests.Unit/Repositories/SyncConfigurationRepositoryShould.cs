@@ -15,9 +15,9 @@ public class SyncConfigurationRepositoryShould
         var config1 = new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow);
         var config2 = new SyncConfiguration(0, "acc1", "/Photos", false, DateTime.UtcNow);
         var config3 = new SyncConfiguration(0, "acc2", "/Videos", true, DateTime.UtcNow);
-        await repository.AddAsync(config1, TestContext.Current.CancellationToken);
-        await repository.AddAsync(config2, TestContext.Current.CancellationToken);
-        await repository.AddAsync(config3, TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(config1, TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(config2, TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(config3, TestContext.Current.CancellationToken);
 
         IReadOnlyList<SyncConfiguration> result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
 
@@ -31,9 +31,9 @@ public class SyncConfigurationRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new SyncConfigurationRepository(context);
-        await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
-        await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Photos", false, DateTime.UtcNow), TestContext.Current.CancellationToken);
-        await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Videos", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Photos", false, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Videos", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
 
         IReadOnlyList<string> result = await repository.GetSelectedFoldersAsync("acc1", TestContext.Current.CancellationToken);
 
@@ -50,7 +50,7 @@ public class SyncConfigurationRepositoryShould
         var repository = new SyncConfigurationRepository(context);
         var config = new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow);
 
-        await repository.AddAsync(config, TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(config, TestContext.Current.CancellationToken);
 
         IReadOnlyList<SyncConfiguration> result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
         result.Count.ShouldBe(1);
@@ -64,7 +64,7 @@ public class SyncConfigurationRepositoryShould
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new SyncConfigurationRepository(context);
         var config = new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow);
-        await repository.AddAsync(config, TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(config, TestContext.Current.CancellationToken);
         SyncConfiguration saved = (await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken))[0];
 
         var updated = new SyncConfiguration(saved.Id, "acc1", "/Documents", false, DateTime.UtcNow);
@@ -81,8 +81,7 @@ public class SyncConfigurationRepositoryShould
         var repository = new SyncConfigurationRepository(context);
         var config = new SyncConfiguration(999, "acc1", "/Documents", true, DateTime.UtcNow);
 
-        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(
-            async () => await repository.UpdateAsync(config)
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () => await repository.UpdateAsync(config)
         );
 
         exception.Message.ShouldContain("not found");
@@ -93,7 +92,7 @@ public class SyncConfigurationRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new SyncConfigurationRepository(context);
-        await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
         SyncConfiguration saved = (await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken))[0];
 
         await repository.DeleteAsync(saved.Id, TestContext.Current.CancellationToken);
@@ -107,9 +106,9 @@ public class SyncConfigurationRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new SyncConfigurationRepository(context);
-        await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
-        await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Photos", false, DateTime.UtcNow), TestContext.Current.CancellationToken);
-        await repository.AddAsync(new SyncConfiguration(0, "acc2", "/Videos", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Documents", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Photos", false, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc2", "/Videos", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
 
         await repository.DeleteByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
 
@@ -124,14 +123,10 @@ public class SyncConfigurationRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new SyncConfigurationRepository(context);
-        await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Old1", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
-        await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Old2", false, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Old1", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
+        _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Old2", false, DateTime.UtcNow), TestContext.Current.CancellationToken);
 
-        SyncConfiguration[] newConfigs = new[]
-        {
-            new SyncConfiguration(0, "acc1", "/New1", true, DateTime.UtcNow),
-            new SyncConfiguration(0, "acc1", "/New2", true, DateTime.UtcNow)
-        };
+        SyncConfiguration[] newConfigs = new[] { new SyncConfiguration(0, "acc1", "/New1", true, DateTime.UtcNow), new SyncConfiguration(0, "acc1", "/New2", true, DateTime.UtcNow) };
         await repository.SaveBatchAsync("acc1", newConfigs, TestContext.Current.CancellationToken);
 
         IReadOnlyList<SyncConfiguration> result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
@@ -147,8 +142,7 @@ public class SyncConfigurationRepositoryShould
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new SyncConfigurationRepository(context);
 
-        _ = await Should.ThrowAsync<ArgumentNullException>(
-            async () => await repository.GetByAccountIdAsync(null!)
+        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.GetByAccountIdAsync(null!)
         );
     }
 

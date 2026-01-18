@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents a debug log entry.
+///     Represents a debug log entry.
 /// </summary>
 /// <param name="Id">Unique identifier for the log entry.</param>
 /// <param name="AccountId">Account ID associated with the log entry.</param>

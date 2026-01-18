@@ -11,7 +11,7 @@ public sealed class WriteTo
     public string Name { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the command-line arguments for the current operation.
+    ///     Gets or sets the command-line arguments for the current operation.
     /// </summary>
     public Args Args { get; set; } = new();
 }

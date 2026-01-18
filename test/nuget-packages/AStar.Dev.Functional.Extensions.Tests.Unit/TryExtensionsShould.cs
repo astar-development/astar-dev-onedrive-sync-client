@@ -31,7 +31,7 @@ public class TryExtensionsShould
     {
         var inner = new ApplicationException("base message");
         var ex = new Exception("outer", inner);
-        Task<Result<bool, Exception>> task = Task.FromResult<Result<bool, Exception>>(new Result<bool, Exception>.Error(ex));
+        var task = Task.FromResult<Result<bool, Exception>>(new Result<bool, Exception>.Error(ex));
 
         Result<bool, ErrorResponse> mapped = await task.ToErrorResponseAsync();
 
@@ -42,7 +42,7 @@ public class TryExtensionsShould
     [Fact]
     public async Task PassThroughSuccessUnchangedAsync()
     {
-        Task<Result<int, Exception>> task = Task.FromResult<Result<int, Exception>>(new Result<int, Exception>.Ok(42));
+        var task = Task.FromResult<Result<int, Exception>>(new Result<int, Exception>.Ok(42));
 
         Result<int, ErrorResponse> mapped = await task.ToErrorResponseAsync();
 

@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents window position and size preferences.
+///     Represents window position and size preferences.
 /// </summary>
 /// <param name="Id">Unique identifier (should always be 1 for singleton).</param>
 /// <param name="X">Window X position (null if maximized or first run).</param>

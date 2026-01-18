@@ -1,5 +1,3 @@
-using Shouldly;
-using Xunit;
 using AStarOneDriveClient.Services;
 
 namespace AStarOneDriveClient.Tests.Unit.Services;

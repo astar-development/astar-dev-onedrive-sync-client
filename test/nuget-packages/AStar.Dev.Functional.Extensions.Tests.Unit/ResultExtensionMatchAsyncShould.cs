@@ -5,7 +5,7 @@ public class ResultExtensionMatchAsyncShould
     [Fact]
     public async Task MatchAsyncOnTaskResultCallSuccessFunctionWhenOk()
     {
-        Task<Result<int, string>> resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
+        var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
         var matched = await resultTask.MatchAsync(
             success => $"Success: {success}",
@@ -17,7 +17,7 @@ public class ResultExtensionMatchAsyncShould
     [Fact]
     public async Task MatchAsyncOnTaskResultCallErrorFunctionWhenError()
     {
-        Task<Result<int, string>> resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("failure"));
+        var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("failure"));
 
         var matched = await resultTask.MatchAsync(
             success => $"Success: {success}",
@@ -29,7 +29,7 @@ public class ResultExtensionMatchAsyncShould
     [Fact]
     public async Task MatchAsyncOnTaskResultWithAsyncHandlersCallSuccessFunctionWhenOk()
     {
-        Task<Result<int, string>> resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
+        var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
         var matched = await resultTask.MatchAsync(
             success => Task.FromResult($"Success: {success}"),
@@ -41,7 +41,7 @@ public class ResultExtensionMatchAsyncShould
     [Fact]
     public async Task MatchAsyncOnTaskResultWithAsyncHandlersCallErrorFunctionWhenError()
     {
-        Task<Result<int, string>> resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("failure"));
+        var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("failure"));
 
         var matched = await resultTask.MatchAsync(
             success => Task.FromResult($"Success: {success}"),
@@ -53,7 +53,7 @@ public class ResultExtensionMatchAsyncShould
     [Fact]
     public async Task MatchAsyncOnTaskResultReturningResultCallSuccessFunctionWhenOk()
     {
-        Task<Result<int, string>> resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
+        var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
         Result<string, Exception> matched = await resultTask.MatchAsync(
             success => new Result<string, Exception>.Ok($"Success: {success}"),
@@ -66,7 +66,7 @@ public class ResultExtensionMatchAsyncShould
     [Fact]
     public async Task MatchAsyncOnTaskResultReturningResultCallErrorFunctionWhenError()
     {
-        Task<Result<int, string>> resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("failure"));
+        var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Error("failure"));
 
         Result<string, Exception> matched = await resultTask.MatchAsync(
             success => new Result<string, Exception>.Ok($"Success: {success}"),
@@ -79,9 +79,9 @@ public class ResultExtensionMatchAsyncShould
     [Fact]
     public async Task MatchAsyncOnTaskResultReturningResultTransformsBothCases()
     {
-        Task<Result<bool, Exception>> okTask = Task.FromResult<Result<bool, Exception>>(
+        var okTask = Task.FromResult<Result<bool, Exception>>(
             new Result<bool, Exception>.Ok(true));
-        Task<Result<bool, Exception>> errorTask = Task.FromResult<Result<bool, Exception>>(
+        var errorTask = Task.FromResult<Result<bool, Exception>>(
             new Result<bool, Exception>.Error(new InvalidOperationException("test error")));
 
         Result<int, string> okResult = await okTask.MatchAsync(
@@ -102,7 +102,7 @@ public class ResultExtensionMatchAsyncShould
     [Fact]
     public async Task MatchAsyncOnTaskResultWithBlockBodiedLambdasInfersTypesCorrectly()
     {
-        Task<Result<int, string>> resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
+        var resultTask = Task.FromResult<Result<int, string>>(new Result<int, string>.Ok(42));
 
         Result<string, Exception> matched = await resultTask.MatchAsync(
             value =>

@@ -3,7 +3,7 @@ using AStarOneDriveClient.Models.Enums;
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents a summary of a sync session.
+///     Represents a summary of a sync session.
 /// </summary>
 /// <param name="Id">Unique identifier for the sync session.</param>
 /// <param name="AccountId">The account identifier.</param>
@@ -28,14 +28,14 @@ public record SyncSessionLog(
     long TotalBytes)
 {
     public static SyncSessionLog CreateInitialRunning(string accountId) => new(
-            Id: Guid.CreateVersion7().ToString(),
-            AccountId: accountId,
-            StartedUtc: DateTime.UtcNow,
-            CompletedUtc: null,
-            Status: SyncStatus.Running,
-            FilesUploaded: 0,
-            FilesDownloaded: 0,
-            FilesDeleted: 0,
-            ConflictsDetected: 0,
-            TotalBytes: 0L);
+        Guid.CreateVersion7().ToString(),
+        accountId,
+        DateTime.UtcNow,
+        null,
+        SyncStatus.Running,
+        0,
+        0,
+        0,
+        0,
+        0L);
 }

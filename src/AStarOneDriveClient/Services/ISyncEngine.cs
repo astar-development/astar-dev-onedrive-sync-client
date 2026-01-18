@@ -3,29 +3,29 @@ using AStarOneDriveClient.Models;
 namespace AStarOneDriveClient.Services;
 
 /// <summary>
-/// Service for synchronizing files between local storage and OneDrive.
+///     Service for synchronizing files between local storage and OneDrive.
 /// </summary>
 public interface ISyncEngine
 {
     /// <summary>
-    /// Gets an observable stream of sync progress updates.
+    ///     Gets an observable stream of sync progress updates.
     /// </summary>
     IObservable<SyncState> Progress { get; }
 
     /// <summary>
-    /// Starts synchronization for the specified account.
+    ///     Starts synchronization for the specified account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task StartSyncAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Stops any ongoing synchronization.
+    ///     Stops any ongoing synchronization.
     /// </summary>
     Task StopSyncAsync();
 
     /// <summary>
-    /// Gets all detected conflicts for the specified account.
+    ///     Gets all detected conflicts for the specified account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

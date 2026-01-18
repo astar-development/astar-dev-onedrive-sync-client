@@ -14,7 +14,7 @@ public class SyncConflictShould
         var localSize = 1024L;
         var remoteSize = 2048L;
         DateTime detectedUtc = DateTime.UtcNow;
-        ConflictResolutionStrategy resolutionStrategy = Enums.ConflictResolutionStrategy.None;
+        ConflictResolutionStrategy resolutionStrategy = ConflictResolutionStrategy.None;
         var isResolved = false;
 
         var syncConflict = SyncConflict.CreateUnresolvedConflict(

@@ -17,7 +17,9 @@
         </member>
         <member name="T:AStar.Dev.Utilities.EncryptionExtensions">
             <summary>
-                The <see cref="T:AStar.Dev.Utilities.EncryptionExtensions" /> class contains extension methods to encrypt / decrypt the specified string
+                The
+                <see cref="T:AStar.Dev.Utilities.EncryptionExtensions"/>
+                class contains extension methods to encrypt / decrypt the specified string
             </summary>
         </member>
         <member name="M:AStar.Dev.Utilities.EncryptionExtensions.Encrypt(System.String,System.String,System.String)">
@@ -76,7 +78,9 @@
         </member>
         <member name="T:AStar.Dev.Utilities.ObjectExtensions">
             <summary>
-                The <see cref="T:AStar.Dev.Utilities.ObjectExtensions" /> class contains some useful methods to enable various tasks
+                The
+                <see cref="T:AStar.Dev.Utilities.ObjectExtensions"/>
+                class contains some useful methods to enable various tasks
                 to be performed in a more fluid, English sentence, style
             </summary>
         </member>
@@ -118,55 +122,81 @@
         </member>
         <member name="M:AStar.Dev.Utilities.RegexExtensions.LowercaseLettersRegex">
             <remarks>
-            Pattern:<br/>
-            <code>[a-z]</code><br/>
-            Options:<br/>
-            <code>RegexOptions.CultureInvariant</code><br/>
-            Explanation:<br/>
-            <code>
-            ○ Match a character in the set [a-z].<br/>
-            </code>
+                Pattern:
+                <br/>
+                <code>[a-z]</code>
+                <br/>
+                Options:
+                <br/>
+                <code>RegexOptions.CultureInvariant</code>
+                <br/>
+                Explanation:
+                <br/>
+                <code>
+                    ○ Match a character in the set [a-z].
+                    <br/>
+                </code>
             </remarks>
         </member>
         <member name="M:AStar.Dev.Utilities.RegexExtensions.UppercaseLettersRegex">
             <remarks>
-            Pattern:<br/>
-            <code>[A-Z]</code><br/>
-            Options:<br/>
-            <code>RegexOptions.CultureInvariant</code><br/>
-            Explanation:<br/>
-            <code>
-            ○ Match a character in the set [A-Z].<br/>
-            </code>
+                Pattern:
+                <br/>
+                <code>[A-Z]</code>
+                <br/>
+                Options:
+                <br/>
+                <code>RegexOptions.CultureInvariant</code>
+                <br/>
+                Explanation:
+                <br/>
+                <code>
+                    ○ Match a character in the set [A-Z].
+                    <br/>
+                </code>
             </remarks>
         </member>
         <member name="M:AStar.Dev.Utilities.RegexExtensions.DigitRegex">
             <remarks>
-            Pattern:<br/>
-            <code>[0-9]</code><br/>
-            Options:<br/>
-            <code>RegexOptions.CultureInvariant</code><br/>
-            Explanation:<br/>
-            <code>
-            ○ Match a character in the set [0-9].<br/>
-            </code>
+                Pattern:
+                <br/>
+                <code>[0-9]</code>
+                <br/>
+                Options:
+                <br/>
+                <code>RegexOptions.CultureInvariant</code>
+                <br/>
+                Explanation:
+                <br/>
+                <code>
+                    ○ Match a character in the set [0-9].
+                    <br/>
+                </code>
             </remarks>
         </member>
         <member name="M:AStar.Dev.Utilities.RegexExtensions.SpecialCharacterRegex">
             <remarks>
-            Pattern:<br/>
-            <code>[!-\\/:-@[-`¬{-~]</code><br/>
-            Options:<br/>
-            <code>RegexOptions.CultureInvariant</code><br/>
-            Explanation:<br/>
-            <code>
-            ○ Match a character in the set [!-/:-@[-`{-~\u00AC].<br/>
-            </code>
+                Pattern:
+                <br/>
+                <code>[!-\\/:-@[-`¬{-~]</code>
+                <br/>
+                Options:
+                <br/>
+                <code>RegexOptions.CultureInvariant</code>
+                <br/>
+                Explanation:
+                <br/>
+                <code>
+                    ○ Match a character in the set [!-/:-@[-`{-~\u00AC].
+                    <br/>
+                </code>
             </remarks>
         </member>
         <member name="T:AStar.Dev.Utilities.StringExtensions">
             <summary>
-                The <see cref="T:AStar.Dev.Utilities.StringExtensions" /> class contains some useful methods to enable checks to be
+                The
+                <see cref="T:AStar.Dev.Utilities.StringExtensions"/>
+                class contains some useful methods to enable checks to be
                 performed in a more fluid, English sentence, style
             </summary>
         </member>
@@ -262,7 +292,8 @@
             </example>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0">
-            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LowercaseLettersRegex method.</summary>
+            <summary>Custom<see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LowercaseLettersRegex method.
+            </summary>
         </member>
         <member name="F:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
@@ -271,25 +302,38 @@
             <summary>Initializes the instance.</summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0.RunnerFactory">
-            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+            <summary>Provides a factory for creating
+                <see cref="T:System.Text.RegularExpressions.RegexRunner"/>
+                instances to be used by methods on<see cref="T:System.Text.RegularExpressions.Regex"/>.
+            </summary>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0.RunnerFactory.CreateInstance">
-            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+            <summary>Creates an instance of a
+                <see cref="T:System.Text.RegularExpressions.RegexRunner"/>
+                used by methods on<see cref="T:System.Text.RegularExpressions.Regex"/>.
+            </summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
-            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <summary>Scan the
+                <paramref name="inputSpan"/>
+                starting from base.runtextstart for the next match.
+            </summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
-            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <summary>Search
+                <paramref name="inputSpan"/>
+                starting from base.runtextpos for the next location a match could possibly start.
+            </summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.UppercaseLettersRegex_1">
-            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the UppercaseLettersRegex method.</summary>
+            <summary>Custom<see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the UppercaseLettersRegex method.
+            </summary>
         </member>
         <member name="F:System.Text.RegularExpressions.Generated.UppercaseLettersRegex_1.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
@@ -298,25 +342,38 @@
             <summary>Initializes the instance.</summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.UppercaseLettersRegex_1.RunnerFactory">
-            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+            <summary>Provides a factory for creating
+                <see cref="T:System.Text.RegularExpressions.RegexRunner"/>
+                instances to be used by methods on<see cref="T:System.Text.RegularExpressions.Regex"/>.
+            </summary>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.UppercaseLettersRegex_1.RunnerFactory.CreateInstance">
-            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+            <summary>Creates an instance of a
+                <see cref="T:System.Text.RegularExpressions.RegexRunner"/>
+                used by methods on<see cref="T:System.Text.RegularExpressions.Regex"/>.
+            </summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.UppercaseLettersRegex_1.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.UppercaseLettersRegex_1.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
-            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <summary>Scan the
+                <paramref name="inputSpan"/>
+                starting from base.runtextstart for the next match.
+            </summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.UppercaseLettersRegex_1.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
-            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <summary>Search
+                <paramref name="inputSpan"/>
+                starting from base.runtextpos for the next location a match could possibly start.
+            </summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.DigitRegex_2">
-            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the DigitRegex method.</summary>
+            <summary>Custom<see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the DigitRegex method.
+            </summary>
         </member>
         <member name="F:System.Text.RegularExpressions.Generated.DigitRegex_2.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
@@ -325,25 +382,38 @@
             <summary>Initializes the instance.</summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.DigitRegex_2.RunnerFactory">
-            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+            <summary>Provides a factory for creating
+                <see cref="T:System.Text.RegularExpressions.RegexRunner"/>
+                instances to be used by methods on<see cref="T:System.Text.RegularExpressions.Regex"/>.
+            </summary>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.DigitRegex_2.RunnerFactory.CreateInstance">
-            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+            <summary>Creates an instance of a
+                <see cref="T:System.Text.RegularExpressions.RegexRunner"/>
+                used by methods on<see cref="T:System.Text.RegularExpressions.Regex"/>.
+            </summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.DigitRegex_2.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.DigitRegex_2.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
-            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <summary>Scan the
+                <paramref name="inputSpan"/>
+                starting from base.runtextstart for the next match.
+            </summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.DigitRegex_2.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
-            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <summary>Search
+                <paramref name="inputSpan"/>
+                starting from base.runtextpos for the next location a match could possibly start.
+            </summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.SpecialCharacterRegex_3">
-            <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the SpecialCharacterRegex method.</summary>
+            <summary>Custom<see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the SpecialCharacterRegex method.
+            </summary>
         </member>
         <member name="F:System.Text.RegularExpressions.Generated.SpecialCharacterRegex_3.Instance">
             <summary>Cached, thread-safe singleton instance.</summary>
@@ -352,25 +422,38 @@
             <summary>Initializes the instance.</summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.SpecialCharacterRegex_3.RunnerFactory">
-            <summary>Provides a factory for creating <see cref="T:System.Text.RegularExpressions.RegexRunner"/> instances to be used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+            <summary>Provides a factory for creating
+                <see cref="T:System.Text.RegularExpressions.RegexRunner"/>
+                instances to be used by methods on<see cref="T:System.Text.RegularExpressions.Regex"/>.
+            </summary>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.SpecialCharacterRegex_3.RunnerFactory.CreateInstance">
-            <summary>Creates an instance of a <see cref="T:System.Text.RegularExpressions.RegexRunner"/> used by methods on <see cref="T:System.Text.RegularExpressions.Regex"/>.</summary>
+            <summary>Creates an instance of a
+                <see cref="T:System.Text.RegularExpressions.RegexRunner"/>
+                used by methods on<see cref="T:System.Text.RegularExpressions.Regex"/>.
+            </summary>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.SpecialCharacterRegex_3.RunnerFactory.Runner">
             <summary>Provides the runner that contains the custom logic implementing the specified regular expression.</summary>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.SpecialCharacterRegex_3.RunnerFactory.Runner.Scan(System.ReadOnlySpan{System.Char})">
-            <summary>Scan the <paramref name="inputSpan"/> starting from base.runtextstart for the next match.</summary>
+            <summary>Scan the
+                <paramref name="inputSpan"/>
+                starting from base.runtextstart for the next match.
+            </summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
         </member>
         <member name="M:System.Text.RegularExpressions.Generated.SpecialCharacterRegex_3.RunnerFactory.Runner.TryFindNextPossibleStartingPosition(System.ReadOnlySpan{System.Char})">
-            <summary>Search <paramref name="inputSpan"/> starting from base.runtextpos for the next location a match could possibly start.</summary>
+            <summary>Search
+                <paramref name="inputSpan"/>
+                starting from base.runtextpos for the next location a match could possibly start.
+            </summary>
             <param name="inputSpan">The text being scanned by the regular expression.</param>
             <returns>true if a possible match was found; false if no more matches are possible.</returns>
         </member>
         <member name="T:System.Text.RegularExpressions.Generated.Utilities">
-            <summary>Helper methods used by generated <see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.</summary>
+            <summary>Helper methods used by generated<see cref="T:System.Text.RegularExpressions.Regex"/>-derived implementations.
+            </summary>
         </member>
         <member name="F:System.Text.RegularExpressions.Generated.Utilities.s_nonAscii_8CD7FC6D8414F97879531EB4BA8F837AAE4E0F47B7968451545B13CB721CD784">
             <summary>Supports searching for characters in or not in "!\"#$%&amp;'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~¬".</summary>

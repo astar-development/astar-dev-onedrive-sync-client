@@ -26,5 +26,4 @@ public static class TryExtensions
     /// <returns>A success result without change if applicable, otherwise, the exception will be mapped to an ErrorResponse</returns>
     public static async Task<Result<T, ErrorResponse>> ToErrorResponseAsync<T>(this Task<Result<T, Exception>> result)
         => await result.MapFailureAsync(ex => new ErrorResponse(ex.GetBaseException().Message));
-
 }

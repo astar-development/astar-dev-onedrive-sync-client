@@ -54,7 +54,7 @@ public class FormatterOptionsShould
     [Fact]
     public void TimestampFormat_ShouldSetAndGetCorrectly()
     {
-        var options   = new FormatterOptions();
+        var options = new FormatterOptions();
         var newFormat = "yyyy-MM-dd";
 
         options.TimestampFormat = newFormat;

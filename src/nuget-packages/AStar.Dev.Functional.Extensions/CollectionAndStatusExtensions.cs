@@ -15,10 +15,10 @@ public static class CollectionAndStatusExtensions
     ///     Awaits a task that returns a Result of an enumerable and replaces the contents of
     ///     the target collection on success, or invokes the onError handler on failure.
     /// </summary>
-    public static async Task ApplyToCollectionAsync<T>(this Task<Result<IEnumerable<T>, Exception>> resultTask, ObservableCollection<T> target, Action<Exception>? onError = null)
+    public static async Task ApplyToCollectionAsync<T>(this Task<Result<IEnumerable<T>, Exception>> resultTask, ObservableCollection<T> target, Action<Exception> onError = null)
     {
-        Result<IEnumerable<T>, Exception>? result = await resultTask.ConfigureAwait(false);
-        switch (result)
+        Result<IEnumerable<T>, Exception> result = await resultTask.ConfigureAwait(false);
+        switch(result)
         {
             case Result<IEnumerable<T>, Exception>.Ok ok:
             {
@@ -38,7 +38,7 @@ public static class CollectionAndStatusExtensions
     ///     Maps a Result to a human-friendly status string. If the result is a success, calls
     ///     successFormatter; if error, returns the error message (or uses errorFormatter if provided).
     /// </summary>
-    public static string ToStatus<T>(this Result<T, Exception> result, Func<T, string> successFormatter, Func<Exception, string>? errorFormatter = null)
+    public static string ToStatus<T>(this Result<T, Exception> result, Func<T, string> successFormatter, Func<Exception, string> errorFormatter = null)
         => result switch
         {
             Result<T, Exception>.Ok ok => successFormatter(ok.Value),

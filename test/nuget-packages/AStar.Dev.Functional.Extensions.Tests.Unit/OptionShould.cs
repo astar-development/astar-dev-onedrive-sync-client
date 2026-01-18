@@ -422,7 +422,7 @@ public class OptionShould
     {
         var option = Option.Some(42);
 
-        (var isSome, var value) = option;
+        var (isSome, value) = option;
 
         isSome.ShouldBeTrue();
         value.ShouldBe(42);
@@ -433,7 +433,7 @@ public class OptionShould
     {
         var option = Option.None<int>();
 
-        (var isSome, var value) = option;
+        var (isSome, value) = option;
 
         isSome.ShouldBeFalse();
         value.ShouldBe(default);
@@ -702,7 +702,7 @@ public class OptionShould
     [Fact]
     public async Task MapAsyncWithTaskOptionAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
+        var optionTask = Task.FromResult(Option.Some(42));
 
         Option<string> result = await optionTask.MapAsync(x => x.ToString());
 
@@ -713,7 +713,7 @@ public class OptionShould
     [Fact]
     public async Task MapAsyncWithTaskOptionAndAsyncMapperAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
+        var optionTask = Task.FromResult(Option.Some(42));
 
         Option<string> result = await optionTask.MapAsync(x => Task.FromResult(x.ToString()));
 
@@ -838,7 +838,7 @@ public class OptionShould
     [Fact]
     public async Task BindAsyncWithTaskOptionAndSyncBinderAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
+        var optionTask = Task.FromResult(Option.Some(42));
 
         Option<string> result = await optionTask.BindAsync(x => Option.Some(x.ToString()));
 
@@ -849,7 +849,7 @@ public class OptionShould
     [Fact]
     public async Task ToResultAsyncWithTaskOptionAndSyncErrorFactoryAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.None<int>());
+        var optionTask = Task.FromResult(Option.None<int>());
 
         Result<int, string> result = await optionTask.ToResultAsync(() => "Error");
 
@@ -860,7 +860,7 @@ public class OptionShould
     [Fact]
     public async Task ToResultAsyncWithTaskOptionAndAsyncErrorFactoryAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.None<int>());
+        var optionTask = Task.FromResult(Option.None<int>());
 
         Result<int, string> result = await optionTask.ToResultAsync(() => Task.FromResult("Error"));
 
@@ -871,7 +871,7 @@ public class OptionShould
     [Fact]
     public async Task TapAsyncWithTaskOptionAndSyncActionAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
+        var optionTask = Task.FromResult(Option.Some(42));
         var sideEffectExecuted = false;
         var capturedValue = 0;
 
@@ -890,7 +890,7 @@ public class OptionShould
     [Fact]
     public async Task TapAsyncWithTaskOptionAndAsyncActionAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
+        var optionTask = Task.FromResult(Option.Some(42));
         var sideEffectExecuted = false;
         var capturedValue = 0;
 
@@ -911,7 +911,7 @@ public class OptionShould
     [Fact]
     public async Task OrElseAsyncWithTaskOptionAndSyncFallbackAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.None<int>());
+        var optionTask = Task.FromResult(Option.None<int>());
 
         var result = await optionTask.OrElseAsync(-1);
 
@@ -921,7 +921,7 @@ public class OptionShould
     [Fact]
     public async Task OrElseAsyncWithTaskOptionAndAsyncFallbackAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.None<int>());
+        var optionTask = Task.FromResult(Option.None<int>());
         var fallbackCalled = false;
 
         var result = await optionTask.OrElseAsync(() =>
@@ -938,7 +938,7 @@ public class OptionShould
     [Fact]
     public async Task ReturnSomeValueWithTaskOrElseAsyncWhenOptionIsSomeAsync()
     {
-        Task<Option<int>> optionTask = Task.FromResult(Option.Some(42));
+        var optionTask = Task.FromResult(Option.Some(42));
         var fallbackCalled = false;
 
         var result = await optionTask.OrElseAsync(() =>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository implementation for accessing debug log entries.
+///     Repository implementation for accessing debug log entries.
 /// </summary>
 public sealed class DebugLogRepository : IDebugLogRepository
 {
@@ -18,7 +18,7 @@ public sealed class DebugLogRepository : IDebugLogRepository
         _context = context;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<DebugLogEntry>> GetByAccountIdAsync(string accountId, int pageSize, int skip, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -30,18 +30,21 @@ public sealed class DebugLogRepository : IDebugLogRepository
             .Take(pageSize)
             .ToListAsync(cancellationToken);
 
-        return [.. entities.Select(entity => new DebugLogEntry(
-            entity.Id,
-            entity.AccountId,
-            entity.TimestampUtc,
-            entity.LogLevel,
-            entity.Source,
-            entity.Message,
-            entity.Exception
-        ))];
+        return
+        [
+            .. entities.Select(entity => new DebugLogEntry(
+                entity.Id,
+                entity.AccountId,
+                entity.TimestampUtc,
+                entity.LogLevel,
+                entity.Source,
+                entity.Message,
+                entity.Exception
+            ))
+        ];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<DebugLogEntry>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -51,18 +54,21 @@ public sealed class DebugLogRepository : IDebugLogRepository
             .OrderByDescending(log => log.TimestampUtc)
             .ToListAsync(cancellationToken);
 
-        return [.. entities.Select(entity => new DebugLogEntry(
-            entity.Id,
-            entity.AccountId,
-            entity.TimestampUtc,
-            entity.LogLevel,
-            entity.Source,
-            entity.Message,
-            entity.Exception
-        ))];
+        return
+        [
+            .. entities.Select(entity => new DebugLogEntry(
+                entity.Id,
+                entity.AccountId,
+                entity.TimestampUtc,
+                entity.LogLevel,
+                entity.Source,
+                entity.Message,
+                entity.Exception
+            ))
+        ];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -75,7 +81,7 @@ public sealed class DebugLogRepository : IDebugLogRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task DeleteOlderThanAsync(DateTime olderThan, CancellationToken cancellationToken = default)
     {
         List<DebugLogEntity> entities = await _context.DebugLogs
@@ -86,9 +92,9 @@ public sealed class DebugLogRepository : IDebugLogRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<int> GetDebugLogCountByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
         => await _context.DebugLogs
-                .Where(log => log.AccountId == accountId)
-                .CountAsync(cancellationToken);
+            .Where(log => log.AccountId == accountId)
+            .CountAsync(cancellationToken);
 }

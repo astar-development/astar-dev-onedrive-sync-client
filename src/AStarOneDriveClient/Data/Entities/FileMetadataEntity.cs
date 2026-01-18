@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Data.Entities;
 
 /// <summary>
-/// Entity for tracking synced files and their metadata in the database.
+///     Entity for tracking synced files and their metadata in the database.
 /// </summary>
 public sealed class FileMetadataEntity
 {

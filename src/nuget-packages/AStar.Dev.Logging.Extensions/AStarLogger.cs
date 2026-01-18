@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 namespace AStar.Dev.Logging.Extensions;
 
 /// <summary>
-/// 
 /// </summary>
 /// <typeparam name="TCategoryName"></typeparam>
 public sealed class AStarLogger<TCategoryName> : ILoggerAstar<TCategoryName>
@@ -23,6 +22,7 @@ public sealed class AStarLogger<TCategoryName> : ILoggerAstar<TCategoryName>
         _logger = logger;
         _telemetryClient = telemetryClient;
     }
+
     /// <inheritdoc />
     public void LogPageView(string pageName)
     {

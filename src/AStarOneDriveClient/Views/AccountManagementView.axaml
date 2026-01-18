@@ -54,10 +54,10 @@
                             <Setter Property="Template">
                                 <ControlTemplate>
                                     <TextBlock Text="No accounts configured. Click 'Add Account' to get started."
-                                             HorizontalAlignment="Center"
-                                             VerticalAlignment="Center"
-                                             Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                             Margin="20" />
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                               Margin="20" />
                                 </ControlTemplate>
                             </Setter>
                         </Style>
@@ -107,7 +107,7 @@
         </Grid>
 
         <!-- Toast (top-right) -->
-        <Border Grid.Row="0" Grid.RowSpan="1"
+        <Border Grid.Row="0"
                 IsVisible="{Binding ToastVisible}"
                 Background="Transparent"
                 HorizontalAlignment="Right"
@@ -126,12 +126,12 @@
                 Background="#80000000"
                 IsVisible="{Binding IsLoading}">
             <StackPanel HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Spacing="10">
+                        VerticalAlignment="Center"
+                        Spacing="10">
                 <ProgressBar IsIndeterminate="True" Width="200" />
-            <TextBlock Text="Loading..."
-                  Foreground="White"
-                  HorizontalAlignment="Center" />
+                <TextBlock Text="Loading..."
+                           Foreground="White"
+                           HorizontalAlignment="Center" />
             </StackPanel>
         </Border>
     </Grid>

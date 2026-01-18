@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Services;
 
 /// <summary>
-/// Service for managing window position and size preferences using database storage.
+///     Service for managing window position and size preferences using database storage.
 /// </summary>
 public sealed class WindowPreferencesService : IWindowPreferencesService
 {
@@ -18,7 +18,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
         _context = context;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<WindowPreferences?> LoadAsync(CancellationToken cancellationToken = default)
     {
         WindowPreferencesEntity? entity = await _context.WindowPreferences
@@ -27,14 +27,14 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
         return entity is null ? null : MapToModel(entity);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task SaveAsync(WindowPreferences preferences, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(preferences);
 
         WindowPreferencesEntity? entity = await _context.WindowPreferences.FirstOrDefaultAsync(cancellationToken);
 
-        if (entity is null)
+        if(entity is null)
         {
             entity = new WindowPreferencesEntity
             {
@@ -58,8 +58,8 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private static WindowPreferences MapToModel(WindowPreferencesEntity entity) =>
-        new(
+    private static WindowPreferences MapToModel(WindowPreferencesEntity entity)
+        => new(
             entity.Id,
             entity.X,
             entity.Y,

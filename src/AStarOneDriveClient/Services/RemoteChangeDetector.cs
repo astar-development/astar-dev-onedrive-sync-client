@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Services.OneDriveServices;
@@ -6,12 +7,12 @@ using Microsoft.Graph.Models;
 namespace AStarOneDriveClient.Services;
 
 /// <summary>
-/// Service for detecting changes on OneDrive using delta queries.
+///     Service for detecting changes on OneDrive using delta queries.
 /// </summary>
 /// <remarks>
-/// Note: Full delta query support requires Microsoft.Graph SDK capabilities.
-/// This implementation provides a foundation that can be extended when delta APIs are integrated.
-/// For now, it performs full scans and compares against known state.
+///     Note: Full delta query support requires Microsoft.Graph SDK capabilities.
+///     This implementation provides a foundation that can be extended when delta APIs are integrated.
+///     For now, it performs full scans and compares against known state.
 /// </remarks>
 public sealed class RemoteChangeDetector : IRemoteChangeDetector
 {
@@ -23,7 +24,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         _graphApiClient = graphApiClient;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<(IReadOnlyList<FileMetadata> Changes, string? NewDeltaLink)> DetectChangesAsync(
         string accountId,
         string folderPath,
@@ -40,10 +41,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
         // Clean the folder path of Graph API prefixes before using it for file paths
         var cleanedFolderPath = CleanGraphApiPathPrefix(folderPath);
-        if (cleanedFolderPath != folderPath)
-        {
-            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Cleaned folder path from '{folderPath}' to '{cleanedFolderPath}'", cancellationToken);
-        }
+        if(cleanedFolderPath != folderPath) await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Cleaned folder path from '{folderPath}' to '{cleanedFolderPath}'", cancellationToken);
 
         // For initial implementation, scan the folder tree
         // Note: For large OneDrive accounts (100k+ files), this can take several minutes
@@ -51,15 +49,15 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         var changes = new List<FileMetadata>();
         DriveItem? rootItem = await GetFolderItemAsync(accountId, folderPath, cancellationToken);
 
-        if (rootItem is not null)
+        if(rootItem is not null)
         {
-            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Folder item found, starting recursive scan", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", "Folder item found, starting recursive scan", cancellationToken);
             // Add a practical limit for initial scan to prevent timeout
             // This will be removed when we implement proper delta query support
             const int maxFiles = 10000; // Limit initial scan to 10k files
             // Use cleaned path for building file paths
             await ScanFolderRecursiveAsync(accountId, rootItem, cleanedFolderPath, changes, cancellationToken, maxFiles);
-            System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Scan complete: {changes.Count} files found in {cleanedFolderPath}");
+            Debug.WriteLine($"[RemoteChangeDetector] Scan complete: {changes.Count} files found in {cleanedFolderPath}");
             await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scan complete: {changes.Count} files found", cancellationToken);
         }
         else
@@ -85,15 +83,15 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
         // Defensive: Strip Graph API path prefixes that might be in stored paths
         // This handles cases where paths like "/drive/root:/Documents" or "/drives/{id}/root:/Documents" were stored
-        if (folderPath.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
+        if(folderPath.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
         {
             folderPath = folderPath["/drive/root:".Length..];
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Stripped '/drive/root:' prefix, new path: '{folderPath}'", cancellationToken);
         }
-        else if (folderPath.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
+        else if(folderPath.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
         {
             var rootIndex = folderPath.IndexOf("/root:", StringComparison.OrdinalIgnoreCase);
-            if (rootIndex >= 0)
+            if(rootIndex >= 0)
             {
                 folderPath = folderPath[(rootIndex + "/root:".Length)..];
                 await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Stripped '/drives/.../root:' prefix, new path: '{folderPath}'", cancellationToken);
@@ -101,7 +99,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         }
 
         // For root or empty path, return the drive root
-        if (folderPath == "/" || string.IsNullOrEmpty(folderPath))
+        if(folderPath == "/" || string.IsNullOrEmpty(folderPath))
         {
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", "Returning drive root", cancellationToken);
             return await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
@@ -113,7 +111,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
 
         // Get root and traverse path segments
         DriveItem? currentItem = await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
-        if (currentItem?.Id is null)
+        if(currentItem?.Id is null)
         {
             await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", "Failed to get drive root", null, cancellationToken);
             return null;
@@ -122,17 +120,16 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         var pathSegments = folderPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Path segments: [{string.Join(", ", pathSegments)}]", cancellationToken);
 
-        foreach (var segment in pathSegments)
+        foreach(var segment in pathSegments)
         {
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for segment: '{segment}'", cancellationToken);
             IEnumerable<DriveItem> children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, currentItem.Id, cancellationToken);
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found {children.Count()} children in current folder", cancellationToken);
 
-            currentItem = children.FirstOrDefault(c =>
-                c.Name?.Equals(segment, StringComparison.OrdinalIgnoreCase) == true &&
-                c.Folder is not null);
+            currentItem = children.FirstOrDefault(c => c.Name?.Equals(segment, StringComparison.OrdinalIgnoreCase) == true &&
+                                                       c.Folder is not null);
 
-            if (currentItem?.Id is null)
+            if(currentItem?.Id is null)
             {
                 await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", $"Folder segment '{segment}' not found", null, cancellationToken);
                 return null;
@@ -158,13 +155,13 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Scanning folder: '{currentPath}' (ID: {parentItem.Id})", cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (changes.Count >= maxFiles)
+        if(changes.Count >= maxFiles)
         {
             await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Max files limit ({maxFiles}) reached", cancellationToken);
             return; // Reached the limit
         }
 
-        if (parentItem.Id is null)
+        if(parentItem.Id is null)
         {
             await DebugLog.ErrorAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", "Parent item ID is null", null, cancellationToken);
             return;
@@ -176,28 +173,22 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         var fileCount = 0;
         var folderCount = 0;
 
-        foreach (DriveItem item in children)
+        foreach(DriveItem item in children)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (changes.Count >= maxFiles)
-            {
-                return; // Reached the limit
-            }
+            if(changes.Count >= maxFiles) return; // Reached the limit
 
-            if (item.File is not null && item.Id is not null && item.Name is not null)
+            if(item.File is not null && item.Id is not null && item.Name is not null)
             {
                 // It's a file
                 fileCount++;
                 var itemPath = CombinePaths(currentPath, item.Name);
                 FileMetadata metadata = ConvertToFileMetadata(accountId, item, itemPath);
                 changes.Add(metadata);
-                if (changes.Count % 500 == 0)
-                {
-                    System.Diagnostics.Debug.WriteLine($"[RemoteChangeDetector] Progress: {changes.Count} files scanned");
-                }
+                if(changes.Count % 500 == 0) Debug.WriteLine($"[RemoteChangeDetector] Progress: {changes.Count} files scanned");
             }
-            else if (item.Folder is not null && item.Id is not null && item.Name is not null)
+            else if(item.Folder is not null && item.Id is not null && item.Name is not null)
             {
                 // It's a folder - scan recursively
                 folderCount++;
@@ -213,63 +204,48 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
     }
 
     private static FileMetadata ConvertToFileMetadata(string accountId, DriveItem item, string path) => new(
-            Id: item.Id ?? string.Empty,
-            AccountId: accountId,
-            Name: item.Name ?? string.Empty,
-            Path: path,
-            Size: item.Size ?? 0,
-            LastModifiedUtc: item.LastModifiedDateTime?.UtcDateTime ?? DateTime.UtcNow,
-            LocalPath: string.Empty, // Will be set during download
-            CTag: item.CTag,
-            ETag: item.ETag,
-            LocalHash: null, // Will be computed after download
-            SyncStatus: FileSyncStatus.PendingDownload,
-            LastSyncDirection: SyncDirection.Download);
+        item.Id ?? string.Empty,
+        accountId,
+        item.Name ?? string.Empty,
+        path,
+        item.Size ?? 0,
+        item.LastModifiedDateTime?.UtcDateTime ?? DateTime.UtcNow,
+        string.Empty, // Will be set during download
+        item.CTag,
+        item.ETag,
+        null, // Will be computed after download
+        FileSyncStatus.PendingDownload,
+        SyncDirection.Download);
 
     private static string CombinePaths(string basePath, string name)
     {
         basePath = basePath.Replace('\\', '/');
         name = name.Replace('\\', '/');
 
-        if (!basePath.EndsWith('/'))
-        {
-            basePath += '/';
-        }
+        if(!basePath.EndsWith('/')) basePath += '/';
 
-        if (name.StartsWith('/'))
-        {
-            name = name[1..];
-        }
+        if(name.StartsWith('/')) name = name[1..];
 
         return basePath + name;
     }
 
     /// <summary>
-    /// Cleans Graph API path prefixes from folder paths.
+    ///     Cleans Graph API path prefixes from folder paths.
     /// </summary>
     /// <param name="path">The path that may contain Graph API prefixes.</param>
     /// <returns>The cleaned path without Graph API prefixes.</returns>
     private static string CleanGraphApiPathPrefix(string path)
     {
-        if (string.IsNullOrEmpty(path))
-        {
-            return path;
-        }
+        if(string.IsNullOrEmpty(path)) return path;
 
         // Strip /drive/root: prefix
-        if (path.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
-        {
-            return path["/drive/root:".Length..];
-        }
+        if(path.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase)) return path["/drive/root:".Length..];
 
         // Strip /drives/{drive-id}/root: prefix
-        if (path.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
+        if(path.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
         {
             var rootIndex = path.IndexOf("/root:", StringComparison.OrdinalIgnoreCase);
-            if (rootIndex >= 0)
-            {
-                return path[(rootIndex + "/root:".Length)..];
-            }
+            if(rootIndex >= 0) return path[(rootIndex + "/root:".Length)..];
         }
 
         return path;

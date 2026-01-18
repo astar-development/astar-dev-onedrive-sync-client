@@ -10,17 +10,17 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Tests.Unit.ViewModels;
 
 /// <summary>
-/// Integration tests for MainWindowViewModel coordinating AccountManagementViewModel and SyncTreeViewModel.
+///     Integration tests for MainWindowViewModel coordinating AccountManagementViewModel and SyncTreeViewModel.
 /// </summary>
 public class MainWindowViewModelIntegrationShould : IDisposable
 {
-    private readonly SyncDbContext _context;
     private readonly AccountRepository _accountRepository;
+    private readonly SyncDbContext _context;
     private readonly IAuthService _mockAuthService;
     private readonly IFolderTreeService _mockFolderTreeService;
-    private readonly ISyncSelectionService _syncSelectionService;
     private readonly ISyncEngine _mockSyncEngine;
     private readonly Subject<SyncState> _progressSubject;
+    private readonly ISyncSelectionService _syncSelectionService;
 
     public MainWindowViewModelIntegrationShould()
     {
@@ -42,6 +42,12 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([]));
     }
 
+    public void Dispose()
+    {
+        _context.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
     [Fact]
     public async Task LoadFoldersWhenAccountIsSelected()
     {
@@ -60,13 +66,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             null);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
-        var rootFolder = new OneDriveFolderNode
-        {
-            Id = "folder1",
-            Name = "Documents",
-            Path = "/Documents",
-            IsFolder = true
-        };
+        var rootFolder = new OneDriveFolderNode { Id = "folder1", Name = "Documents", Path = "/Documents", IsFolder = true };
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-123", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([rootFolder]));
 
@@ -109,13 +109,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             null);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
-        var rootFolder = new OneDriveFolderNode
-        {
-            Id = "folder1",
-            Name = "Photos",
-            Path = "/Photos",
-            IsFolder = true
-        };
+        var rootFolder = new OneDriveFolderNode { Id = "folder1", Name = "Photos", Path = "/Photos", IsFolder = true };
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-456", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([rootFolder]));
 
@@ -147,20 +141,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         await _accountRepository.AddAsync(account1, TestContext.Current.CancellationToken);
         await _accountRepository.AddAsync(account2, TestContext.Current.CancellationToken);
 
-        var folder1 = new OneDriveFolderNode
-        {
-            Id = "f1",
-            Name = "Folder1",
-            Path = "/Folder1",
-            IsFolder = true
-        };
-        var folder2 = new OneDriveFolderNode
-        {
-            Id = "f2",
-            Name = "Folder2",
-            Path = "/Folder2",
-            IsFolder = true
-        };
+        var folder1 = new OneDriveFolderNode { Id = "f1", Name = "Folder1", Path = "/Folder1", IsFolder = true };
+        var folder2 = new OneDriveFolderNode { Id = "f2", Name = "Folder2", Path = "/Folder2", IsFolder = true };
 
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([folder1]));
@@ -230,13 +212,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         // Create new instances each time to simulate fresh load from API
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-sel", Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([
-                new OneDriveFolderNode
-                {
-                    Id = "f1",
-                    Name = "TestFolder",
-                    Path = "/TestFolder",
-                    IsFolder = true
-                }
+                new OneDriveFolderNode { Id = "f1", Name = "TestFolder", Path = "/TestFolder", IsFolder = true }
             ]));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
@@ -268,11 +244,5 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         OneDriveFolderNode reloadedFolder = syncTreeVm.RootFolders[0];
         reloadedFolder.SelectionState.ShouldBe(SelectionState.Unchecked);
         initialState.ShouldBe(SelectionState.Checked);
-    }
-
-    public void Dispose()
-    {
-        _context.Dispose();
-        GC.SuppressFinalize(this);
     }
 }

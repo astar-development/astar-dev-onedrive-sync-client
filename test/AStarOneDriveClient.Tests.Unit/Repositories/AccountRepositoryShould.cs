@@ -100,8 +100,7 @@ public class AccountRepositoryShould
         var repository = new AccountRepository(context);
         var account = new AccountInfo("nonexistent", "Name", @"C:\Path", true, null, null, false, false, 3, 50, null);
 
-        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(
-            async () => await repository.UpdateAsync(account)
+        InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () => await repository.UpdateAsync(account)
         );
 
         exception.Message.ShouldContain("not found");
@@ -155,8 +154,7 @@ public class AccountRepositoryShould
     [Fact]
     public void ThrowArgumentNullExceptionWhenContextIsNull()
     {
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(
-            () => new AccountRepository(null!)
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new AccountRepository(null!)
         );
 
         exception.ParamName.ShouldBe("context");
@@ -168,8 +166,7 @@ public class AccountRepositoryShould
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
 
-        _ = await Should.ThrowAsync<ArgumentNullException>(
-            async () => await repository.AddAsync(null!)
+        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.AddAsync(null!)
         );
     }
 
@@ -179,8 +176,7 @@ public class AccountRepositoryShould
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
 
-        _ = await Should.ThrowAsync<ArgumentNullException>(
-            async () => await repository.UpdateAsync(null!)
+        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.UpdateAsync(null!)
         );
     }
 
@@ -190,8 +186,7 @@ public class AccountRepositoryShould
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(context);
 
-        _ = await Should.ThrowAsync<ArgumentNullException>(
-            async () => await repository.GetByIdAsync(null!)
+        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.GetByIdAsync(null!)
         );
     }
 

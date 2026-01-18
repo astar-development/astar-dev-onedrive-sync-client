@@ -6,12 +6,12 @@ using AStarOneDriveClient.Repositories;
 namespace AStarOneDriveClient.Services;
 
 /// <summary>
-/// Implementation of debug logging that writes to the database when enabled for an account.
+///     Implementation of debug logging that writes to the database when enabled for an account.
 /// </summary>
 public sealed class DebugLogger : IDebugLogger
 {
-    private readonly SyncDbContext _context;
     private readonly IAccountRepository _accountRepository;
+    private readonly SyncDbContext _context;
 
     public DebugLogger(SyncDbContext context, IAccountRepository accountRepository)
     {
@@ -21,32 +21,27 @@ public sealed class DebugLogger : IDebugLogger
         _accountRepository = accountRepository;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task LogInfoAsync(string source, string message, CancellationToken cancellationToken = default) => await LogAsync("Info", source, message, null, cancellationToken);
 
-    /// <inheritdoc/>
-    public async Task LogErrorAsync(string source, string message, Exception? exception = null, CancellationToken cancellationToken = default) => await LogAsync("Error", source, message, exception, cancellationToken);
+    /// <inheritdoc />
+    public async Task LogErrorAsync(string source, string message, Exception? exception = null, CancellationToken cancellationToken = default) =>
+        await LogAsync("Error", source, message, exception, cancellationToken);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task LogEntryAsync(string source, CancellationToken cancellationToken = default) => await LogAsync("Entry", source, "Method entry", null, cancellationToken);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task LogExitAsync(string source, CancellationToken cancellationToken = default) => await LogAsync("Exit", source, "Method exit", null, cancellationToken);
 
     private async Task LogAsync(string logLevel, string source, string message, Exception? exception, CancellationToken cancellationToken)
     {
         var accountId = DebugLogContext.CurrentAccountId;
-        if (string.IsNullOrEmpty(accountId))
-        {
-            return; // No account context, skip logging
-        }
+        if(string.IsNullOrEmpty(accountId)) return; // No account context, skip logging
 
         // Check if debug logging is enabled for this account
         AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
-        if (account is null || !account.EnableDebugLogging)
-        {
-            return; // Debug logging not enabled for this account
-        }
+        if(account is null || !account.EnableDebugLogging) return; // Debug logging not enabled for this account
 
         var logEntry = new DebugLogEntity
         {

@@ -1,19 +1,19 @@
 namespace AStarOneDriveClient.Authentication;
 
 /// <summary>
-/// Service for managing Microsoft authentication via MSAL.
+///     Service for managing Microsoft authentication via MSAL.
 /// </summary>
 public interface IAuthService
 {
     /// <summary>
-    /// Initiates interactive login flow for a new account.
+    ///     Initiates interactive login flow for a new account.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Authentication result containing account information.</returns>
     Task<AuthenticationResult> LoginAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Logs out an account by removing it from the token cache.
+    ///     Logs out an account by removing it from the token cache.
     /// </summary>
     /// <param name="accountId">The account identifier to log out.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -21,14 +21,14 @@ public interface IAuthService
     Task<bool> LogoutAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Gets all authenticated accounts from the token cache.
+    ///     Gets all authenticated accounts from the token cache.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of account identifiers and display names.</returns>
     Task<IReadOnlyList<(string AccountId, string DisplayName)>> GetAuthenticatedAccountsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Acquires an access token for Microsoft Graph API calls.
+    ///     Acquires an access token for Microsoft Graph API calls.
     /// </summary>
     /// <param name="accountId">The account identifier to get a token for.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -36,7 +36,7 @@ public interface IAuthService
     Task<string?> GetAccessTokenAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Checks if an account is currently authenticated.
+    ///     Checks if an account is currently authenticated.
     /// </summary>
     /// <param name="accountId">The account identifier to check.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -44,7 +44,7 @@ public interface IAuthService
     Task<bool> IsAuthenticatedAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Acquires a token silently (without user interaction) if possible.
+    ///     Acquires a token silently (without user interaction) if possible.
     /// </summary>
     /// <param name="accountId">The account identifier to get a token for.</param>
     /// <param name="cancellationToken">Cancellation token.</param>

@@ -102,7 +102,7 @@ public static class OptionExtensions
     /// <summary>
     ///     Gets the value of the option or throws an exception if absent.
     /// </summary>
-    public static T OrThrow<T>(this Option<T> option, Exception? ex = null) => option is Option<T>.Some some ? some.Value : throw ex ?? new InvalidOperationException("No value present");
+    public static T OrThrow<T>(this Option<T> option, Exception ex = null) => option is Option<T>.Some some ? some.Value : throw ex ?? new InvalidOperationException("No value present");
 
     /// <summary>
     ///     Enables deconstruction of an option into a boolean and value pair.
@@ -111,7 +111,7 @@ public static class OptionExtensions
     /// <param name="isSome"></param>
     /// <param name="value"></param>
     /// <typeparam name="T"></typeparam>
-    public static void Deconstruct<T>(this Option<T> option, out bool isSome, out T? value)
+    public static void Deconstruct<T>(this Option<T> option, out bool isSome, out T value)
     {
         isSome = option is Option<T>.Some;
         value = isSome ? ((Option<T>.Some)option).Value : default;
@@ -303,7 +303,7 @@ public static class OptionExtensions
     /// </summary>
     public static IEnumerable<T> Values<T>(this IEnumerable<Option<T>> options)
     {
-        foreach(Option<T>? option in options)
+        foreach(Option<T> option in options)
         {
             if(option is Option<T>.Some some)
                 yield return some.Value;
@@ -325,7 +325,7 @@ public static class OptionExtensions
     {
         foreach(T item in source)
         {
-            Option<TResult>? option = chooser(item);
+            Option<TResult> option = chooser(item);
 
             if(option is Option<TResult>.Some some)
                 yield return some.Value;

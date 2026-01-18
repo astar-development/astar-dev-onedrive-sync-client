@@ -6,17 +6,17 @@
 public sealed class Override
 {
     /// <summary>
-    /// Gets or sets the MinimumLevel logging value for the MicrosoftAspNetCore namespace.
+    ///     Gets or sets the MinimumLevel logging value for the MicrosoftAspNetCore namespace.
     /// </summary>
     public string MicrosoftAspNetCore { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the MinimumLevel logging value for the System.Net.Http namespace.
+    ///     Gets or sets the MinimumLevel logging value for the System.Net.Http namespace.
     /// </summary>
     public string SystemNetHttp { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the MinimumLevel logging value for the AStar Development namespace.
+    ///     Gets or sets the MinimumLevel logging value for the AStar Development namespace.
     /// </summary>
     public string AStar { get; set; } = string.Empty;
 }

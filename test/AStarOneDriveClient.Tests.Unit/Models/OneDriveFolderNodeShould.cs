@@ -40,10 +40,7 @@ public class OneDriveFolderNodeShould
         var propertyChangedRaised = false;
         node.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(OneDriveFolderNode.SelectionState))
-            {
-                propertyChangedRaised = true;
-            }
+            if(args.PropertyName == nameof(OneDriveFolderNode.SelectionState)) propertyChangedRaised = true;
         };
 
         node.SelectionState = SelectionState.Checked;
@@ -59,10 +56,7 @@ public class OneDriveFolderNodeShould
         var propertyChangedCount = 0;
         node.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(OneDriveFolderNode.SelectionState))
-            {
-                propertyChangedCount++;
-            }
+            if(args.PropertyName == nameof(OneDriveFolderNode.SelectionState)) propertyChangedCount++;
         };
 
         node.SelectionState = SelectionState.Checked;
@@ -77,10 +71,7 @@ public class OneDriveFolderNodeShould
         var propertyChangedRaised = false;
         node.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(OneDriveFolderNode.IsSelected))
-            {
-                propertyChangedRaised = true;
-            }
+            if(args.PropertyName == nameof(OneDriveFolderNode.IsSelected)) propertyChangedRaised = true;
         };
 
         node.IsSelected = true;
@@ -96,10 +87,7 @@ public class OneDriveFolderNodeShould
         var propertyChangedCount = 0;
         node.PropertyChanged += (_, args) =>
         {
-            if (args.PropertyName == nameof(OneDriveFolderNode.IsSelected))
-            {
-                propertyChangedCount++;
-            }
+            if(args.PropertyName == nameof(OneDriveFolderNode.IsSelected)) propertyChangedCount++;
         };
 
         node.IsSelected = true;
@@ -113,10 +101,7 @@ public class OneDriveFolderNodeShould
     [InlineData(SelectionState.Indeterminate)]
     public void SetAllSelectionStates(SelectionState state)
     {
-        var node = new OneDriveFolderNode
-        {
-            SelectionState = state
-        };
+        var node = new OneDriveFolderNode { SelectionState = state };
 
         node.SelectionState.ShouldBe(state);
     }
@@ -127,10 +112,7 @@ public class OneDriveFolderNodeShould
     [InlineData(null)]
     public void SetAllIsSelectedValues(bool? value)
     {
-        var node = new OneDriveFolderNode
-        {
-            IsSelected = value
-        };
+        var node = new OneDriveFolderNode { IsSelected = value };
 
         node.IsSelected.ShouldBe(value);
     }

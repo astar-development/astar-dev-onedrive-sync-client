@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Models;
 
 /// <summary>
-/// Represents folder selection configuration for synchronization.
+///     Represents folder selection configuration for synchronization.
 /// </summary>
 /// <param name="Id">Unique identifier for this configuration entry.</param>
 /// <param name="AccountId">Account identifier this configuration belongs to.</param>

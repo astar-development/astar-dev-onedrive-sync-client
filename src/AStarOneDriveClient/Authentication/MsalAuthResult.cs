@@ -3,22 +3,12 @@ using Microsoft.Identity.Client;
 namespace AStarOneDriveClient.Authentication;
 
 /// <summary>
-/// Simplified authentication result wrapper to avoid dependencies on MSAL's sealed types in tests.
+///     Simplified authentication result wrapper to avoid dependencies on MSAL's sealed types in tests.
 /// </summary>
 public sealed class MsalAuthResult
 {
     /// <summary>
-    /// Gets the authenticated account.
-    /// </summary>
-    public IAccount Account { get; init; }
-
-    /// <summary>
-    /// Gets the access token.
-    /// </summary>
-    public string AccessToken { get; init; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MsalAuthResult"/> class.
+    ///     Initializes a new instance of the <see cref="MsalAuthResult" /> class.
     /// </summary>
     /// <param name="account">The authenticated account.</param>
     /// <param name="accessToken">The access token.</param>
@@ -32,7 +22,17 @@ public sealed class MsalAuthResult
     }
 
     /// <summary>
-    /// Creates a wrapper from MSAL's AuthenticationResult.
+    ///     Gets the authenticated account.
+    /// </summary>
+    public IAccount Account { get; init; }
+
+    /// <summary>
+    ///     Gets the access token.
+    /// </summary>
+    public string AccessToken { get; init; }
+
+    /// <summary>
+    ///     Creates a wrapper from MSAL's AuthenticationResult.
     /// </summary>
     /// <param name="msalResult">The MSAL authentication result.</param>
     /// <returns>Wrapped result.</returns>

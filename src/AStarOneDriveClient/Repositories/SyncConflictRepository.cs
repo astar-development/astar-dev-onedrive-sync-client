@@ -6,18 +6,13 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository for managing sync conflicts in the database.
+///     Repository for managing sync conflicts in the database.
 /// </summary>
-public sealed class SyncConflictRepository : ISyncConflictRepository
+public sealed class SyncConflictRepository(SyncDbContext context) : ISyncConflictRepository
 {
-    private readonly SyncDbContext _context;
+    private readonly SyncDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
 
-    public SyncConflictRepository(SyncDbContext context)
-    {
-        _context = context ?? throw new ArgumentNullException(nameof(context));
-    }
-
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<SyncConflict>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         List<SyncConflictEntity> entities = await _context.SyncConflicts
@@ -28,7 +23,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
         return [.. entities.Select(MapToDomain)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<SyncConflict>> GetUnresolvedByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         List<SyncConflictEntity> entities = await _context.SyncConflicts
@@ -39,7 +34,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
         return [.. entities.Select(MapToDomain)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<SyncConflict?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         SyncConflictEntity? entity = await _context.SyncConflicts
@@ -48,7 +43,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
         return entity is not null ? MapToDomain(entity) : null;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<SyncConflict?> GetByFilePathAsync(string accountId, string filePath, CancellationToken cancellationToken = default)
     {
         SyncConflictEntity? entity = await _context.SyncConflicts
@@ -59,7 +54,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
         return entity is not null ? MapToDomain(entity) : null;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task AddAsync(SyncConflict conflict, CancellationToken cancellationToken = default)
     {
         SyncConflictEntity entity = MapToEntity(conflict);
@@ -67,7 +62,7 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task UpdateAsync(SyncConflict conflict, CancellationToken cancellationToken = default)
     {
         SyncConflictEntity existingEntity = await _context.SyncConflicts
@@ -79,39 +74,39 @@ public sealed class SyncConflictRepository : ISyncConflictRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         SyncConflictEntity? entity = await _context.SyncConflicts
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
-        if (entity is not null)
+        if(entity is not null)
         {
             _ = _context.SyncConflicts.Remove(entity);
             _ = await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default) => _ = await _context.SyncConflicts
-            .Where(c => c.AccountId == accountId)
-            .ExecuteDeleteAsync(cancellationToken);
+        .Where(c => c.AccountId == accountId)
+        .ExecuteDeleteAsync(cancellationToken);
 
-    private static SyncConflict MapToDomain(SyncConflictEntity entity) =>
-        new(
-            Id: entity.Id,
-            AccountId: entity.AccountId,
-            FilePath: entity.FilePath,
-            LocalModifiedUtc: entity.LocalModifiedUtc,
-            RemoteModifiedUtc: entity.RemoteModifiedUtc,
-            LocalSize: entity.LocalSize,
-            RemoteSize: entity.RemoteSize,
-            DetectedUtc: entity.DetectedUtc,
-            ResolutionStrategy: entity.ResolutionStrategy,
-            IsResolved: entity.IsResolved);
+    private static SyncConflict MapToDomain(SyncConflictEntity entity)
+        => new(
+            entity.Id,
+            entity.AccountId,
+            entity.FilePath,
+            entity.LocalModifiedUtc,
+            entity.RemoteModifiedUtc,
+            entity.LocalSize,
+            entity.RemoteSize,
+            entity.DetectedUtc,
+            entity.ResolutionStrategy,
+            entity.IsResolved);
 
-    private static SyncConflictEntity MapToEntity(SyncConflict conflict) =>
-        new()
+    private static SyncConflictEntity MapToEntity(SyncConflict conflict)
+        => new()
         {
             Id = conflict.Id,
             AccountId = conflict.AccountId,

@@ -42,7 +42,7 @@ public static class LoggingExtensions
         Log.Logger = logger;
 
         _ = builder.Host
-                   .UseSerilog((_, loggerConfig) => loggerConfig.Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>()));
+            .UseSerilog((_, loggerConfig) => loggerConfig.Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>()));
 
         return builder;
     }
@@ -63,19 +63,19 @@ public static class LoggingExtensions
         if(externalSettingsFile.IsNotNullOrWhiteSpace())
             _ = builder.Configuration.AddJsonFile(externalSettingsFile, true, true);
 
-        _ = builder.Services.AddSingleton<TelemetryConfiguration>(_ => new());
+        _ = builder.Services.AddSingleton<TelemetryConfiguration>(_ => new TelemetryConfiguration());
         ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
 
         Logger logger = new LoggerConfiguration()
-                     .Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>())
-                     .CreateLogger();
+            .Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>())
+            .CreateLogger();
 
         logger.Debug("Serilog has been configured.");
 
         Log.Logger = logger;
 
         _ = builder.Services
-                   .AddSerilog((context, loggerConfig) => loggerConfig.Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>()));
+            .AddSerilog((context, loggerConfig) => loggerConfig.Configure(builder.Configuration, serviceProvider.GetRequiredService<TelemetryConfiguration>()));
 
         return builder;
     }

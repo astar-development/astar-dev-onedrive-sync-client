@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace AStarOneDriveClient.Repositories;
 
 /// <summary>
-/// Repository implementation for managing file metadata.
+///     Repository implementation for managing file metadata.
 /// </summary>
 public sealed class FileMetadataRepository : IFileMetadataRepository
 {
@@ -19,7 +19,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         _context = context;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -32,7 +32,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         return [.. entities.Select(MapToModel)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<FileMetadata?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(id);
@@ -41,7 +41,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         return entity is null ? null : MapToModel(entity);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<FileMetadata?> GetByPathAsync(string accountId, string path, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -53,7 +53,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         return entity is null ? null : MapToModel(entity);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task<IReadOnlyList<FileMetadata>> GetByStatusAsync(string accountId, FileSyncStatus status, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -65,13 +65,13 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         return [.. entities.Select(MapToModel)];
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task AddAsync(FileMetadata fileMetadata, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fileMetadata);
 
         FileMetadataEntity entity = MapToEntity(fileMetadata);
-        if (_context.FileMetadata.Any(fm => fm.Id == entity.Id))
+        if(_context.FileMetadata.Any(fm => fm.Id == entity.Id))
         {
             await UpdateAsync(fileMetadata, cancellationToken);
             return;
@@ -81,12 +81,13 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task UpdateAsync(FileMetadata fileMetadata, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fileMetadata);
 
-        FileMetadataEntity entity = await _context.FileMetadata.FindAsync([fileMetadata.Id], cancellationToken) ?? throw new InvalidOperationException($"File metadata with ID '{fileMetadata.Id}' not found.");
+        FileMetadataEntity entity = await _context.FileMetadata.FindAsync([fileMetadata.Id], cancellationToken) ??
+                                    throw new InvalidOperationException($"File metadata with ID '{fileMetadata.Id}' not found.");
 
         entity.AccountId = fileMetadata.AccountId;
         entity.Name = fileMetadata.Name;
@@ -103,20 +104,20 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(id);
 
         FileMetadataEntity? entity = await _context.FileMetadata.FindAsync([id], cancellationToken);
-        if (entity is not null)
+        if(entity is not null)
         {
             _ = _context.FileMetadata.Remove(entity);
             _ = await _context.SaveChangesAsync(cancellationToken);
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
@@ -129,31 +130,27 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public async Task SaveBatchAsync(IEnumerable<FileMetadata> fileMetadataList, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(fileMetadataList);
 
         var entities = fileMetadataList.Select(MapToEntity).ToList();
 
-        foreach (FileMetadataEntity? entity in entities)
+        foreach(FileMetadataEntity? entity in entities)
         {
             FileMetadataEntity? existing = await _context.FileMetadata.FindAsync([entity.Id], cancellationToken);
-            if (existing is null)
-            {
+            if(existing is null)
                 _ = _context.FileMetadata.Add(entity);
-            }
             else
-            {
                 _context.Entry(existing).CurrentValues.SetValues(entity);
-            }
         }
 
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
 
-    private static FileMetadata MapToModel(FileMetadataEntity entity) =>
-        new(
+    private static FileMetadata MapToModel(FileMetadataEntity entity)
+        => new(
             entity.Id,
             entity.AccountId,
             entity.Name,
@@ -168,8 +165,8 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
             entity.LastSyncDirection.HasValue ? (SyncDirection)entity.LastSyncDirection.Value : null
         );
 
-    private static FileMetadataEntity MapToEntity(FileMetadata model) =>
-        new()
+    private static FileMetadataEntity MapToEntity(FileMetadata model)
+        => new()
         {
             Id = model.Id,
             AccountId = model.AccountId,

@@ -1,7 +1,7 @@
 namespace AStarOneDriveClient.Data.Entities;
 
 /// <summary>
-/// Entity for storing account information in the database.
+///     Entity for storing account information in the database.
 /// </summary>
 public sealed class AccountEntity
 {

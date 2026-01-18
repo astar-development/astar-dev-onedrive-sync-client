@@ -1,4 +1,3 @@
-using System.Reactive.Linq;
 using AStarOneDriveClient.Models;
 using AStarOneDriveClient.Models.Enums;
 using AStarOneDriveClient.Services;
@@ -8,8 +7,8 @@ namespace AStarOneDriveClient.Tests.Unit.Services;
 
 public class FileWatcherServiceShould : IDisposable
 {
-    private readonly string _testDirectory;
     private readonly FileWatcherService _sut;
+    private readonly string _testDirectory;
 
     public FileWatcherServiceShould()
     {
@@ -21,11 +20,20 @@ public class FileWatcherServiceShould : IDisposable
         _ = Directory.CreateDirectory(_testDirectory);
     }
 
+    public void Dispose()
+    {
+        _sut.Dispose();
+
+        // Clean up test directory
+        if(Directory.Exists(_testDirectory)) Directory.Delete(_testDirectory, true);
+
+        GC.SuppressFinalize(this);
+    }
+
     [Fact]
     public void ThrowArgumentNullExceptionWhenAccountIdIsNull()
     {
-        Exception? exception = Record.Exception(() =>
-            _sut.StartWatching(null!, _testDirectory));
+        Exception? exception = Record.Exception(() => _sut.StartWatching(null!, _testDirectory));
 
         _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
@@ -33,8 +41,7 @@ public class FileWatcherServiceShould : IDisposable
     [Fact]
     public void ThrowArgumentNullExceptionWhenLocalPathIsNull()
     {
-        Exception? exception = Record.Exception(() =>
-            _sut.StartWatching("account1", null!));
+        Exception? exception = Record.Exception(() => _sut.StartWatching("account1", null!));
 
         _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
@@ -44,8 +51,7 @@ public class FileWatcherServiceShould : IDisposable
     {
         var nonExistentPath = Path.Combine(_testDirectory, "NonExistent");
 
-        Exception? exception = Record.Exception(() =>
-            _sut.StartWatching("account1", nonExistentPath));
+        Exception? exception = Record.Exception(() => _sut.StartWatching("account1", nonExistentPath));
 
         _ = exception.ShouldBeOfType<DirectoryNotFoundException>();
     }
@@ -97,9 +103,8 @@ public class FileWatcherServiceShould : IDisposable
 
         events.ShouldNotBeEmpty();
 
-        FileChangeEvent? modifiedEvent = events.FirstOrDefault(e =>
-            e.ChangeType == FileChangeType.Modified &&
-            e.RelativePath == "modify.txt");
+        FileChangeEvent? modifiedEvent = events.FirstOrDefault(e => e.ChangeType == FileChangeType.Modified &&
+                                                                    e.RelativePath == "modify.txt");
 
         _ = modifiedEvent.ShouldNotBeNull();
         modifiedEvent.AccountId.ShouldBe("account1");
@@ -126,9 +131,8 @@ public class FileWatcherServiceShould : IDisposable
 
         events.ShouldNotBeEmpty();
 
-        FileChangeEvent? deletedEvent = events.FirstOrDefault(e =>
-            e.ChangeType == FileChangeType.Deleted &&
-            e.RelativePath == "delete.txt");
+        FileChangeEvent? deletedEvent = events.FirstOrDefault(e => e.ChangeType == FileChangeType.Deleted &&
+                                                                   e.RelativePath == "delete.txt");
 
         _ = deletedEvent.ShouldNotBeNull();
         deletedEvent.AccountId.ShouldBe("account1");
@@ -154,8 +158,7 @@ public class FileWatcherServiceShould : IDisposable
 
         events.ShouldNotBeEmpty();
 
-        FileChangeEvent? nestedEvent = events.FirstOrDefault(e =>
-            e.RelativePath == Path.Combine("SubFolder", "nested.txt"));
+        FileChangeEvent? nestedEvent = events.FirstOrDefault(e => e.RelativePath == Path.Combine("SubFolder", "nested.txt"));
 
         _ = nestedEvent.ShouldNotBeNull();
         nestedEvent.AccountId.ShouldBe("account1");
@@ -229,8 +232,7 @@ public class FileWatcherServiceShould : IDisposable
         _sut.StartWatching("account1", _testDirectory);
 
         // Start watching again for same account - should stop existing watcher
-        Exception? exception = Record.Exception(() =>
-            _sut.StartWatching("account1", _testDirectory));
+        Exception? exception = Record.Exception(() => _sut.StartWatching("account1", _testDirectory));
 
         exception.ShouldBeNull();
     }
@@ -238,8 +240,7 @@ public class FileWatcherServiceShould : IDisposable
     [Fact]
     public void ThrowArgumentNullExceptionWhenStoppingNullAccountId()
     {
-        Exception? exception = Record.Exception(() =>
-            _sut.StopWatching(null!));
+        Exception? exception = Record.Exception(() => _sut.StopWatching(null!));
 
         _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
@@ -271,7 +272,7 @@ public class FileWatcherServiceShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Make rapid changes to the same file
-        for (var i = 0; i < 5; i++)
+        for(var i = 0; i < 5; i++)
         {
             await File.AppendAllTextAsync(testFile, $"update{i}", TestContext.Current.CancellationToken);
             await Task.Delay(50, TestContext.Current.CancellationToken); // 50ms between writes (within 500ms debounce window)
@@ -287,18 +288,5 @@ public class FileWatcherServiceShould : IDisposable
         // Exact count depends on timing, but should be significantly less than 5
         rapidEvents.Count.ShouldBeLessThan(5);
         rapidEvents.ShouldNotBeEmpty();
-    }
-
-    public void Dispose()
-    {
-        _sut.Dispose();
-
-        // Clean up test directory
-        if (Directory.Exists(_testDirectory))
-        {
-            Directory.Delete(_testDirectory, recursive: true);
-        }
-
-        GC.SuppressFinalize(this);
     }
 }
