@@ -2,10 +2,9 @@ using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using AStar.Dev.OneDrive.Client.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AStar.Dev.OneDrive.Client.Tests.Unit.Repositories;
+namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Repositories;
 
 public class FileMetadataRepositoryShould
 {
@@ -170,10 +169,10 @@ public class FileMetadataRepositoryShould
         var repository = new FileMetadataRepository(context);
         await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/old.txt"), TestContext.Current.CancellationToken);
 
-        FileMetadata[] batchFiles = new[]
-        {
+        FileMetadata[] batchFiles =
+        [
             CreateFileMetadata("file1", "acc1", "/old.txt", FileSyncStatus.PendingUpload), CreateFileMetadata("file2", "acc1", "/new.txt", FileSyncStatus.PendingDownload)
-        };
+        ];
         await repository.SaveBatchAsync(batchFiles, TestContext.Current.CancellationToken);
 
         IReadOnlyList<FileMetadata> allFiles = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);

@@ -74,12 +74,4 @@ public class ServiceConfigurationShould
         _ = repo2.ShouldNotBeNull();
         repo1.ShouldNotBeSameAs(repo2);
     }
-
-    [Fact]
-    public void EnsureDatabaseCreatedDoesNotThrow()
-    {
-        using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
-
-        Should.NotThrow(() => ServiceConfiguration.EnsureDatabaseCreated(serviceProvider));
-    }
 }

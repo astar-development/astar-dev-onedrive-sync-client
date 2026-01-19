@@ -1,10 +1,9 @@
 using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using AStar.Dev.OneDrive.Client.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace AStar.Dev.OneDrive.Client.Tests.Unit.Repositories;
+namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Repositories;
 
 public class SyncConfigurationRepositoryShould
 {
@@ -127,7 +126,7 @@ public class SyncConfigurationRepositoryShould
         _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Old1", true, DateTime.UtcNow), TestContext.Current.CancellationToken);
         _ = await repository.AddAsync(new SyncConfiguration(0, "acc1", "/Old2", false, DateTime.UtcNow), TestContext.Current.CancellationToken);
 
-        SyncConfiguration[] newConfigs = new[] { new SyncConfiguration(0, "acc1", "/New1", true, DateTime.UtcNow), new SyncConfiguration(0, "acc1", "/New2", true, DateTime.UtcNow) };
+        SyncConfiguration[] newConfigs = [new SyncConfiguration(0, "acc1", "/New1", true, DateTime.UtcNow), new SyncConfiguration(0, "acc1", "/New2", true, DateTime.UtcNow)];
         await repository.SaveBatchAsync("acc1", newConfigs, TestContext.Current.CancellationToken);
 
         IReadOnlyList<SyncConfiguration> result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
