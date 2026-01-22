@@ -14,32 +14,18 @@ namespace AStar.Dev.OneDrive.Client.Services;
 ///     This implementation provides a foundation that can be extended when delta APIs are integrated.
 ///     For now, it performs full scans and compares against known state.
 /// </remarks>
-public sealed class RemoteChangeDetector : IRemoteChangeDetector
+public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemoteChangeDetector
 {
-    private readonly IGraphApiClient _graphApiClient;
-
-    public RemoteChangeDetector(IGraphApiClient graphApiClient)
-    {
-        ArgumentNullException.ThrowIfNull(graphApiClient);
-        _graphApiClient = graphApiClient;
-    }
-
     /// <inheritdoc />
-    public async Task<(IReadOnlyList<FileMetadata> Changes, string? NewDeltaLink)> DetectChangesAsync(
-        string accountId,
-        string folderPath,
-        string? previousDeltaLink,
-        CancellationToken cancellationToken = default)
+    public async Task<(IReadOnlyList<FileMetadata> Changes, string? NewDeltaLink)>
+                DetectChangesAsync(string accountId, string folderPath, string? previousDeltaLink, CancellationToken cancellationToken = default)
     {
         await DebugLog.EntryAsync("RemoteChangeDetector.DetectChangesAsync", cancellationToken);
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(folderPath);
 
         cancellationToken.ThrowIfCancellationRequested();
 
         await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scanning folder: '{folderPath}'", cancellationToken);
 
-        // Clean the folder path of Graph API prefixes before using it for file paths
         var cleanedFolderPath = CleanGraphApiPathPrefix(folderPath);
         if(cleanedFolderPath != folderPath) await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Cleaned folder path from '{folderPath}' to '{cleanedFolderPath}'", cancellationToken);
 
@@ -102,7 +88,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         if(folderPath == "/" || string.IsNullOrEmpty(folderPath))
         {
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", "Returning drive root", cancellationToken);
-            return await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
+            return await graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
         }
 
         // Clean up the path
@@ -110,7 +96,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Trimmed path: '{folderPath}'", cancellationToken);
 
         // Get root and traverse path segments
-        DriveItem? currentItem = await _graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
+        DriveItem? currentItem = await graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
         if(currentItem?.Id is null)
         {
             await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", "Failed to get drive root", null, cancellationToken);
@@ -123,7 +109,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         foreach(var segment in pathSegments)
         {
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for segment: '{segment}'", cancellationToken);
-            IEnumerable<DriveItem> children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, currentItem.Id, cancellationToken);
+            IEnumerable<DriveItem> children = await graphApiClient.GetDriveItemChildrenAsync(accountId, currentItem.Id, cancellationToken);
             await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found {children.Count()} children in current folder", cancellationToken);
 
             currentItem = children.FirstOrDefault(c => c.Name?.Equals(segment, StringComparison.OrdinalIgnoreCase) == true &&
@@ -167,7 +153,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
             return;
         }
 
-        IEnumerable<DriveItem> children = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentItem.Id, cancellationToken);
+        IEnumerable<DriveItem> children = await graphApiClient.GetDriveItemChildrenAsync(accountId, parentItem.Id, cancellationToken);
         await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Found {children.Count()} items in '{currentPath}'", cancellationToken);
 
         var fileCount = 0;

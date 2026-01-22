@@ -20,8 +20,6 @@ public sealed class ConflictItemViewModel : ReactiveObject
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="conflict" /> is <c>null</c>.</exception>
     public ConflictItemViewModel(SyncConflict conflict)
     {
-        ArgumentNullException.ThrowIfNull(conflict);
-
         Id = conflict.Id;
         AccountId = conflict.AccountId;
         FilePath = conflict.FilePath;

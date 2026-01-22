@@ -40,11 +40,6 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
         IConflictResolver conflictResolver,
         ILogger<ConflictResolutionViewModel> logger)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
-        ArgumentNullException.ThrowIfNull(syncEngine);
-        ArgumentNullException.ThrowIfNull(conflictResolver);
-        ArgumentNullException.ThrowIfNull(logger);
-
         _accountId = accountId;
         _syncEngine = syncEngine;
         _conflictResolver = conflictResolver;

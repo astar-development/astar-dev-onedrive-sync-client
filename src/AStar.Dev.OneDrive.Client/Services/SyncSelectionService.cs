@@ -30,8 +30,6 @@ public sealed class SyncSelectionService : ISyncSelectionService
     /// <inheritdoc />
     public void SetSelection(OneDriveFolderNode folder, bool isSelected)
     {
-        ArgumentNullException.ThrowIfNull(folder);
-
         SelectionState selectionState = isSelected ? SelectionState.Checked : SelectionState.Unchecked;
         folder.SelectionState = selectionState;
         folder.IsSelected = isSelected;
@@ -43,9 +41,6 @@ public sealed class SyncSelectionService : ISyncSelectionService
     /// <inheritdoc />
     public void UpdateParentStates(OneDriveFolderNode folder, List<OneDriveFolderNode> rootFolders)
     {
-        ArgumentNullException.ThrowIfNull(folder);
-        ArgumentNullException.ThrowIfNull(rootFolders);
-
         if(folder.ParentId is null) return;
 
         OneDriveFolderNode? parent = FindNodeById(rootFolders, folder.ParentId);
@@ -68,8 +63,6 @@ public sealed class SyncSelectionService : ISyncSelectionService
     /// <inheritdoc />
     public List<OneDriveFolderNode> GetSelectedFolders(List<OneDriveFolderNode> rootFolders)
     {
-        ArgumentNullException.ThrowIfNull(rootFolders);
-
         var selectedFolders = new List<OneDriveFolderNode>();
         CollectSelectedFolders(rootFolders, selectedFolders);
         return selectedFolders;
@@ -78,16 +71,12 @@ public sealed class SyncSelectionService : ISyncSelectionService
     /// <inheritdoc />
     public void ClearAllSelections(List<OneDriveFolderNode> rootFolders)
     {
-        ArgumentNullException.ThrowIfNull(rootFolders);
-
         foreach(OneDriveFolderNode folder in rootFolders) SetSelection(folder, false);
     }
 
     /// <inheritdoc />
     public SelectionState CalculateStateFromChildren(OneDriveFolderNode folder)
     {
-        ArgumentNullException.ThrowIfNull(folder);
-
         if(folder.Children.Count == 0) return folder.SelectionState;
 
         var checkedCount = 0;
@@ -126,39 +115,22 @@ public sealed class SyncSelectionService : ISyncSelectionService
     /// <inheritdoc />
     public async Task SaveSelectionsToDatabaseAsync(string accountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(rootFolders);
+        if(_configurationRepository is null) return;
 
-        if(_configurationRepository is null) return; // No persistence configured
-
-        // Get all checked folders
         List<OneDriveFolderNode> selectedFolders = GetSelectedFolders(rootFolders);
 
-        // Convert to SyncConfiguration records
-        IEnumerable<SyncConfiguration> configurations = selectedFolders.Select(folder => new SyncConfiguration(
-            0, // Will be auto-generated
-            accountId,
-            folder.Path,
-            true,
-            DateTime.UtcNow
-        ));
+        IEnumerable<SyncConfiguration> configurations = selectedFolders.Select(folder => new SyncConfiguration(0, accountId, folder.Path, true, DateTime.UtcNow));
 
-        // Save batch (replaces all existing selections for this account)
         await _configurationRepository.SaveBatchAsync(accountId, configurations, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task LoadSelectionsFromDatabaseAsync(string accountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(rootFolders);
-
-        // Set account context for debug logging
         DebugLogContext.SetAccountId(accountId);
 
-        if(_configurationRepository is null) return; // No persistence configured
+        if(_configurationRepository is null) return;
 
-        // Get saved folder paths
         IReadOnlyList<string> savedFolderPaths = await _configurationRepository.GetSelectedFoldersAsync(accountId, cancellationToken);
 
         await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Loading selections for account {accountId}", cancellationToken);
@@ -247,8 +219,6 @@ public sealed class SyncSelectionService : ISyncSelectionService
     /// <inheritdoc />
     public void UpdateParentState(OneDriveFolderNode folder)
     {
-        ArgumentNullException.ThrowIfNull(folder);
-
         if(folder.Children.Count == 0) return; // No children, nothing to calculate
 
         SelectionState calculatedState = CalculateStateFromChildren(folder);

@@ -27,8 +27,6 @@ public sealed class AStarLogger<TCategoryName> : ILoggerAstar<TCategoryName>
     /// <inheritdoc />
     public void LogPageView(string pageName)
     {
-        ArgumentNullException.ThrowIfNull(pageName);
-
 #pragma warning disable CA1848 // Use the LoggerMessage delegates
         _logger.LogInformation(AStarEventIds.Website.PageView, "Page view: {PageView}", pageName);
 #pragma warning restore CA1848 // Use the LoggerMessage delegates

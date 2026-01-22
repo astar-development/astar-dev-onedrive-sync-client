@@ -257,8 +257,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// <param name="folder">The folder whose children should be loaded.</param>
     private async Task LoadChildrenAsync(OneDriveFolderNode folder, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(folder);
-
         if(folder.ChildrenLoaded || string.IsNullOrEmpty(SelectedAccountId)) return;
 
         try
@@ -297,8 +295,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// <param name="folder">The folder to toggle.</param>
     private void ToggleSelection(OneDriveFolderNode folder)
     {
-        ArgumentNullException.ThrowIfNull(folder);
-
         var newState = folder.SelectionState switch
         {
             SelectionState.Unchecked => true,

@@ -52,8 +52,6 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, int maxItemsInBatch = 200, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(itemId);
-
         await DebugLog.EntryAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
         await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"Fetching children for item ID: {itemId}", cancellationToken);
 
@@ -112,8 +110,6 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task<DriveItem?> GetDriveItemAsync(string accountId, string itemId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(itemId);
-
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         return drive?.Id is null ? null : await graphClient.Drives[drive.Id].Items[itemId].GetAsync(cancellationToken: cancellationToken);
@@ -136,9 +132,6 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task DownloadFileAsync(string accountId, string itemId, string localFilePath, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(itemId);
-        ArgumentNullException.ThrowIfNull(localFilePath);
-
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         if(drive?.Id is null) throw new InvalidOperationException("Unable to access user's drive");
@@ -159,9 +152,6 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task<DriveItem> UploadFileAsync(string accountId, string localFilePath, string remotePath, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(localFilePath);
-        ArgumentNullException.ThrowIfNull(remotePath);
-
         if(!File.Exists(localFilePath)) throw new FileNotFoundException($"Local file not found: {localFilePath}", localFilePath);
 
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
@@ -256,9 +246,6 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task DeleteFileAsync(string accountId, string itemId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(itemId);
-
         await DebugLog.EntryAsync("GraphApiClient.DeleteFileAsync", cancellationToken);
         await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", $"Attempting to delete remote file. AccountId: {accountId}, ItemId: {itemId}", cancellationToken);
 

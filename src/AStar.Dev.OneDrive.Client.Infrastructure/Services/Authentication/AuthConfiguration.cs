@@ -34,8 +34,6 @@ public sealed class AuthConfiguration
     /// <returns>Configured AuthConfiguration instance.</returns>
     public static AuthConfiguration LoadFromConfiguration(IConfiguration configuration)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
-
         IConfigurationSection authSection = configuration.GetSection("Authentication");
         if(!authSection.Exists()) throw new InvalidOperationException("Authentication configuration section not found. Ensure appsettings.json contains an 'Authentication' section.");
 
