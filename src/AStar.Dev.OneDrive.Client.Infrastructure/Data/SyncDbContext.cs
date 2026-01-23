@@ -20,11 +20,6 @@ public sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : DbC
     public DbSet<SyncConfigurationEntity> SyncConfigurations { get; set; } = null!;
 
     /// <summary>
-    ///     Gets or sets the file metadata.
-    /// </summary>
-    public DbSet<FileMetadataEntity> FileMetadata { get; set; } = null!;
-
-    /// <summary>
     ///     Gets or sets the window preferences.
     /// </summary>
     public DbSet<WindowPreferencesEntity> WindowPreferences { get; set; } = null!;
@@ -57,7 +52,7 @@ public sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : DbC
     /// <summary>
     ///     Gets or sets the Delta Tokens.
     /// </summary>
-    public DbSet<DriveItemRecord> DriveItems { get; set; } = null!;
+    public DbSet<DriveItemEntity> DriveItems { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

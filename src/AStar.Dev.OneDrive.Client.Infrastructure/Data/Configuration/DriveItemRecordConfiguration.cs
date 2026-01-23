@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Configuration;
 
-public sealed class DriveItemRecordConfiguration : IEntityTypeConfiguration<DriveItemRecord>
+public sealed class DriveItemRecordConfiguration : IEntityTypeConfiguration<DriveItemEntity>
 {
-    public void Configure(EntityTypeBuilder<DriveItemRecord> builder)
+    public void Configure(EntityTypeBuilder<DriveItemEntity> builder)
     {
         _ = builder.ToTable("DriveItems");
         _ = builder.HasKey(d => d.Id);

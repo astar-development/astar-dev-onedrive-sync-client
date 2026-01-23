@@ -41,10 +41,10 @@ public class ServiceConfigurationShould
     {
         using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
 
-        IFileMetadataRepository? repository = serviceProvider.GetService<IFileMetadataRepository>();
+        IDriveItemsRepository? repository = serviceProvider.GetService<IDriveItemsRepository>();
 
         _ = repository.ShouldNotBeNull();
-        _ = repository.ShouldBeOfType<FileMetadataRepository>();
+        _ = repository.ShouldBeOfType<DriveItemsRepository>();
     }
 
     [Fact]

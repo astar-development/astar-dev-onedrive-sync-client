@@ -46,16 +46,16 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
     /// <inheritdoc />
     public async Task UpdateAsync(SyncSessionLog sessionLog, CancellationToken cancellationToken = default)
     {
-        SyncSessionLogEntity entity = await _context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken) ??
+        SyncSessionLogEntity syncSessionLog = await _context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken) ??
                                       throw new InvalidOperationException($"Sync session log with ID '{sessionLog.Id}' not found.");
 
-        entity.CompletedUtc = sessionLog.CompletedUtc;
-        entity.Status = (int)sessionLog.Status;
-        entity.FilesUploaded = sessionLog.FilesUploaded;
-        entity.FilesDownloaded = sessionLog.FilesDownloaded;
-        entity.FilesDeleted = sessionLog.FilesDeleted;
-        entity.ConflictsDetected = sessionLog.ConflictsDetected;
-        entity.TotalBytes = sessionLog.TotalBytes;
+        syncSessionLog.CompletedUtc = sessionLog.CompletedUtc;
+        syncSessionLog.Status = (int)sessionLog.Status;
+        syncSessionLog.FilesUploaded = sessionLog.FilesUploaded;
+        syncSessionLog.FilesDownloaded = sessionLog.FilesDownloaded;
+        syncSessionLog.FilesDeleted = sessionLog.FilesDeleted;
+        syncSessionLog.ConflictsDetected = sessionLog.ConflictsDetected;
+        syncSessionLog.TotalBytes = sessionLog.TotalBytes;
 
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
@@ -65,18 +65,18 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
         .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
         .ExecuteDeleteAsync(cancellationToken);
 
-    private static SyncSessionLog MapToModel(SyncSessionLogEntity entity)
+    private static SyncSessionLog MapToModel(SyncSessionLogEntity syncSessionLog)
         => new(
-            entity.Id,
-            entity.AccountId,
-            entity.StartedUtc,
-            entity.CompletedUtc,
-            (SyncStatus)entity.Status,
-            entity.FilesUploaded,
-            entity.FilesDownloaded,
-            entity.FilesDeleted,
-            entity.ConflictsDetected,
-            entity.TotalBytes);
+            syncSessionLog.Id,
+            syncSessionLog.AccountId,
+            syncSessionLog.StartedUtc,
+            syncSessionLog.CompletedUtc,
+            (SyncStatus)syncSessionLog.Status,
+            syncSessionLog.FilesUploaded,
+            syncSessionLog.FilesDownloaded,
+            syncSessionLog.FilesDeleted,
+            syncSessionLog.ConflictsDetected,
+            syncSessionLog.TotalBytes);
 
     private static SyncSessionLogEntity MapToEntity(SyncSessionLog model)
         => new()

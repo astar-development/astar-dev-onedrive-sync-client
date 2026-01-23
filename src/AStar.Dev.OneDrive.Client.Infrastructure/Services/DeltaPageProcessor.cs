@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
-using AStar.Dev.OneDrive.Client.Core.DTOs;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
@@ -8,21 +7,21 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
 public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepository repo) : IDeltaPageProcessor
 {
-    public async Task<(DeltaToken finalDelta, int pageCount, int totalItemsProcessed)> ProcessAllDeltaPagesAsync(string accountId, DeltaToken? deltaToken, Action<SyncState>? progressCallback,
+    public async Task<(DeltaToken finalDelta, int pageCount, int totalItemsProcessed)> ProcessAllDeltaPagesAsync(string accountId, DeltaToken deltaToken, Action<SyncState>? progressCallback,
         CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, cancellationToken);
-        var nextOrDelta = deltaToken?.Token;
+        var nextOrDelta = deltaToken.Token;
         DeltaToken finalToken = deltaToken;
         int pageCount = 0, totalItemsProcessed = 0;
-        progressCallback?.Invoke(CreateStartingSyncMessage(accountId, deltaToken == null));
+        progressCallback?.Invoke(CreateStartingSyncMessage(accountId, string.IsNullOrWhiteSpace(deltaToken.Token)));
 
         try
         {
             do
             {
                 DeltaPage page = await graphApiClient.GetDriveDeltaPageAsync(accountId, nextOrDelta, cancellationToken);
-                DriveItemRecord? driveItemRecord = page.Items.FirstOrDefault();
+                DriveItemEntity? driveItemRecord = page.Items.FirstOrDefault();
                 if(driveItemRecord is not null) deltaToken = new DeltaToken(accountId, driveItemRecord.Id.Split('!')[0], page.DeltaLink ?? string.Empty, DateTimeOffset.UtcNow);
 
                 totalItemsProcessed += page.Items.Count();

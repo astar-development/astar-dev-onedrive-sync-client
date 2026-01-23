@@ -6,42 +6,47 @@ namespace AStar.Dev.OneDrive.Client.Core.Models.Enums;
 public enum FileSyncStatus
 {
     /// <summary>
+    ///     Synchronization has occurred but no action has been performed.
+    /// </summary>
+    SyncOnly = 0,
+
+    /// <summary>
     ///     File is in sync between local and OneDrive.
     /// </summary>
-    Synced = 0,
+    Synced = 1,
 
     /// <summary>
     ///     File is pending upload to OneDrive.
     /// </summary>
-    PendingUpload = 1,
+    PendingUpload = 2,
 
     /// <summary>
     ///     File is pending download from OneDrive.
     /// </summary>
-    PendingDownload = 2,
+    PendingDownload = 3,
 
     /// <summary>
     ///     File is currently being uploaded.
     /// </summary>
-    Uploading = 3,
+    Uploading = 4,
 
     /// <summary>
     ///     File is currently being downloaded.
     /// </summary>
-    Downloading = 4,
+    Downloading = 5,
 
     /// <summary>
     ///     File has a conflict that needs resolution.
     /// </summary>
-    Conflict = 5,
+    Conflict = 6,
 
     /// <summary>
     ///     File synchronization failed.
     /// </summary>
-    Failed = 6,
+    Failed = 7,
 
     /// <summary>
     ///     File has been deleted locally or remotely.
     /// </summary>
-    Deleted = 7
+    Deleted = 8
 }

@@ -56,13 +56,13 @@ public sealed class SyncConfigurationRepository(SyncDbContext context) : ISyncCo
     /// <inheritdoc />
     public async Task UpdateAsync(SyncConfiguration configuration, CancellationToken cancellationToken = default)
     {
-        SyncConfigurationEntity entity = await context.SyncConfigurations.FindAsync([configuration.Id], cancellationToken) ??
+        SyncConfigurationEntity syncConfiguration = await context.SyncConfigurations.FindAsync([configuration.Id], cancellationToken) ??
                                          throw new InvalidOperationException($"Sync configuration with ID '{configuration.Id}' not found.");
 
-        entity.AccountId = configuration.AccountId;
-        entity.FolderPath = configuration.FolderPath;
-        entity.IsSelected = configuration.IsSelected;
-        entity.LastModifiedUtc = configuration.LastModifiedUtc;
+        syncConfiguration.AccountId = configuration.AccountId;
+        syncConfiguration.FolderPath = configuration.FolderPath;
+        syncConfiguration.IsSelected = configuration.IsSelected;
+        syncConfiguration.LastModifiedUtc = configuration.LastModifiedUtc;
 
         _ = await context.SaveChangesAsync(cancellationToken);
     }
@@ -130,13 +130,13 @@ public sealed class SyncConfigurationRepository(SyncDbContext context) : ISyncCo
         return localFolderPath;
     }
 
-    private static SyncConfiguration MapToModel(SyncConfigurationEntity entity)
+    private static SyncConfiguration MapToModel(SyncConfigurationEntity syncConfiguration)
         => new(
-            entity.Id,
-            entity.AccountId,
-            entity.FolderPath,
-            entity.IsSelected,
-            entity.LastModifiedUtc
+            syncConfiguration.Id,
+            syncConfiguration.AccountId,
+            syncConfiguration.FolderPath,
+            syncConfiguration.IsSelected,
+            syncConfiguration.LastModifiedUtc
         );
 
     private static SyncConfigurationEntity MapToEntity(SyncConfiguration model)

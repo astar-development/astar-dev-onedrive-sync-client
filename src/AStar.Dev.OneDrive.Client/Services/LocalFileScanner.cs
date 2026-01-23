@@ -81,6 +81,8 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
                         fileInfo.Length,
                         fileInfo.LastWriteTimeUtc,
                         filePath,
+                        false,
+                        false,
                         null,
                         null,
                         hash,

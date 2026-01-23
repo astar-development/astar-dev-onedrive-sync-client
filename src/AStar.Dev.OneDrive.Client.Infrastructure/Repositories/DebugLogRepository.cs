@@ -22,14 +22,14 @@ public sealed class DebugLogRepository(SyncDbContext context) : IDebugLogReposit
 
         return
         [
-            .. entities.Select(entity => new DebugLogEntry(
-                entity.Id,
-                entity.AccountId,
-                entity.TimestampUtc,
-                entity.LogLevel,
-                entity.Source,
-                entity.Message,
-                entity.Exception
+            .. entities.Select(debugLog => new DebugLogEntry(
+                debugLog.Id,
+                debugLog.AccountId,
+                debugLog.TimestampUtc,
+                debugLog.LogLevel,
+                debugLog.Source,
+                debugLog.Message,
+                debugLog.Exception
             ))
         ];
     }
@@ -44,14 +44,14 @@ public sealed class DebugLogRepository(SyncDbContext context) : IDebugLogReposit
 
         return
         [
-            .. entities.Select(entity => new DebugLogEntry(
-                entity.Id,
-                entity.AccountId,
-                entity.TimestampUtc,
-                entity.LogLevel,
-                entity.Source,
-                entity.Message,
-                entity.Exception
+            .. entities.Select(debugLog => new DebugLogEntry(
+                debugLog.Id,
+                debugLog.AccountId,
+                debugLog.TimestampUtc,
+                debugLog.LogLevel,
+                debugLog.Source,
+                debugLog.Message,
+                debugLog.Exception
             ))
         ];
     }

@@ -65,21 +65,21 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
             .Where(f => f.AccountId == accountId && f.Timestamp < olderThan)
             .ExecuteDeleteAsync(cancellationToken);
 
-    private static FileOperationLog MapToModel(FileOperationLogEntity entity)
+    private static FileOperationLog MapToModel(FileOperationLogEntity fileOperationLog)
         => new(
-            entity.Id,
-            entity.SyncSessionId,
-            entity.AccountId,
-            entity.Timestamp,
-            (FileOperation)entity.Operation,
-            entity.FilePath,
-            entity.LocalPath,
-            entity.OneDriveId,
-            entity.FileSize,
-            entity.LocalHash,
-            entity.RemoteHash,
-            entity.LastModifiedUtc,
-            entity.Reason);
+            fileOperationLog.Id,
+            fileOperationLog.SyncSessionId,
+            fileOperationLog.AccountId,
+            fileOperationLog.Timestamp,
+            (FileOperation)fileOperationLog.Operation,
+            fileOperationLog.FilePath,
+            fileOperationLog.LocalPath,
+            fileOperationLog.OneDriveId,
+            fileOperationLog.FileSize,
+            fileOperationLog.LocalHash,
+            fileOperationLog.RemoteHash,
+            fileOperationLog.LastModifiedUtc,
+            fileOperationLog.Reason);
 
     private static FileOperationLogEntity MapToEntity(FileOperationLog model)
         => new()

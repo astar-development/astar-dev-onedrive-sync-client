@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Client.Core.DTOs;
+using AStar.Dev.OneDrive.Client.Core.Models;
 using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;

@@ -6,12 +6,17 @@ namespace AStar.Dev.OneDrive.Client.Core.Models.Enums;
 public enum SyncDirection
 {
     /// <summary>
+    ///     File has been added to the database but not synced to/from OneDrive.
+    /// </summary>
+    None = 0,
+
+    /// <summary>
     ///     File was uploaded to OneDrive.
     /// </summary>
-    Upload = 0,
+    Upload = 1,
 
     /// <summary>
     ///     File was downloaded from OneDrive.
     /// </summary>
-    Download = 1
+    Download = 2
 }

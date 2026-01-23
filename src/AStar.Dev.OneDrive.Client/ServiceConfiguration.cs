@@ -3,7 +3,7 @@ using System.Net;
 using AStar.Dev.OneDrive.Client.Accounts;
 using AStar.Dev.OneDrive.Client.ConfigurationSettings;
 using AStar.Dev.OneDrive.Client.Core.Data;
-using AStar.Dev.OneDrive.Client.Core.DTOs;
+using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
@@ -145,7 +145,7 @@ public static class ServiceConfiguration
 
         _ = services.AddScoped<IAccountRepository, AccountRepository>();
         _ = services.AddScoped<ISyncConfigurationRepository, SyncConfigurationRepository>();
-        _ = services.AddScoped<IFileMetadataRepository, FileMetadataRepository>();
+        _ = services.AddScoped<IDriveItemsRepository, DriveItemsRepository>();
         _ = services.AddScoped<ISyncConflictRepository, SyncConflictRepository>();
         _ = services.AddScoped<ISyncSessionLogRepository, SyncSessionLogRepository>();
         _ = services.AddScoped<IFileOperationLogRepository, FileOperationLogRepository>();

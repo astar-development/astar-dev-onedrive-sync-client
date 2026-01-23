@@ -13,5 +13,5 @@ public interface ISyncRepository
     ///     Apply a page of DriveItem metadata to the local DB.
     ///     Implementations should use a transaction and batch writes.
     /// </summary>
-    Task ApplyDriveItemsAsync(string accountId, IEnumerable<DriveItemRecord> items, CancellationToken cancellationToken);
+    Task ApplyDriveItemsAsync(string accountId, IEnumerable<DriveItemEntity> items, CancellationToken cancellationToken);
 }
