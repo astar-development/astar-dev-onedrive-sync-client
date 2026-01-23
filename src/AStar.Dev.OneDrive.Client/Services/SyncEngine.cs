@@ -334,8 +334,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 try
                 {
                     await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", $"File deleted from OneDrive: {file.RelativePath} - deleting local copy at {file.LocalPath}", cancellationToken);
-                    if(File.Exists(file.LocalPath))
-                        File.Delete(file.LocalPath);
+                    if(System.IO.File.Exists(file.LocalPath))
+                        System.IO.File.Delete(file.LocalPath);
 
                     await _fileMetadataRepository.DeleteAsync(file.Id, cancellationToken);
                 }
@@ -351,7 +351,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             foreach(FileMetadata file in deletedLocally)
             {
                 await DebugLog.InfoAsync("SyncEngine.StartSyncAsync",
-                    $"Candidate for remote deletion: Path={file.RelativePath}, Id={file.Id}, SyncStatus={file.SyncStatus}, ExistsLocally={File.Exists(file.LocalPath)}, ExistsRemotely={remotePathsSet.Contains(file.RelativePath)}",
+                    $"Candidate for remote deletion: Path={file.RelativePath}, Id={file.Id}, SyncStatus={file.SyncStatus}, ExistsLocally={System.IO.File.Exists(file.LocalPath)}, ExistsRemotely={remotePathsSet.Contains(file.RelativePath)}",
                     cancellationToken);
             }
 
@@ -611,9 +611,9 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     uploadProgress,
                     _syncCancellation!.Token);
 
-                if(uploadedItem.LastModifiedDateTime.HasValue && File.Exists(file.LocalPath))
+                if(uploadedItem.LastModifiedDateTime.HasValue && System.IO.File.Exists(file.LocalPath))
                 {
-                    File.SetLastWriteTimeUtc(file.LocalPath, uploadedItem.LastModifiedDateTime.Value.UtcDateTime);
+                    System.IO.File.SetLastWriteTimeUtc(file.LocalPath, uploadedItem.LastModifiedDateTime.Value.UtcDateTime);
                     await DebugLog.InfoAsync("SyncEngine.StartSyncAsync",
                         $"Synchronized local timestamp to OneDrive: {file.Name}, OldTime={file.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, NewTime={uploadedItem.LastModifiedDateTime.Value.UtcDateTime:yyyy-MM-dd HH:mm:ss}",
                         cancellationToken);

@@ -185,7 +185,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new UpdateAccountDetailsWindow();
 
-        if(Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
             _ = window.ShowDialog(desktop.MainWindow);
     }
 
@@ -196,7 +196,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new ViewSyncHistoryWindow();
 
-        if(Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
             _ = window.ShowDialog(desktop.MainWindow);
     }
 
@@ -207,7 +207,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new DebugLogWindow();
 
-        if(Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
             _ = window.ShowDialog(desktop.MainWindow);
     }
 
@@ -355,7 +355,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
     private void CloseApplication()
     {
-        if(Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             desktop.Shutdown();
     }
 }

@@ -60,7 +60,7 @@ public sealed class ConflictResolverShould
 
         // Create temporary test file
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
+        await System.IO.File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
 
         try
         {
@@ -87,7 +87,7 @@ public sealed class ConflictResolverShould
         }
         finally
         {
-            File.Delete(localPath);
+            System.IO.File.Delete(localPath);
             Directory.Delete(account.LocalSyncPath, true);
         }
     }
@@ -135,7 +135,7 @@ public sealed class ConflictResolverShould
                 localPath,
                 Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
-            .AndDoes(_ => File.WriteAllText(localPath, "remote content"));
+            .AndDoes(_ => System.IO.File.WriteAllText(localPath, "remote content"));
 
         try
         {
@@ -161,8 +161,8 @@ public sealed class ConflictResolverShould
         }
         finally
         {
-            if(File.Exists(localPath))
-                File.Delete(localPath);
+            if(System.IO.File.Exists(localPath))
+                System.IO.File.Delete(localPath);
 
             Directory.Delete(account.LocalSyncPath, true);
         }
@@ -184,7 +184,7 @@ public sealed class ConflictResolverShould
 
         // Create temporary test file
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
+        await System.IO.File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
 
         // Mock the download to create the file
         _ = _graphApiClient.DownloadFileAsync(
@@ -193,7 +193,7 @@ public sealed class ConflictResolverShould
                 localPath,
                 Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
-            .AndDoes(_ => File.WriteAllText(localPath, "remote content"));
+            .AndDoes(_ => System.IO.File.WriteAllText(localPath, "remote content"));
 
         // Mock GetDriveItemAsync to return remote file metadata
         var remoteItem = new DriveItem
@@ -217,14 +217,14 @@ public sealed class ConflictResolverShould
             await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepBoth, TestContext.Current.CancellationToken);
 
             // Verify original file now has remote content
-            File.Exists(localPath).ShouldBeTrue();
-            (await File.ReadAllTextAsync(localPath, TestContext.Current.CancellationToken)).ShouldBe("remote content");
+            System.IO.File.Exists(localPath).ShouldBeTrue();
+            (await System.IO.File.ReadAllTextAsync(localPath, TestContext.Current.CancellationToken)).ShouldBe("remote content");
 
             // Verify conflict file exists with local content
             var directory = Path.GetDirectoryName(localPath)!;
             var conflictFiles = Directory.GetFiles(directory, "*Conflict*.txt");
             conflictFiles.Length.ShouldBe(1);
-            (await File.ReadAllTextAsync(conflictFiles[0], TestContext.Current.CancellationToken)).ShouldBe("local content");
+            (await System.IO.File.ReadAllTextAsync(conflictFiles[0], TestContext.Current.CancellationToken)).ShouldBe("local content");
 
             await _graphApiClient.Received(1).DownloadFileAsync(
                 account.AccountId,
@@ -275,7 +275,7 @@ public sealed class ConflictResolverShould
 
         // Create temporary test file
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
+        await System.IO.File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
 
         try
         {
@@ -286,7 +286,7 @@ public sealed class ConflictResolverShould
         }
         finally
         {
-            File.Delete(localPath);
+            System.IO.File.Delete(localPath);
             Directory.Delete(account.LocalSyncPath, true);
         }
     }

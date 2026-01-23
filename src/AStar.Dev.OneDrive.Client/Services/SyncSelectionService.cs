@@ -144,10 +144,7 @@ public sealed class SyncSelectionService : ISyncSelectionService
 
         await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Loading selections for account {accountId}", cancellationToken);
         await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Found {savedFolderPaths.Count} saved paths in database", cancellationToken);
-        foreach(var path in savedFolderPaths)
-            await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"DB Path: {path}", cancellationToken);
 
-        // Normalize paths by removing Graph API prefixes for comparison
         var normalizedSavedPaths = savedFolderPaths
             .Select(NormalizePathForComparison)
             .ToList();
@@ -156,11 +153,9 @@ public sealed class SyncSelectionService : ISyncSelectionService
         foreach(var path in normalizedSavedPaths)
             await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Normalized: {path}", cancellationToken);
 
-        // Build lookup dictionary for fast path-to-node resolution, using normalized paths
         var pathToNodeMap = new Dictionary<string, OneDriveFolderNode>(StringComparer.OrdinalIgnoreCase);
         BuildPathLookup(rootFolders, pathToNodeMap);
 
-        // Build a normalized path-to-node map for robust matching
         var normalizedPathToNodeMap = new Dictionary<string, OneDriveFolderNode>(StringComparer.OrdinalIgnoreCase);
         foreach(KeyValuePair<string, OneDriveFolderNode> kvp in pathToNodeMap)
         {

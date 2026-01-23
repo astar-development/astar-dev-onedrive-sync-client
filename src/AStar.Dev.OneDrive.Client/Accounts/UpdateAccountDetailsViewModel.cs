@@ -256,7 +256,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     private async Task BrowseFolderAsync()
     {
         // Get the top level from the current application
-        if(Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
            desktop.MainWindow?.StorageProvider is { } storageProvider)
         {
             IReadOnlyList<IStorageFolder> result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Select Local Sync Path", AllowMultiple = false });

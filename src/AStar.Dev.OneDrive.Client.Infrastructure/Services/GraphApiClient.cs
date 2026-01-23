@@ -31,18 +31,15 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
         req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        using HttpResponseMessage res = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-        _ = res.EnsureSuccessStatusCode();
+        using HttpResponseMessage response = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        _ = response.EnsureSuccessStatusCode();
 
-        await using Stream stream = await res.Content.ReadAsStreamAsync(cancellationToken);
-        using JsonDocument doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
+        await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+        OneDriveResponse items = (await JsonSerializer.DeserializeAsync<OneDriveResponse>(stream, JsonSerializerOptions.Web, cancellationToken))!;
 
-        List<DriveItemEntity> items = ParseDriveItemRecords(accountId, doc);
+        List<DriveItemEntity> driveItems = ParseDriveItemRecords(accountId, items);
 
-        var next = TryGetODataProperty(doc, "@odata.nextLink");
-        var delta = TryGetODataProperty(doc, "@odata.deltaLink");
-
-        return new DeltaPage(items, next, delta);
+        return new DeltaPage(driveItems, items._odata_nextLink, items._odata_deltaLink);
     }
 
     public async Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, CancellationToken cancellationToken = default)
@@ -155,7 +152,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task<DriveItem> UploadFileAsync(string accountId, string localFilePath, string remotePath, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
-        if(!File.Exists(localFilePath))
+        if(!System.IO.File.Exists(localFilePath))
             throw new FileNotFoundException($"Local file not found: {localFilePath}", localFilePath);
 
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
@@ -296,43 +293,6 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
             ? $"{msalConfigurationSettings.GraphUri}/root/delta"
             : deltaOrNextLink;
 
-    private static List<DriveItemEntity> ParseDriveItemRecords(string accountId, JsonDocument doc)
-    {
-        var items = new List<DriveItemEntity>();
-        if(doc.RootElement.TryGetProperty("value", out JsonElement arr))
-            foreach(JsonElement el in arr.EnumerateArray())
-                items.Add(ParseDriveItemRecord(accountId, el));
-
-        return items;
-    }
-
-    private static DriveItemEntity ParseDriveItemRecord(string accountId, JsonElement jsonElement)
-    {
-        var id = jsonElement.GetProperty("id").GetString()!;
-        var isFolder = jsonElement.TryGetProperty("folder", out _);
-        var size = jsonElement.TryGetProperty("size", out JsonElement sProp) ? sProp.GetInt64() : 0L;
-        var parentPath = SetParentPath(jsonElement);
-        var name = jsonElement.TryGetProperty("name", out JsonElement n) ? n.GetString() ?? id : id;
-        var relativePath = GraphPathHelpers.BuildRelativePath(parentPath, name);
-        var eTag = jsonElement.TryGetProperty("eTag", out JsonElement et) ? et.GetString() : null;
-        var cTag = jsonElement.TryGetProperty("cTag", out JsonElement ctProp) ? ctProp.GetString() : null;
-        DateTimeOffset lastModifiedUtc = GetLastModifiedUtc(jsonElement);
-        var isDeleted = jsonElement.TryGetProperty("deleted", out _);
-
-        return new DriveItemEntity(accountId, id, id, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted, name, null, null, Core.Models.Enums.FileSyncStatus.SyncOnly, Core.Models.Enums.SyncDirection.Download);
-    }
-
-    private static DateTimeOffset GetLastModifiedUtc(JsonElement jsonElement) => jsonElement.TryGetProperty("lastModifiedDateTime", out JsonElement lm)
-        ? DateTimeOffset.Parse(lm.GetString()!, CultureInfo.InvariantCulture)
-        : DateTimeOffset.UtcNow;
-
-    private static string SetParentPath(JsonElement jsonElement)
-        => jsonElement.TryGetProperty("parentReference", out JsonElement pr) && pr.TryGetProperty("path", out JsonElement p) ? p.GetString() ?? string.Empty : string.Empty;
-
-    private static string? TryGetODataProperty(JsonDocument doc, string propertyName)
-        => doc.RootElement.TryGetProperty(propertyName, out JsonElement prop) ? prop.GetString() : null;
-
-    // Token provider implementation for Graph API
     private sealed class GraphTokenProvider(IAuthService authService, string accountId) : IAccessTokenProvider
     {
         public AllowedHostsValidator AllowedHostsValidator => new();
@@ -346,4 +306,10 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
             return token;
         }
     }
+
+#pragma warning disable IDE0060 // Remove unused parameter
+    private List<DriveItemEntity> ParseDriveItemRecords(string accountId, OneDriveResponse? items)
+#pragma warning restore IDE0060 // Remove unused parameter
+        => [];
+    
 }
