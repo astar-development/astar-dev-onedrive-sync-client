@@ -18,7 +18,7 @@ public class SyncEngineShould
         {
             filesToUpload.Add(new FileMetadata(
                 $"id_{i}", "acc1", $"file_{i}.txt", $"/Documents/file_{i}.txt", "", 100,
-                DateTime.UtcNow, $"C:\\Sync\\Documents\\file_{i}.txt", false, false, false, null, null, $"hash_{i}",null,
+                DateTime.UtcNow, $"C:\\Sync\\Documents\\file_{i}.txt", false, false, false, null, null, $"hash_{i}", null,
                 FileSyncStatus.PendingUpload, null));
         }
 
@@ -37,10 +37,10 @@ public class SyncEngineShould
         _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromResult(new DriveItem
             {
-                Id = $"uploaded_{Guid.CreateVersion7():N}",
+                Id = $"uploaded_{Guid.CreateVersion7():N0}",
                 Name = callInfo.ArgAt<string>(1).Split('\\', '/').Last(),
-                CTag = $"ctag_{Guid.CreateVersion7():N}",
-                ETag = $"etag_{Guid.CreateVersion7():N}",
+                CTag = $"ctag_{Guid.CreateVersion7():N0}",
+                ETag = $"etag_{Guid.CreateVersion7():N0}",
                 LastModifiedDateTime = DateTimeOffset.UtcNow
             }));
 
@@ -66,7 +66,7 @@ public class SyncEngineShould
         {
             filesToDownload.Add(new FileMetadata(
                 $"id_{i}", "acc1", $"file_{i}.txt", $"/Documents/file_{i}.txt", "", 100,
-                DateTime.UtcNow, $"C:\\Sync\\Documents\\file_{i}.txt", false, false, false, null, null, $"hash_{i}",null,
+                DateTime.UtcNow, $"C:\\Sync\\Documents\\file_{i}.txt", false, false, false, null, null, $"hash_{i}", null,
                 FileSyncStatus.PendingDownload, null));
         }
 
@@ -927,10 +927,10 @@ public class SyncEngineShould
                 Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromResult(new DriveItem
             {
-                Id = $"uploaded_{Guid.CreateVersion7():N}",
+                Id = $"uploaded_{Guid.CreateVersion7():N0}",
                 Name = callInfo.ArgAt<string>(1).Split('\\', '/').Last(),
-                CTag = $"ctag_{Guid.CreateVersion7():N}",
-                ETag = $"etag_{Guid.CreateVersion7():N}",
+                CTag = $"ctag_{Guid.CreateVersion7():N0}",
+                ETag = $"etag_{Guid.CreateVersion7():N0}",
                 LastModifiedDateTime = DateTimeOffset.UtcNow
             }));
 

@@ -51,7 +51,7 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         DriveItemEntity? existingEntity = await context.DriveItems
-            .FirstOrDefaultAsync(sc => sc.AccountId == configuration.AccountId && sc.RelativePath == configuration.RelativePath, cancellationToken);
+            .FirstOrDefaultAsync(sc => sc.AccountId == configuration.AccountId && sc.Id == configuration.Id, cancellationToken);
 
         if(existingEntity is not null)
             return configuration;
