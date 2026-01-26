@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +18,8 @@ public partial class DebugLogWindow : Window
         {
             IAccountRepository accountRepository = App.Services.GetRequiredService<IAccountRepository>();
             IDebugLogRepository debugLogRepository = App.Services.GetRequiredService<IDebugLogRepository>();
-            DataContext = new DebugLogViewModel(accountRepository, debugLogRepository);
+            IDebugLogger debugLogger = App.Services.GetRequiredService<IDebugLogger>();
+            DataContext = new DebugLogViewModel(accountRepository, debugLogRepository, debugLogger);
         }
     }
 }

@@ -10,7 +10,7 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
     public async Task<(DeltaToken finalDelta, int pageCount, int totalItemsProcessed)> ProcessAllDeltaPagesAsync(string accountId, DeltaToken deltaToken, Action<SyncState>? progressReporter,
         CancellationToken cancellationToken)
     {
-        await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, cancellationToken);
+        await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId, cancellationToken);
         var nextOrDelta = deltaToken.Token;
         DeltaToken finalToken = deltaToken;
         int pageCount = 0, totalItemsProcessed = 0;
@@ -26,24 +26,24 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
                     deltaToken = new DeltaToken(accountId, driveItemRecord.Id.Split('!')[0], page.DeltaLink ?? string.Empty, DateTimeOffset.UtcNow);
 
                 totalItemsProcessed += page.Items.Count();
-                await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, $"Received page: {pageCount} items={page.Items.Count()}", cancellationToken);
+                await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId, $"Received page: {pageCount} items={page.Items.Count()}", cancellationToken);
                 await repo.ApplyDriveItemsAsync(accountId, page.Items, cancellationToken);
                 nextOrDelta = page.NextLink;
                 if(page.DeltaLink is not null)
                     finalToken = new DeltaToken(accountId, deltaToken!.Id, page.DeltaLink, DateTimeOffset.UtcNow);
 
                 pageCount++;
-                await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync,
+                await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId,
                     $"Applied page {pageCount}: items={page.Items.Count()} totalItems={totalItemsProcessed} next={page.NextLink is not null}", cancellationToken);
                 progressReporter?.Invoke(CreateSyncProgressMessage(accountId, pageCount, totalItemsProcessed, page.NextLink is not null));
             } while(!string.IsNullOrEmpty(nextOrDelta) && !cancellationToken.IsCancellationRequested);
 
-            await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync,
+            await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId,
                 $"Delta processing complete: finalToken='***REDACTED***' pageCount={pageCount} totalItems={totalItemsProcessed}", cancellationToken);
         }
         catch(Exception ex)
         {
-            await DebugLog.ErrorAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, $"Exception during delta processing: {ex.Message}", ex, cancellationToken);
+            await DebugLog.ErrorAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId, $"Exception during delta processing: {ex.Message}", ex, cancellationToken);
             progressReporter?.Invoke(CreateErrorSyncProgress(accountId, totalItemsProcessed, ex.GetBaseException()?.Message ?? "Unknown error"));
             throw new IOException("Error processing delta pages", ex);
         }

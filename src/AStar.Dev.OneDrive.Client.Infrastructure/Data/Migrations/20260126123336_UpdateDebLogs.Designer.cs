@@ -3,6 +3,7 @@ using System;
 using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SyncDbContext))]
-    partial class SyncDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260126123336_UpdateDebLogs")]
+    partial class UpdateDebLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
@@ -101,9 +104,8 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<long>("TimestampUtc")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("TimestampUtc_Ticks");
+                    b.Property<DateTimeOffset>("TimestampUtc")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -142,9 +144,8 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                     b.Property<bool>("IsSelected")
                         .HasColumnType("INTEGER");
 
-                    b.Property<long>("LastModifiedUtc")
-                        .HasColumnType("INTEGER")
-                        .HasColumnName("LastModifiedUtc_Ticks");
+                    b.Property<DateTimeOffset>("LastModifiedUtc")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("LastSyncDirection")
                         .HasColumnType("INTEGER");

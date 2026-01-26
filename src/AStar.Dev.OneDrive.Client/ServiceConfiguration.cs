@@ -122,7 +122,7 @@ public static class ServiceConfiguration
         _ = services.AddScoped<IRemoteChangeDetector, RemoteChangeDetector>();
         _ = services.AddScoped<IConflictResolver, ConflictResolver>();
         _ = services.AddScoped<ISyncEngine, SyncEngine>();
-        _ = services.AddScoped<IDebugLogger, DebugLogger>();
+        _ = services.AddScoped<IDebugLogger, DebugLoggerService>();
         _ = services.AddScoped<IDeltaPageProcessor, DeltaPageProcessor>();
         _ = services.AddScoped<ISyncRepository, EfSyncRepository>();
 

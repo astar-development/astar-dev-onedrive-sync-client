@@ -9,14 +9,15 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 /// <summary>
 ///     Repository implementation for managing file operation logs.
 /// </summary>
-public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOperationLogRepository
+public sealed class FileOperationLogRepository(IDbContextFactory<SyncDbContext> contextFactory) : IFileOperationLogRepository
 {
-    private readonly SyncDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly IDbContextFactory<SyncDbContext> _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileOperationLog>> GetBySessionIdAsync(string syncSessionId, CancellationToken cancellationToken = default)
     {
-        List<FileOperationLogEntity> entities = await _context.FileOperationLogs
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        List<FileOperationLogEntity> entities = await context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.SyncSessionId == syncSessionId)
             .OrderBy(f => f.Timestamp)
@@ -28,7 +29,8 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        List<FileOperationLogEntity> entities = await _context.FileOperationLogs
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        List<FileOperationLogEntity> entities = await context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.AccountId == accountId)
             .OrderByDescending(f => f.Timestamp)
@@ -40,7 +42,8 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(string accountId, int pageSize, int skip, CancellationToken cancellationToken = default)
     {
-        List<FileOperationLogEntity> entities = await _context.FileOperationLogs
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        List<FileOperationLogEntity> entities = await context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.AccountId == accountId)
             .OrderByDescending(f => f.Timestamp)
@@ -54,16 +57,20 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
     /// <inheritdoc />
     public async Task AddAsync(FileOperationLog operationLog, CancellationToken cancellationToken = default)
     {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
         FileOperationLogEntity entity = MapToEntity(operationLog);
-        _ = _context.FileOperationLogs.Add(entity);
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = context.FileOperationLogs.Add(entity);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task DeleteOldOperationsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default)
-        => await _context.FileOperationLogs
-            .Where(f => f.AccountId == accountId && f.Timestamp < olderThan)
-            .ExecuteDeleteAsync(cancellationToken);
+    {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        _ = await context.FileOperationLogs
+                .Where(f => f.AccountId == accountId && f.Timestamp < olderThan)
+                .ExecuteDeleteAsync(cancellationToken);
+    }
 
     private static FileOperationLog MapToModel(FileOperationLogEntity fileOperationLog)
         => new(

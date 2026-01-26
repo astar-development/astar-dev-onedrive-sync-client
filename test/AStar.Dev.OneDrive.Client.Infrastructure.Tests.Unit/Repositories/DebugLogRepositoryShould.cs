@@ -3,16 +3,22 @@ using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Repositories;
 
 public class DebugLogRepositoryShould
 {
+    private PooledDbContextFactory<SyncDbContext> _contextFactory;
+
     [Fact]
     public async Task GetByAccountIdWithPagingReturnsCorrectRecords()
-    {
+    {_contextFactory = new PooledDbContextFactory<SyncDbContext>(
+            new DbContextOptionsBuilder<SyncDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options);
         using SyncDbContext context = CreateInMemoryContext();
-        var repository = new DebugLogRepository(context);
+        var repository = new DebugLogRepository(_contextFactory);
         await SeedDebugLogsAsync(context, "acc1", 10);
 
         IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("acc1", 5, 0, TestContext.Current.CancellationToken);
@@ -24,7 +30,7 @@ public class DebugLogRepositoryShould
     public async Task GetByAccountIdWithPagingSkipsCorrectRecords()
     {
         using SyncDbContext context = CreateInMemoryContext();
-        var repository = new DebugLogRepository(context);
+        var repository = new DebugLogRepository(_contextFactory);
         await SeedDebugLogsAsync(context, "acc1", 10);
 
         IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("acc1", 5, 5, TestContext.Current.CancellationToken);
@@ -36,7 +42,7 @@ public class DebugLogRepositoryShould
     public async Task GetByAccountIdReturnsAllRecordsForAccount()
     {
         using SyncDbContext context = CreateInMemoryContext();
-        var repository = new DebugLogRepository(context);
+        var repository = new DebugLogRepository(_contextFactory);
         await SeedDebugLogsAsync(context, "acc1", 15);
         await SeedDebugLogsAsync(context, "acc2", 5);
 
@@ -50,7 +56,7 @@ public class DebugLogRepositoryShould
     public async Task GetByAccountIdReturnsRecordsOrderedByTimestampDescending()
     {
         using SyncDbContext context = CreateInMemoryContext();
-        var repository = new DebugLogRepository(context);
+        var repository = new DebugLogRepository(_contextFactory);
 
         // Add logs with different timestamps
         _ = context.DebugLogs.Add(new DebugLogEntity
@@ -90,7 +96,7 @@ public class DebugLogRepositoryShould
     public async Task DeleteByAccountIdRemovesOnlySpecifiedAccountLogs()
     {
         using SyncDbContext context = CreateInMemoryContext();
-        var repository = new DebugLogRepository(context);
+        var repository = new DebugLogRepository(_contextFactory);
         await SeedDebugLogsAsync(context, "acc1", 5);
         await SeedDebugLogsAsync(context, "acc2", 3);
 
@@ -106,7 +112,7 @@ public class DebugLogRepositoryShould
     public async Task DeleteOlderThanRemovesOldRecords()
     {
         using SyncDbContext context = CreateInMemoryContext();
-        var repository = new DebugLogRepository(context);
+        var repository = new DebugLogRepository(_contextFactory);
 
         DateTimeOffset cutoff = DateTime.UtcNow.AddDays(-7);
 
@@ -139,7 +145,7 @@ public class DebugLogRepositoryShould
     public async Task GetByAccountIdReturnsEmptyListWhenNoRecordsExist()
     {
         using SyncDbContext context = CreateInMemoryContext();
-        var repository = new DebugLogRepository(context);
+        var repository = new DebugLogRepository(_contextFactory );
 
         IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("nonexistent", TestContext.Current.CancellationToken);
 

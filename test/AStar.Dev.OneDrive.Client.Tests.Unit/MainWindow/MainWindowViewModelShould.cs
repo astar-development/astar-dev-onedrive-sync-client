@@ -2,6 +2,7 @@ using System.Reactive.Subjects;
 using AStar.Dev.OneDrive.Client.Accounts;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 using AStar.Dev.OneDrive.Client.MainWindow;
 using AStar.Dev.OneDrive.Client.Services;
@@ -150,6 +151,6 @@ public class MainWindowViewModelShould
         var progressSubject = new Subject<SyncState>();
         _ = mockSyncEngine.Progress.Returns(progressSubject);
 
-        return new SyncTreeViewModel(mockFolderService, mockSelectionService, mockSyncEngine);
+        return new SyncTreeViewModel(mockFolderService, mockSelectionService, mockSyncEngine, Substitute.For<IDebugLogger>());
     }
 }

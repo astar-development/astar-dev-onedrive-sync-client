@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -11,14 +10,14 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "SyncConfigurations");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "SyncConfigurations",
                 columns: table => new
                 {
@@ -31,8 +30,8 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SyncConfigurations", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_SyncConfigurations", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_SyncConfigurations_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
@@ -40,7 +39,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_SyncConfigurations_AccountId_FolderPath",
                 table: "SyncConfigurations",
                 columns: new[] { "AccountId", "FolderPath" });

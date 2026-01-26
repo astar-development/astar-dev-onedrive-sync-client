@@ -14,7 +14,7 @@ public sealed class SyncDbContextFactory : IDesignTimeDbContextFactory<SyncDbCon
 
         // Use a temporary database path for design-time operations
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var dbPath = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Client", "sync.db");
+        var dbPath = Path.Combine(appDataPath, "astar-dev-onedrive-client", "sync.db");
 
         _ = optionsBuilder.UseSqlite($"Data Source={dbPath}");
 

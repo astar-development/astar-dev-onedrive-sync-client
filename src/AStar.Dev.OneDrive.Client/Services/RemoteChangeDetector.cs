@@ -20,15 +20,14 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
     public async Task<(IReadOnlyList<FileMetadata> Changes, string? NewDeltaLink)>
         DetectChangesAsync(string accountId, string folderPath, string? previousDeltaLink, CancellationToken cancellationToken = default)
     {
-        await DebugLog.EntryAsync("RemoteChangeDetector.DetectChangesAsync", cancellationToken);
+        await DebugLog.EntryAsync("RemoteChangeDetector.DetectChangesAsync", accountId, cancellationToken);
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scanning folder: '{folderPath}'", cancellationToken);
-
+        await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scanning folder: '{folderPath}'", accountId, cancellationToken);
         var cleanedFolderPath = CleanGraphApiPathPrefix(folderPath);
         if(cleanedFolderPath != folderPath)
-            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Cleaned folder path from '{folderPath}' to '{cleanedFolderPath}'", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Cleaned folder path from '{folderPath}' to '{cleanedFolderPath}'", accountId, cancellationToken);
 
         // For initial implementation, scan the folder tree
         // Note: For large OneDrive accounts (100k+ files), this can take several minutes
@@ -38,19 +37,19 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
 
         if(rootItem is not null)
         {
-            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", "Folder item found, starting recursive scan", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", "Folder item found, starting recursive scan", accountId, cancellationToken);
             // Add a practical limit for initial scan to prevent timeout
             // This will be removed when we implement proper delta query support
             const int maxFiles = 10000; // Limit initial scan to 10k files
             // Use cleaned path for building file paths
             await ScanFolderRecursiveAsync(accountId, rootItem, cleanedFolderPath, changes, cancellationToken, maxFiles);
             Debug.WriteLine($"[RemoteChangeDetector] Scan complete: {changes.Count} files found in {cleanedFolderPath}");
-            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scan complete: {changes.Count} files found", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scan complete: {changes.Count} files found", accountId, cancellationToken);
         }
         else
         {
             var errorMessage = $"Remote folder not found: '{folderPath}'. Please verify the folder exists and you have access to it.";
-            await DebugLog.ErrorAsync("RemoteChangeDetector.DetectChangesAsync", errorMessage, null, cancellationToken);
+            await DebugLog.ErrorAsync("RemoteChangeDetector.DetectChangesAsync", errorMessage, accountId, null, cancellationToken);
             throw new InvalidOperationException(errorMessage);
         }
 
@@ -58,22 +57,22 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
         // In production, this would be the actual deltaLink from Graph API
         var newDeltaLink = $"delta_{DateTime.UtcNow:yyyyMMddHHmmss}";
 
-        await DebugLog.ExitAsync("RemoteChangeDetector.DetectChangesAsync", cancellationToken);
+        await DebugLog.ExitAsync("RemoteChangeDetector.DetectChangesAsync", accountId, cancellationToken);
 
         return (changes, newDeltaLink);
     }
 
     private async Task<DriveItem?> GetFolderItemAsync(string accountId, string folderPath, CancellationToken cancellationToken)
     {
-        await DebugLog.EntryAsync("RemoteChangeDetector.GetFolderItemAsync", cancellationToken);
-        await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for folder: '{folderPath}'", cancellationToken);
+        await DebugLog.EntryAsync("RemoteChangeDetector.GetFolderItemAsync", accountId, cancellationToken);
+        await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for folder: '{folderPath}'", accountId, cancellationToken);
 
         // Defensive: Strip Graph API path prefixes that might be in stored paths
         // This handles cases where paths like "/drive/root:/Documents" or "/drives/{id}/root:/Documents" were stored
         if(folderPath.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
         {
             folderPath = folderPath["/drive/root:".Length..];
-            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Stripped '/drive/root:' prefix, new path: '{folderPath}'", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Stripped '/drive/root:' prefix, new path: '{folderPath}'", accountId, cancellationToken);
         }
         else if(folderPath.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
         {
@@ -81,51 +80,51 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
             if(rootIndex >= 0)
             {
                 folderPath = folderPath[(rootIndex + "/root:".Length)..];
-                await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Stripped '/drives/.../root:' prefix, new path: '{folderPath}'", cancellationToken);
+                await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Stripped '/drives/.../root:' prefix, new path: '{folderPath}'", accountId, cancellationToken);
             }
         }
 
         // For root or empty path, return the drive root
         if(folderPath == "/" || string.IsNullOrEmpty(folderPath))
         {
-            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", "Returning drive root", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", "Returning drive root", accountId, cancellationToken);
             return await graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
         }
 
         // Clean up the path
         folderPath = folderPath.Trim('/');
-        await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Trimmed path: '{folderPath}'", cancellationToken);
+        await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Trimmed path: '{folderPath}'", accountId, cancellationToken);
 
         // Get root and traverse path segments
         DriveItem? currentItem = await graphApiClient.GetDriveRootAsync(accountId, cancellationToken);
         if(currentItem?.Id is null)
         {
-            await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", "Failed to get drive root", null, cancellationToken);
+            await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", "Failed to get drive root", accountId, null, cancellationToken);
             return null;
         }
 
         var pathSegments = folderPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Path segments: [{string.Join(", ", pathSegments)}]", cancellationToken);
+        await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Path segments: [{string.Join(", ", pathSegments)}]", accountId, cancellationToken);
 
         foreach(var segment in pathSegments)
         {
-            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for segment: '{segment}'", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Looking for segment: '{segment}'", accountId, cancellationToken);
             IEnumerable<DriveItem> children = await graphApiClient.GetDriveItemChildrenAsync(accountId, currentItem.Id, cancellationToken);
-            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found {children.Count()} children in current folder", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found {children.Count()} children in current folder", accountId, cancellationToken);
 
             currentItem = children.FirstOrDefault(c => c.Name?.Equals(segment, StringComparison.OrdinalIgnoreCase) == true &&
                                                        c.Folder is not null);
 
             if(currentItem?.Id is null)
             {
-                await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", $"Folder segment '{segment}' not found", null, cancellationToken);
+                await DebugLog.ErrorAsync("RemoteChangeDetector.GetFolderItemAsync", $"Folder segment '{segment}' not found", accountId, null, cancellationToken);
                 return null;
             }
 
-            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found folder: '{currentItem.Name}' (ID: {currentItem.Id})", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.GetFolderItemAsync", $"Found folder: '{currentItem.Name}' (ID: {currentItem.Id})", accountId, cancellationToken);
         }
 
-        await DebugLog.ExitAsync("RemoteChangeDetector.GetFolderItemAsync", cancellationToken);
+        await DebugLog.ExitAsync("RemoteChangeDetector.GetFolderItemAsync", accountId, cancellationToken);
 
         return currentItem;
     }
@@ -138,24 +137,24 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
         CancellationToken cancellationToken,
         int maxFiles = int.MaxValue)
     {
-        await DebugLog.EntryAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", cancellationToken);
-        await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Scanning folder: '{currentPath}' (ID: {parentItem.Id})", cancellationToken);
+        await DebugLog.EntryAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", accountId, cancellationToken);
+        await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Scanning folder: '{currentPath}' (ID: {parentItem.Id})", accountId, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
 
         if(changes.Count >= maxFiles)
         {
-            await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Max files limit ({maxFiles}) reached", cancellationToken);
+            await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Max files limit ({maxFiles}) reached", accountId, cancellationToken);
             return; // Reached the limit
         }
 
         if(parentItem.Id is null)
         {
-            await DebugLog.ErrorAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", "Parent item ID is null", null, cancellationToken);
+            await DebugLog.ErrorAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", "Parent item ID is null", accountId, null, cancellationToken);
             return;
         }
 
         IEnumerable<DriveItem> children = await graphApiClient.GetDriveItemChildrenAsync(accountId, parentItem.Id, cancellationToken);
-        await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Found {children.Count()} items in '{currentPath}'", cancellationToken);
+        await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Found {children.Count()} items in '{currentPath}'", accountId, cancellationToken);
 
         var fileCount = 0;
         var folderCount = 0;
@@ -182,14 +181,14 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
                 // It's a folder - scan recursively
                 folderCount++;
                 var itemPath = CombinePaths(currentPath, item.Name);
-                await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Recursing into subfolder: '{item.Name}'", cancellationToken);
+                await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Recursing into subfolder: '{item.Name}'", accountId, cancellationToken);
                 await ScanFolderRecursiveAsync(accountId, item, itemPath, changes, cancellationToken, maxFiles);
             }
         }
 
-        await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Completed '{currentPath}': {fileCount} files, {folderCount} subfolders", cancellationToken);
+        await DebugLog.InfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", $"Completed '{currentPath}': {fileCount} files, {folderCount} subfolders", accountId, cancellationToken);
 
-        await DebugLog.ExitAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", cancellationToken);
+        await DebugLog.ExitAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", accountId, cancellationToken);
     }
 
     private static FileMetadata ConvertToFileMetadata(string accountId, DriveItem item, string path) => new(

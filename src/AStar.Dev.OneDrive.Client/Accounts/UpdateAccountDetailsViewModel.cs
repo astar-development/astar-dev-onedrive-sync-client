@@ -3,7 +3,6 @@ using System.Reactive;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Services;
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using ReactiveUI;

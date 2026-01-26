@@ -20,7 +20,7 @@ public static class DebugLog
     /// <param name="source">The source of the log (typically class or method name).</param>
     /// <param name="message">The log message.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task InfoAsync(string source, string message, CancellationToken cancellationToken = default) => _instance?.LogInfoAsync(source, message, cancellationToken) ?? Task.CompletedTask;
+    public static Task InfoAsync(string source, string accountId, string message, CancellationToken cancellationToken = default) => _instance?.LogInfoAsync(source, accountId, message, cancellationToken) ?? Task.CompletedTask;
 
     /// <summary>
     ///     Logs an error message.
@@ -29,20 +29,22 @@ public static class DebugLog
     /// <param name="message">The log message.</param>
     /// <param name="exception">Optional exception details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task ErrorAsync(string source, string message, Exception? exception = null, CancellationToken cancellationToken = default)
-        => _instance?.LogErrorAsync(source, message, exception, cancellationToken) ?? Task.CompletedTask;
+    public static Task ErrorAsync(string source, string accountId, string message, Exception? exception = null, CancellationToken cancellationToken = default)
+        => _instance?.LogErrorAsync(source, accountId, message, exception, cancellationToken) ?? Task.CompletedTask;
 
     /// <summary>
     ///     Logs a method entry.
     /// </summary>
     /// <param name="source">The source of the log (typically class.Method).</param>
+    /// <param name="accountId">The account ID associated with the log.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task EntryAsync(string source, CancellationToken cancellationToken = default) => _instance?.LogEntryAsync(source, cancellationToken) ?? Task.CompletedTask;
+    public static Task EntryAsync(string source, string accountId, CancellationToken cancellationToken = default) => _instance?.LogEntryAsync(source, accountId, cancellationToken) ?? Task.CompletedTask;
 
     /// <summary>
     ///     Logs a method exit.
     /// </summary>
     /// <param name="source">The source of the log (typically class.Method).</param>
+    /// <param name="accountId">The account ID associated with the log.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task ExitAsync(string source, CancellationToken cancellationToken = default) => _instance?.LogExitAsync(source, cancellationToken) ?? Task.CompletedTask;
+    public static Task ExitAsync(string source, string accountId, CancellationToken cancellationToken = default) => _instance?.LogExitAsync(source, accountId, cancellationToken) ?? Task.CompletedTask;
 }

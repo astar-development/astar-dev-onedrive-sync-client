@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Client.DebugLogs;
@@ -14,16 +15,19 @@ public sealed class DebugLogViewModel : ReactiveObject
     private const int _pageSize = 50;
     private readonly IAccountRepository _accountRepository;
     private readonly IDebugLogRepository _debugLogRepository;
+    private readonly IDebugLogger _debugLogger;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="DebugLogViewModel" /> class.
     /// </summary>
     /// <param name="accountRepository">Repository for account data.</param>
     /// <param name="debugLogRepository">Repository for debug log entries.</param>
-    public DebugLogViewModel(IAccountRepository accountRepository, IDebugLogRepository debugLogRepository)
+    /// <param name="debugLogger">Service for logging debug information.</param>
+    public DebugLogViewModel(IAccountRepository accountRepository, IDebugLogRepository debugLogRepository, IDebugLogger debugLogger)
     {
         _accountRepository = accountRepository;
         _debugLogRepository = debugLogRepository;
+        _debugLogger = debugLogger;
 
         Accounts = [];
         DebugLogs = [];
@@ -195,9 +199,10 @@ public sealed class DebugLogViewModel : ReactiveObject
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
         }
-        catch(Exception)
+        catch(Exception ex)
         {
-            // Log or handle error if needed
+            var errorMessage = $"Failed to load folders: {ex.GetBaseException().Message}";
+            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", SelectedAccount.AccountId, $"Loading folders for account {SelectedAccount.AccountId}. {errorMessage}", cancellationToken: CancellationToken.None);       
         }
         finally
         {

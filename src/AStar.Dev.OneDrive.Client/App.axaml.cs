@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Services;
 using Avalonia;
@@ -39,7 +40,7 @@ public sealed class App : Application
         {
             desktop.MainWindow = new MainWindow.MainWindow();
 
-            desktop.Startup += async (_, _) => await DebugLog.InfoAsync("App Startup", "Application has started", CancellationToken.None);
+            desktop.Startup += async (_, _) => await DebugLog.InfoAsync("App Startup", "Application has started", AdminAccountMetadata.AccountId, CancellationToken.None);
 
             // Cleanup on exit
             desktop.Exit += (_, _) =>

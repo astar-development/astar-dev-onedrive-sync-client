@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
@@ -21,6 +22,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     private readonly IFolderTreeService _folderTreeService;
     private readonly ISyncSelectionService _selectionService;
     private readonly ISyncEngine _syncEngine;
+    private readonly IDebugLogger _debugLogger;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SyncTreeViewModel" /> class.
@@ -28,11 +30,13 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// <param name="folderTreeService">Service for loading folder hierarchies.</param>
     /// <param name="selectionService">Service for managing selection state.</param>
     /// <param name="syncEngine">Service for file synchronization.</param>
-    public SyncTreeViewModel(IFolderTreeService folderTreeService, ISyncSelectionService selectionService, ISyncEngine syncEngine)
+    /// <param name="debugLogger">Service for logging debug information.</param>
+    public SyncTreeViewModel(IFolderTreeService folderTreeService, ISyncSelectionService selectionService, ISyncEngine syncEngine, IDebugLogger debugLogger)
     {
         _folderTreeService = folderTreeService ?? throw new ArgumentNullException(nameof(folderTreeService));
         _selectionService = selectionService ?? throw new ArgumentNullException(nameof(selectionService));
         _syncEngine = syncEngine ?? throw new ArgumentNullException(nameof(syncEngine));
+        _debugLogger = debugLogger ?? throw new ArgumentNullException(nameof(debugLogger));
 
         LoadFoldersCommand = ReactiveCommand.CreateFromTask(LoadFoldersAsync);
         LoadChildrenCommand = ReactiveCommand.CreateFromTask<OneDriveFolderNode>(LoadChildrenAsync);
@@ -228,6 +232,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         {
             IsLoading = true;
             ErrorMessage = null;
+            
 
             IReadOnlyList<OneDriveFolderNode> folders = await _folderTreeService.GetRootFoldersAsync(SelectedAccountId, cancellationToken);
 
@@ -244,7 +249,8 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         }
         catch(Exception ex)
         {
-            ErrorMessage = $"Failed to load folders: {ex.Message}";
+            ErrorMessage = $"Failed to load folders: {ex.GetBaseException().Message}";
+            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", SelectedAccountId, $"Loading folders for account {SelectedAccountId}. {ErrorMessage}", cancellationToken: cancellationToken);
         }
         finally
         {
@@ -318,9 +324,9 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 {
                     await _selectionService.SaveSelectionsToDatabaseAsync(SelectedAccountId, [.. RootFolders]);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Silently ignore persistence errors to avoid disrupting UI
+                    await _debugLogger.LogErrorAsync("SyncTreeViewModel.ToggleSelection", SelectedAccountId, $"Saving selections for account {SelectedAccountId}. {ex.Message}", ex);
                 }
             });
         }
@@ -360,7 +366,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
     private async Task StartSyncAsync()
     {
-        await DebugLog.EntryAsync(DebugLogMetadata.UI.SyncTreeViewModel.StartSync, CancellationToken.None);
+        await DebugLog.EntryAsync(DebugLogMetadata.UI.SyncTreeViewModel.StartSync, SelectedAccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
         if(string.IsNullOrEmpty(SelectedAccountId))
             return;
 

@@ -176,9 +176,9 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                     null,
                     false,
                     false,
-                    3,
+                    5,
                     50,
-                    null);
+                    0);
 
                 await _accountRepository.AddAsync(newAccount);
                 Accounts.Add(newAccount);

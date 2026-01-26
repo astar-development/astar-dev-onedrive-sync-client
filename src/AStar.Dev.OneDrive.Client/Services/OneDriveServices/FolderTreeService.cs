@@ -31,6 +31,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
 
             var node = new OneDriveFolderNode(
                 item.Id,
+                item.ParentReference?.DriveId ?? string.Empty,
                 item.Name,
                 $"/{item.Name}",
                 item.ParentReference?.Id,
@@ -73,6 +74,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
 
             var node = new OneDriveFolderNode(
                 item.Id,
+                item.ParentReference?.DriveId ?? string.Empty,
                 item.Name,
                 $"{parentPath}/{item.Name}",
                 parentFolderId,
@@ -84,6 +86,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
 
             node = new OneDriveFolderNode(
                 item.Id,
+                item.ParentReference?.DriveId ?? string.Empty,
                 item.Name,
                 $"{parentPath}/{item.Name}",
                 parentFolderId,
@@ -119,7 +122,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
 
     private async Task<FileMetadata> UpdateParentPathIfExistsAsync(string accountId, OneDriveFolderNode node, string possibleParentPath, CancellationToken cancellationToken)
     {
-        var configuration = new FileMetadata("", accountId, node.Name, node.DriveItemId, node.Path, 0, DateTime.UtcNow, "", true, false, true);
+        var configuration = new FileMetadata(node.Id, accountId, node.Name, node.DriveItemId, node.Path, 0, DateTime.UtcNow, "", true, false, true);
 
         var lastIndexOf = node.Path.LastIndexOf('/');
         if(lastIndexOf > 0)

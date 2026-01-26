@@ -10,28 +10,28 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_DriveItems_AccountId",
                 table: "DriveItems");
 
-            migrationBuilder.AddColumn<bool>(
+            _ = migrationBuilder.AddColumn<bool>(
                 name: "IsSelected",
                 table: "DriveItems",
                 type: "INTEGER",
                 nullable: false,
                 defaultValue: false);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_AccountId_RelativePath",
                 table: "DriveItems",
                 columns: new[] { "AccountId", "RelativePath" });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_IsFolder",
                 table: "DriveItems",
                 column: "IsFolder");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_IsSelected",
                 table: "DriveItems",
                 column: "IsSelected");
@@ -40,23 +40,23 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_DriveItems_AccountId_RelativePath",
                 table: "DriveItems");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_DriveItems_IsFolder",
                 table: "DriveItems");
 
-            migrationBuilder.DropIndex(
+            _ = migrationBuilder.DropIndex(
                 name: "IX_DriveItems_IsSelected",
                 table: "DriveItems");
 
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "IsSelected",
                 table: "DriveItems");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_AccountId",
                 table: "DriveItems",
                 column: "AccountId");

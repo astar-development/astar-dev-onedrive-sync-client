@@ -9,14 +9,14 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 /// <summary>
 ///     Repository implementation for managing sync session logs.
 /// </summary>
-public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessionLogRepository
+public sealed class SyncSessionLogRepository(IDbContextFactory<SyncDbContext> contextFactory) : ISyncSessionLogRepository
 {
-    private readonly SyncDbContext _context = context ?? throw new ArgumentNullException(nameof(context));
+    private readonly IDbContextFactory<SyncDbContext> _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<SyncSessionLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        List<SyncSessionLogEntity> entities = await _context.SyncSessionLogs
+        List<SyncSessionLogEntity> entities = await _contextFactory.CreateDbContext().SyncSessionLogs
             .AsNoTracking()
             .Where(s => s.AccountId == accountId)
             .OrderByDescending(s => s.StartedUtc)
@@ -28,7 +28,7 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
     /// <inheritdoc />
     public async Task<SyncSessionLog?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        SyncSessionLogEntity? entity = await _context.SyncSessionLogs
+        SyncSessionLogEntity? entity = await _contextFactory.CreateDbContext().SyncSessionLogs
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
 
@@ -39,14 +39,16 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
     public async Task AddAsync(SyncSessionLog sessionLog, CancellationToken cancellationToken = default)
     {
         SyncSessionLogEntity entity = MapToEntity(sessionLog);
-        _ = _context.SyncSessionLogs.Add(entity);
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        _ = context.SyncSessionLogs.Add(entity);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task UpdateAsync(SyncSessionLog sessionLog, CancellationToken cancellationToken = default)
     {
-        SyncSessionLogEntity syncSessionLog = await _context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken) ??
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        SyncSessionLogEntity syncSessionLog = await context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken) ??
                                       throw new InvalidOperationException($"Sync session log with ID '{sessionLog.Id}' not found.");
 
         syncSessionLog.CompletedUtc = sessionLog.CompletedUtc;
@@ -57,11 +59,12 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
         syncSessionLog.ConflictsDetected = sessionLog.ConflictsDetected;
         syncSessionLog.TotalBytes = sessionLog.TotalBytes;
 
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default) => _ = await _context.SyncSessionLogs
+    public async Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default)
+    => _ = await _contextFactory.CreateDbContext().SyncSessionLogs
         .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
         .ExecuteDeleteAsync(cancellationToken);
 

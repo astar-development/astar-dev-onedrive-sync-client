@@ -10,7 +10,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
+            _ = migrationBuilder.AddColumn<string>(
                 name: "RemoteHash",
                 table: "DriveItems",
                 type: "TEXT",
@@ -20,7 +20,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
+            _ = migrationBuilder.DropColumn(
                 name: "RemoteHash",
                 table: "DriveItems");
         }

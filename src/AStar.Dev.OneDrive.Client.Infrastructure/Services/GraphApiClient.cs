@@ -1,11 +1,9 @@
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
-using AStar.Dev.OneDrive.Client.Core.Models.OneDrive;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
@@ -53,19 +51,19 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, int maxItemsInBatch = 200, CancellationToken cancellationToken = default)
     {
-        await DebugLog.EntryAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
-        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"Fetching children for item ID: {itemId}", cancellationToken);
+        await DebugLog.EntryAsync("GraphApiClient.GetDriveItemChildrenAsync", accountId, cancellationToken);
+        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", accountId, $"Fetching children for item ID: {itemId}", cancellationToken);
 
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         if(drive?.Id is null)
         {
-            await DebugLog.ErrorAsync("GraphApiClient.GetDriveItemChildrenAsync", "Drive ID is null", null, cancellationToken);
-            await DebugLog.ExitAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
+            await DebugLog.ErrorAsync("GraphApiClient.GetDriveItemChildrenAsync", accountId, "Drive ID is null", null, cancellationToken);
+            await DebugLog.ExitAsync("GraphApiClient.GetDriveItemChildrenAsync", accountId, cancellationToken);
             return [];
         }
 
-        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"Using drive ID: {drive.Id}", cancellationToken);
+        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", accountId, $"Using drive ID: {drive.Id}", cancellationToken);
 
         var itemsList = new List<DriveItem>();
         string? nextLink = null;
@@ -79,7 +77,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
                     null,
                     cancellationToken);
 
-            await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"Response received - Value count: {response?.Value?.Count ?? 0}, NextLink: {response?.OdataNextLink}",
+            await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", accountId, $"Response received - Value count: {response?.Value?.Count ?? 0}, NextLink: {response?.OdataNextLink}",
                 cancellationToken);
 
             IEnumerable<DriveItem> items = response?.Value?.Where(item => item.Deleted is null) ?? [];
@@ -88,8 +86,8 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
             nextLink = response?.OdataNextLink;
         } while(!string.IsNullOrEmpty(nextLink));
 
-        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", $"After filtering deleted items: {itemsList.Count} items", cancellationToken);
-        await DebugLog.ExitAsync("GraphApiClient.GetDriveItemChildrenAsync", cancellationToken);
+        await DebugLog.InfoAsync("GraphApiClient.GetDriveItemChildrenAsync", accountId, $"After filtering deleted items: {itemsList.Count} items", cancellationToken);
+        await DebugLog.ExitAsync("GraphApiClient.GetDriveItemChildrenAsync", accountId, cancellationToken);
         return itemsList;
     }
 
@@ -255,15 +253,15 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task DeleteFileAsync(string accountId, string itemId, CancellationToken cancellationToken = default)
     {
-        await DebugLog.EntryAsync("GraphApiClient.DeleteFileAsync", cancellationToken);
-        await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", $"Attempting to delete remote file. AccountId: {accountId}, ItemId: {itemId}", cancellationToken);
+        await DebugLog.EntryAsync("GraphApiClient.DeleteFileAsync", accountId, cancellationToken);
+        await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", accountId, $"Attempting to delete remote file. AccountId: {accountId}, ItemId: {itemId}", cancellationToken);
 
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         if(drive?.Id is null)
         {
-            await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", "Drive ID is null. Cannot delete file.", null, cancellationToken);
-            await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", cancellationToken);
+            await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", accountId, "Drive ID is null. Cannot delete file.", null, cancellationToken);
+            await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", accountId, cancellationToken);
             throw new InvalidOperationException("Unable to access user's drive");
         }
 
@@ -271,16 +269,16 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         try
         {
             await graphClient.Drives[drive.Id].Items[itemId].DeleteAsync(cancellationToken: cancellationToken);
-            await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", $"Successfully deleted remote file. AccountId: {accountId}, ItemId: {itemId}", cancellationToken);
+            await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", accountId, $"Successfully deleted remote file. AccountId: {accountId}, ItemId: {itemId}", cancellationToken);
         }
         catch(Exception ex)
         {
-            await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", $"Exception during remote file deletion. AccountId: {accountId}, ItemId: {itemId}", ex, cancellationToken);
+            await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", accountId, $"Exception during remote file deletion. AccountId: {accountId}, ItemId: {itemId}", ex, cancellationToken);
             throw;
         }
         finally
         {
-            await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", cancellationToken);
+            await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", accountId, cancellationToken);
         }
     }
 

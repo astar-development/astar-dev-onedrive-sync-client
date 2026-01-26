@@ -148,10 +148,10 @@ public sealed class AuthService(IAuthenticationClient authClient, AuthConfigurat
         // Setup token cache persistence
         var cacheDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "AStar.Dev.OneDrive.Client");
+            "astar-dev-onedrive-client");
 
         var storagePropertiesBuilder = new StorageCreationPropertiesBuilder(
-            "astar_onedrive_cache.dat",
+            "astar-onedrive-cache.dat",
             cacheDirectory);
 
         // Use plaintext storage on Linux due to keyring/libsecret compatibility issues

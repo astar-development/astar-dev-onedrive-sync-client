@@ -26,12 +26,12 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
             }
         }
 
-        await DebugLog.EntryAsync("LocalFileScanner.ScanFolderAsync", cancellationToken);
+        await DebugLog.EntryAsync("LocalFileScanner.ScanFolderAsync", accountId, cancellationToken);
 
         if(!fileSystem.Directory.Exists(localFolderPath))
             return [];
 
-        await DebugLog.InfoAsync("LocalFileScanner.ScanFolderAsync", $"Scanning folder: {localFolderPath}", cancellationToken);
+        await DebugLog.InfoAsync("LocalFileScanner.ScanFolderAsync", $"Scanning folder: {localFolderPath}", accountId, cancellationToken);
         var fileMetadataList = new List<FileMetadata>();
         await ScanDirectoryRecursiveAsync(
             accountId,
@@ -39,7 +39,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
             oneDriveFolderPath,
             fileMetadataList,
             cancellationToken);
-        await DebugLog.ExitAsync("LocalFileScanner.ScanFolderAsync", cancellationToken);
+        await DebugLog.ExitAsync("LocalFileScanner.ScanFolderAsync", accountId, cancellationToken);
 
         return fileMetadataList;
     }
@@ -54,7 +54,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
 
     private async Task ScanDirectoryRecursiveAsync(string accountId, string currentLocalPath, string currentOneDrivePath, List<FileMetadata> fileMetadataList, CancellationToken cancellationToken)
     {
-        await DebugLog.EntryAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", cancellationToken);
+        await DebugLog.EntryAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", accountId, cancellationToken);
 
         try
         {
@@ -127,7 +127,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
             // Directory was deleted during scan
         }
 
-        await DebugLog.ExitAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", cancellationToken);
+        await DebugLog.ExitAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", accountId, cancellationToken);
     }
 
     private static string GetRelativePath(string basePath, string fullPath)

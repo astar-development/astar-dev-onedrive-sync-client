@@ -3,6 +3,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AStar.Dev.OneDrive.Client.Accounts;
+using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.DebugLogs;
@@ -11,7 +12,6 @@ using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Services;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using AStar.Dev.OneDrive.Client.SyncronisationConflicts;
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
@@ -56,7 +56,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         OpenDebugLogViewerCommand = ReactiveCommand.Create(OpenDebugLogViewer);
         ViewConflictsCommand = ReactiveCommand.Create(ViewConflicts, this.WhenAnyValue(x => x.HasUnresolvedConflicts));
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
-        _ = DebugLog.EntryAsync(DebugLogMetadata.UI.MainWindowViewModel.Constructor, CancellationToken.None);
+        _ = DebugLog.EntryAsync(DebugLogMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount?.AccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
     }
 
     public SyncProgressViewModel? SyncProgress
@@ -239,7 +239,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             .Where(tuple => tuple.Item1 && !string.IsNullOrEmpty(tuple.Item2))
             .Subscribe(tuple =>
             {
-                (bool isOpen, string? accountId) = tuple;
+                (var isOpen, var accountId) = tuple;
                 if(SyncProgress is null || SyncProgress.AccountId != accountId)
                 {
                     SyncProgress?.Dispose();

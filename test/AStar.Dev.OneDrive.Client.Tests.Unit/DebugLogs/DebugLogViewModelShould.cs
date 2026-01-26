@@ -2,38 +2,27 @@ using System.Reactive.Linq;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.DebugLogs;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.DebugLogs;
 
 public class DebugLogViewModelShould
 {
-    [Fact]
-    public void ThrowWhenAccountRepositoryIsNull()
+    private readonly IAccountRepository _mockAccountRepo;
+    private readonly IDebugLogRepository _mockDebugLogRepo;
+    private readonly IDebugLogger _mockDebugLogger;
+
+    public DebugLogViewModelShould()
     {
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new DebugLogViewModel(null!, mockDebugLogRepo));
-
-        exception.ParamName.ShouldBe("accountRepository");
-    }
-
-    [Fact]
-    public void ThrowWhenDebugLogRepositoryIsNull()
-    {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new DebugLogViewModel(mockAccountRepo, null!));
-
-        exception.ParamName.ShouldBe("debugLogRepository");
+        _mockAccountRepo = Substitute.For<IAccountRepository>();
+        _mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
+        _mockDebugLogger = Substitute.For<IDebugLogger>();
     }
 
     [Fact]
     public void InitializeWithEmptyCollections()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
 
         sut.Accounts.ShouldBeEmpty();
         sut.DebugLogs.ShouldBeEmpty();
@@ -42,10 +31,7 @@ public class DebugLogViewModelShould
     [Fact]
     public void InitializeWithCurrentPageAsOne()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
 
         sut.CurrentPage.ShouldBe(1);
     }
@@ -53,10 +39,7 @@ public class DebugLogViewModelShould
     [Fact]
     public void InitializeWithHasMoreRecordsAsTrue()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
 
         sut.HasMoreRecords.ShouldBeTrue();
     }
@@ -64,10 +47,7 @@ public class DebugLogViewModelShould
     [Fact]
     public void InitializeWithIsLoadingAsFalse()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
 
         sut.IsLoading.ShouldBeFalse();
     }
@@ -75,10 +55,7 @@ public class DebugLogViewModelShould
     [Fact]
     public void InitializeWithSelectedAccountAsNull()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
 
         sut.SelectedAccount.ShouldBeNull();
     }
@@ -86,10 +63,7 @@ public class DebugLogViewModelShould
     [Fact]
     public void InitializeCommandsAsNotNull()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
 
         _ = sut.LoadNextPageCommand.ShouldNotBeNull();
         _ = sut.LoadPreviousPageCommand.ShouldNotBeNull();
@@ -99,9 +73,7 @@ public class DebugLogViewModelShould
     [Fact]
     public void RaisePropertyChangedWhenSelectedAccountChanges()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
         var propertyChanged = false;
 
         sut.PropertyChanged += (_, args) =>
@@ -120,20 +92,18 @@ public class DebugLogViewModelShould
     [Fact]
     public async Task RaisePropertyChangedWhenCurrentPageChanges()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
         var propertyChanged = false;
 
         // Set up account and load initial data - return 51 records to indicate HasMoreRecords
         var account = new AccountInfo("acc1", "Test", @"C:\Path", true, null, null, false, false, 3, 50, null);
-        _ = mockAccountRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns([account]);
+        _ = _mockAccountRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns([account]);
 
         var logs = new List<DebugLogEntry>();
         for(var i = 0; i < 51; i++)
             logs.Add(new DebugLogEntry(i, "acc1", DateTime.UtcNow, "Info", "Test", $"Message {i}", null));
 
-        _ = mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(logs);
 
         sut.SelectedAccount = account;
@@ -154,9 +124,7 @@ public class DebugLogViewModelShould
     [Fact]
     public void ReturnCanGoToNextPageAsTrueWhenHasMoreRecords()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
 
         sut.CanGoToNextPage.ShouldBeTrue();
     }
@@ -164,9 +132,7 @@ public class DebugLogViewModelShould
     [Fact]
     public void ReturnCanGoToPreviousPageAsFalseWhenOnFirstPage()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IDebugLogRepository mockDebugLogRepo = Substitute.For<IDebugLogRepository>();
-        var sut = new DebugLogViewModel(mockAccountRepo, mockDebugLogRepo);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
 
         sut.CanGoToPreviousPage.ShouldBeFalse();
     }
