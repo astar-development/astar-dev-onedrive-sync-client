@@ -13,19 +13,19 @@ public static class FolderSelectionExtensions
         var metaLookup = fileMetadatas
             .ToDictionary(
                     m => Normalize(m.RelativePath),
-                    m => (bool?)m.IsSelected
+                    m => m.IsSelected
                 );
 
-        foreach (DriveItemEntity item in items)
+        foreach(DriveItemEntity item in items)
         {
             var normalized = Normalize(item.RelativePath);
             item.IsSelected = ResolveSelection(normalized, metaLookup);
         }
-    }    
+    }
 
     private static string Normalize(string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if(string.IsNullOrWhiteSpace(path))
             return "/";
 
         path = path.Trim()
@@ -35,22 +35,22 @@ public static class FolderSelectionExtensions
         return path.StartsWith('/') ? path : "/" + path;
     }
 
-    private static bool? ResolveSelection( string itemPath, IReadOnlyDictionary<string, bool?> metaLookup)
+    private static bool? ResolveSelection(string itemPath, IReadOnlyDictionary<string, bool> metaLookup)
     {
         var path = itemPath;
-        
-        while (true)
+
+        while(true)
         {
-            if (metaLookup.TryGetValue(path, out var selected))
+            if(metaLookup.TryGetValue(path, out var selected))
                 return selected; // may be true, false, or null
-            
+
             var lastSlash = path.LastIndexOf('/');
-            if (lastSlash <= 0)
+            if(lastSlash <= 0)
                 break;
             path = path[..lastSlash];
         }
 
-        return null; // fully indeterminate
+        return false;
 
     }
 }

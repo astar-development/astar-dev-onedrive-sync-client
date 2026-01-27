@@ -103,7 +103,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
             IReadOnlyList<string> selectedFolders = await _syncConfigurationRepository.GetSelectedFoldersAsync(accountId, cancellationToken);
 
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Starting sync with {selectedFolders.Count} selected folders: {string.Join(", ", selectedFolders)}", cancellationToken);  
+            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Starting sync with {selectedFolders.Count} selected folders: {string.Join(", ", selectedFolders)}", cancellationToken);
             if(selectedFolders.Count == 0)
             {
                 ReportProgress(accountId, SyncStatus.Idle);

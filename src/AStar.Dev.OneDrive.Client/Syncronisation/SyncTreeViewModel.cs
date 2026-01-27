@@ -107,7 +107,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// <summary>
     ///     Gets the root-level folders for the selected account.
     /// </summary>
-    public ObservableCollection<OneDriveFolderNode> RootFolders
+    public ObservableCollection<OneDriveFolderNode> Folders
     {
         get;
         private set => this.RaiseAndSetIfChanged(ref field, value);
@@ -224,7 +224,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     {
         if(string.IsNullOrEmpty(SelectedAccountId))
         {
-            RootFolders.Clear();
+            Folders.Clear();
             return;
         }
 
@@ -232,20 +232,35 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         {
             IsLoading = true;
             ErrorMessage = null;
-            
-
-            IReadOnlyList<OneDriveFolderNode> folders = await _folderTreeService.GetRootFoldersAsync(SelectedAccountId, cancellationToken);
-
-            // Convert to list to ensure we work with the same object references
-            var folderList = folders.ToList();
 
             // Apply saved selections from database BEFORE adding to observable collection - NO this relies on reference to folderList - it should return the updated list
-            await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, folderList, cancellationToken);
+            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, cancellationToken);
 
-            // Now add folders to UI with correct selection states already applied
-            RootFolders.Clear();
-            foreach(OneDriveFolderNode? folder in folderList)
-                RootFolders.Add(folder);
+            Folders.Clear();
+
+            var nodesByPath = folderList
+                .ToDictionary(
+                    f => Normalize(f.Path),
+                    f => new OneDriveFolderNode(f.Id, f.DriveItemId, f.Name, f.Path, f.ParentId, f.IsFolder, f.IsSelected)
+                );
+
+            var roots = new List<OneDriveFolderNode>();
+
+            foreach(OneDriveFolderNode? node in nodesByPath.Values)
+            {
+                var path = Normalize(node.Path);
+                var parentPath = GetParentPath(path);
+
+                if(parentPath is null || !nodesByPath.TryGetValue(parentPath, out OneDriveFolderNode? parent))
+                {
+                    roots.Add(node);
+                    continue;
+                }
+
+                parent.Children.Add(node);
+            }
+
+            Folders = new ObservableCollection<OneDriveFolderNode>(roots);
         }
         catch(Exception ex)
         {
@@ -313,7 +328,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         };
 
         _selectionService.SetSelection(folder, newState);
-        _selectionService.UpdateParentStates(folder, [.. RootFolders]);
+        _selectionService.UpdateParentStates(folder, [.. Folders]);
 
         // Save selections to database (fire and forget for UI responsiveness)
         if(!string.IsNullOrEmpty(SelectedAccountId))
@@ -322,9 +337,9 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             {
                 try
                 {
-                    await _selectionService.SaveSelectionsToDatabaseAsync(SelectedAccountId, [.. RootFolders]);
+                    await _selectionService.SaveSelectionsToDatabaseAsync(SelectedAccountId, [.. Folders]);
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     await _debugLogger.LogErrorAsync("SyncTreeViewModel.ToggleSelection", SelectedAccountId, $"Saving selections for account {SelectedAccountId}. {ex.Message}", ex);
                 }
@@ -339,7 +354,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// </summary>
     private void ClearSelections()
     {
-        _selectionService.ClearAllSelections([.. RootFolders]);
+        _selectionService.ClearAllSelections([.. Folders]);
 
         // Clear selections from database (fire and forget for UI responsiveness)
         if(!string.IsNullOrEmpty(SelectedAccountId))
@@ -348,7 +363,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             {
                 try
                 {
-                    await _selectionService.SaveSelectionsToDatabaseAsync(SelectedAccountId, [.. RootFolders]);
+                    await _selectionService.SaveSelectionsToDatabaseAsync(SelectedAccountId, [.. Folders]);
                 }
                 catch
                 {
@@ -362,7 +377,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     ///     Gets all selected folders.
     /// </summary>
     /// <returns>List of selected folder nodes.</returns>
-    public List<OneDriveFolderNode> GetSelectedFolders() => _selectionService.GetSelectedFolders([.. RootFolders]);
+    public List<OneDriveFolderNode> GetSelectedFolders() => _selectionService.GetSelectedFolders([.. Folders]);
 
     private async Task StartSyncAsync()
     {
@@ -399,5 +414,26 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     {
         await _syncEngine.StopSyncAsync();
         LastSyncResult = "Sync cancelled";
+    }
+
+    private static string Normalize(string path)
+    {
+        if(string.IsNullOrWhiteSpace(path))
+            return "/";
+
+        path = path.Trim()
+                   .Replace("\\", "/")
+                   .TrimEnd('/');
+
+        return path.StartsWith('/') ? path : "/" + path;
+    }
+
+    private static string? GetParentPath(string path)
+    {
+        if(path == "/")
+            return null;
+
+        var lastSlash = path.LastIndexOf('/');
+        return lastSlash <= 0 ? "/" : path[..lastSlash];
     }
 }

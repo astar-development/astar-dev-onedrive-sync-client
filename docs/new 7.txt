@@ -20,4 +20,3 @@ features/delta-crawl-part-
 
 download does not update DriveItems with the download state
 empty folders are not created
-top level selections are not applied to subfolders

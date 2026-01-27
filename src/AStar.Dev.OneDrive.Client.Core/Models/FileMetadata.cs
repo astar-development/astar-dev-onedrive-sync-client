@@ -28,7 +28,7 @@ public sealed record FileMetadata(
     string LocalPath,
     bool IsFolder = false,
     bool IsDeleted = false,
-    bool? IsSelected = false,
+    bool IsSelected = false,
     string? RemoteHash = null,
     string? CTag = null,
     string? ETag = null,

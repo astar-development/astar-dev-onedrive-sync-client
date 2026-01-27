@@ -27,7 +27,7 @@ public class FolderSelectionExtensionsTests
             lastModifiedUtc: DateTimeOffset.UtcNow,
             isFolder: isFolder,
             isDeleted: false,
-            isSelected: null,
+            isSelected: false,
             remoteHash: null,
             name: System.IO.Path.GetFileName(path),
             localPath: null,
@@ -48,7 +48,7 @@ public class FolderSelectionExtensionsTests
             LocalPath: "",
             IsFolder: true,
             IsDeleted: false,
-            IsSelected: selected
+            IsSelected: selected ?? false
         );
 
     // ------------------------------------------------------------
@@ -72,7 +72,7 @@ public class FolderSelectionExtensionsTests
 
         items.ApplyHierarchicalSelection(meta);
 
-        foreach (DriveItemEntity? item in items)
+        foreach(DriveItemEntity? item in items)
             item.IsSelected.ShouldBe(true);
     }
 
@@ -249,7 +249,7 @@ public class FolderSelectionExtensionsTests
 
         items.ApplyHierarchicalSelection(meta);
 
-        foreach (DriveItemEntity? item in items)
+        foreach(DriveItemEntity? item in items)
             item.IsSelected.ShouldBeNull();
     }
 
@@ -275,7 +275,7 @@ public class FolderSelectionExtensionsTests
 
         items.ApplyHierarchicalSelection(meta);
 
-        foreach (DriveItemEntity? item in items)
+        foreach(DriveItemEntity? item in items)
             item.IsSelected.ShouldBe(true);
     }
 

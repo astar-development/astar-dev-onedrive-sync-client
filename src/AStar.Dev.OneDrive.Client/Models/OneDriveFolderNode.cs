@@ -28,7 +28,8 @@ public sealed class OneDriveFolderNode : ReactiveObject
     /// <param name="path">The full path.</param>
     /// <param name="parentId">The parent node ID.</param>
     /// <param name="isFolder">Whether this is a folder.</param>
-    public OneDriveFolderNode(string id, string driveItemId, string name, string path, string? parentId, bool isFolder)
+    /// <param name="isSelected">Whether this node is selected.</param>
+    public OneDriveFolderNode(string id, string driveItemId, string name, string path, string? parentId, bool isFolder, bool? isSelected = null)
     {
         Id = id;
         DriveItemId = driveItemId;
@@ -36,6 +37,7 @@ public sealed class OneDriveFolderNode : ReactiveObject
         Path = path;
         ParentId = parentId;
         IsFolder = isFolder;
+        IsSelected = isSelected;
     }
 
     /// <summary>

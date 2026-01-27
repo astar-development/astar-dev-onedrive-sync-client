@@ -202,7 +202,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         catch(Exception ex)
         {
             var errorMessage = $"Failed to load folders: {ex.GetBaseException().Message}";
-            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", SelectedAccount.AccountId, $"Loading folders for account {SelectedAccount.AccountId}. {errorMessage}", cancellationToken: CancellationToken.None);       
+            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", SelectedAccount.AccountId, $"Loading folders for account {SelectedAccount.AccountId}. {errorMessage}", cancellationToken: CancellationToken.None);
         }
         finally
         {

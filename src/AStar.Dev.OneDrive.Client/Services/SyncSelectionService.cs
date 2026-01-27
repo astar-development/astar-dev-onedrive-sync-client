@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
@@ -198,6 +199,34 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
         // 1. Root folders don't have parents
         // 2. Their children aren't loaded yet (just placeholder nodes)
         // 3. We've already manually set indeterminate state for roots with selected descendants
+    }
+
+    /// <inheritdoc />
+    public async Task<IList<OneDriveFolderNode>> LoadSelectionsFromDatabaseAsync(string accountId, CancellationToken cancellationToken = default)
+    {
+        DebugLogContext.SetAccountId(accountId);
+        IList<OneDriveFolderNode>folders = [];
+        IReadOnlyList<DriveItemEntity> savedFolders = await configurationRepository.GetFoldersByAccountIdAsync(accountId, cancellationToken);
+
+        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Loading selections for account {accountId}", accountId, cancellationToken);
+        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Found {savedFolders.Count} saved folders in database", accountId, cancellationToken);
+
+        foreach(DriveItemEntity entity in savedFolders)
+        {
+            var folderNode = new OneDriveFolderNode
+            {
+                Id = entity.Id,
+                DriveItemId = entity.DriveItemId,
+                Name = entity.Name??"",
+                Path = entity.RelativePath,
+                IsSelected = entity.IsSelected,
+                SelectionState = entity.IsSelected ?? false ? SelectionState.Checked : SelectionState.Unchecked
+            };
+
+            folders.Add(folderNode);
+        }
+
+        return folders;
     }
 
     /// <inheritdoc />

@@ -39,7 +39,7 @@ public sealed class DriveItemEntity(
     public FileSyncStatus SyncStatus { get; set; } = syncStatus;
     public SyncDirection LastSyncDirection { get; set; } = lastSyncDirection;
 
-    public DriveItemEntity WithUpdatedSelection(bool? isSelected)
+    public DriveItemEntity WithUpdatedSelection(bool isSelected)
         => new(
             AccountId,
             Id,
@@ -60,7 +60,7 @@ public sealed class DriveItemEntity(
             LastSyncDirection
         );
 
-    public DriveItemEntity WithUpdatedDetails(bool? isSelected, string relativePath, DateTimeOffset lastModifiedUtc)
+    public DriveItemEntity WithUpdatedDetails(bool isSelected, string relativePath, DateTimeOffset lastModifiedUtc)
         => new(
             AccountId,
             Id,

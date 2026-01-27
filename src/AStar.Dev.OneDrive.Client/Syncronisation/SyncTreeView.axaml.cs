@@ -24,10 +24,10 @@ public partial class SyncTreeView : UserControl
         if(DataContext is SyncTreeViewModel viewModel)
         {
             // Subscribe to RootFolders collection changes to attach property change handlers
-            viewModel.RootFolders.CollectionChanged += OnRootFoldersChanged;
+            viewModel.Folders.CollectionChanged += OnRootFoldersChanged;
 
             // Attach to existing items
-            foreach(OneDriveFolderNode node in viewModel.RootFolders)
+            foreach(OneDriveFolderNode node in viewModel.Folders)
                 AttachNodeExpansionHandler(node, viewModel);
         }
     }

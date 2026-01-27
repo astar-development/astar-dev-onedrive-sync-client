@@ -111,7 +111,7 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
             driveItem.LocalPath ?? string.Empty,
             driveItem.IsFolder,
             driveItem.IsDeleted,
-            driveItem.IsSelected,
+            driveItem.IsSelected ?? false,
             driveItem.RemoteHash,
             driveItem.CTag,
             driveItem.ETag,

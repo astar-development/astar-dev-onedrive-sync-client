@@ -99,4 +99,15 @@ public interface ISyncSelectionService
     ///     After loading, parent states are automatically recalculated to reflect indeterminate states.
     /// </remarks>
     Task LoadSelectionsFromDatabaseAsync(string accountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Loads saved selection state from the database and applies it to the folder tree.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of folders with SelectionState.Checked.</returns>
+    /// <remarks>
+    ///     After loading, parent states are automatically recalculated to reflect indeterminate states.
+    /// </remarks>
+    Task<IList<OneDriveFolderNode>> LoadSelectionsFromDatabaseAsync(string accountId, CancellationToken cancellationToken = default);
 }

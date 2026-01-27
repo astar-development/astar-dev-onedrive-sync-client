@@ -29,9 +29,18 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         return await context.DriveItems
-                .Where(sc => sc.AccountId == accountId && (sc.IsSelected ?? true))
+                .Where(sc => sc.AccountId == accountId && (sc.IsSelected ?? false))
                 .Select(sc => CleanUpPath(sc.RelativePath))
                 .Distinct()
+                .ToListAsync(cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<DriveItemEntity>> GetFoldersByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        return await context.DriveItems
+                .Where(sc => sc.AccountId == accountId && sc.IsFolder)
                 .ToListAsync(cancellationToken);
     }
 
@@ -48,7 +57,7 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
                 m => m.IsSelected
             );
 
-       existingItems.ApplyHierarchicalSelection(fileMetadatas);
+        existingItems.ApplyHierarchicalSelection(fileMetadatas);
 
         return await context.SaveChangesAsync(cancellationToken) > 0
             ? true
@@ -128,7 +137,7 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
 
             if(entity.IsSelected != isSelected)
             {
-                DriveItemEntity updatedEntity = entity.WithUpdatedSelection(isSelected);
+                DriveItemEntity updatedEntity = entity.WithUpdatedSelection(isSelected??false);
                 context.Entry(entity).CurrentValues.SetValues(updatedEntity);
             }
         }
@@ -174,7 +183,7 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
              driveItemEntity.LocalPath ?? string.Empty,
             driveItemEntity.IsFolder,
             driveItemEntity.IsDeleted,
-            driveItemEntity.IsSelected,
+            driveItemEntity.IsSelected ?? false,
              driveItemEntity.RelativePath ?? string.Empty,
             driveItemEntity.ETag,
             driveItemEntity.CTag
@@ -206,24 +215,5 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
             path = "/" + path;
 
         return path;
-    }
-
-    private static bool ResolveSelection(string folderPath, Dictionary<string, bool> metaLookup)
-    {
-        var path = folderPath;
-
-        while(true)
-        {
-            if(metaLookup.TryGetValue(path, out var selected))
-                return selected;
-
-            var lastSlash = path.LastIndexOf('/');
-            if(lastSlash <= 0)
-                break;
-
-            path = path[..lastSlash];
-        }
-
-        return false; // default if no ancestor is selected
     }
 }

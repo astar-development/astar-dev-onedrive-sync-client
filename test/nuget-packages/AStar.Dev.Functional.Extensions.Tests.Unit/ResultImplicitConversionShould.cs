@@ -12,7 +12,7 @@ public class ResultImplicitConversionShould
         Result<int, string> result = value;
 
         // Assert
-        (bool IsOk, int Value, string? Error) = result.Match(
+        (var IsOk, var Value, var Error) = result.Match(
             ok => (IsOk: true, Value: ok, Error: null!),
             err => (IsOk: false, Value: default(int), Error: err));
 
@@ -31,7 +31,7 @@ public class ResultImplicitConversionShould
         Result<int, string> result = error;
 
         // Assert
-        (bool IsOk, int Value, string? Error) = result.Match(
+        (var IsOk, var Value, var Error) = result.Match(
             ok => (IsOk: true, Value: ok, Error: null!),
             err => (IsOk: false, Value: default(int), Error: err));
 
