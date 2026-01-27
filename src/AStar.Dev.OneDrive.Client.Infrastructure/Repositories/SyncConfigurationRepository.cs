@@ -29,21 +29,30 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         return await context.DriveItems
-                .Where(sc => sc.AccountId == accountId && sc.IsSelected)
+                .Where(sc => sc.AccountId == accountId && (sc.IsSelected ?? true))
                 .Select(sc => CleanUpPath(sc.RelativePath))
                 .Distinct()
                 .ToListAsync(cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<Result<IList<string>, ErrorResponse>> GetSelectedFolders2Async(string accountId, CancellationToken cancellationToken = default)
+    public async Task<Result<bool, ErrorResponse>> UpdateFoldersByAccountIdAsync(string accountId, IEnumerable<FileMetadata> fileMetadatas, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
-        return await context.DriveItems
-                .Where(sc => sc.AccountId == accountId && sc.IsSelected)
-                .Select(sc => CleanUpPath(sc.RelativePath))
-                .Distinct()
-                .ToListAsync(cancellationToken);
+        var existingItems = context.DriveItems
+            .Where(driveItem => driveItem.AccountId == accountId).ToList();
+
+        var metaLookup = fileMetadatas
+            .ToDictionary(
+                m => Normalize(m.RelativePath),
+                m => m.IsSelected
+            );
+
+       existingItems.ApplyHierarchicalSelection(fileMetadatas);
+
+        return await context.SaveChangesAsync(cancellationToken) > 0
+            ? true
+            : new ErrorResponse("No changes were made to the selected folders.");
     }
 
     /// <inheritdoc />
@@ -185,4 +194,36 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
             model.IsDeleted,
             model.IsSelected
         );
+
+    private static string Normalize(string path)
+    {
+        if(string.IsNullOrWhiteSpace(path))
+            return "/";
+
+        path = path.Trim().Replace("\\", "/").TrimEnd('/');
+
+        if(!path.StartsWith('/'))
+            path = "/" + path;
+
+        return path;
+    }
+
+    private static bool ResolveSelection(string folderPath, Dictionary<string, bool> metaLookup)
+    {
+        var path = folderPath;
+
+        while(true)
+        {
+            if(metaLookup.TryGetValue(path, out var selected))
+                return selected;
+
+            var lastSlash = path.LastIndexOf('/');
+            if(lastSlash <= 0)
+                break;
+
+            path = path[..lastSlash];
+        }
+
+        return false; // default if no ancestor is selected
+    }
 }

@@ -105,6 +105,6 @@ public partial class MoveToDriveItems : Migration
         _ = migrationBuilder.CreateIndex(
             name: "IX_FileMetadata_AccountId_Path",
             table: "FileMetadata",
-            columns: new[] { "AccountId", "Path" });
+            columns: ["AccountId", "Path"]);
     }
 }

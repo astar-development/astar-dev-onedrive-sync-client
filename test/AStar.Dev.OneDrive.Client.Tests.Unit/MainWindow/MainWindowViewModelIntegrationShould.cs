@@ -37,7 +37,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _accountRepository = new AccountRepository(_contextFactory);
         _mockAuthService = Substitute.For<IAuthService>();
         _mockFolderTreeService = Substitute.For<IFolderTreeService>();
-        _syncSelectionService = new SyncSelectionService();
+        _syncSelectionService = Substitute.For<ISyncSelectionService>();
         _mockSyncEngine = Substitute.For<ISyncEngine>();
         _mockDebugLogger = Substitute.For<IDebugLogger>();
 

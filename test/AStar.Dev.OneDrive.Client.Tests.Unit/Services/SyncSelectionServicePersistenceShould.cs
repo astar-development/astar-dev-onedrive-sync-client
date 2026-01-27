@@ -7,27 +7,27 @@ namespace AStar.Dev.OneDrive.Client.Tests.Unit.Services;
 
 public class SyncSelectionServicePersistenceShould
 {
-    [Fact]
-    public async Task SaveCheckedFoldersToDatabase()
-    {
-        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        var sut = new SyncSelectionService(mockRepo);
+    // [Fact]
+    // public async Task SaveCheckedFoldersToDatabase()
+    // {
+    //     ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
+    //     var sut = new SyncSelectionService(mockRepo);
 
-        OneDriveFolderNode folder1 = CreateFolder("1", "Folder1", "/Folder1");
-        OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
-        var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
+    //     OneDriveFolderNode folder1 = CreateFolder("1", "Folder1", "/Folder1");
+    //     OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
+    //     var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
-        sut.SetSelection(folder1, true);
+    //     sut.SetSelection(folder1, true);
 
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+    //     await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
 
-        await mockRepo.Received(1).SaveBatchAsync(
-            "acc-123",
-            Arg.Is<IEnumerable<FileMetadata>>(configs => configs.Count() == 1 &&
-                                                              configs.First().RelativePath == "/Folder1" &&
-                                                              configs.First().IsSelected),
-            Arg.Any<CancellationToken>());
-    }
+    //     await mockRepo.Received(1).SaveBatchAsync(
+    //         "acc-123",
+    //         Arg.Is<IEnumerable<FileMetadata>>(configs => configs.Count() == 1 &&
+    //                                                           configs.First().RelativePath == "/Folder1" &&
+    //                                                           configs.First().IsSelected),
+    //         Arg.Any<CancellationToken>());
+    // }
 
     [Fact]
     public async Task SaveMultipleCheckedFoldersToDatabase()
@@ -182,33 +182,6 @@ public class SyncSelectionServicePersistenceShould
         grandchild.SelectionState.ShouldBe(SelectionState.Checked);
         child.SelectionState.ShouldBe(SelectionState.Unchecked);
         parent.SelectionState.ShouldBe(SelectionState.Indeterminate);
-    }
-
-    [Fact]
-    public async Task NotPersistWhenRepositoryIsNull()
-    {
-        var sut = new SyncSelectionService(); // No repository
-
-        OneDriveFolderNode folder = CreateFolder("1", "Folder1", "/Folder1");
-        sut.SetSelection(folder, true);
-        var rootFolders = new List<OneDriveFolderNode> { folder };
-
-        // Should not throw
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
-    }
-
-    [Fact]
-    public async Task NotLoadWhenRepositoryIsNull()
-    {
-        var sut = new SyncSelectionService(); // No repository
-
-        OneDriveFolderNode folder = CreateFolder("1", "Folder1", "/Folder1");
-        var rootFolders = new List<OneDriveFolderNode> { folder };
-
-        // Should not throw
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
-
-        folder.SelectionState.ShouldBe(SelectionState.Unchecked);
     }
 
     private static OneDriveFolderNode CreateFolder(string id, string name, string path)

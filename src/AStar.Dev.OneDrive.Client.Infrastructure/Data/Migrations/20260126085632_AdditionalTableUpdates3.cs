@@ -24,7 +24,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
             _ = migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_AccountId_RelativePath",
                 table: "DriveItems",
-                columns: new[] { "AccountId", "RelativePath" });
+                columns: ["AccountId", "RelativePath"]);
 
             _ = migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_IsFolder",

@@ -218,8 +218,8 @@ public partial class InitialCreation : Migration
 
         _ = migrationBuilder.InsertData(
             table: "Accounts",
-            columns: new[] { "AccountId", "AutoSyncIntervalMinutes", "DeltaToken", "DisplayName", "EnableDebugLogging", "EnableDetailedSyncLogging", "IsAuthenticated", "LastSyncUtc", "LocalSyncPath", "MaxItemsInBatch", "MaxParallelUpDownloads" },
-            values: new object[] { "e29a2798-c836-4854-ac90-a3f2d37aae26", 0, null, "System Admin", true, true, true, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), ".", 1, 1 });
+            columns: ["AccountId", "AutoSyncIntervalMinutes", "DeltaToken", "DisplayName", "EnableDebugLogging", "EnableDetailedSyncLogging", "IsAuthenticated", "LastSyncUtc", "LocalSyncPath", "MaxItemsInBatch", "MaxParallelUpDownloads"],
+            values: ["e29a2798-c836-4854-ac90-a3f2d37aae26", 0, null, "System Admin", true, true, true, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), ".", 1, 1]);
 
         _ = migrationBuilder.CreateIndex(
             name: "IX_Accounts_LocalSyncPath",
@@ -250,12 +250,12 @@ public partial class InitialCreation : Migration
         _ = migrationBuilder.CreateIndex(
             name: "IX_FileMetadata_AccountId_Path",
             table: "FileMetadata",
-            columns: new[] { "AccountId", "Path" });
+            columns: ["AccountId", "Path"]);
 
         _ = migrationBuilder.CreateIndex(
             name: "IX_SyncConfigurations_AccountId_FolderPath",
             table: "SyncConfigurations",
-            columns: new[] { "AccountId", "FolderPath" });
+            columns: ["AccountId", "FolderPath"]);
 
         _ = migrationBuilder.CreateIndex(
             name: "IX_SyncConflicts_AccountId",
@@ -265,7 +265,7 @@ public partial class InitialCreation : Migration
         _ = migrationBuilder.CreateIndex(
             name: "IX_SyncConflicts_AccountId_IsResolved",
             table: "SyncConflicts",
-            columns: new[] { "AccountId", "IsResolved" });
+            columns: ["AccountId", "IsResolved"]);
     }
 
     /// <inheritdoc />

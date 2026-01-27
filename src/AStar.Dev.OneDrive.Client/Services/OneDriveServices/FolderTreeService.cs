@@ -82,7 +82,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
 
             var possibleParentPath = SyncEngine.FormatScanningFolderForDisplay(item.Name)!.Replace("OneDrive: ", string.Empty);
             FileMetadata updatedSyncConfiguration = await UpdateParentPathIfExistsAsync(accountId, node, possibleParentPath, cancellationToken);
-            bool? isSelected = parentIsSelected == true || updatedSyncConfiguration.IsSelected;
+            bool? isSelected = parentIsSelected == true || (updatedSyncConfiguration.IsSelected ?? false);
 
             node = new OneDriveFolderNode(
                 item.Id,

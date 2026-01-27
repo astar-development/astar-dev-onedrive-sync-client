@@ -42,7 +42,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
             _ = migrationBuilder.CreateIndex(
                 name: "IX_SyncConfigurations_AccountId_FolderPath",
                 table: "SyncConfigurations",
-                columns: new[] { "AccountId", "FolderPath" });
+                columns: ["AccountId", "FolderPath"]);
         }
     }
 }

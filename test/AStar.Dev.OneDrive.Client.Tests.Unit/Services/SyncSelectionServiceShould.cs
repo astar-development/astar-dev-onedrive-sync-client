@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Models;
 using AStar.Dev.OneDrive.Client.Services;
 
@@ -5,7 +6,13 @@ namespace AStar.Dev.OneDrive.Client.Tests.Unit.Services;
 
 public class SyncSelectionServiceShould
 {
-    private readonly SyncSelectionService _service = new();
+    private readonly SyncSelectionService _service;
+
+    public SyncSelectionServiceShould()
+    {
+        ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
+        _service = new SyncSelectionService(mockRepo);
+    }
 
     [Fact]
     public void SelectFolderAndSetPropertiesCorrectly()

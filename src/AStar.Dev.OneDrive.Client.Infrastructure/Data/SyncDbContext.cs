@@ -53,6 +53,9 @@ public sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : DbC
     {
         if(!optionsBuilder.IsConfigured)
             _ = optionsBuilder.UseSqlite(@"Data Source=C:\Users\jbarden\AppData\Local\AStar.Dev.OneDrive.Client\sync.db");
+
+        _ = optionsBuilder.EnableSensitiveDataLogging();
+        base.OnConfiguring(optionsBuilder);
     }
 
     /// <inheritdoc />
