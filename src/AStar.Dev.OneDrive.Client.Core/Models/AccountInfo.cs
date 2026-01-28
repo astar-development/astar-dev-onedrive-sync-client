@@ -25,5 +25,5 @@ public sealed record AccountInfo(
     bool EnableDebugLogging,
     int MaxParallelUpDownloads,
     int MaxItemsInBatch,
-    int? AutoSyncIntervalMinutes
+    int AutoSyncIntervalMinutes
 );

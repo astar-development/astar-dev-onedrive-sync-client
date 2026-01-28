@@ -142,7 +142,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     if(existingFile.SyncStatus is FileSyncStatus.PendingUpload or FileSyncStatus.Failed)
                     {
                         await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"File needs upload (status={existingFile.SyncStatus}): {localFile.Name}", cancellationToken);
-                        FileMetadata fileToUpload = new FileMetadata(
+                        var fileToUpload = new FileMetadata(
                             existingFile.DriveItemId,
                             accountId,
                             existingFile.Name ?? string.Empty,
@@ -244,6 +244,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                                 var operationLog = FileOperationLog.CreateSyncConflictLog(_currentSessionId, accountId, remoteFile.RelativePath ?? "", localFileFromDict.LocalPath, remoteFile.DriveItemId,
                                     localFileFromDict.LocalHash, localFileFromDict.Size, localFileFromDict.LastModifiedUtc, remoteFile.LastModifiedUtc);
                                 await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                                await _driveItemsRepository.SaveBatchAsync([localFileFromDict with { SyncStatus = FileSyncStatus.PendingDownload }], cancellationToken);
                             }
 
                             continue;
@@ -265,7 +266,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 }
                 else
                 {
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"File NOT in DB: {remoteFile.RelativePath} - first sync or new file", cancellationToken);
+                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"File not in DB: {remoteFile.RelativePath} - first sync or new file", cancellationToken);
                     if(localFilesDict.TryGetValue(remoteFile.RelativePath ?? "", out FileMetadata? localFile))
                     {
                         var timeDiff = Math.Abs((localFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
@@ -302,6 +303,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                                 var operationLog = FileOperationLog.CreateSyncConflictLog(_currentSessionId, accountId, remoteFile.RelativePath ?? "", localFile.LocalPath, remoteFile.DriveItemId,
                                     localFile.LocalHash, localFile.Size, localFile.LastModifiedUtc, remoteFile.LastModifiedUtc);
                                 await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                                await _driveItemsRepository.SaveBatchAsync([localFile with { SyncStatus = FileSyncStatus.PendingDownload }], cancellationToken);
                             }
                         }
                     }
@@ -490,6 +492,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                         _currentSessionId, accountId, file.RelativePath, file.LocalPath, file.DriveItemId,
                         existingFile?.LocalHash, file.Size, file.LastModifiedUtc, reason);
                     await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
+                    await _driveItemsRepository.SaveBatchAsync([file with { SyncStatus = FileSyncStatus.PendingDownload }], cancellationToken);
                 }
 
                 await _graphApiClient.DownloadFileAsync(accountId, file.DriveItemId, file.LocalPath, _syncCancellation!.Token);

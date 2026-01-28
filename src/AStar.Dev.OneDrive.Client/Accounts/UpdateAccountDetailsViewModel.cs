@@ -125,14 +125,14 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     } = 50;
 
     /// <summary>
-    ///     Gets or sets the auto-sync interval in minutes (60-1440, null = disabled).
+    ///     Gets or sets the auto-sync interval in minutes (60-1440, 0 = disabled).
     /// </summary>
-    public int? AutoSyncIntervalMinutes
+    public int AutoSyncIntervalMinutes
     {
         get;
         set
         {
-            var clampedValue = value.HasValue ? Math.Clamp(value.Value, 60, 1440) : (int?)null;
+            var clampedValue = value > 0 ? Math.Clamp(value, 60, 1440) : 0;
             _ = this.RaiseAndSetIfChanged(ref field, clampedValue);
         }
     }

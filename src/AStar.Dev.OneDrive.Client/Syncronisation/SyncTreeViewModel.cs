@@ -218,8 +218,11 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     public void Dispose() => _disposables.Dispose();
 
     /// <summary>
-    ///     Loads root folders for the currently selected account.
+    ///     Gets all selected folders.
     /// </summary>
+    /// <returns>List of selected folder nodes.</returns>
+    public List<OneDriveFolderNode> GetSelectedFolders() => _selectionService.GetSelectedFolders([.. Folders]);
+
     private async Task LoadFoldersAsync(CancellationToken cancellationToken = default)
     {
         if(string.IsNullOrEmpty(SelectedAccountId))
@@ -233,7 +236,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             IsLoading = true;
             ErrorMessage = null;
 
-            // Apply saved selections from database BEFORE adding to observable collection - NO this relies on reference to folderList - it should return the updated list
             IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, cancellationToken);
 
             Folders.Clear();
@@ -272,11 +274,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             IsLoading = false;
         }
     }
-
-    /// <summary>
-    ///     Loads child folders for a specific folder node.
-    /// </summary>
-    /// <param name="folder">The folder whose children should be loaded.</param>
+    
     private async Task LoadChildrenAsync(OneDriveFolderNode folder, CancellationToken cancellationToken = default)
     {
         if(folder.ChildrenLoaded || string.IsNullOrEmpty(SelectedAccountId))
@@ -285,20 +283,14 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         try
         {
             folder.IsLoading = true;
-
-            // Clear placeholder dummy child
             folder.Children.Clear();
 
             IReadOnlyList<OneDriveFolderNode> children = await _folderTreeService.GetChildFoldersAsync(SelectedAccountId, folder.DriveItemId, folder.IsSelected, cancellationToken);
             foreach(OneDriveFolderNode child in children)
                 folder.Children.Add(child);
 
-            // Apply saved selections from database to the newly loaded children
-            // This ensures that sub-folder selections persist correctly
             await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, [.. folder.Children], cancellationToken);
 
-            // After applying database selections, recalculate parent state
-            // This will set parent to indeterminate if some (but not all) children are selected
             _selectionService.UpdateParentState(folder);
 
             folder.ChildrenLoaded = true;
@@ -312,11 +304,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             folder.IsLoading = false;
         }
     }
-
-    /// <summary>
-    ///     Toggles the selection state of a folder.
-    /// </summary>
-    /// <param name="folder">The folder to toggle.</param>
+    
     private void ToggleSelection(OneDriveFolderNode folder)
     {
         var newState = folder.SelectionState switch
@@ -330,7 +318,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         _selectionService.SetSelection(folder, newState);
         _selectionService.UpdateParentStates(folder, [.. Folders]);
 
-        // Save selections to database (fire and forget for UI responsiveness)
         if(!string.IsNullOrEmpty(SelectedAccountId))
         {
             _ = Task.Run(async () =>
@@ -349,14 +336,10 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
     private bool IsRunning(SyncState syncState) => syncState.Status is SyncStatus.Running or SyncStatus.InitialDeltaSync or SyncStatus.IncrementalDeltaSync;
 
-    /// <summary>
-    ///     Clears all folder selections.
-    /// </summary>
     private void ClearSelections()
     {
         _selectionService.ClearAllSelections([.. Folders]);
 
-        // Clear selections from database (fire and forget for UI responsiveness)
         if(!string.IsNullOrEmpty(SelectedAccountId))
         {
             _ = Task.Run(async () =>
@@ -372,12 +355,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             });
         }
     }
-
-    /// <summary>
-    ///     Gets all selected folders.
-    /// </summary>
-    /// <returns>List of selected folder nodes.</returns>
-    public List<OneDriveFolderNode> GetSelectedFolders() => _selectionService.GetSelectedFolders([.. Folders]);
 
     private async Task StartSyncAsync()
     {

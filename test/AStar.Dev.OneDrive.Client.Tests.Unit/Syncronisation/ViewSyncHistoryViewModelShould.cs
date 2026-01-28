@@ -1,16 +1,29 @@
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Syncronisation;
 
 public class ViewSyncHistoryViewModelShould
 {
+    private readonly IDebugLogger _debugLogger;
+    private readonly IAccountRepository _mockAccountRepo;
+    private readonly IFileOperationLogRepository _mockFileOpLogRepo;
+
+    public ViewSyncHistoryViewModelShould()
+    {
+        _debugLogger = Substitute.For<IDebugLogger>();
+        
+        _mockAccountRepo = Substitute.For<IAccountRepository>();
+        _mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
+    }
+
     [Fact]
     public void ThrowArgumentNullExceptionWhenAccountRepositoryIsNull()
     {
         IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
 
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new ViewSyncHistoryViewModel(null!, mockFileOpLogRepo));
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new ViewSyncHistoryViewModel(null!, mockFileOpLogRepo, _debugLogger));
 
         exception.ParamName.ShouldBe("accountRepository");
     }
@@ -18,9 +31,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void ThrowArgumentNullExceptionWhenFileOperationLogRepositoryIsNull()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new ViewSyncHistoryViewModel(mockAccountRepo, null!));
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new ViewSyncHistoryViewModel(_mockAccountRepo, null!, _debugLogger));
 
         exception.ParamName.ShouldBe("fileOperationLogRepository");
     }
@@ -28,10 +39,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void InitializeWithEmptyAccountsCollection()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         sut.Accounts.ShouldBeEmpty();
     }
@@ -39,10 +47,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void InitializeWithEmptySyncHistoryCollection()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         sut.SyncHistory.ShouldBeEmpty();
     }
@@ -50,10 +55,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void InitializeWithNullSelectedAccount()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         sut.SelectedAccount.ShouldBeNull();
     }
@@ -61,10 +63,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void InitializeWithCurrentPageOne()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         sut.CurrentPage.ShouldBe(1);
     }
@@ -72,10 +71,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void InitializeWithHasMoreRecordsTrue()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         sut.HasMoreRecords.ShouldBeTrue();
     }
@@ -83,10 +79,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void InitializeWithIsLoadingFalse()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         sut.IsLoading.ShouldBeFalse();
     }
@@ -94,10 +87,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void InitializeLoadNextPageCommand()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         _ = sut.LoadNextPageCommand.ShouldNotBeNull();
     }
@@ -105,10 +95,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void InitializeLoadPreviousPageCommand()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         _ = sut.LoadPreviousPageCommand.ShouldNotBeNull();
     }
@@ -116,10 +103,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void ReturnCanGoToPreviousPageFalseWhenOnFirstPage()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         sut.CanGoToPreviousPage.ShouldBeFalse();
     }
@@ -127,10 +111,7 @@ public class ViewSyncHistoryViewModelShould
     [Fact]
     public void ReturnCanGoToNextPageTrueWhenHasMoreRecords()
     {
-        IAccountRepository mockAccountRepo = Substitute.For<IAccountRepository>();
-        IFileOperationLogRepository mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
-
-        var sut = new ViewSyncHistoryViewModel(mockAccountRepo, mockFileOpLogRepo);
+        var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
 
         sut.CanGoToNextPage.ShouldBeTrue();
     }

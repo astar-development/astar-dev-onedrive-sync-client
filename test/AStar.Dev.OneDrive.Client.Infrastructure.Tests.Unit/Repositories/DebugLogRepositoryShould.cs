@@ -9,15 +9,16 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Repositories;
 
 public class DebugLogRepositoryShould
 {
-    private PooledDbContextFactory<SyncDbContext>? _contextFactory;
+    private readonly PooledDbContextFactory<SyncDbContext> _contextFactory;
+
+    public DebugLogRepositoryShould() => _contextFactory = new PooledDbContextFactory<SyncDbContext>(
+            new DbContextOptionsBuilder<SyncDbContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .Options);
 
     [Fact]
     public async Task GetByAccountIdWithPagingReturnsCorrectRecords()
     {
-        _contextFactory = new PooledDbContextFactory<SyncDbContext>(
-            new DbContextOptionsBuilder<SyncDbContext>()
-                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
-                .Options);
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DebugLogRepository(_contextFactory);
         await SeedDebugLogsAsync(context, "acc1", 10);

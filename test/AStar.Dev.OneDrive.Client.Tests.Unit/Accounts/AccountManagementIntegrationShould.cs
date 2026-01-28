@@ -37,8 +37,8 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact(Skip = "Doesnt work")]
     public async Task LoadExistingAccountsFromDatabaseOnInitialization()
     {
-        var account1 = new AccountInfo("acc1", "User One", "/path1", true, null, null, false, false, 3, 50, null);
-        var account2 = new AccountInfo("acc2", "User Two", "/path2", false, null, null, false, false, 3, 50, null);
+        var account1 = new AccountInfo("acc1", "User One", "/path1", true, null, null, false, false, 3, 50, 0);
+        var account2 = new AccountInfo("acc2", "User Two", "/path2", false, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account1, TestContext.Current.CancellationToken);
         await _accountRepository.AddAsync(account2, TestContext.Current.CancellationToken);
 
@@ -72,7 +72,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact(Skip = "Doesnt work")]
     public async Task RemoveAccountFromDatabaseWhenDeleted()
     {
-        var account = new AccountInfo("acc-to-delete", "User", "/path", true, null, null, false, false, 3, 50, null);
+        var account = new AccountInfo("acc-to-delete", "User", "/path", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
@@ -89,7 +89,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact(Skip = "Doesnt work")]
     public async Task UpdateAuthenticationStateInDatabaseWhenLoggingIn()
     {
-        var account = new AccountInfo("acc-login", "User", "/path", false, null, null, false, false, 3, 50, null);
+        var account = new AccountInfo("acc-login", "User", "/path", false, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var authResult = new AuthenticationResult(true, null, null, null);
@@ -110,7 +110,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact(Skip = "Doesnt work")]
     public async Task UpdateAuthenticationStateInDatabaseWhenLoggingOut()
     {
-        var account = new AccountInfo("acc-logout", "User", "/path", true, null, null, false, false, 3, 50, null);
+        var account = new AccountInfo("acc-logout", "User", "/path", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         _ = _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
@@ -179,7 +179,7 @@ public class AccountManagementIntegrationShould : IDisposable
             false,
             3,
             50,
-            null);
+            0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);

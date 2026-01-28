@@ -146,7 +146,7 @@ public class UpdateAccountDetailsViewModelShould
             false,
             3,
             50,
-            null);
+            0);
 
         sut.SelectedAccount = account;
 
@@ -173,7 +173,7 @@ public class UpdateAccountDetailsViewModelShould
             true,
             3,
             50,
-            null);
+            0);
 
         sut.SelectedAccount = account;
 
@@ -198,7 +198,7 @@ public class UpdateAccountDetailsViewModelShould
             false,
             3,
             50,
-            null);
+            0);
 
         sut.SelectedAccount = account;
 
@@ -230,7 +230,7 @@ public class UpdateAccountDetailsViewModelShould
             false,
             3,
             50,
-            null);
+            0);
 
         sut.SelectedAccount = account;
 
@@ -394,7 +394,7 @@ public class UpdateAccountDetailsViewModelShould
             false,
             3,
             50,
-            null);
+            0);
 
         sut.SelectedAccount = account;
         sut.LocalSyncPath = string.Empty;
@@ -423,7 +423,7 @@ public class UpdateAccountDetailsViewModelShould
             false,
             3,
             50,
-            null);
+            0);
 
         sut.SelectedAccount = account;
         sut.LocalSyncPath = @"C:\ValidPath";
@@ -491,7 +491,7 @@ public class UpdateAccountDetailsViewModelShould
             false,
             5,
             75,
-            null);
+            0);
 
         sut.SelectedAccount = account;
 
@@ -515,7 +515,7 @@ public class UpdateAccountDetailsViewModelShould
             false,
             5,
             75,
-            null);
+            0);
 
         sut.SelectedAccount = account;
 

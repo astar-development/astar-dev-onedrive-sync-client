@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Client.Syncronisation;
@@ -14,6 +15,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     private const int PageSize = 20;
     private readonly IAccountRepository _accountRepository;
     private readonly IFileOperationLogRepository _fileOperationLogRepository;
+    private readonly IDebugLogger _debugLogger;
     private int _currentPage = 1;
 
     /// <summary>
@@ -21,11 +23,11 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     /// </summary>
     /// <param name="accountRepository">Repository for account data.</param>
     /// <param name="fileOperationLogRepository">Repository for file operation logs.</param>
-    public ViewSyncHistoryViewModel(IAccountRepository accountRepository, IFileOperationLogRepository fileOperationLogRepository)
+    public ViewSyncHistoryViewModel(IAccountRepository accountRepository, IFileOperationLogRepository fileOperationLogRepository, IDebugLogger debugLogger)
     {
         _accountRepository = accountRepository;
         _fileOperationLogRepository = fileOperationLogRepository;
-
+        _debugLogger = debugLogger;
         Accounts = [];
         SyncHistory = [];
 
@@ -152,8 +154,9 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
+            await _debugLogger.LogErrorAsync("ViewSyncHistoryViewModel", SelectedAccount.AccountId, "", ex, cancellationToken: default);
             System.Console.WriteLine($"Error loading sync history: {ex.Message}");
             // Silently fail - display will remain empty
         }

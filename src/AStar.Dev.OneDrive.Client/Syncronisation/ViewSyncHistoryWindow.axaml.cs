@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -18,7 +19,8 @@ public sealed partial class ViewSyncHistoryWindow : Window
         {
             IAccountRepository accountRepo = App.Services.GetRequiredService<IAccountRepository>();
             IFileOperationLogRepository fileOpLogRepo = App.Services.GetRequiredService<IFileOperationLogRepository>();
-            DataContext = new ViewSyncHistoryViewModel(accountRepo, fileOpLogRepo);
+            IDebugLogger debugLogger = App.Services.GetRequiredService<IDebugLogger>();
+            DataContext = new ViewSyncHistoryViewModel(accountRepo, fileOpLogRepo, debugLogger);
         }
     }
 }

@@ -351,7 +351,7 @@ public sealed class ConflictResolverShould
             false,
             3,
             50,
-            null);
+            0);
 
     private static FileMetadata CreateTestMetadata(string accountId, string filePath)
         => new(

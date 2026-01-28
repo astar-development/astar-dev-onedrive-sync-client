@@ -66,7 +66,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             false,
             3,
             50,
-            null);
+            0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var rootFolder = new OneDriveFolderNode { DriveItemId = "folder1", Name = "Documents", Path = "/Documents", IsFolder = true };
@@ -109,7 +109,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             false,
             3,
             50,
-            null);
+            0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var rootFolder = new OneDriveFolderNode { DriveItemId = "folder1", Name = "Photos", Path = "/Photos", IsFolder = true };
@@ -139,8 +139,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task SwitchFoldersWhenDifferentAccountIsSelected()
     {
         // Arrange
-        var account1 = new AccountInfo("acc-1", "user1@example.com", @"C:\Sync1", true, null, null, false, false, 3, 50, null);
-        var account2 = new AccountInfo("acc-2", "user2@example.com", @"C:\Sync2", true, null, null, false, false, 3, 50, null);
+        var account1 = new AccountInfo("acc-1", "user1@example.com", @"C:\Sync1", true, null, null, false, false, 3, 50, 0);
+        var account2 = new AccountInfo("acc-2", "user2@example.com", @"C:\Sync2", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account1, TestContext.Current.CancellationToken);
         await _accountRepository.AddAsync(account2, TestContext.Current.CancellationToken);
 
@@ -181,7 +181,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task HandleErrorsGracefullyWhenFolderLoadingFails()
     {
         // Arrange
-        var account = new AccountInfo("acc-999", "error@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, null);
+        var account = new AccountInfo("acc-999", "error@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-999", Arg.Any<CancellationToken>())
@@ -209,7 +209,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task LoadFreshFolderInstancesWhenAccountIsReselected()
     {
         // Arrange
-        var account = new AccountInfo("acc-sel", "sel@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, null);
+        var account = new AccountInfo("acc-sel", "sel@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         // Create new instances each time to simulate fresh load from API
