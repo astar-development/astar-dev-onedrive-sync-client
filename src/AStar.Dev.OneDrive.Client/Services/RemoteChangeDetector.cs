@@ -195,7 +195,6 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
         item.Id ?? string.Empty,
         accountId,
         item.Name ?? string.Empty,
-        item.ParentReference?.DriveId ?? string.Empty,
         path,
         item.Size ?? 0,
         item.LastModifiedDateTime ?? DateTimeOffset.UtcNow,

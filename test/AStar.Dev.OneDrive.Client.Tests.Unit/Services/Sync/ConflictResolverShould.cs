@@ -74,7 +74,7 @@ public sealed class ConflictResolverShould
                 Arg.Any<CancellationToken>());
 
             await _metadataRepo.Received(1).UpdateAsync(
-                Arg.Is<FileMetadata>(m => m.Id == metadata.Id &&
+                Arg.Is<FileMetadata>(m => m.DriveItemId == metadata.DriveItemId &&
                                           m.SyncStatus == FileSyncStatus.Synced &&
                                           m.LastSyncDirection == SyncDirection.Upload),
                 Arg.Any<CancellationToken>());
@@ -131,7 +131,7 @@ public sealed class ConflictResolverShould
         // Mock the download to create the file
         _ = _graphApiClient.DownloadFileAsync(
                 account.AccountId,
-                metadata.Id,
+                metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
@@ -143,12 +143,12 @@ public sealed class ConflictResolverShould
 
             await _graphApiClient.Received(1).DownloadFileAsync(
                 account.AccountId,
-                metadata.Id,
+                metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>());
 
             await _metadataRepo.Received(1).UpdateAsync(
-                Arg.Is<FileMetadata>(m => m.Id == metadata.Id &&
+                Arg.Is<FileMetadata>(m => m.DriveItemId == metadata.DriveItemId &&
                                           m.SyncStatus == FileSyncStatus.Synced &&
                                           m.LastSyncDirection == SyncDirection.Download),
                 Arg.Any<CancellationToken>());
@@ -189,7 +189,7 @@ public sealed class ConflictResolverShould
         // Mock the download to create the file
         _ = _graphApiClient.DownloadFileAsync(
                 account.AccountId,
-                metadata.Id,
+                metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
@@ -198,14 +198,14 @@ public sealed class ConflictResolverShould
         // Mock GetDriveItemAsync to return remote file metadata
         var remoteItem = new DriveItem
         {
-            Id = metadata.Id,
+            Id = metadata.DriveItemId,
             Name = "test.txt",
             Size = 14, // "remote content" length
             LastModifiedDateTime = DateTime.UtcNow,
             CTag = "remote-ctag",
             ETag = "remote-etag"
         };
-        _ = _graphApiClient.GetDriveItemAsync(account.AccountId, metadata.Id, Arg.Any<CancellationToken>())
+        _ = _graphApiClient.GetDriveItemAsync(account.AccountId, metadata.DriveItemId, Arg.Any<CancellationToken>())
             .Returns(remoteItem);
 
         // Mock ComputeFileHashAsync for both downloaded and conflict files
@@ -228,13 +228,13 @@ public sealed class ConflictResolverShould
 
             await _graphApiClient.Received(1).DownloadFileAsync(
                 account.AccountId,
-                metadata.Id,
+                metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>());
 
             _ = await _graphApiClient.Received(1).GetDriveItemAsync(
                 account.AccountId,
-                metadata.Id,
+                metadata.DriveItemId,
                 Arg.Any<CancellationToken>());
 
             _ = await _localFileScanner.Received(1).ComputeFileHashAsync(
@@ -242,7 +242,7 @@ public sealed class ConflictResolverShould
                 Arg.Any<CancellationToken>());
 
             await _metadataRepo.Received(1).UpdateAsync(
-                Arg.Is<FileMetadata>(m => m.Id == metadata.Id &&
+                Arg.Is<FileMetadata>(m => m.DriveItemId == metadata.DriveItemId &&
                                           m.SyncStatus == FileSyncStatus.Synced &&
                                           m.LastSyncDirection == SyncDirection.Download &&
                                           m.LocalHash == "computed-hash-123"),
@@ -358,7 +358,7 @@ public sealed class ConflictResolverShould
             "file-789",
             accountId,
             Path.GetFileName(filePath),
-            filePath, "",
+            filePath,
             100,
             DateTime.UtcNow,
             filePath, false, false, false,

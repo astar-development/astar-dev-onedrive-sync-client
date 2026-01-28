@@ -241,7 +241,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             var nodesByPath = folderList
                 .ToDictionary(
                     f => Normalize(f.Path),
-                    f => new OneDriveFolderNode(f.Id, f.DriveItemId, f.Name, f.Path, f.ParentId, f.IsFolder, f.IsSelected)
+                    f => new OneDriveFolderNode(f.DriveItemId, f.Name, f.Path, f.ParentId, f.IsFolder, f.IsSelected)
                 );
 
             var roots = new List<OneDriveFolderNode>();

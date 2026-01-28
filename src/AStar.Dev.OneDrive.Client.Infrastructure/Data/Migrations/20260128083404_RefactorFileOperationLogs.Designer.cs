@@ -3,6 +3,7 @@ using System;
 using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SyncDbContext))]
-    partial class SyncDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260128083404_RefactorFileOperationLogs")]
+    partial class RefactorFileOperationLogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
@@ -126,6 +129,10 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                     b.Property<string>("CTag")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DriveItemId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("ETag")
                         .HasColumnType("TEXT");
 
@@ -168,6 +175,8 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DriveItemId");
 
                     b.HasIndex("IsFolder");
 

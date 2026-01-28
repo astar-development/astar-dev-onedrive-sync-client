@@ -24,10 +24,10 @@ public class OneDriveFolderNodeShould
     [Fact]
     public void InitializeWithProvidedValues()
     {
-        var node = new OneDriveFolderNode("id123", "driveItemId", "MyFolder", "/MyFolder", "parentId", true);
+        var node = new OneDriveFolderNode("id123",  "MyFolder", "/MyFolder", "parentId", true);
 
-        node.Id.ShouldBe("id123");
-        node.DriveItemId.ShouldBe("driveItemId");
+        node.DriveItemId.ShouldBe("id123");
+        node.DriveItemId.ShouldBe("Id");
         node.Name.ShouldBe("MyFolder");
         node.Path.ShouldBe("/MyFolder");
         node.ParentId.ShouldBe("parentId");
@@ -125,8 +125,8 @@ public class OneDriveFolderNodeShould
     [Fact]
     public void AllowAddingChildNodes()
     {
-        var parent = new OneDriveFolderNode("parent", "driveItemId", "Parent", "/Parent", null, true);
-        var child = new OneDriveFolderNode("child", "driveItemId", "Child", "/Parent/Child", "parent", true);
+        var parent = new OneDriveFolderNode("parent",  "Parent", "/Parent", null, true);
+        var child = new OneDriveFolderNode("child",  "Child", "/Parent/Child", "parent", true);
 
         parent.Children.Add(child);
 

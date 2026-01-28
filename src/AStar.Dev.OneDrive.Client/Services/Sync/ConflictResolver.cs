@@ -138,7 +138,7 @@ public sealed class ConflictResolver(
             conflict.FilePath,
             cancellationToken) ?? throw new InvalidOperationException($"File metadata not found for {conflict.FilePath}");
 
-        var fileId = metadata.Id;
+        var fileId = metadata.DriveItemId;
 
         // Download remote file from OneDrive (overwrite local)
         var localDirectory = Path.GetDirectoryName(localPath);
@@ -193,7 +193,7 @@ public sealed class ConflictResolver(
             conflict.FilePath,
             cancellationToken) ?? throw new InvalidOperationException($"File metadata not found for {conflict.FilePath}");
 
-        var fileId = metadata.Id;
+        var fileId = metadata.DriveItemId;
 
         // Rename local file with conflict suffix
         var directory = Path.GetDirectoryName(localPath) ?? string.Empty;

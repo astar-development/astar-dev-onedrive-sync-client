@@ -18,7 +18,6 @@ public class FolderSelectionExtensionsTests
     private static DriveItemEntity Item(string path, bool isFolder = true)
         => new(
             accountId: "acc",
-            id: Guid.NewGuid().ToString(),
             driveItemId: Guid.NewGuid().ToString(),
             relativePath: path,
             eTag: null,
@@ -38,10 +37,9 @@ public class FolderSelectionExtensionsTests
 
     private static FileMetadata Meta(string path, bool? selected)
         => new(
-            Id: Guid.NewGuid().ToString(),
+            DriveItemId: Guid.NewGuid().ToString(),
             AccountId: "acc",
             Name: System.IO.Path.GetFileName(path),
-            DriveItemId: Guid.NewGuid().ToString(),
             RelativePath: path,
             Size: 0,
             LastModifiedUtc: DateTimeOffset.UtcNow,

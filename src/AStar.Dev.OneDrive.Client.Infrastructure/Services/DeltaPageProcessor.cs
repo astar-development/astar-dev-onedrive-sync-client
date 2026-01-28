@@ -23,7 +23,7 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
                 DeltaPage page = await graphApiClient.GetDriveDeltaPageAsync(accountId, nextOrDelta, cancellationToken);
                 DriveItemEntity? driveItemRecord = page.Items.FirstOrDefault();
                 if(driveItemRecord is not null)
-                    deltaToken = new DeltaToken(accountId, driveItemRecord.Id.Split('!')[0], page.DeltaLink ?? string.Empty, DateTimeOffset.UtcNow);
+                    deltaToken = new DeltaToken(accountId, driveItemRecord.DriveItemId.Split('!')[0], page.DeltaLink ?? string.Empty, DateTimeOffset.UtcNow);
 
                 totalItemsProcessed += page.Items.Count();
                 await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId, $"Received page: {pageCount} items={page.Items.Count()}", cancellationToken);

@@ -152,8 +152,9 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
         }
-        catch
+        catch (Exception ex)
         {
+            System.Console.WriteLine($"Error loading sync history: {ex.Message}");
             // Silently fail - display will remain empty
         }
         finally

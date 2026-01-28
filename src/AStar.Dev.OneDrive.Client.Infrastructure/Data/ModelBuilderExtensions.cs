@@ -17,7 +17,9 @@ public static class ModelBuilderExtensions
             typeof(SyncConflictEntity),
             typeof(DeltaToken),
             typeof(DriveItemEntity),
-            typeof(DebugLogEntity)
+            typeof(DebugLogEntity),
+            typeof(FileOperationLogEntity),
+            typeof(SyncSessionLogEntity),
         ];
 
         foreach(IMutableEntityType? et in mb.Model.GetEntityTypes().Where(e => targetEntities.Contains(e.ClrType)))

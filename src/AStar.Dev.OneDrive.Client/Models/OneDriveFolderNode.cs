@@ -22,16 +22,14 @@ public sealed class OneDriveFolderNode : ReactiveObject
     /// <summary>
     ///     Initializes a new instance of the <see cref="OneDriveFolderNode" /> class with specified properties.
     /// </summary>
-    /// <param name="id">The unique identifier.</param>
     /// <param name="driveItemId">The unique identifier for the DriveItem.</param>
     /// <param name="name">The display name.</param>
     /// <param name="path">The full path.</param>
     /// <param name="parentId">The parent node ID.</param>
     /// <param name="isFolder">Whether this is a folder.</param>
     /// <param name="isSelected">Whether this node is selected.</param>
-    public OneDriveFolderNode(string id, string driveItemId, string name, string path, string? parentId, bool isFolder, bool? isSelected = null)
+    public OneDriveFolderNode(string driveItemId, string name, string path, string? parentId, bool isFolder, bool? isSelected = null)
     {
-        Id = id;
         DriveItemId = driveItemId;
         Name = name;
         Path = path;
@@ -39,11 +37,6 @@ public sealed class OneDriveFolderNode : ReactiveObject
         IsFolder = isFolder;
         IsSelected = isSelected;
     }
-
-    /// <summary>
-    ///     Gets or sets the unique identifier for this item (OneDrive DriveItem ID).
-    /// </summary>
-    public string Id { get; set; } = string.Empty;
 
     /// <summary>
     ///     Gets or sets the unique identifier for this item (OneDrive DriveItem ID).

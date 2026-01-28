@@ -326,18 +326,18 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
 
     private static DriveItemEntity ParseDriveItemRecord(string accountId, JsonElement jsonElement)
     {
-        var id = jsonElement.GetProperty("id").GetString()!;
+        var driveItemId = jsonElement.GetProperty("id").GetString()!;
         var isFolder = jsonElement.TryGetProperty("folder", out _);
         var size = jsonElement.TryGetProperty("size", out JsonElement sProp) ? sProp.GetInt64() : 0L;
         var parentPath = SetParentPath(jsonElement);
-        var name = jsonElement.TryGetProperty("name", out JsonElement n) ? n.GetString() ?? id : id;
+        var name = jsonElement.TryGetProperty("name", out JsonElement n) ? n.GetString() ?? driveItemId : driveItemId;
         var relativePath = GraphPathHelpers.BuildRelativePath(parentPath, name);
         var eTag = jsonElement.TryGetProperty("eTag", out JsonElement et) ? et.GetString() : null;
         var cTag = jsonElement.TryGetProperty("cTag", out JsonElement ctProp) ? ctProp.GetString() : null;
         DateTimeOffset lastModifiedUtc = GetLastModifiedUtc(jsonElement);
         var isDeleted = jsonElement.TryGetProperty("deleted", out _);
 
-        return new DriveItemEntity(accountId, id, id, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted);
+        return new DriveItemEntity(accountId, driveItemId, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted);
     }
 
     private static DateTimeOffset GetLastModifiedUtc(JsonElement jsonElement) => jsonElement.TryGetProperty("lastModifiedDateTime", out JsonElement lm)

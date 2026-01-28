@@ -9,11 +9,10 @@ public sealed class DriveItemRecordConfiguration : IEntityTypeConfiguration<Driv
     public void Configure(EntityTypeBuilder<DriveItemEntity> builder)
     {
         _ = builder.ToTable("DriveItems");
-        _ = builder.HasKey(d => d.Id);
+        _ = builder.HasKey(d => d.DriveItemId);
 
         _ = builder.Property("RelativePath").IsRequired();
 
-        _ = builder.HasIndex("DriveItemId");
         _ = builder.HasIndex(e => e.IsFolder);
         _ = builder.HasIndex(e => e.IsSelected);
         _ = builder.HasIndex(e => new { e.AccountId, e.RelativePath });

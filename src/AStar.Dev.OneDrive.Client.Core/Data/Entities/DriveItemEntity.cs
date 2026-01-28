@@ -4,7 +4,6 @@ namespace AStar.Dev.OneDrive.Client.Core.Data.Entities;
 
 public sealed class DriveItemEntity(
     string accountId,
-    string id,
     string driveItemId,
     string relativePath,
     string? eTag,
@@ -22,7 +21,6 @@ public sealed class DriveItemEntity(
     SyncDirection lastSyncDirection = SyncDirection.None)
 {
     public string AccountId { get; set; } = accountId;
-    public string Id { get; set; } = id;
     public string DriveItemId { get; set; } = driveItemId;
     public string RelativePath { get; set; } = relativePath;
     public string? ETag { get; set; } = eTag;
@@ -42,7 +40,6 @@ public sealed class DriveItemEntity(
     public DriveItemEntity WithUpdatedSelection(bool isSelected)
         => new(
             AccountId,
-            Id,
             DriveItemId,
             RelativePath,
             ETag,
@@ -63,7 +60,6 @@ public sealed class DriveItemEntity(
     public DriveItemEntity WithUpdatedDetails(bool isSelected, string relativePath, DateTimeOffset lastModifiedUtc)
         => new(
             AccountId,
-            Id,
             DriveItemId,
             relativePath,
             ETag,

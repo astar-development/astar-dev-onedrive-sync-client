@@ -75,7 +75,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     {
         // Arrange - Pre-populate database
         await _configRepository.SaveBatchAsync("acc-1", [
-            new FileMetadata("", "acc-1", "name", "driveItemId", "/Parent/Child1", 0,DateTime.UtcNow, "")
+            new FileMetadata("", "acc-1", "name",  "/Parent/Child1", 0,DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
 
         List<OneDriveFolderNode> folders = CreateTestFolders();
@@ -98,7 +98,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     {
         // Arrange - Pre-populate database
         await _configRepository.SaveBatchAsync("acc-1", [
-            new FileMetadata("", "acc-1", "name", "driveItemId", "/Folder1", 0, DateTime.UtcNow, "")
+            new FileMetadata("", "acc-1", "name",  "/Folder1", 0, DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
 
         List<OneDriveFolderNode> folders = CreateTestFolders();
@@ -123,10 +123,10 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     {
         // Arrange - Create selections for two accounts
         await _configRepository.SaveBatchAsync("acc-1", [
-            new FileMetadata("", "acc-1", "name", "driveItemId", "/Folder1", 0, DateTime.UtcNow, "")
+            new FileMetadata("", "acc-1", "name",  "/Folder1", 0, DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
         await _configRepository.SaveBatchAsync("acc-2", [
-            new FileMetadata("", "acc-2", "name", "driveItemId", "/Folder2", 0, DateTime.UtcNow, "")
+            new FileMetadata("", "acc-2", "name",  "/Folder2", 0, DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
 
         List<OneDriveFolderNode> folders = CreateTestFolders();
@@ -173,7 +173,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     {
         // Arrange - Save only one child checked
         await _configRepository.SaveBatchAsync("acc-1", [
-            new FileMetadata("", "acc-1", "name", "driveItemId", "/Parent/Child1", 0,DateTime.UtcNow, "")
+            new FileMetadata("", "acc-1", "name",  "/Parent/Child1", 0,DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
 
         OneDriveFolderNode child1 = CreateFolder("c1", "Child1", "/Parent/Child1");

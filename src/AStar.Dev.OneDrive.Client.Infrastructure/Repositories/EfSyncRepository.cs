@@ -34,7 +34,7 @@ public sealed class EfSyncRepository(IDbContextFactory<SyncDbContext> dbContextF
         foreach(DriveItemEntity item in items)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            DriveItemEntity? existing = await db.DriveItems.FindAsync([item.Id], cancellationToken);
+            DriveItemEntity? existing = await db.DriveItems.FindAsync([item.DriveItemId], cancellationToken);
             if(existing is null)
                 _ = db.DriveItems.Add(item);
             else
