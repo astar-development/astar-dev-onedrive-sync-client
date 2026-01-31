@@ -65,11 +65,11 @@ public sealed class SyncConflictRepository(SyncDbContext context) : ISyncConflic
     /// <inheritdoc />
     public async Task UpdateAsync(SyncConflict conflict, CancellationToken cancellationToken = default)
     {
-        SyncConflictEntity existingEntity = await _context.SyncConflicts
+        SyncConflictEntity existingSyncConflict = await _context.SyncConflicts
             .FirstOrDefaultAsync(c => c.Id == conflict.Id, cancellationToken) ?? throw new InvalidOperationException($"Conflict not found: {conflict.Id}");
 
-        existingEntity.ResolutionStrategy = conflict.ResolutionStrategy;
-        existingEntity.IsResolved = conflict.IsResolved;
+        existingSyncConflict.ResolutionStrategy = conflict.ResolutionStrategy;
+        existingSyncConflict.IsResolved = conflict.IsResolved;
 
         _ = await _context.SaveChangesAsync(cancellationToken);
     }
@@ -77,12 +77,12 @@ public sealed class SyncConflictRepository(SyncDbContext context) : ISyncConflic
     /// <inheritdoc />
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        SyncConflictEntity? entity = await _context.SyncConflicts
+        SyncConflictEntity? SyncConflict = await _context.SyncConflicts
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
 
-        if(entity is not null)
+        if(SyncConflict is not null)
         {
-            _ = _context.SyncConflicts.Remove(entity);
+            _ = _context.SyncConflicts.Remove(SyncConflict);
             _ = await _context.SaveChangesAsync(cancellationToken);
         }
     }
@@ -92,18 +92,18 @@ public sealed class SyncConflictRepository(SyncDbContext context) : ISyncConflic
         .Where(c => c.AccountId == accountId)
         .ExecuteDeleteAsync(cancellationToken);
 
-    private static SyncConflict MapToDomain(SyncConflictEntity entity)
+    private static SyncConflict MapToDomain(SyncConflictEntity syncConflict)
         => new(
-            entity.Id,
-            entity.AccountId,
-            entity.FilePath,
-            entity.LocalModifiedUtc,
-            entity.RemoteModifiedUtc,
-            entity.LocalSize,
-            entity.RemoteSize,
-            entity.DetectedUtc,
-            entity.ResolutionStrategy,
-            entity.IsResolved);
+            syncConflict.Id,
+            syncConflict.AccountId,
+            syncConflict.FilePath,
+            syncConflict.LocalModifiedUtc,
+            syncConflict.RemoteModifiedUtc,
+            syncConflict.LocalSize,
+            syncConflict.RemoteSize,
+            syncConflict.DetectedUtc,
+            syncConflict.ResolutionStrategy,
+            syncConflict.IsResolved);
 
     private static SyncConflictEntity MapToEntity(SyncConflict conflict)
         => new()

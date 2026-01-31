@@ -15,7 +15,7 @@ namespace AStar.Dev.OneDrive.Client.Services.Sync;
 /// </summary>
 public sealed class ConflictResolver(
     IGraphApiClient graphApiClient,
-    IFileMetadataRepository metadataRepo,
+    IDriveItemsRepository metadataRepo,
     IAccountRepository accountRepo,
     ISyncConflictRepository conflictRepo,
     ILocalFileScanner localFileScanner,
@@ -27,7 +27,7 @@ public sealed class ConflictResolver(
     private readonly IGraphApiClient _graphApiClient = graphApiClient ?? throw new ArgumentNullException(nameof(graphApiClient));
     private readonly ILocalFileScanner _localFileScanner = localFileScanner ?? throw new ArgumentNullException(nameof(localFileScanner));
     private readonly ILogger<ConflictResolver> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly IFileMetadataRepository _metadataRepo = metadataRepo ?? throw new ArgumentNullException(nameof(metadataRepo));
+    private readonly IDriveItemsRepository _metadataRepo = metadataRepo ?? throw new ArgumentNullException(nameof(metadataRepo));
 
     /// <inheritdoc />
     public async Task ResolveAsync(SyncConflict conflict, ConflictResolutionStrategy strategy, CancellationToken cancellationToken = default)

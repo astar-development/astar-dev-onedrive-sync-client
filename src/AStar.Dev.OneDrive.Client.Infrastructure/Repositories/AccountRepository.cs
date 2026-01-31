@@ -35,18 +35,18 @@ public sealed class AccountRepository(SyncDbContext context) : IAccountRepositor
     /// <inheritdoc />
     public async Task UpdateAsync(AccountInfo account, CancellationToken cancellationToken = default)
     {
-        AccountEntity entity = await context.Accounts.FindAsync([account.AccountId], cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.AccountId}' not found.");
+        AccountEntity dbAccount = await context.Accounts.FindAsync([account.AccountId], cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.AccountId}' not found.");
 
-        entity.DisplayName = account.DisplayName;
-        entity.LocalSyncPath = account.LocalSyncPath;
-        entity.IsAuthenticated = account.IsAuthenticated;
-        entity.LastSyncUtc = account.LastSyncUtc;
-        entity.DeltaToken = account.DeltaToken;
-        entity.EnableDetailedSyncLogging = account.EnableDetailedSyncLogging;
-        entity.EnableDebugLogging = account.EnableDebugLogging;
-        entity.MaxParallelUpDownloads = account.MaxParallelUpDownloads;
-        entity.MaxItemsInBatch = account.MaxItemsInBatch;
-        entity.AutoSyncIntervalMinutes = account.AutoSyncIntervalMinutes;
+        dbAccount.DisplayName = account.DisplayName;
+        dbAccount.LocalSyncPath = account.LocalSyncPath;
+        dbAccount.IsAuthenticated = account.IsAuthenticated;
+        dbAccount.LastSyncUtc = account.LastSyncUtc;
+        dbAccount.DeltaToken = account.DeltaToken;
+        dbAccount.EnableDetailedSyncLogging = account.EnableDetailedSyncLogging;
+        dbAccount.EnableDebugLogging = account.EnableDebugLogging;
+        dbAccount.MaxParallelUpDownloads = account.MaxParallelUpDownloads;
+        dbAccount.MaxItemsInBatch = account.MaxItemsInBatch;
+        dbAccount.AutoSyncIntervalMinutes = account.AutoSyncIntervalMinutes;
 
         _ = await context.SaveChangesAsync(cancellationToken);
     }
@@ -66,19 +66,19 @@ public sealed class AccountRepository(SyncDbContext context) : IAccountRepositor
     public async Task<bool> ExistsAsync(string accountId, CancellationToken cancellationToken = default)
         => await context.Accounts.AnyAsync(a => a.AccountId == accountId, cancellationToken);
 
-    private static AccountInfo MapToModel(AccountEntity entity)
+    private static AccountInfo MapToModel(AccountEntity account)
         => new(
-            entity.AccountId,
-            entity.DisplayName,
-            entity.LocalSyncPath,
-            entity.IsAuthenticated,
-            entity.LastSyncUtc,
-            entity.DeltaToken,
-            entity.EnableDetailedSyncLogging,
-            entity.EnableDebugLogging,
-            entity.MaxParallelUpDownloads,
-            entity.MaxItemsInBatch,
-            entity.AutoSyncIntervalMinutes
+            account.AccountId,
+            account.DisplayName,
+            account.LocalSyncPath,
+            account.IsAuthenticated,
+            account.LastSyncUtc,
+            account.DeltaToken,
+            account.EnableDetailedSyncLogging,
+            account.EnableDebugLogging,
+            account.MaxParallelUpDownloads,
+            account.MaxItemsInBatch,
+            account.AutoSyncIntervalMinutes
         );
 
     private static AccountEntity MapToEntity(AccountInfo model)

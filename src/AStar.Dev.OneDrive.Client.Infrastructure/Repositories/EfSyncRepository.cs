@@ -27,14 +27,14 @@ public sealed class EfSyncRepository(IDbContextFactory<SyncDbContext> dbContextF
         _ = await db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task ApplyDriveItemsAsync(string accountId, IEnumerable<DriveItemRecord> items, CancellationToken cancellationToken)
+    public async Task ApplyDriveItemsAsync(string accountId, IEnumerable<DriveItemEntity> items, CancellationToken cancellationToken)
     {
         await using SyncDbContext db = dbContextFactory.CreateDbContext();
         await using IDbContextTransaction tx = await db.Database.BeginTransactionAsync(cancellationToken);
-        foreach(DriveItemRecord item in items)
+        foreach(DriveItemEntity item in items)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            DriveItemRecord? existing = await db.DriveItems.FindAsync([item.Id], cancellationToken);
+            DriveItemEntity? existing = await db.DriveItems.FindAsync([item.Id], cancellationToken);
             if(existing is null)
                 _ = db.DriveItems.Add(item);
             else

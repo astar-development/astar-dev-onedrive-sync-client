@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
-using AStar.Dev.OneDrive.Client.Core.DTOs;
+using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
@@ -37,7 +37,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         await using Stream stream = await res.Content.ReadAsStreamAsync(cancellationToken);
         using JsonDocument doc = await JsonDocument.ParseAsync(stream, cancellationToken: cancellationToken);
 
-        List<DriveItemRecord> items = ParseDriveItemRecords(accountId, doc);
+        List<DriveItemEntity> items = ParseDriveItemRecords(accountId, doc);
 
         var next = TryGetODataProperty(doc, "@odata.nextLink");
         var delta = TryGetODataProperty(doc, "@odata.deltaLink");
@@ -296,9 +296,9 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
             ? $"{msalConfigurationSettings.GraphUri}/root/delta"
             : deltaOrNextLink;
 
-    private static List<DriveItemRecord> ParseDriveItemRecords(string accountId, JsonDocument doc)
+    private static List<DriveItemEntity> ParseDriveItemRecords(string accountId, JsonDocument doc)
     {
-        var items = new List<DriveItemRecord>();
+        var items = new List<DriveItemEntity>();
         if(doc.RootElement.TryGetProperty("value", out JsonElement arr))
             foreach(JsonElement el in arr.EnumerateArray())
                 items.Add(ParseDriveItemRecord(accountId, el));
@@ -306,7 +306,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         return items;
     }
 
-    private static DriveItemRecord ParseDriveItemRecord(string accountId, JsonElement jsonElement)
+    private static DriveItemEntity ParseDriveItemRecord(string accountId, JsonElement jsonElement)
     {
         var id = jsonElement.GetProperty("id").GetString()!;
         var isFolder = jsonElement.TryGetProperty("folder", out _);
@@ -319,7 +319,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         DateTimeOffset lastModifiedUtc = GetLastModifiedUtc(jsonElement);
         var isDeleted = jsonElement.TryGetProperty("deleted", out _);
 
-        return new DriveItemRecord(accountId, id, id, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted);
+        return new DriveItemEntity(accountId, id, id, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted, name, null, null, Core.Models.Enums.FileSyncStatus.SyncOnly, Core.Models.Enums.SyncDirection.Download);
     }
 
     private static DateTimeOffset GetLastModifiedUtc(JsonElement jsonElement) => jsonElement.TryGetProperty("lastModifiedDateTime", out JsonElement lm)

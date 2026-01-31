@@ -16,7 +16,7 @@ public sealed class ConflictResolverShould
     private readonly IGraphApiClient _graphApiClient = Substitute.For<IGraphApiClient>();
     private readonly ILocalFileScanner _localFileScanner = Substitute.For<ILocalFileScanner>();
     private readonly ILogger<ConflictResolver> _logger = Substitute.For<ILogger<ConflictResolver>>();
-    private readonly IFileMetadataRepository _metadataRepo = Substitute.For<IFileMetadataRepository>();
+    private readonly IDriveItemsRepository _metadataRepo = Substitute.For<IDriveItemsRepository>();
 
     [Fact]
     public void ThrowArgumentNullExceptionWhenConflictIsNull()
@@ -361,7 +361,7 @@ public sealed class ConflictResolverShould
             filePath,
             100,
             DateTime.UtcNow,
-            filePath,
+            filePath, false, false,
             "ctag-123",
             "etag-456",
             "hash-789",

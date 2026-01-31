@@ -8,7 +8,7 @@ namespace AStar.Dev.OneDrive.Client.Core.Models;
 /// <param name="Id">Unique identifier (typically OneDrive item ID).</param>
 /// <param name="AccountId">Account identifier.</param>
 /// <param name="Name">File name.</param>
-/// <param name="Path">OneDrive path to the file.</param>
+/// <param name="RelativePath">OneDrive path to the file.</param>
 /// <param name="Size">File size in bytes.</param>
 /// <param name="LastModifiedUtc">Last modification timestamp.</param>
 /// <param name="LocalPath">Local file system path.</param>
@@ -21,13 +21,15 @@ public sealed record FileMetadata(
     string Id,
     string AccountId,
     string Name,
-    string Path,
+    string RelativePath,
     long Size,
     DateTimeOffset LastModifiedUtc,
     string LocalPath,
-    string? CTag,
-    string? ETag,
-    string? LocalHash,
-    FileSyncStatus SyncStatus,
-    SyncDirection? LastSyncDirection
+    bool IsFolder = false,
+    bool IsDeleted = false,
+    string? CTag = null,
+    string? ETag = null,
+    string? LocalHash = null,
+    FileSyncStatus SyncStatus = FileSyncStatus.SyncOnly,
+    SyncDirection? LastSyncDirection = SyncDirection.None
 );

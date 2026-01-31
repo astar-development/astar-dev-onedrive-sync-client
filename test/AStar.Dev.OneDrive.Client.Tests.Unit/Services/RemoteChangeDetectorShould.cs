@@ -45,8 +45,8 @@ public class RemoteChangeDetectorShould
         (IReadOnlyList<FileMetadata>? changes, var deltaLink) = await detector.DetectChangesAsync("acc1", "/", null, TestContext.Current.CancellationToken);
 
         changes.Count.ShouldBe(2);
-        changes.ShouldContain(c => c.Name == "root.txt" && c.Path == "/root.txt");
-        changes.ShouldContain(c => c.Name == "nested.txt" && c.Path == "/SubFolder/nested.txt");
+        changes.ShouldContain(c => c.Name == "root.txt" && c.RelativePath == "/root.txt");
+        changes.ShouldContain(c => c.Name == "nested.txt" && c.RelativePath == "/SubFolder/nested.txt");
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]

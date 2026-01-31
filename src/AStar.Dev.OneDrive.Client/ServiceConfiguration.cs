@@ -3,7 +3,7 @@ using System.Net;
 using AStar.Dev.OneDrive.Client.Accounts;
 using AStar.Dev.OneDrive.Client.ConfigurationSettings;
 using AStar.Dev.OneDrive.Client.Core.Data;
-using AStar.Dev.OneDrive.Client.Core.DTOs;
+using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
@@ -54,7 +54,6 @@ public static class ServiceConfiguration
 
         services = AddViewModels(services);
 
-        // Logging
         _ = services.AddLogging(builder =>
         {
             _ = builder.AddConsole();
@@ -68,46 +67,29 @@ public static class ServiceConfiguration
         return services.BuildServiceProvider();
     }
 
-    private static void AddHttpClient(ServiceCollection services) => _ = services.AddHttpClient<IGraphApiClient, GraphApiClient>()
-        .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = true, MaxConnectionsPerServer = 10 })
-        .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromMinutes(5))
-        .AddPolicyHandler(GetRetryPolicy())
-        .AddPolicyHandler(GetCircuitBreakerPolicy());
+    private static void AddHttpClient(ServiceCollection services)
+        => _ = services.AddHttpClient<IGraphApiClient, GraphApiClient>()
+                       .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = true, MaxConnectionsPerServer = 10 })
+                       .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromMinutes(5))
+                       .AddPolicyHandler(GetRetryPolicy())
+                       .AddPolicyHandler(GetCircuitBreakerPolicy());
 
     private static ServiceCollection AddAuthentication(ServiceCollection services, IConfigurationRoot configuration)
     {
-        var connectionString = string.Empty;
-        var localRoot = string.Empty;
-        var msalClientId = string.Empty;
         using(IServiceScope scope = services.BuildServiceProvider().CreateScope())
         {
             ApplicationSettings appSettings = scope.ServiceProvider.GetRequiredService<IOptions<ApplicationSettings>>().Value;
 
             EntraIdSettings entraId = scope.ServiceProvider.GetRequiredService<IOptions<EntraIdSettings>>().Value;
 
-            connectionString = $"Data Source={appSettings.FullDatabasePath}";
-            localRoot = appSettings.FullUserSyncPath;
-            msalClientId = entraId.ClientId;
-
-            var msalConfigurationSettings = new MsalConfigurationSettings(
-                msalClientId,
-                appSettings.RedirectUri,
-                appSettings.GraphUri,
-                entraId.Scopes ?? [],
-                appSettings.CachePrefix);
+            var msalConfigurationSettings = new MsalConfigurationSettings(entraId.ClientId, appSettings.RedirectUri, appSettings.GraphUri, entraId.Scopes ?? [], appSettings.CachePrefix);
 
             _ = services.AddSingleton(msalConfigurationSettings);
-        }
-
-        ;
+        };
 
         var authConfig = AuthConfiguration.LoadFromConfiguration(configuration);
 
-        // Authentication - registered as singleton with factory
-        _ = services.AddSingleton<IAuthService>(provider =>
-            // AuthService.CreateAsync must be called synchronously during startup
-            // This is acceptable as it's a one-time initialization cost
-            AuthService.CreateAsync(authConfig).GetAwaiter().GetResult());
+        _ = services.AddSingleton<IAuthService>(provider => AuthService.CreateAsync(authConfig).GetAwaiter().GetResult());
 
         return services;
     }
@@ -163,7 +145,7 @@ public static class ServiceConfiguration
 
         _ = services.AddScoped<IAccountRepository, AccountRepository>();
         _ = services.AddScoped<ISyncConfigurationRepository, SyncConfigurationRepository>();
-        _ = services.AddScoped<IFileMetadataRepository, FileMetadataRepository>();
+        _ = services.AddScoped<IDriveItemsRepository, DriveItemsRepository>();
         _ = services.AddScoped<ISyncConflictRepository, SyncConflictRepository>();
         _ = services.AddScoped<ISyncSessionLogRepository, SyncSessionLogRepository>();
         _ = services.AddScoped<IFileOperationLogRepository, FileOperationLogRepository>();
