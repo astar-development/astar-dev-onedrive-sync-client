@@ -32,7 +32,7 @@ public sealed record SyncState(
     int ConflictsDetected,
     double MegabytesPerSecond,
     int? EstimatedSecondsRemaining = 0,
-    string? CurrentStatusMessage= "",
+    string? CurrentStatusMessage = "",
     DateTimeOffset? LastUpdateUtc = null
 )
 {

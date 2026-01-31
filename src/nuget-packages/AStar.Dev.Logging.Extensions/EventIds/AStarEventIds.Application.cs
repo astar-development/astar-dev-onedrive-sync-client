@@ -5,12 +5,14 @@ namespace AStar.Dev.Logging.Extensions.EventIds;
 public static partial class AStarEventIds
 {
     /// <summary>
-    /// Provides preconfigured <see cref="EventId"/> values for logging application lifecycle events such as start and
-    /// stopped.
+    ///     Provides preconfigured <see cref="EventId" /> values for logging application lifecycle events such as start and
+    ///     stopped.
     /// </summary>
-    /// <remarks>Use the <see cref="Started"/> and <see cref="Stopped"/> event IDs when logging application startup
-    /// and shutdown events to ensure consistent event identification across logs.</remarks>
-    public static partial class Application
+    /// <remarks>
+    ///     Use the <see cref="Started" /> and <see cref="Stopped" /> event IDs when logging application startup
+    ///     and shutdown events to ensure consistent event identification across logs.
+    /// </remarks>
+    public static class Application
     {
         /// <summary>
         ///     Gets the <see cref="EventId" /> preconfigured for logging application start

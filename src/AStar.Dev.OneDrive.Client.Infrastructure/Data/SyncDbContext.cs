@@ -61,10 +61,7 @@ public sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : DbC
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        if (!optionsBuilder.IsConfigured)
-        {
-            _ = optionsBuilder.UseSqlite(@"Data Source=C:\Users\jbarden\AppData\Local\AStar.Dev.OneDrive.Client\sync.db");
-        }
+        if(!optionsBuilder.IsConfigured) _ = optionsBuilder.UseSqlite(@"Data Source=C:\Users\jbarden\AppData\Local\AStar.Dev.OneDrive.Client\sync.db");
     }
 
     /// <inheritdoc />

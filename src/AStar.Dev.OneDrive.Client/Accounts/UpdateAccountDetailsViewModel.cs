@@ -198,7 +198,8 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
 
     private async Task UpdateAccountAsync()
     {
-        if(SelectedAccount is null) return;
+        if(SelectedAccount is null)
+            return;
 
         // Validate LocalSyncPath exists
         if(!Directory.Exists(LocalSyncPath))
@@ -260,7 +261,8 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         {
             IReadOnlyList<IStorageFolder> result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Select Local Sync Path", AllowMultiple = false });
 
-            if(result.Count > 0) LocalSyncPath = result[0].Path.LocalPath;
+            if(result.Count > 0)
+                LocalSyncPath = result[0].Path.LocalPath;
         }
     }
 }

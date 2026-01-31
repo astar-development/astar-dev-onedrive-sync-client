@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Models;
 using AStar.Dev.OneDrive.Client.Services;
 using Avalonia;
@@ -45,7 +44,8 @@ public sealed partial class MainWindow : Window
 
     private async Task LoadWindowPreferencesAsync()
     {
-        if(_preferencesService is null) return;
+        if(_preferencesService is null)
+            return;
 
         try
         {
@@ -88,7 +88,8 @@ public sealed partial class MainWindow : Window
 
     private async Task SaveWindowPreferencesAsync()
     {
-        if(_preferencesService is null) return;
+        if(_preferencesService is null)
+            return;
 
         try
         {

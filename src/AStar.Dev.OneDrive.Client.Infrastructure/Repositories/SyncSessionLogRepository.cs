@@ -62,8 +62,8 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
 
     /// <inheritdoc />
     public async Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default) => _ = await _context.SyncSessionLogs
-            .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
-            .ExecuteDeleteAsync(cancellationToken);
+        .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
+        .ExecuteDeleteAsync(cancellationToken);
 
     private static SyncSessionLog MapToModel(SyncSessionLogEntity entity)
         => new(

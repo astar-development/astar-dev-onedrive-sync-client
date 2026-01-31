@@ -1,6 +1,5 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:views="using:AStar.Dev.OneDrive.Client.MainWindow"
         xmlns:accounts="using:AStar.Dev.OneDrive.Client.Accounts"
         xmlns:syncronisation="using:AStar.Dev.OneDrive.Client.Syncronisation"
         xmlns:syncronisationConflicts="using:AStar.Dev.OneDrive.Client.SyncronisationConflicts"
@@ -57,13 +56,13 @@
 
                 <!-- Sync Progress View (overlay when syncing) -->
                 <syncronisation:SyncProgressView DataContext="{Binding SyncProgress}"
-                                        IsVisible="{Binding #SyncProgressView.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                        x:Name="SyncProgressView" />
+                                                 IsVisible="{Binding #SyncProgressView.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                 x:Name="SyncProgressView" />
 
                 <!-- Conflict Resolution View (top overlay when viewing conflicts) -->
                 <syncronisationConflicts:ConflictResolutionView DataContext="{Binding ConflictResolution}"
-                                              IsVisible="{Binding #ConflictResolutionView.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                              x:Name="ConflictResolutionView" />
+                                                                IsVisible="{Binding #ConflictResolutionView.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                x:Name="ConflictResolutionView" />
             </Panel>
         </Grid>
     </DockPanel>

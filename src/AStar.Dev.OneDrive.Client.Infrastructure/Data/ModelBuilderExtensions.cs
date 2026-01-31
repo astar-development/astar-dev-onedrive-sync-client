@@ -1,10 +1,10 @@
 using System.Reflection;
+using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Data;
 
@@ -15,14 +15,14 @@ public static class ModelBuilderExtensions
         Type[] targetEntities =
         [
             typeof(SyncConflictEntity),
-            typeof(DeltaToken),
+            typeof(DeltaToken)
         ];
 
         foreach(IMutableEntityType? et in mb.Model.GetEntityTypes().Where(e => targetEntities.Contains(e.ClrType)))
             ApplyConversionsForEntity(mb, et);
     }
 
-    static void ApplyConversionsForEntity(ModelBuilder mb, IMutableEntityType et)
+    private static void ApplyConversionsForEntity(ModelBuilder mb, IMutableEntityType et)
     {
         EntityTypeBuilder eb = mb.Entity(et.ClrType);
 
@@ -61,4 +61,3 @@ public static class ModelBuilderExtensions
         }
     }
 }
-

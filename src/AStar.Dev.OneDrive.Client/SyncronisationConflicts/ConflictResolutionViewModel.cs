@@ -129,7 +129,8 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
 
             IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
 
-            foreach(SyncConflict conflict in conflicts) Conflicts.Add(new ConflictItemViewModel(conflict));
+            foreach(SyncConflict conflict in conflicts)
+                Conflicts.Add(new ConflictItemViewModel(conflict));
 
             StatusMessage = Conflicts.Count > 0
                 ? $"Found {Conflicts.Count} conflict(s) requiring resolution."

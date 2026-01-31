@@ -121,7 +121,8 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     {
         get
         {
-            if(CurrentProgress is null) return string.Empty;
+            if(CurrentProgress is null)
+                return string.Empty;
 
             var parts = new List<string>();
 
@@ -134,7 +135,8 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
                 parts.Add($"↑ {CurrentProgress.FilesUploading} uploading  ↓ {CurrentProgress.FilesDownloading} downloading");
 
                 // Add transfer speed if available
-                if(CurrentProgress.MegabytesPerSecond > 0.01) parts.Add($"{CurrentProgress.MegabytesPerSecond:F2} MB/s");
+                if(CurrentProgress.MegabytesPerSecond > 0.01)
+                    parts.Add($"{CurrentProgress.MegabytesPerSecond:F2} MB/s");
 
                 // Add ETA if available
                 if(CurrentProgress.EstimatedSecondsRemaining.HasValue)
@@ -275,7 +277,12 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
                     : $"Syncing {CurrentProgress.CompletedFiles} of {CurrentProgress.TotalFiles} files...";
             }
         }
-        else if(CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles && CurrentProgress.TotalFiles > 0) StatusMessage = $"Sync completed - {CurrentProgress.TotalFiles} file(s) processed";
+        else
+        {
+            StatusMessage = CurrentProgress.CompletedFiles == CurrentProgress.TotalFiles && CurrentProgress.TotalFiles > 0
+                ? $"Sync completed - {CurrentProgress.TotalFiles} file(s) processed"
+                : "Sync complete, no changes detected.";
+        }
     }
 
     /// <summary>
@@ -286,7 +293,8 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// </remarks>
     public async Task RefreshConflictCountAsync(CancellationToken cancellationToken = default)
     {
-        if(CurrentProgress is null) return;
+        if(CurrentProgress is null)
+            return;
 
         IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(AccountId, cancellationToken);
         var conflictCount = conflicts.Count;
@@ -306,7 +314,8 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <returns>Formatted time string (e.g., "2h 15m", "45m", "30s").</returns>
     private static string FormatTimeRemaining(int seconds)
     {
-        if(seconds < 60) return $"{seconds}s";
+        if(seconds < 60)
+            return $"{seconds}s";
 
         if(seconds < 3600)
         {

@@ -18,7 +18,7 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
 {
     /// <inheritdoc />
     public async Task<(IReadOnlyList<FileMetadata> Changes, string? NewDeltaLink)>
-                DetectChangesAsync(string accountId, string folderPath, string? previousDeltaLink, CancellationToken cancellationToken = default)
+        DetectChangesAsync(string accountId, string folderPath, string? previousDeltaLink, CancellationToken cancellationToken = default)
     {
         await DebugLog.EntryAsync("RemoteChangeDetector.DetectChangesAsync", cancellationToken);
 
@@ -27,7 +27,8 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
         await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Scanning folder: '{folderPath}'", cancellationToken);
 
         var cleanedFolderPath = CleanGraphApiPathPrefix(folderPath);
-        if(cleanedFolderPath != folderPath) await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Cleaned folder path from '{folderPath}' to '{cleanedFolderPath}'", cancellationToken);
+        if(cleanedFolderPath != folderPath)
+            await DebugLog.InfoAsync("RemoteChangeDetector.DetectChangesAsync", $"Cleaned folder path from '{folderPath}' to '{cleanedFolderPath}'", cancellationToken);
 
         // For initial implementation, scan the folder tree
         // Note: For large OneDrive accounts (100k+ files), this can take several minutes
@@ -163,7 +164,8 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if(changes.Count >= maxFiles) return; // Reached the limit
+            if(changes.Count >= maxFiles)
+                return; // Reached the limit
 
             if(item.File is not null && item.Id is not null && item.Name is not null)
             {
@@ -172,7 +174,8 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
                 var itemPath = CombinePaths(currentPath, item.Name);
                 FileMetadata metadata = ConvertToFileMetadata(accountId, item, itemPath);
                 changes.Add(metadata);
-                if(changes.Count % 500 == 0) Debug.WriteLine($"[RemoteChangeDetector] Progress: {changes.Count} files scanned");
+                if(changes.Count % 500 == 0)
+                    Debug.WriteLine($"[RemoteChangeDetector] Progress: {changes.Count} files scanned");
             }
             else if(item.Folder is not null && item.Id is not null && item.Name is not null)
             {
@@ -208,9 +211,11 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
         basePath = basePath.Replace('\\', '/');
         name = name.Replace('\\', '/');
 
-        if(!basePath.EndsWith('/')) basePath += '/';
+        if(!basePath.EndsWith('/'))
+            basePath += '/';
 
-        if(name.StartsWith('/')) name = name[1..];
+        if(name.StartsWith('/'))
+            name = name[1..];
 
         return basePath + name;
     }
@@ -222,16 +227,19 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
     /// <returns>The cleaned path without Graph API prefixes.</returns>
     private static string CleanGraphApiPathPrefix(string path)
     {
-        if(string.IsNullOrEmpty(path)) return path;
+        if(string.IsNullOrEmpty(path))
+            return path;
 
         // Strip /drive/root: prefix
-        if(path.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase)) return path["/drive/root:".Length..];
+        if(path.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
+            return path["/drive/root:".Length..];
 
         // Strip /drives/{drive-id}/root: prefix
         if(path.StartsWith("/drives/", StringComparison.OrdinalIgnoreCase))
         {
             var rootIndex = path.IndexOf("/root:", StringComparison.OrdinalIgnoreCase);
-            if(rootIndex >= 0) return path[(rootIndex + "/root:".Length)..];
+            if(rootIndex >= 0)
+                return path[(rootIndex + "/root:".Length)..];
         }
 
         return path;

@@ -24,10 +24,10 @@ public sealed class SyncConfigurationRepository(SyncDbContext context) : ISyncCo
     /// <inheritdoc />
     public async Task<IReadOnlyList<string>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken = default)
         => await context.SyncConfigurations
-                .Where(sc => sc.AccountId == accountId && sc.IsSelected)
-                .Select(sc => CleanUpPath(sc.FolderPath))
-                .Distinct()
-                .ToListAsync(cancellationToken);
+            .Where(sc => sc.AccountId == accountId && sc.IsSelected)
+            .Select(sc => CleanUpPath(sc.FolderPath))
+            .Distinct()
+            .ToListAsync(cancellationToken);
 
     /// <inheritdoc />
     public async Task<Result<IList<string>, ErrorResponse>> GetSelectedFolders2Async(string accountId, CancellationToken cancellationToken = default)
@@ -43,7 +43,8 @@ public sealed class SyncConfigurationRepository(SyncDbContext context) : ISyncCo
         SyncConfigurationEntity? existingEntity = await context.SyncConfigurations
             .FirstOrDefaultAsync(sc => sc.AccountId == configuration.AccountId && sc.FolderPath == configuration.FolderPath, cancellationToken);
 
-        if(existingEntity is not null) return configuration;
+        if(existingEntity is not null)
+            return configuration;
 
         SyncConfigurationEntity entity = MapToEntity(configuration);
         _ = context.SyncConfigurations.Add(entity);

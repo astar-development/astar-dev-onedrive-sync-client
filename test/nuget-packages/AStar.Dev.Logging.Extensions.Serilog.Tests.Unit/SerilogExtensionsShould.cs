@@ -45,7 +45,7 @@ public class SerilogExtensionsShould
             .Build();
 
         var loggerConfig = new LoggerConfiguration();
-        _ = loggerConfig.ConfigureAStarDevelopmentLoggingDefaults(cfg, addFileSink: false);
+        _ = loggerConfig.ConfigureAStarDevelopmentLoggingDefaults(cfg, false);
         ILogger logger = loggerConfig.CreateLogger();
 
         var token = $"NOFILE-{Guid.CreateVersion7():N}";
@@ -60,7 +60,7 @@ public class SerilogExtensionsShould
             .Build();
 
         var loggerConfig = new LoggerConfiguration();
-        _ = loggerConfig.ConfigureAStarDevelopmentLoggingDefaults(cfg, addFileSink: false);
+        _ = loggerConfig.ConfigureAStarDevelopmentLoggingDefaults(cfg, false);
         ILogger logger = loggerConfig.CreateLogger();
 
         var infoToken = $"MS-I-{Guid.CreateVersion7():N}";

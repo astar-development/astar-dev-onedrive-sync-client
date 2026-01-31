@@ -19,12 +19,12 @@ public static class SerilogExtensions
         .CreateBootstrapLogger();
 
     /// <summary>
-    /// Configures a <see cref="LoggerConfiguration"/> with the default AStar settings and sinks.
+    ///     Configures a <see cref="LoggerConfiguration" /> with the default AStar settings and sinks.
     /// </summary>
     /// <param name="config">The logger configuration to update.</param>
     /// <param name="configuration">Application configuration to read Serilog settings from.</param>
     /// <param name="addFileSink">When true, adds a rolling file sink; set to false in unit tests to avoid real IO.</param>
-    /// <returns>The same <see cref="LoggerConfiguration"/> for chaining.</returns>
+    /// <returns>The same <see cref="LoggerConfiguration" /> for chaining.</returns>
     public static LoggerConfiguration ConfigureAStarDevelopmentLoggingDefaults(this LoggerConfiguration config, IConfiguration configuration, bool addFileSink = true)
     {
         LoggerConfiguration cfg = config

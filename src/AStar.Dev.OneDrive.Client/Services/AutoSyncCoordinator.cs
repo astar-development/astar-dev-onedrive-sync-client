@@ -92,6 +92,7 @@ public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, 
     /// </summary>
     public void StopAll()
     {
-        foreach(var accountId in _accountSubscriptions.Keys.ToList()) StopMonitoring(accountId);
+        foreach(var accountId in _accountSubscriptions.Keys.ToList())
+            StopMonitoring(accountId);
     }
 }

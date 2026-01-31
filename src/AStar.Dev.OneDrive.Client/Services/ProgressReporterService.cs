@@ -21,13 +21,15 @@ public static class ProgressReporterService
                 megabytesPerSecond = megabytesDelta / elapsedSeconds;
 
                 transferHistory.Add((now, progress.CompletedBytes));
-                if(transferHistory.Count > 10) transferHistory.RemoveAt(0);
+                if(transferHistory.Count > 10)
+                    transferHistory.RemoveAt(0);
 
                 if(transferHistory.Count >= 2)
                 {
                     var totalElapsed = (now - transferHistory[0].Timestamp).TotalSeconds;
                     var totalTransferred = progress.CompletedBytes - transferHistory[0].Bytes;
-                    if(totalElapsed > 0) megabytesPerSecond = totalTransferred / (1024.0 * 1024.0) / totalElapsed;
+                    if(totalElapsed > 0)
+                        megabytesPerSecond = totalTransferred / (1024.0 * 1024.0) / totalElapsed;
                 }
             }
         }

@@ -25,7 +25,8 @@ public class FileWatcherServiceShould : IDisposable
         _sut.Dispose();
 
         // Clean up test directory
-        if(Directory.Exists(_testDirectory)) Directory.Delete(_testDirectory, true);
+        if(Directory.Exists(_testDirectory))
+            Directory.Delete(_testDirectory, true);
 
         GC.SuppressFinalize(this);
     }

@@ -66,7 +66,7 @@ public interface ISyncConfigurationRepository
     Task SaveBatchAsync(string accountId, IEnumerable<SyncConfiguration> configurations, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves the parent folder configuration for a given account and parent folder path.
+    ///     Retrieves the parent folder configuration for a given account and parent folder path.
     /// </summary>
     /// <param name="accountId">The identifier of the account.</param>
     /// <param name="parentPath">The path of the parent folder to retrieve.</param>

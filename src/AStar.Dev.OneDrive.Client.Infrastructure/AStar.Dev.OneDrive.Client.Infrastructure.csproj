@@ -34,7 +34,7 @@
         <PackageReference Include="Testably.Abstractions" Version="10.0.0"/>
         <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
-        
+
         <PackageReference Include="AStar.Dev.Source.Generators" Version="0.1.7"/>
     </ItemGroup>
 

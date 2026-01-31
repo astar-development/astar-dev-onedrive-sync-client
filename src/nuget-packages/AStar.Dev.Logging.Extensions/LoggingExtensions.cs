@@ -63,7 +63,7 @@ public static class LoggingExtensions
         if(externalSettingsFile.IsNotNullOrWhiteSpace())
             _ = builder.Configuration.AddJsonFile(externalSettingsFile, true, true);
 
-        _ = builder.Services.AddSingleton<TelemetryConfiguration>(_ => new());
+        _ = builder.Services.AddSingleton<TelemetryConfiguration>(_ => new TelemetryConfiguration());
         ServiceProvider serviceProvider = builder.Services.BuildServiceProvider();
 
         Logger logger = new LoggerConfiguration()

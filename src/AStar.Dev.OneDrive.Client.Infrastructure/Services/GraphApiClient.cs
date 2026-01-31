@@ -5,7 +5,6 @@ using System.Text.Json;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.DTOs;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
-using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
@@ -20,7 +19,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 /// <remarks>
 ///     Wraps GraphServiceClient to provide a testable abstraction for OneDrive operations.
 /// </remarks>
-public sealed class GraphApiClient(IAuthService authService, HttpClient http, MsalConfigurationSettings msalConfigurationSettings, ILogger<GraphApiClient> logger) : IGraphApiClient
+public sealed class GraphApiClient(IAuthService authService, HttpClient http, MsalConfigurationSettings msalConfigurationSettings) : IGraphApiClient
 {
     public async Task<DeltaPage> GetDriveDeltaPageAsync(string accountId, string? deltaOrNextLink, CancellationToken cancellationToken)
     {
@@ -120,10 +119,12 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     {
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if(drive?.Id is null) return [];
+        if(drive?.Id is null)
+            return [];
 
         DriveItem? root = await graphClient.Drives[drive.Id].Root.GetAsync(cancellationToken: cancellationToken);
-        if(root?.Id is null) return [];
+        if(root?.Id is null)
+            return [];
 
         DriveItemCollectionResponse? response = await graphClient.Drives[drive.Id].Items[root.Id].Children.GetAsync(cancellationToken: cancellationToken);
         return response?.Value ?? Enumerable.Empty<DriveItem>();
@@ -134,7 +135,8 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     {
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if(drive?.Id is null) throw new InvalidOperationException("Unable to access user's drive");
+        if(drive?.Id is null)
+            throw new InvalidOperationException("Unable to access user's drive");
 
         // Download file content stream from OneDrive
         Stream contentStream = await graphClient.Drives[drive.Id].Items[itemId].Content.GetAsync(cancellationToken: cancellationToken) ??
@@ -142,7 +144,8 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
 
         // Ensure the directory exists
         var directory = Path.GetDirectoryName(localFilePath);
-        if(!string.IsNullOrEmpty(directory) && !Directory.Exists(directory)) _ = Directory.CreateDirectory(directory);
+        if(!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            _ = Directory.CreateDirectory(directory);
 
         // Write the stream to local file
         using var fileStream = new FileStream(localFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
@@ -152,11 +155,13 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task<DriveItem> UploadFileAsync(string accountId, string localFilePath, string remotePath, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
-        if(!File.Exists(localFilePath)) throw new FileNotFoundException($"Local file not found: {localFilePath}", localFilePath);
+        if(!File.Exists(localFilePath))
+            throw new FileNotFoundException($"Local file not found: {localFilePath}", localFilePath);
 
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
-        if(drive?.Id is null) throw new InvalidOperationException("Unable to access user's drive");
+        if(drive?.Id is null)
+            throw new InvalidOperationException("Unable to access user's drive");
 
         var fileInfo = new FileInfo(localFilePath);
         const long smallFileThresholdMb = 4 * 1024 * 1024; // 4MB - Graph API threshold for simple upload
@@ -193,7 +198,8 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
                 .CreateUploadSession
                 .PostAsync(requestBody, cancellationToken: cancellationToken);
 
-            if(uploadSession?.UploadUrl is null) throw new InvalidOperationException($"Failed to create upload session for file: {localFilePath}");
+            if(uploadSession?.UploadUrl is null)
+                throw new InvalidOperationException($"Failed to create upload session for file: {localFilePath}");
 
             // Upload in chunks (recommended 5-10MB per chunk for optimal performance)
             const int ChunkSize = 5 * 1024 * 1024; // 5MB chunks
@@ -212,7 +218,8 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
                 var chunk = new byte[chunkSize];
                 var bytesRead = await fileStream.ReadAsync(chunk.AsMemory(0, chunkSize), cancellationToken);
 
-                if(bytesRead != chunkSize) throw new InvalidOperationException($"Failed to read expected bytes from file. Expected: {chunkSize}, Read: {bytesRead}");
+                if(bytesRead != chunkSize)
+                    throw new InvalidOperationException($"Failed to read expected bytes from file. Expected: {chunkSize}, Read: {bytesRead}");
 
                 var contentRange = $"bytes {position}-{position + chunkSize - 1}/{totalLength}";
 
@@ -293,12 +300,8 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     {
         var items = new List<DriveItemRecord>();
         if(doc.RootElement.TryGetProperty("value", out JsonElement arr))
-        {
             foreach(JsonElement el in arr.EnumerateArray())
-            {
                 items.Add(ParseDriveItemRecord(accountId, el));
-            }
-        }
 
         return items;
     }
@@ -320,8 +323,9 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     }
 
     private static DateTimeOffset GetLastModifiedUtc(JsonElement jsonElement) => jsonElement.TryGetProperty("lastModifiedDateTime", out JsonElement lm)
-                ? DateTimeOffset.Parse(lm.GetString()!, CultureInfo.InvariantCulture)
-                : DateTimeOffset.UtcNow;
+        ? DateTimeOffset.Parse(lm.GetString()!, CultureInfo.InvariantCulture)
+        : DateTimeOffset.UtcNow;
+
     private static string SetParentPath(JsonElement jsonElement)
         => jsonElement.TryGetProperty("parentReference", out JsonElement pr) && pr.TryGetProperty("path", out JsonElement p) ? p.GetString() ?? string.Empty : string.Empty;
 

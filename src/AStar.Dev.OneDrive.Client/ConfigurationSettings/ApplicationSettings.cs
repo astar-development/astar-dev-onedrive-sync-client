@@ -11,12 +11,14 @@ namespace AStar.Dev.OneDrive.Client.Services.ConfigurationSettings;
 ///     download preferences, caching, paths, and scope definitions.
 /// </summary>
 [AutoRegisterOptions]
-public partial class ApplicationSettings
+public class ApplicationSettings
 {
     /// <summary>
-    ///   The configuration section name for application settings.
+    ///     The configuration section name for application settings.
     /// </summary>
     public const string SectionName = "AStarDevOneDriveClient";
+
+    private static readonly string ApplicationName = "astar-dev-onedrive-client";
 
     /// <summary>
     ///     Gets or sets the cache tag value used to manage the token cache serialization
@@ -52,7 +54,7 @@ public partial class ApplicationSettings
     public string UserPreferencesFile { get; set; } = "user-preferences.json";
 
     /// <summary>
-    /// Gets or sets the name of the database file used for synchronization.
+    ///     Gets or sets the name of the database file used for synchronization.
     /// </summary>
     [Required]
     public string DatabaseName { get; set; } = "onedrive-sync.db";
@@ -71,21 +73,25 @@ public partial class ApplicationSettings
     public string CachePrefix { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the URI to which the authentication response is redirected.
+    ///     Gets or sets the URI to which the authentication response is redirected.
     /// </summary>
-    /// <remarks>The redirect URI must be a valid absolute URI. This property is typically used in OAuth or
-    /// OpenID Connect authentication flows to specify where the authorization server should send the user after
-    /// authentication. Ensure that the value matches the redirect URI registered with the authentication
-    /// provider.</remarks>
+    /// <remarks>
+    ///     The redirect URI must be a valid absolute URI. This property is typically used in OAuth or
+    ///     OpenID Connect authentication flows to specify where the authorization server should send the user after
+    ///     authentication. Ensure that the value matches the redirect URI registered with the authentication
+    ///     provider.
+    /// </remarks>
     [Required]
     [RegularExpression(@"^https?://.+", ErrorMessage = "RedirectUri must be a valid absolute URI starting with http:// or https://")]
     public string RedirectUri { get; set; } = "http://localhost";
 
     /// <summary>
-    /// Gets or sets the URI of the Microsoft Graph endpoint to use for API requests.
+    ///     Gets or sets the URI of the Microsoft Graph endpoint to use for API requests.
     /// </summary>
-    /// <remarks>The default value targets the signed-in user's OneDrive. Set this property to specify a
-    /// different Microsoft Graph resource or version as needed.</remarks>
+    /// <remarks>
+    ///     The default value targets the signed-in user's OneDrive. Set this property to specify a
+    ///     different Microsoft Graph resource or version as needed.
+    /// </remarks>
     [Required]
     public string GraphUri { get; set; } = "https://graph.microsoft.com/v1.0/me/drive";
 
@@ -99,37 +105,39 @@ public partial class ApplicationSettings
         => Path.Combine(FullUserPreferencesDirectory, UserPreferencesFile);
 
     /// <summary>
-    /// Gets the full path to the directory where user preferences are stored for the application.
+    ///     Gets the full path to the directory where user preferences are stored for the application.
     /// </summary>
-    /// <remarks>The returned path is based on the application's name and the current user's profile. The
-    /// directory may not exist until it is created by the application.</remarks>
+    /// <remarks>
+    ///     The returned path is based on the application's name and the current user's profile. The
+    ///     directory may not exist until it is created by the application.
+    /// </remarks>
     [JsonIgnore]
     public static string FullUserPreferencesDirectory
         => Path.Combine(AppPathHelper.GetAppDataPath(ApplicationName));
 
     /// <summary>
-    /// Gets the full file system path to the database, including the directory and file name.
+    ///     Gets the full file system path to the database, including the directory and file name.
     /// </summary>
     [JsonIgnore]
     public string FullDatabasePath
         => Path.Combine(FullDatabaseDirectory, DatabaseName);
 
     /// <summary>
-    /// Gets the full file system path to the application's database directory.
+    ///     Gets the full file system path to the application's database directory.
     /// </summary>
-    /// <remarks>The returned path is constructed by combining the application's data directory with the
-    /// "database" subdirectory. This property is intended for use when accessing or managing files within the
-    /// application's database folder.</remarks>
+    /// <remarks>
+    ///     The returned path is constructed by combining the application's data directory with the
+    ///     "database" subdirectory. This property is intended for use when accessing or managing files within the
+    ///     application's database folder.
+    /// </remarks>
     [JsonIgnore]
     public static string FullDatabaseDirectory
         => Path.Combine(AppPathHelper.GetAppDataPath(ApplicationName), "database");
 
     /// <summary>
-    /// Gets the full file system path to the user's OneDrive synchronization directory.
+    ///     Gets the full file system path to the user's OneDrive synchronization directory.
     /// </summary>
     [JsonIgnore]
     public string FullUserSyncPath
         => Path.Combine(AppPathHelper.GetUserHomeFolder(), OneDriveRootDirectory);
-
-    private static readonly string ApplicationName = "astar-dev-onedrive-client";
 }

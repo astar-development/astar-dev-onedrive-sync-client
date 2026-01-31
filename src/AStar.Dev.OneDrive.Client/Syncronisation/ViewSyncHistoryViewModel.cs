@@ -115,7 +115,8 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach(AccountInfo account in accounts) Accounts.Add(account);
+            foreach(AccountInfo account in accounts)
+                Accounts.Add(account);
         }
         catch
         {
@@ -145,7 +146,8 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
             // Only add PageSize records (exclude the extra one used for hasMore check)
             IEnumerable<FileOperationLog> recordsToShow = HasMoreRecords ? records.Take(PageSize) : records;
-            foreach(FileOperationLog? record in recordsToShow) SyncHistory.Add(record);
+            foreach(FileOperationLog? record in recordsToShow)
+                SyncHistory.Add(record);
 
             this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
@@ -162,7 +164,8 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
     private async Task LoadNextPageAsync()
     {
-        if(!HasMoreRecords || SelectedAccount is null) return;
+        if(!HasMoreRecords || SelectedAccount is null)
+            return;
 
         CurrentPage++;
         await LoadSyncHistoryAsync();
@@ -170,7 +173,8 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
 
     private async Task LoadPreviousPageAsync()
     {
-        if(CurrentPage <= 1 || SelectedAccount is null) return;
+        if(CurrentPage <= 1 || SelectedAccount is null)
+            return;
 
         CurrentPage--;
         await LoadSyncHistoryAsync();

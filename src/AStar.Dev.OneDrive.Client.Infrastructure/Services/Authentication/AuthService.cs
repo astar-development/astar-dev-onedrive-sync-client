@@ -96,7 +96,8 @@ public sealed class AuthService(IAuthenticationClient authClient, AuthConfigurat
             IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
             IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
-            if(account is null) return null;
+            if(account is null)
+                return null;
 
             MsalAuthResult result = await authClient
                 .AcquireTokenSilentAsync(configuration.Scopes, account, cancellationToken);
@@ -155,7 +156,8 @@ public sealed class AuthService(IAuthenticationClient authClient, AuthConfigurat
 
         // Use plaintext storage on Linux due to keyring/libsecret compatibility issues
         // Windows and macOS use platform-specific secure storage (DPAPI and Keychain)
-        if(OperatingSystem.IsLinux()) _ = storagePropertiesBuilder.WithUnprotectedFile();
+        if(OperatingSystem.IsLinux())
+            _ = storagePropertiesBuilder.WithUnprotectedFile();
 
         StorageCreationProperties storageProperties = storagePropertiesBuilder.Build();
         MsalCacheHelper cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);

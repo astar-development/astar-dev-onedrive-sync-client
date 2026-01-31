@@ -192,9 +192,11 @@ public class AccountManagementIntegrationShould : IDisposable
 
     protected virtual void Dispose(bool disposing)
     {
-        if(_disposed) return;
+        if(_disposed)
+            return;
 
-        if(disposing) _dbContext?.Dispose();
+        if(disposing)
+            _dbContext?.Dispose();
 
         _disposed = true;
     }

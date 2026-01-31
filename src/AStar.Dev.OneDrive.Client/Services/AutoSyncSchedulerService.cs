@@ -102,7 +102,8 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
     /// <inheritdoc />
     public void Dispose()
     {
-        if(_isDisposed) return;
+        if(_isDisposed)
+            return;
 
         StopAsync().GetAwaiter().GetResult();
         _isDisposed = true;

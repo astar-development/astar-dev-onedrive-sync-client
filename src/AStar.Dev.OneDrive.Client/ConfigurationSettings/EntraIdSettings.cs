@@ -9,10 +9,10 @@ namespace AStar.Dev.OneDrive.Client.ConfigurationSettings;
 ///     download preferences, caching, paths, and scope definitions.
 /// </summary>
 [AutoRegisterOptions]
-public partial class EntraIdSettings
+public class EntraIdSettings
 {
     /// <summary>
-    ///    The configuration section name for Entra ID settings.
+    ///     The configuration section name for Entra ID settings.
     /// </summary>
     public const string SectionName = "EntraId";
 
@@ -31,7 +31,7 @@ public partial class EntraIdSettings
     public string[] Scopes { get; set; } = [];
 
     /// <summary>
-    /// Gets the URI to which the authentication response will be redirected.
+    ///     Gets the URI to which the authentication response will be redirected.
     /// </summary>
     [Required]
     [RegularExpression(@"^https?://.+", ErrorMessage = "RedirectUri must be a valid URI starting with http:// or https://")]

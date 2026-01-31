@@ -61,7 +61,7 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
 
     /// <inheritdoc />
     public async Task DeleteOldOperationsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default)
-        =>  await _context.FileOperationLogs
+        => await _context.FileOperationLogs
             .Where(f => f.AccountId == accountId && f.Timestamp < olderThan)
             .ExecuteDeleteAsync(cancellationToken);
 

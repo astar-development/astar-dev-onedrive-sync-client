@@ -50,7 +50,6 @@ public class SyncTreeViewModelShould : IDisposable
             0,
             3.5,
             42,
-            null,
             null);
         _progressSubject.OnNext(syncState);
         _viewModel.EstimatedSecondsRemaining.ShouldBe(42);
@@ -72,7 +71,6 @@ public class SyncTreeViewModelShould : IDisposable
             0,
             7.25,
             10,
-            null,
             null);
         _progressSubject.OnNext(syncState);
         _viewModel.MegabytesPerSecond.ShouldBe(7.25);
@@ -125,7 +123,8 @@ public class SyncTreeViewModelShould : IDisposable
         var isLoadingValues = new List<bool>();
         _viewModel.PropertyChanged += (_, args) =>
         {
-            if(args.PropertyName == nameof(SyncTreeViewModel.IsLoading)) isLoadingValues.Add(_viewModel.IsLoading);
+            if(args.PropertyName == nameof(SyncTreeViewModel.IsLoading))
+                isLoadingValues.Add(_viewModel.IsLoading);
         };
 
         _viewModel.SelectedAccountId = "account123";
@@ -265,7 +264,8 @@ public class SyncTreeViewModelShould : IDisposable
         var propertyChangedRaised = false;
         _viewModel.PropertyChanged += (_, args) =>
         {
-            if(args.PropertyName == nameof(SyncTreeViewModel.SelectedAccountId)) propertyChangedRaised = true;
+            if(args.PropertyName == nameof(SyncTreeViewModel.SelectedAccountId))
+                propertyChangedRaised = true;
         };
 
         _viewModel.SelectedAccountId = "newAccount";

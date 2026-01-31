@@ -139,7 +139,8 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach(AccountInfo account in accounts) Accounts.Add(account);
+            foreach(AccountInfo account in accounts)
+                Accounts.Add(account);
         }
         finally
         {
@@ -193,7 +194,8 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task RemoveAccountAsync()
     {
-        if(SelectedAccount is null) return;
+        if(SelectedAccount is null)
+            return;
 
         IsLoading = true;
         try
@@ -210,7 +212,8 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task LoginAsync()
     {
-        if(SelectedAccount is null) return;
+        if(SelectedAccount is null)
+            return;
 
         IsLoading = true;
         try
@@ -269,7 +272,8 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
     private async Task LogoutAsync()
     {
-        if(SelectedAccount is null) return;
+        if(SelectedAccount is null)
+            return;
 
         IsLoading = true;
         try

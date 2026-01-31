@@ -27,13 +27,15 @@ public partial class SyncTreeView : UserControl
             viewModel.RootFolders.CollectionChanged += OnRootFoldersChanged;
 
             // Attach to existing items
-            foreach(OneDriveFolderNode node in viewModel.RootFolders) AttachNodeExpansionHandler(node, viewModel);
+            foreach(OneDriveFolderNode node in viewModel.RootFolders)
+                AttachNodeExpansionHandler(node, viewModel);
         }
     }
 
     private void OnRootFoldersChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        if(DataContext is not SyncTreeViewModel viewModel) return;
+        if(DataContext is not SyncTreeViewModel viewModel)
+            return;
 
         if(e.NewItems != null)
         {

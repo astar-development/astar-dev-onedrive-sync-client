@@ -1,21 +1,21 @@
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
 /// <summary>
-/// Utility methods for processing Microsoft Graph API path strings.
+///     Utility methods for processing Microsoft Graph API path strings.
 /// </summary>
 public static class GraphPathHelpers
 {
     /// <summary>
-    /// Builds a relative file path from a Graph API parent reference path and file name.
+    ///     Builds a relative file path from a Graph API parent reference path and file name.
     /// </summary>
     /// <param name="parentReferencePath">
-    /// The parent path from Graph API response (e.g., "/drive/root:/Folder/SubFolder").
+    ///     The parent path from Graph API response (e.g., "/drive/root:/Folder/SubFolder").
     /// </param>
     /// <param name="name">The file or folder name.</param>
     /// <returns>A relative path combining the parent path and name.</returns>
     /// <remarks>
-    /// Graph API returns parent paths in the format "/drive/root:/path/to/folder".
-    /// This method extracts the portion after "root:/" and combines it with the name.
+    ///     Graph API returns parent paths in the format "/drive/root:/path/to/folder".
+    ///     This method extracts the portion after "root:/" and combines it with the name.
     /// </remarks>
     public static string BuildRelativePath(string parentReferencePath, string name)
     {

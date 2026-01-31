@@ -28,7 +28,8 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
     /// <inheritdoc />
     public void StartWatching(string accountId, string localPath)
     {
-        if(!Directory.Exists(localPath)) throw new DirectoryNotFoundException($"Directory not found: {localPath}");
+        if(!Directory.Exists(localPath))
+            throw new DirectoryNotFoundException($"Directory not found: {localPath}");
 
         if(_watchers.ContainsKey(accountId))
         {
@@ -86,9 +87,11 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
     /// </summary>
     public void Dispose()
     {
-        if(_disposed) return;
+        if(_disposed)
+            return;
 
-        foreach(WatcherContext context in _watchers.Values) context.Dispose();
+        foreach(WatcherContext context in _watchers.Values)
+            context.Dispose();
 
         _watchers.Clear();
         _fileChanges.Dispose();

@@ -3,11 +3,10 @@ using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 
-public sealed class EfSyncRepository(IDbContextFactory<SyncDbContext> dbContextFactory, ILogger<EfSyncRepository> logger) : ISyncRepository
+public sealed class EfSyncRepository(IDbContextFactory<SyncDbContext> dbContextFactory) : ISyncRepository
 {
     public async Task<DeltaToken?> GetDeltaTokenAsync(string accountId, CancellationToken cancellationToken)
     {

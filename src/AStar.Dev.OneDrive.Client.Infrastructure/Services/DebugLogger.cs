@@ -8,9 +8,9 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
 /// <summary>
 ///     Implementation of debug logging that writes to the database when enabled for an account.
-///     Seems the AutoRegisterService still isn't working correctly but, as it doesn't break anything, I am leaving here for now 
+///     Seems the AutoRegisterService still isn't working correctly but, as it doesn't break anything, I am leaving here for now
 /// </summary>
-[AutoRegisterService(ServiceLifetime.Scoped)]
+[AutoRegisterService()]
 public sealed class DebugLogger(SyncDbContext context, IAccountRepository accountRepository) : IDebugLogger
 {
     /// <inheritdoc />
@@ -32,7 +32,8 @@ public sealed class DebugLogger(SyncDbContext context, IAccountRepository accoun
 
         // Check if debug logging is enabled for this account
         AccountInfo? account = await accountRepository.GetByIdAsync(accountId, cancellationToken);
-        if(account is null || !account.EnableDebugLogging) return; // Debug logging not enabled for this account
+        if(account is null || !account.EnableDebugLogging)
+            return; // Debug logging not enabled for this account
 
         var logEntry = new DebugLogEntity
         {

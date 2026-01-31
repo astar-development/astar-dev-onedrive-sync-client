@@ -7,6 +7,7 @@ using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.DebugLogs;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Services;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using AStar.Dev.OneDrive.Client.SyncronisationConflicts;
@@ -14,7 +15,6 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
-using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
 namespace AStar.Dev.OneDrive.Client.MainWindow;
 
@@ -38,8 +38,8 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// <param name="autoSyncCoordinator">The auto-sync coordinator for file watching.</param>
     /// <param name="accountRepository">Repository for account data.</param>
     /// <param name="conflictRepository">Repository for sync conflicts.</param>
-    public MainWindowViewModel(AccountManagementViewModel accountManagementViewModel, SyncTreeViewModel syncTreeViewModel, IServiceProvider serviceProvider, 
-                               IAutoSyncCoordinator autoSyncCoordinator, IAccountRepository accountRepository, ISyncConflictRepository conflictRepository)
+    public MainWindowViewModel(AccountManagementViewModel accountManagementViewModel, SyncTreeViewModel syncTreeViewModel, IServiceProvider serviceProvider,
+        IAutoSyncCoordinator autoSyncCoordinator, IAccountRepository accountRepository, ISyncConflictRepository conflictRepository)
     {
         AccountManagement = accountManagementViewModel;
         SyncTree = syncTreeViewModel;
@@ -58,12 +58,13 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
         _ = DebugLog.EntryAsync(DebugLogMetadata.UI.MainWindowViewModel.Constructor, CancellationToken.None);
     }
-    
+
     public SyncProgressViewModel? SyncProgress
     {
         get;
         private set => this.RaiseAndSetIfChanged(ref field, value);
     }
+
     public ConflictResolutionViewModel? ConflictResolution
     {
         get;
@@ -71,9 +72,9 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     }
 
     public bool ShowSyncProgress => SyncProgress is not null && ConflictResolution is null;
-    
+
     public bool ShowConflictResolution => ConflictResolution is not null;
-    
+
     public bool HasUnresolvedConflicts
     {
         get;
@@ -81,17 +82,17 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     }
 
     public AccountManagementViewModel AccountManagement { get; }
-    
+
     public SyncTreeViewModel SyncTree { get; }
-    
+
     public ReactiveCommand<Unit, Unit> OpenUpdateAccountDetailsCommand { get; }
-    
+
     public ReactiveCommand<Unit, Unit> CloseApplicationCommand { get; }
-    
+
     public ReactiveCommand<Unit, Unit> OpenViewSyncHistoryCommand { get; }
-    
+
     public ReactiveCommand<Unit, Unit> OpenDebugLogViewerCommand { get; }
-    
+
     public ReactiveCommand<Unit, Unit> ViewConflictsCommand { get; }
 
     private void ShowConflictResolutionView(string accountId)
@@ -130,10 +131,23 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         this.RaisePropertyChanged(nameof(ShowConflictResolution));
 
         // Refresh conflict count after resolving conflicts
-        if(SyncProgress is not null) await SyncProgress.RefreshConflictCountAsync();
+        if(SyncProgress is not null)
+            await SyncProgress.RefreshConflictCountAsync();
 
         // Update main window conflict status
-        if(AccountManagement.SelectedAccount is not null) await UpdateConflictStatusAsync(AccountManagement.SelectedAccount.AccountId);
+        if(AccountManagement.SelectedAccount is not null)
+            await UpdateConflictStatusAsync(AccountManagement.SelectedAccount.AccountId);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        _disposables.Dispose();
+        _autoSyncCoordinator.Dispose();
+        ConflictResolution?.Dispose();
+        SyncProgress?.Dispose();
+        AccountManagement.Dispose();
+        SyncTree.Dispose();
     }
 
     private async Task UpdateConflictStatusAsync(string accountId)
@@ -147,7 +161,8 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     /// </summary>
     private void ViewConflicts()
     {
-        if(AccountManagement.SelectedAccount is not null) ShowConflictResolutionView(AccountManagement.SelectedAccount.AccountId);
+        if(AccountManagement.SelectedAccount is not null)
+            ShowConflictResolutionView(AccountManagement.SelectedAccount.AccountId);
     }
 
     /// <summary>
@@ -199,10 +214,10 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     private void WireUpTheAccountManagentViewModel(AccountManagementViewModel accountManagementViewModel, SyncTreeViewModel syncTreeViewModel)
     {
         _ = accountManagementViewModel
-                    .WhenAnyValue(x => x.SelectedAccount)
-                    .Select(account => account?.AccountId)
-                    .BindTo(syncTreeViewModel, x => x.SelectedAccountId)
-                    .DisposeWith(_disposables);
+            .WhenAnyValue(x => x.SelectedAccount)
+            .Select(account => account?.AccountId)
+            .BindTo(syncTreeViewModel, x => x.SelectedAccountId)
+            .DisposeWith(_disposables);
 
         // Wire up: Check for unresolved conflicts when account selection changes
         _ = accountManagementViewModel
@@ -220,44 +235,44 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     private void WireUpTheSyncTreeViewModel(SyncTreeViewModel syncTreeViewModel)
     {
         _ = syncTreeViewModel
-                    .WhenAnyValue(x => x.IsSyncProgressOpen, x => x.SelectedAccountId)
-                    .Where(tuple => tuple.Item1 && !string.IsNullOrEmpty(tuple.Item2))
-                    .Subscribe(tuple =>
-                    {
-                        (var isOpen, var accountId) = tuple;
-                        if(SyncProgress is null || SyncProgress.AccountId != accountId)
-                        {
-                            SyncProgress?.Dispose();
-                            SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
+            .WhenAnyValue(x => x.IsSyncProgressOpen, x => x.SelectedAccountId)
+            .Where(tuple => tuple.Item1 && !string.IsNullOrEmpty(tuple.Item2))
+            .Subscribe(tuple =>
+            {
+                var (isOpen, accountId) = tuple;
+                if(SyncProgress is null || SyncProgress.AccountId != accountId)
+                {
+                    SyncProgress?.Dispose();
+                    SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
                         _serviceProvider,
                         accountId!);
 
-                            _ = syncProgressVm.ViewConflictsCommand
-                                .Subscribe(_ => ShowConflictResolutionView(accountId!))
-                                .DisposeWith(_disposables);
+                    _ = syncProgressVm.ViewConflictsCommand
+                        .Subscribe(_ => ShowConflictResolutionView(accountId!))
+                        .DisposeWith(_disposables);
 
-                            _ = syncProgressVm.CloseCommand
-                                .Subscribe(_ => CloseSyncProgressView())
-                                .DisposeWith(_disposables);
+                    _ = syncProgressVm.CloseCommand
+                        .Subscribe(_ => CloseSyncProgressView())
+                        .DisposeWith(_disposables);
 
-                            _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
-                                .Where(progress => progress is not null &&
-                                                   progress.Status == SyncStatus.Completed &&
-                                                   progress.ConflictsDetected == 0)
-                                .Delay(TimeSpan.FromSeconds(2))
-                                .ObserveOn(RxApp.MainThreadScheduler)
-                                .Subscribe(_ => CloseSyncProgressView())
-                                .DisposeWith(_disposables);
+                    _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
+                        .Where(progress => progress is not null &&
+                                           progress.Status == SyncStatus.Completed &&
+                                           progress.ConflictsDetected == 0)
+                        .Delay(TimeSpan.FromSeconds(2))
+                        .ObserveOn(RxApp.MainThreadScheduler)
+                        .Subscribe(_ => CloseSyncProgressView())
+                        .DisposeWith(_disposables);
 
-                            _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
-                                .Where(progress => progress is not null && progress.Status == SyncStatus.Completed)
-                                .Subscribe(async _ => await UpdateConflictStatusAsync(accountId!))
-                                .DisposeWith(_disposables);
+                    _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
+                        .Where(progress => progress is not null && progress.Status == SyncStatus.Completed)
+                        .Subscribe(async _ => await UpdateConflictStatusAsync(accountId!))
+                        .DisposeWith(_disposables);
 
-                            SyncProgress = syncProgressVm;
-                        }
-                    })
-                    .DisposeWith(_disposables);
+                    SyncProgress = syncProgressVm;
+                }
+            })
+            .DisposeWith(_disposables);
 
         // Wire up: When sync completes successfully, start auto-sync monitoring
         _ = syncTreeViewModel
@@ -340,17 +355,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
     private void CloseApplication()
     {
-        if(Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) desktop.Shutdown();
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        _disposables.Dispose();
-        _autoSyncCoordinator.Dispose();
-        ConflictResolution?.Dispose();
-        SyncProgress?.Dispose();
-        AccountManagement.Dispose();
-        SyncTree.Dispose();
+        if(Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            desktop.Shutdown();
     }
 }

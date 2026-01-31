@@ -270,7 +270,8 @@ public class SyncProgressViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if(e.PropertyName == nameof(SyncProgressViewModel.IsSyncing)) isSyncingValues.Add(viewModel.IsSyncing);
+            if(e.PropertyName == nameof(SyncProgressViewModel.IsSyncing))
+                isSyncingValues.Add(viewModel.IsSyncing);
         };
 
         _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -426,7 +427,8 @@ public class SyncProgressViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if(e.PropertyName is not null) changedProperties.Add(e.PropertyName);
+            if(e.PropertyName is not null)
+                changedProperties.Add(e.PropertyName);
         };
 
         var progress = new SyncState(

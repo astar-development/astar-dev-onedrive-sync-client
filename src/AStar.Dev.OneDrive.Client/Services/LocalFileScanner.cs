@@ -28,7 +28,8 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
 
         await DebugLog.EntryAsync("LocalFileScanner.ScanFolderAsync", cancellationToken);
 
-        if(!fileSystem.Directory.Exists(localFolderPath)) return [];
+        if(!fileSystem.Directory.Exists(localFolderPath))
+            return [];
 
         await DebugLog.InfoAsync("LocalFileScanner.ScanFolderAsync", $"Scanning folder: {localFolderPath}", cancellationToken);
         var fileMetadataList = new List<FileMetadata>();
@@ -65,7 +66,8 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
                 try
                 {
                     IFileInfo fileInfo = fileSystem.FileInfo.New(filePath);
-                    if(!fileInfo.Exists) continue;
+                    if(!fileInfo.Exists)
+                        continue;
 
                     var relativePath = GetRelativePath(currentLocalPath, filePath);
                     var oneDrivePath = CombinePaths(currentOneDrivePath, relativePath);
@@ -141,9 +143,11 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
         basePath = basePath.Replace('\\', '/');
         relativePath = relativePath.Replace('\\', '/');
 
-        if(!basePath.EndsWith('/')) basePath += '/';
+        if(!basePath.EndsWith('/'))
+            basePath += '/';
 
-        if(relativePath.StartsWith('/')) relativePath = relativePath[1..];
+        if(relativePath.StartsWith('/'))
+            relativePath = relativePath[1..];
 
         return basePath + relativePath;
     }

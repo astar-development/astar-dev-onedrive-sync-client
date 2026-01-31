@@ -197,8 +197,8 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     }
 
     private static List<OneDriveFolderNode> CreateTestFolders()
-
-        => [
+        =>
+        [
             CreateFolder("1", "Folder1", "/Folder1"),
             CreateFolder("2", "Folder2", "/Folder2"),
             CreateFolder("3", "Folder3", "/Folder3")

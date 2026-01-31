@@ -7,7 +7,7 @@ public static partial class AStarEventIds
     /// <summary>
     ///     Contains the <see cref="EventId" /> events for website-related logging.
     /// </summary>
-    public static partial class Website
+    public static class Website
     {
         /// <summary>
         ///     Gets the <see cref="EventId" /> preconfigured for logging a page view

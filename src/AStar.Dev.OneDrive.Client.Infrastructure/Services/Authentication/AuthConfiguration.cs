@@ -35,7 +35,8 @@ public sealed class AuthConfiguration
     public static AuthConfiguration LoadFromConfiguration(IConfiguration configuration)
     {
         IConfigurationSection authSection = configuration.GetSection("Authentication");
-        if(!authSection.Exists()) throw new InvalidOperationException("Authentication configuration section not found. Ensure appsettings.json contains an 'Authentication' section.");
+        if(!authSection.Exists())
+            throw new InvalidOperationException("Authentication configuration section not found. Ensure appsettings.json contains an 'Authentication' section.");
 
         var clientId = authSection["ClientId"];
         return string.IsNullOrWhiteSpace(clientId)

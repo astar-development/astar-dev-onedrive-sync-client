@@ -8,10 +8,10 @@ public interface ISyncRepository
     Task<DeltaToken?> GetDeltaTokenAsync(string accountId, CancellationToken cancellationToken);
 
     Task SaveOrUpdateDeltaTokenAsync(DeltaToken token, CancellationToken cancellationToken);
-    
+
     /// <summary>
-    /// Apply a page of DriveItem metadata to the local DB.
-    /// Implementations should use a transaction and batch writes.
+    ///     Apply a page of DriveItem metadata to the local DB.
+    ///     Implementations should use a transaction and batch writes.
     /// </summary>
     Task ApplyDriveItemsAsync(string accountId, IEnumerable<DriveItemRecord> items, CancellationToken cancellationToken);
 }

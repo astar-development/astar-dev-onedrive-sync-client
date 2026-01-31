@@ -62,7 +62,8 @@ public sealed class ConflictResolver(
                 break;
 
             case ConflictResolutionStrategy.None:
-                if(_logger.IsEnabled(LogLevel.Information)) _logger.LogInformation("Skipping conflict resolution for {FilePath}", conflict.FilePath);
+                if(_logger.IsEnabled(LogLevel.Information))
+                    _logger.LogInformation("Skipping conflict resolution for {FilePath}", conflict.FilePath);
 
                 return;
             case ConflictResolutionStrategy.KeepNewer:
@@ -90,9 +91,11 @@ public sealed class ConflictResolver(
         string localPath,
         CancellationToken cancellationToken)
     {
-        if(_logger.IsEnabled(LogLevel.Information)) _logger.LogInformation("Keeping local version of {FilePath}", conflict.FilePath);
+        if(_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Keeping local version of {FilePath}", conflict.FilePath);
 
-        if(!File.Exists(localPath)) throw new FileNotFoundException($"Local file not found: {localPath}");
+        if(!File.Exists(localPath))
+            throw new FileNotFoundException($"Local file not found: {localPath}");
 
         // Get file metadata to retrieve OneDrive file ID
         FileMetadata metadata = await _metadataRepo.GetByPathAsync(
@@ -123,7 +126,8 @@ public sealed class ConflictResolver(
         string localPath,
         CancellationToken cancellationToken)
     {
-        if(_logger.IsEnabled(LogLevel.Information)) _logger.LogInformation("Keeping remote version of {FilePath}", conflict.FilePath);
+        if(_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Keeping remote version of {FilePath}", conflict.FilePath);
 
         // Get file metadata to retrieve OneDrive file ID
         FileMetadata metadata = await _metadataRepo.GetByPathAsync(
@@ -135,7 +139,8 @@ public sealed class ConflictResolver(
 
         // Download remote file from OneDrive (overwrite local)
         var localDirectory = Path.GetDirectoryName(localPath);
-        if(!string.IsNullOrEmpty(localDirectory)) _ = Directory.CreateDirectory(localDirectory);
+        if(!string.IsNullOrEmpty(localDirectory))
+            _ = Directory.CreateDirectory(localDirectory);
 
         await _graphApiClient.DownloadFileAsync(
             account.AccountId,
@@ -173,9 +178,11 @@ public sealed class ConflictResolver(
         string localPath,
         CancellationToken cancellationToken)
     {
-        if(_logger.IsEnabled(LogLevel.Information)) _logger.LogInformation("Keeping both versions of {FilePath}", conflict.FilePath);
+        if(_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Keeping both versions of {FilePath}", conflict.FilePath);
 
-        if(!File.Exists(localPath)) throw new FileNotFoundException($"Local file not found: {localPath}");
+        if(!File.Exists(localPath))
+            throw new FileNotFoundException($"Local file not found: {localPath}");
 
         // Get file metadata to retrieve OneDrive file ID
         FileMetadata metadata = await _metadataRepo.GetByPathAsync(
@@ -195,11 +202,13 @@ public sealed class ConflictResolver(
 
         File.Move(localPath, conflictPath);
 
-        if(_logger.IsEnabled(LogLevel.Information)) _logger.LogInformation("Renamed local file to {ConflictPath}", conflictPath);
+        if(_logger.IsEnabled(LogLevel.Information))
+            _logger.LogInformation("Renamed local file to {ConflictPath}", conflictPath);
 
         // Download remote version to original path
         var localDirectory = Path.GetDirectoryName(localPath);
-        if(!string.IsNullOrEmpty(localDirectory)) _ = Directory.CreateDirectory(localDirectory);
+        if(!string.IsNullOrEmpty(localDirectory))
+            _ = Directory.CreateDirectory(localDirectory);
 
         await _graphApiClient.DownloadFileAsync(
             account.AccountId,
@@ -212,7 +221,8 @@ public sealed class ConflictResolver(
                                throw new InvalidOperationException($"Failed to retrieve metadata for remote file {fileId}");
 
         // Set local file timestamp to match OneDrive's timestamp
-        if(remoteItem.LastModifiedDateTime.HasValue) File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
+        if(remoteItem.LastModifiedDateTime.HasValue)
+            File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
 
         // Compute hash of downloaded file
         var downloadedHash = await _localFileScanner.ComputeFileHashAsync(localPath, cancellationToken);

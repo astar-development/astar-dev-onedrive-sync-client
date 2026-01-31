@@ -142,7 +142,8 @@ public sealed class DebugLogViewModel : ReactiveObject
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
             Accounts.Clear();
-            foreach(AccountInfo account in accounts) Accounts.Add(account);
+            foreach(AccountInfo account in accounts)
+                Accounts.Add(account);
         }
         catch(Exception)
         {
@@ -152,7 +153,8 @@ public sealed class DebugLogViewModel : ReactiveObject
 
     private async Task LoadDebugLogsAsync()
     {
-        if(SelectedAccount is null) return;
+        if(SelectedAccount is null)
+            return;
 
         IsLoading = true;
         try
@@ -174,7 +176,8 @@ public sealed class DebugLogViewModel : ReactiveObject
 
             // Only show PageSize records
             IEnumerable<DebugLogEntry> logsToDisplay = logs.Take(_pageSize);
-            foreach(DebugLogEntry? log in logsToDisplay) DebugLogs.Add(log);
+            foreach(DebugLogEntry? log in logsToDisplay)
+                DebugLogs.Add(log);
 
             // Update total count estimate based on current position
             if(HasMoreRecords)
@@ -204,7 +207,8 @@ public sealed class DebugLogViewModel : ReactiveObject
 
     private async Task LoadNextPageAsync()
     {
-        if(!HasMoreRecords || SelectedAccount is null) return;
+        if(!HasMoreRecords || SelectedAccount is null)
+            return;
 
         CurrentPage++;
         await LoadDebugLogsAsync();
@@ -212,7 +216,8 @@ public sealed class DebugLogViewModel : ReactiveObject
 
     private async Task LoadPreviousPageAsync()
     {
-        if(CurrentPage <= 1 || SelectedAccount is null) return;
+        if(CurrentPage <= 1 || SelectedAccount is null)
+            return;
 
         CurrentPage--;
         await LoadDebugLogsAsync();
@@ -220,7 +225,8 @@ public sealed class DebugLogViewModel : ReactiveObject
 
     private async Task ClearLogsAsync()
     {
-        if(SelectedAccount is null) return;
+        if(SelectedAccount is null)
+            return;
 
         IsLoading = true;
         try

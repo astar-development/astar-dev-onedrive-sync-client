@@ -40,7 +40,8 @@ public class OneDriveFolderNodeShould
         var propertyChangedRaised = false;
         node.PropertyChanged += (_, args) =>
         {
-            if(args.PropertyName == nameof(OneDriveFolderNode.SelectionState)) propertyChangedRaised = true;
+            if(args.PropertyName == nameof(OneDriveFolderNode.SelectionState))
+                propertyChangedRaised = true;
         };
 
         node.SelectionState = SelectionState.Checked;
@@ -56,7 +57,8 @@ public class OneDriveFolderNodeShould
         var propertyChangedCount = 0;
         node.PropertyChanged += (_, args) =>
         {
-            if(args.PropertyName == nameof(OneDriveFolderNode.SelectionState)) propertyChangedCount++;
+            if(args.PropertyName == nameof(OneDriveFolderNode.SelectionState))
+                propertyChangedCount++;
         };
 
         node.SelectionState = SelectionState.Checked;
@@ -71,7 +73,8 @@ public class OneDriveFolderNodeShould
         var propertyChangedRaised = false;
         node.PropertyChanged += (_, args) =>
         {
-            if(args.PropertyName == nameof(OneDriveFolderNode.IsSelected)) propertyChangedRaised = true;
+            if(args.PropertyName == nameof(OneDriveFolderNode.IsSelected))
+                propertyChangedRaised = true;
         };
 
         node.IsSelected = true;
@@ -87,7 +90,8 @@ public class OneDriveFolderNodeShould
         var propertyChangedCount = 0;
         node.PropertyChanged += (_, args) =>
         {
-            if(args.PropertyName == nameof(OneDriveFolderNode.IsSelected)) propertyChangedCount++;
+            if(args.PropertyName == nameof(OneDriveFolderNode.IsSelected))
+                propertyChangedCount++;
         };
 
         node.IsSelected = true;

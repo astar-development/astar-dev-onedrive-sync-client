@@ -161,7 +161,8 @@ public sealed class ConflictResolverShould
         }
         finally
         {
-            if(File.Exists(localPath)) File.Delete(localPath);
+            if(File.Exists(localPath))
+                File.Delete(localPath);
 
             Directory.Delete(account.LocalSyncPath, true);
         }

@@ -253,10 +253,10 @@ public class SyncEngineShould
         (SyncEngine? engine, TestMocks? mocks) = CreateTestEngine();
         FileMetadata[] files =
         [
-            new FileMetadata("", "acc1", "file1.txt", "/Documents/file1.txt", 1000,
+            new("", "acc1", "file1.txt", "/Documents/file1.txt", 1000,
                 DateTime.UtcNow, @"C:\Sync\Documents\file1.txt", null, null, "hash1",
                 FileSyncStatus.PendingUpload, null),
-            new FileMetadata("", "acc1", "file2.txt", "/Documents/file2.txt", 2000,
+            new("", "acc1", "file2.txt", "/Documents/file2.txt", 2000,
                 DateTime.UtcNow, @"C:\Sync\Documents\file2.txt", null, null, "hash2",
                 FileSyncStatus.PendingUpload, null)
         ];
@@ -819,14 +819,14 @@ public class SyncEngineShould
 
         FileMetadata[] filesToUpload =
         [
-            new FileMetadata("", "acc1", "new1.txt", "/Docs/new1.txt", 100, DateTime.UtcNow, @"C:\Sync\Docs\new1.txt", null, null, "hash1", FileSyncStatus.PendingUpload, null),
-            new FileMetadata("", "acc1", "new2.txt", "/Docs/new2.txt", 200, DateTime.UtcNow, @"C:\Sync\Docs\new2.txt", null, null, "hash2", FileSyncStatus.PendingUpload, null)
+            new("", "acc1", "new1.txt", "/Docs/new1.txt", 100, DateTime.UtcNow, @"C:\Sync\Docs\new1.txt", null, null, "hash1", FileSyncStatus.PendingUpload, null),
+            new("", "acc1", "new2.txt", "/Docs/new2.txt", 200, DateTime.UtcNow, @"C:\Sync\Docs\new2.txt", null, null, "hash2", FileSyncStatus.PendingUpload, null)
         ];
 
         FileMetadata[] filesToDownload =
         [
-            new FileMetadata("rem1", "acc1", "remote1.txt", "/Docs/remote1.txt", 150, DateTime.UtcNow, "", "ctag1", "etag1", null, FileSyncStatus.PendingDownload, SyncDirection.Download),
-            new FileMetadata("rem2", "acc1", "remote2.txt", "/Docs/remote2.txt", 250, DateTime.UtcNow, "", "ctag2", "etag2", null, FileSyncStatus.PendingDownload, SyncDirection.Download)
+            new("rem1", "acc1", "remote1.txt", "/Docs/remote1.txt", 150, DateTime.UtcNow, "", "ctag1", "etag1", null, FileSyncStatus.PendingDownload, SyncDirection.Download),
+            new("rem2", "acc1", "remote2.txt", "/Docs/remote2.txt", 250, DateTime.UtcNow, "", "ctag2", "etag2", null, FileSyncStatus.PendingDownload, SyncDirection.Download)
         ];
 
         _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
@@ -944,7 +944,8 @@ public class SyncEngineShould
         ISyncSessionLogRepository syncSessionLogRepo = Substitute.For<ISyncSessionLogRepository>();
         IFileOperationLogRepository fileOperationLogRepo = Substitute.For<IFileOperationLogRepository>();
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, null!, null!);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, null!,
+            null!);
         var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo);
 
         return (engine, mocks);

@@ -201,7 +201,8 @@ public class ConflictResolutionViewModelShould
 
         viewModel.PropertyChanged += (_, e) =>
         {
-            if(e.PropertyName == nameof(ConflictResolutionViewModel.IsResolving)) isResolvingValues.Add(viewModel.IsResolving);
+            if(e.PropertyName == nameof(ConflictResolutionViewModel.IsResolving))
+                isResolvingValues.Add(viewModel.IsResolving);
         };
 
         _ = conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())
