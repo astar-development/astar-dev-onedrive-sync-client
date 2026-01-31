@@ -13,11 +13,6 @@ namespace AStar.Dev.OneDrive.Client;
 /// </summary>
 public sealed class App : Application
 {
-    /// <summary>
-    ///     Gets the service provider for dependency injection.
-    /// </summary>
-    public static IServiceProvider? Services { get; private set; }
-    
     public static IHost Host { get; private set; } = null!;
     
     /// <inheritdoc />
@@ -27,13 +22,13 @@ public sealed class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         Host = AppHost.BuildHost();
-        Services = Host.Services;
+        IServiceProvider services = Host.Services;
 
         _ = Host.StartAsync();
-        AppHost.EnsureDatabaseUpdated(Services!);
+        AppHost.EnsureDatabaseUpdated(services);
 
         // Start auto-sync scheduler
-        IAutoSyncSchedulerService scheduler = Services!.GetRequiredService<IAutoSyncSchedulerService>();
+        IAutoSyncSchedulerService scheduler = services.GetRequiredService<IAutoSyncSchedulerService>();
         _ = scheduler.StartAsync();
 
         if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
