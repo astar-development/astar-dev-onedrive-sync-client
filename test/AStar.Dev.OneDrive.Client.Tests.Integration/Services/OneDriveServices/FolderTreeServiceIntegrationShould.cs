@@ -1,7 +1,7 @@
+using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
-using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Services.OneDriveServices;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions;

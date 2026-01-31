@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using Shouldly;
-using Xunit;
 
-namespace AStar.Dev.OneDrive.Client.Tests.Infrastructure.Repositories;
+namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Repositories;
 
 public class FolderSelectionExtensionsTests
 {

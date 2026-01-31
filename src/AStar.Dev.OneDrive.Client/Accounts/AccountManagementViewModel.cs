@@ -159,7 +159,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if(result.Success && result.AccountId is not null && result.DisplayName is not null)
+            if(result is { Success: true, AccountId: not null, DisplayName: not null })
             {
                 // Create new account with default sync path
                 var defaultPath = Path.Combine(
@@ -184,7 +184,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                 Accounts.Add(newAccount);
                 SelectedAccount = newAccount;
             }
-            else if(!result.Success && result.ErrorMessage is not null)
+            else if(result is { Success: false, ErrorMessage: not null })
             {
                 _ = ShowToastAsync(result.ErrorMessage);
             }
@@ -239,7 +239,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                     SelectedAccount = updatedAccount;
                 }
             }
-            else if(!result.Success && result.ErrorMessage is not null)
+            else if(result is { Success: false, ErrorMessage: not null })
             {
                 _ = ShowToastAsync(result.ErrorMessage);
             }

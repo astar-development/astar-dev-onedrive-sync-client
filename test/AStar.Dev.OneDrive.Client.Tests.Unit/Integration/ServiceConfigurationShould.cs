@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using AStar.Dev.OneDrive.Client.Services;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
+
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Integration;

@@ -5,8 +5,8 @@
              xmlns:syncronisation="using:AStar.Dev.OneDrive.Client.Syncronisation"
              xmlns:vm="using:AStar.Dev.OneDrive.Client.MainWindow"
              xmlns:vmSync="using:AStar.Dev.OneDrive.Client.Syncronisation"
-             xmlns:models="using:AStar.Dev.OneDrive.Client.Models"
              xmlns:converters="using:AStar.Dev.OneDrive.Client.Converters"
+             xmlns:models1="clr-namespace:AStar.Dev.OneDrive.Client.Core.Models;assembly=AStar.Dev.OneDrive.Client.Core"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="AStar.Dev.OneDrive.Client.Syncronisation.SyncTreeView"
              x:DataType="syncronisation:SyncTreeViewModel">
@@ -73,13 +73,13 @@
                         Margin="8">
                     <TreeView.Styles>
                         <!-- Bind IsExpanded and handle expansion -->
-                        <Style Selector="TreeViewItem" x:DataType="models:OneDriveFolderNode">
+                        <Style Selector="TreeViewItem" x:DataType="models1:OneDriveFolderNode">
                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
                         </Style>
                     </TreeView.Styles>
 
                     <TreeView.ItemTemplate>
-                        <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:OneDriveFolderNode">
+                        <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models1:OneDriveFolderNode">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <!-- Tri-state CheckBox -->
                                 <CheckBox IsChecked="{Binding IsSelected}"

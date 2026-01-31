@@ -1,5 +1,5 @@
-using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Services;
+using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -57,7 +57,7 @@ public sealed partial class MainWindow : Window
                 {
                     WindowState = WindowState.Maximized;
                 }
-                else if(preferences.X.HasValue && preferences.Y.HasValue)
+                else if(preferences is { X: not null, Y: not null })
                 {
                     Position = new PixelPoint((int)preferences.X.Value, (int)preferences.Y.Value);
                     Width = preferences.Width;

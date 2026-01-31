@@ -9,7 +9,6 @@ using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.DebugLogs;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
-using AStar.Dev.OneDrive.Client.Services;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using AStar.Dev.OneDrive.Client.SyncronisationConflicts;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -185,7 +184,10 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new UpdateAccountDetailsWindow();
 
-        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+           {
+               MainWindow: not null
+           } desktop)
             _ = window.ShowDialog(desktop.MainWindow);
     }
 
@@ -196,7 +198,10 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new ViewSyncHistoryWindow();
 
-        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+           {
+               MainWindow: not null
+           } desktop)
             _ = window.ShowDialog(desktop.MainWindow);
     }
 
@@ -207,7 +212,10 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         var window = new DebugLogWindow();
 
-        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop && desktop.MainWindow is not null)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+           {
+               MainWindow: not null
+           } desktop)
             _ = window.ShowDialog(desktop.MainWindow);
     }
 
@@ -257,8 +265,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
                     _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
                         .Where(progress => progress is not null &&
-                                           progress.Status == SyncStatus.Completed &&
-                                           progress.ConflictsDetected == 0)
+                                           progress is { Status: SyncStatus.Completed, ConflictsDetected: 0 })
                         .Delay(TimeSpan.FromSeconds(2))
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(_ => CloseSyncProgressView())
@@ -325,8 +332,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                         // Note: Do NOT auto-close on Failed status - user needs to see error details
                         _ = syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
                             .Where(progress => progress is not null &&
-                                               progress.Status == SyncStatus.Completed &&
-                                               progress.ConflictsDetected == 0)
+                                               progress is { Status: SyncStatus.Completed, ConflictsDetected: 0 })
                             .Delay(TimeSpan.FromSeconds(2)) // Show completion message briefly
                             .ObserveOn(RxApp.MainThreadScheduler)
                             .Subscribe(_ => CloseSyncProgressView())
