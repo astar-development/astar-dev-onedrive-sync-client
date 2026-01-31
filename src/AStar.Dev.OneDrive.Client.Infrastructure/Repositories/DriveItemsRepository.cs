@@ -48,7 +48,7 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         DriveItemEntity driveItem = MapToEntity(fileMetadata);
-        if(context.DriveItems.Any(driveItem => driveItem.DriveItemId == driveItem.DriveItemId))
+        if(context.DriveItems.Any(driveItem => driveItem.DriveItemId == fileMetadata.DriveItemId))
         {
             await UpdateAsync(fileMetadata, cancellationToken);
             return;

@@ -3,12 +3,13 @@ using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
+using AStar.Dev.OneDrive.Client.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;
 
 #pragma warning disable CA1848 // Use LoggerMessage delegates - Using IsEnabled checks for performance
 
-namespace AStar.Dev.OneDrive.Client.Services.Sync;
+namespace AStar.Dev.OneDrive.Client.SyncronisationConflicts;
 
 /// <summary>
 ///     Implements conflict resolution strategies for sync conflicts.

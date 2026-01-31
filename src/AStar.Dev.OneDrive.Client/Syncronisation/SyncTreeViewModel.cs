@@ -356,7 +356,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         }
     }
 
-    private async Task StartSyncAsync()
+    private async Task StartSyncAsync(CancellationToken cancellationToken = default)
     {
         await DebugLog.EntryAsync(DebugLogMetadata.UI.SyncTreeViewModel.StartSync, SelectedAccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
         if(string.IsNullOrEmpty(SelectedAccountId))
@@ -374,6 +374,8 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 LastSyncResult = totalChanges == 0 ? "✓ Sync complete: No changes detected" :
                     totalChanges > 1 ? $"✓ Sync complete: {totalChanges} change(s) synchronized" : $"✓ Sync complete: {totalChanges} change synchronized";
             }
+
+            await LoadFoldersAsync(cancellationToken);
         }
         catch(OperationCanceledException)
         {

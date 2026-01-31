@@ -12,7 +12,6 @@ using AStar.Dev.OneDrive.Client.MainWindow;
 using AStar.Dev.OneDrive.Client.Services;
 using AStar.Dev.OneDrive.Client.Services.ConfigurationSettings;
 using AStar.Dev.OneDrive.Client.Services.OneDriveServices;
-using AStar.Dev.OneDrive.Client.Services.Sync;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using AStar.Dev.OneDrive.Client.SyncronisationConflicts;
 using AStar.Dev.Source.Generators.OptionsBindingGeneration;

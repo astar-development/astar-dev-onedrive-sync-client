@@ -95,6 +95,13 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         {
             ResetTrackingDetails();
 
+            AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
+            if(account is null)
+            {
+                ReportProgress(accountId, SyncStatus.Failed);
+                return;
+            }
+
             DeltaToken? token = await _syncRepository.GetDeltaTokenAsync(accountId, cancellationToken);
 
             (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) = await _deltaPageProcessor.ProcessAllDeltaPagesAsync(accountId, token ?? new(accountId, "", "", DateTimeOffset.UtcNow), _progressSubject.OnNext, cancellationToken);
@@ -102,19 +109,12 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
             await DebugLog.EntryAsync("SyncEngine.StartSyncAsync", accountId, cancellationToken);
 
-            IReadOnlyList<DriveItemEntity> selectedItems = await _syncConfigurationRepository.GetSelectedItemsByAccountIdAsync(accountId, cancellationToken);
+            IReadOnlyList<DriveItemEntity> folders = await _syncConfigurationRepository.GetSelectedItemsByAccountIdAsync(accountId, cancellationToken);
 
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Starting sync with {selectedItems.Count} selected folders: {string.Join(", ", selectedItems)}", cancellationToken);
-            if(selectedItems.Count == 0)
+            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Starting sync with {folders.Count} selected folders: {string.Join(", ", folders)}", cancellationToken);
+            if(folders.Count == 0)
             {
                 ReportProgress(accountId, SyncStatus.Idle);
-                return;
-            }
-
-            AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
-            if(account is null)
-            {
-                ReportProgress(accountId, SyncStatus.Failed);
                 return;
             }
 
@@ -129,8 +129,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 _currentSessionId = null;
             }
 
-            List<FileMetadata> allLocalFiles = await GetAllLocalFiles(accountId, selectedItems, account);
-            var existingFilesDict = selectedItems.ToDictionary(f => f.RelativePath ?? "", f => f);
+            List<FileMetadata> allLocalFiles = await GetAllLocalFiles(accountId, folders, account);
+            var existingFilesDict = folders.ToDictionary(f => f.RelativePath ?? "", f => f);
 
             var localFilesDict = allLocalFiles.ToDictionary(f => f.RelativePath ?? "", f => f);
 
@@ -182,7 +182,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                             filesToUpload.Add(localFile);
                     }
                 }
-                else if(selectedItems.FirstOrDefault(f => f.RelativePath == localFile.RelativePath) is null)
+                else if(folders.FirstOrDefault(f => f.RelativePath == localFile.RelativePath) is null)
                 {
                     await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"New local file to upload: {localFile.Name}", cancellationToken);
                     filesToUpload.Add(localFile);
@@ -190,12 +190,12 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             }
 
             var filesToDownload = new List<FileMetadata>();
-            var remotePathsSet = selectedItems.Select(f => f.RelativePath).ToHashSet();
+            var remotePathsSet = folders.Select(f => f.RelativePath).ToHashSet();
             var conflictCount = 0;
             var conflictPaths = new HashSet<string>();
             var filesToRecordWithoutTransfer = new List<FileMetadata>();
 
-            foreach(DriveItemEntity remoteFile in selectedItems)
+            foreach(DriveItemEntity remoteFile in folders)
             {
                 if(existingFilesDict.TryGetValue(remoteFile.RelativePath ?? "", out DriveItemEntity? existingFile))
                 {
@@ -244,7 +244,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                                 var operationLog = FileOperationLog.CreateSyncConflictLog(_currentSessionId, accountId, remoteFile.RelativePath ?? "", localFileFromDict.LocalPath, remoteFile.DriveItemId,
                                     localFileFromDict.LocalHash, localFileFromDict.Size, localFileFromDict.LastModifiedUtc, remoteFile.LastModifiedUtc);
                                 await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
-                                await _driveItemsRepository.SaveBatchAsync([localFileFromDict with { SyncStatus = FileSyncStatus.PendingDownload }], cancellationToken);
+                                await _driveItemsRepository.SaveBatchAsync([localFileFromDict with { SyncStatus = FileSyncStatus.PendingDownload, IsSelected = true }], cancellationToken);
                             }
 
                             continue;
@@ -327,7 +327,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             }
 
             var localPathsSet = allLocalFiles.Select(f => f.RelativePath).ToHashSet();
-            List<DriveItemEntity> deletedFromOneDrive = SelectFilesDeletedFromOneDriveButSyncedLocally(selectedItems, remotePathsSet, localPathsSet);
+            List<DriveItemEntity> deletedFromOneDrive = SelectFilesDeletedFromOneDriveButSyncedLocally(folders, remotePathsSet, localPathsSet);
 
             foreach(DriveItemEntity file in deletedFromOneDrive)
             {
@@ -373,7 +373,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             var alreadyProcessedDeletions = deletedFromOneDrive.Select(f => f.DriveItemId)
                 .Concat(deletedLocally.Select(f => f.DriveItemId))
                 .ToHashSet();
-            List<DriveItemEntity> filesToDelete = GetFilesToDelete(selectedItems, remotePathsSet, localPathsSet, alreadyProcessedDeletions);
+            List<DriveItemEntity> filesToDelete = GetFilesToDelete(folders, remotePathsSet, localPathsSet, alreadyProcessedDeletions);
 
             var uploadPathsSet = filesToUpload.Select(f => f.RelativePath).ToHashSet();
             var deletedPaths = deletedFromOneDrive.Select(f => f.RelativePath).ToHashSet();
@@ -397,7 +397,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             var maxParallelUploads = Math.Max(1, account.MaxParallelUpDownloads);
             using var uploadSemaphore = new SemaphoreSlim(maxParallelUploads, maxParallelUploads);
             var activeUploads = 0;
-            (activeUploads, completedBytes, completedFiles, List<Task>? uploadTasks) = CreateUploadTasks(accountId, selectedItems, filesToUpload, conflictCount, totalFiles, totalBytes,
+            (activeUploads, completedBytes, completedFiles, List<Task>? uploadTasks) = CreateUploadTasks(accountId, folders, filesToUpload, conflictCount, totalFiles, totalBytes,
                 uploadBytes, completedFiles, completedBytes, uploadSemaphore, activeUploads, cancellationToken);
 
             await Task.WhenAll(uploadTasks);
@@ -407,7 +407,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             var maxParallelDownloads = Math.Max(1, account.MaxParallelUpDownloads);
             using var downloadSemaphore = new SemaphoreSlim(maxParallelDownloads, maxParallelDownloads);
             var activeDownloads = 0;
-            (activeDownloads, completedBytes, completedFiles, List<Task>? downloadTasks) = CreateDownloadTasks(accountId, selectedItems, filesToDownload, conflictCount, totalFiles, totalBytes,
+            (activeDownloads, completedBytes, completedFiles, List<Task>? downloadTasks) = CreateDownloadTasks(accountId, folders, filesToDownload, conflictCount, totalFiles, totalBytes,
                 uploadBytes, downloadBytes, completedFiles, completedBytes, downloadSemaphore, activeDownloads, cancellationToken);
 
             await Task.WhenAll(downloadTasks);

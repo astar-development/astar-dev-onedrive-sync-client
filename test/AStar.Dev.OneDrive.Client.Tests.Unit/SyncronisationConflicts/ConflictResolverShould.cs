@@ -3,11 +3,11 @@ using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Services;
-using AStar.Dev.OneDrive.Client.Services.Sync;
+using AStar.Dev.OneDrive.Client.SyncronisationConflicts;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;
 
-namespace AStar.Dev.OneDrive.Client.Tests.Unit.Services.Sync;
+namespace AStar.Dev.OneDrive.Client.Tests.Unit.SyncronisationConflicts;
 
 public sealed class ConflictResolverShould
 {
