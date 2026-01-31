@@ -37,7 +37,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _accountRepository = new AccountRepository(_contextFactory);
         _mockAuthService = Substitute.For<IAuthService>();
         _mockFolderTreeService = Substitute.For<IFolderTreeService>();
-        _syncSelectionService = new SyncSelectionService();
+        _syncSelectionService = Substitute.For<ISyncSelectionService>();
         _mockSyncEngine = Substitute.For<ISyncEngine>();
         _mockDebugLogger = Substitute.For<IDebugLogger>();
 
@@ -89,9 +89,9 @@ public class MainWindowViewModelIntegrationShould : IDisposable
 
         // Assert
         syncTreeVm.SelectedAccountId.ShouldBe("acc-123");
-        syncTreeVm.RootFolders.ShouldNotBeEmpty();
-        syncTreeVm.RootFolders.Count.ShouldBe(1);
-        syncTreeVm.RootFolders[0].Name.ShouldBe("Documents");
+        syncTreeVm.Folders.ShouldNotBeEmpty();
+        syncTreeVm.Folders.Count.ShouldBe(1);
+        syncTreeVm.Folders[0].Name.ShouldBe("Documents");
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -132,7 +132,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
         // Assert
         syncTreeVm.SelectedAccountId.ShouldBeNull();
-        syncTreeVm.RootFolders.ShouldBeEmpty();
+        syncTreeVm.Folders.ShouldBeEmpty();
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -164,12 +164,12 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         // Act - Select first account
         accountVm.SelectedAccount = account1;
         await Task.Delay(100, TestContext.Current.CancellationToken);
-        var firstFolder = syncTreeVm.RootFolders.FirstOrDefault()?.Name;
+        var firstFolder = syncTreeVm.Folders.FirstOrDefault()?.Name;
 
         // Act - Select second account
         accountVm.SelectedAccount = account2;
         await Task.Delay(100, TestContext.Current.CancellationToken);
-        var secondFolder = syncTreeVm.RootFolders.FirstOrDefault()?.Name;
+        var secondFolder = syncTreeVm.Folders.FirstOrDefault()?.Name;
 
         // Assert
         firstFolder.ShouldBe("Folder1");
@@ -202,7 +202,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
         // Assert
         syncTreeVm.ErrorMessage.ShouldNotBeNullOrEmpty();
-        syncTreeVm.RootFolders.ShouldBeEmpty();
+        syncTreeVm.Folders.ShouldBeEmpty();
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -230,7 +230,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Act - Select the folder
-        OneDriveFolderNode folderToSelect = syncTreeVm.RootFolders[0];
+        OneDriveFolderNode folderToSelect = syncTreeVm.Folders[0];
         _ = syncTreeVm.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
@@ -244,7 +244,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Assert - Fresh instances should have reset selection state
-        OneDriveFolderNode reloadedFolder = syncTreeVm.RootFolders[0];
+        OneDriveFolderNode reloadedFolder = syncTreeVm.Folders[0];
         reloadedFolder.SelectionState.ShouldBe(SelectionState.Unchecked);
         initialState.ShouldBe(SelectionState.Checked);
     }

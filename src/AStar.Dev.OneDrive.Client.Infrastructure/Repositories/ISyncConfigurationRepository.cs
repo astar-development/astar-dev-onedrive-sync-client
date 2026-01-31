@@ -25,7 +25,15 @@ public interface ISyncConfigurationRepository
     /// <returns>List of selected folder paths.</returns>
     Task<IReadOnlyList<string>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken = default);
 
-    Task<Result<IList<string>, ErrorResponse>> GetSelectedFolders2Async(string accountId, CancellationToken cancellationToken = default);
+    /// <summary>
+    ///     Gets all folders for a specific account.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of selected folders.</returns>
+    Task<IReadOnlyList<DriveItemEntity>> GetFoldersByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+
+    Task<Result<bool, ErrorResponse>> UpdateFoldersByAccountIdAsync(string accountId, IEnumerable<FileMetadata> configurations, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Adds a new sync configuration.

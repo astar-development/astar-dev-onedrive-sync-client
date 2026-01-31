@@ -13,7 +13,7 @@ public sealed class DriveItemEntity(
     DateTimeOffset lastModifiedUtc,
     bool isFolder,
     bool isDeleted,
-    bool isSelected = false,
+    bool? isSelected = false,
     string? remoteHash = null,
     string? name = null,
     string? localPath = null,
@@ -31,7 +31,7 @@ public sealed class DriveItemEntity(
     public DateTimeOffset LastModifiedUtc { get; set; } = lastModifiedUtc;
     public bool IsFolder { get; set; } = isFolder;
     public bool IsDeleted { get; set; } = isDeleted;
-    public bool IsSelected { get; set; } = isSelected;
+    public bool? IsSelected { get; set; } = isSelected;
     public string? RemoteHash { get; set; } = remoteHash;
     public string? Name { get; set; } = name;
     public string? LocalPath { get; set; } = localPath;

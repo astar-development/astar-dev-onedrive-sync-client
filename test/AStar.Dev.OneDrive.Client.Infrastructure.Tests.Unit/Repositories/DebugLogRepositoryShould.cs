@@ -9,11 +9,12 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Repositories;
 
 public class DebugLogRepositoryShould
 {
-    private PooledDbContextFactory<SyncDbContext> _contextFactory;
+    private PooledDbContextFactory<SyncDbContext>? _contextFactory;
 
     [Fact]
     public async Task GetByAccountIdWithPagingReturnsCorrectRecords()
-    {_contextFactory = new PooledDbContextFactory<SyncDbContext>(
+    {
+        _contextFactory = new PooledDbContextFactory<SyncDbContext>(
             new DbContextOptionsBuilder<SyncDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options);

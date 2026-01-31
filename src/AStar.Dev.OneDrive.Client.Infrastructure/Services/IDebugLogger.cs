@@ -23,7 +23,7 @@ public interface IDebugLogger
     /// <param name="exception">Optional exception details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task LogErrorAsync(string source, string accountId, string message, Exception? exception = null, CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     ///     Logs a method entry.
     /// </summary>

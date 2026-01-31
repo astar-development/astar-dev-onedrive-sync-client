@@ -171,7 +171,7 @@ public class DriveItemsRepositoryShould
     }
 
     private static FileMetadata CreateFileMetadata(string id, string accountId, string path, FileSyncStatus status = FileSyncStatus.Synced)
-        => new(id, accountId, Path.GetFileName(path), "driveItemId", path, 1024, DateTime.UtcNow, $@"C:\local{path}", false, false, false, "ctag", "etag", "hash",null, status, null);
+        => new(id, accountId, Path.GetFileName(path), "driveItemId", path, 1024, DateTime.UtcNow, $@"C:\local{path}", false, false, false, "ctag", "etag", "hash", null, status, null);
 
     private static SyncDbContext CreateInMemoryContext()
     {

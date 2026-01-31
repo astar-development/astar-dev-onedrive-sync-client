@@ -34,12 +34,12 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
 
                 pageCount++;
                 await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId,
-                    $"Applied page {pageCount}: items={page.Items.Count()} totalItems={totalItemsProcessed} next={page.NextLink is not null}", cancellationToken);
+                    $"Applied page {pageCount:N0}: items={page.Items.Count():N0} totalItems={totalItemsProcessed:N0} next={page.NextLink is not null}", cancellationToken);
                 progressReporter?.Invoke(CreateSyncProgressMessage(accountId, pageCount, totalItemsProcessed, page.NextLink is not null));
             } while(!string.IsNullOrEmpty(nextOrDelta) && !cancellationToken.IsCancellationRequested);
 
             await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId,
-                $"Delta processing complete: finalToken='***REDACTED***' pageCount={pageCount} totalItems={totalItemsProcessed}", cancellationToken);
+                $"Delta processing complete: finalToken='***REDACTED***' pageCount={pageCount:N0} totalItems={totalItemsProcessed:N0}", cancellationToken);
         }
         catch(Exception ex)
         {
@@ -67,11 +67,11 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
     private static SyncState CreateSyncProgressMessage(string accountId, int pageCount, int totalItemsProcessed, bool initialSync)
     {
         SyncStatus syncType = SyncStatus.IncrementalDeltaSync;
-        var syncMessage = $"Incremental sync processed page: {pageCount}... total items: {totalItemsProcessed} detected so far";
+        var syncMessage = $"Incremental sync processed page: {pageCount:N0}... total items: {totalItemsProcessed:N0} detected so far";
         if(initialSync)
         {
             syncType = SyncStatus.InitialDeltaSync;
-            syncMessage = $"Initial sync processed page: {pageCount}... total items: {totalItemsProcessed} detected so far";
+            syncMessage = $"Initial sync processed page: {pageCount:N0}... total items: {totalItemsProcessed:N0} detected so far";
         }
 
         return SyncState.Create(accountId, syncType, syncMessage);

@@ -61,7 +61,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async load
 
         // Act - Select a folder
-        OneDriveFolderNode folderToSelect = sut.RootFolders[0];
+        OneDriveFolderNode folderToSelect = sut.Folders[0];
         _ = sut.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async save
 
@@ -88,7 +88,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
         // Assert
-        OneDriveFolderNode? folder2 = sut.RootFolders.FirstOrDefault(f => f.Path == "/Folder2");
+        OneDriveFolderNode? folder2 = sut.Folders.FirstOrDefault(f => f.Path == "/Folder2");
         _ = folder2.ShouldNotBeNull();
         folder2.SelectionState.ShouldBe(SelectionState.Checked);
     }
@@ -138,8 +138,8 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
-        SelectionState folder1Selected = sut.RootFolders.First(f => f.Path == "/Folder1").SelectionState;
-        SelectionState folder2Selected = sut.RootFolders.First(f => f.Path == "/Folder2").SelectionState;
+        SelectionState folder1Selected = sut.Folders.First(f => f.Path == "/Folder1").SelectionState;
+        SelectionState folder2Selected = sut.Folders.First(f => f.Path == "/Folder2").SelectionState;
 
         // Assert
         folder1Selected.ShouldBe(SelectionState.Checked);
@@ -163,7 +163,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
 
         _ = Should.Throw<InvalidOperationException>(() =>
         {
-            OneDriveFolderNode folderToSelect = sut.RootFolders[0];
+            OneDriveFolderNode folderToSelect = sut.Folders[0];
             _ = sut.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
         });
     }
@@ -193,7 +193,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
         // Assert
-        OneDriveFolderNode loadedParent = sut.RootFolders[0];
+        OneDriveFolderNode loadedParent = sut.Folders[0];
         OneDriveFolderNode loadedChild1 = loadedParent.Children.First(c => c.Path == "/Parent/Child1");
         OneDriveFolderNode loadedChild2 = loadedParent.Children.First(c => c.Path == "/Parent/Child2");
 

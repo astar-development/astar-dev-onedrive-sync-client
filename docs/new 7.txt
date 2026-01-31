@@ -15,3 +15,8 @@ features/delta-crawl-part-
 
 
 /home/jason/.local/share/AStar.Dev.OneDrive.Client
+
+# Issues:
+
+download does not update DriveItems with the download state
+empty folders are not created

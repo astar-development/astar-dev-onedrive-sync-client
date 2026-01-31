@@ -82,7 +82,7 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public void InitializeWithEmptyRootFolders()
     {
-        _viewModel.RootFolders.ShouldBeEmpty();
+        _viewModel.Folders.ShouldBeEmpty();
         _viewModel.IsLoading.ShouldBeFalse();
         _viewModel.ErrorMessage.ShouldBeNull();
         _viewModel.SelectedAccountId.ShouldBeNull();
@@ -100,20 +100,20 @@ public class SyncTreeViewModelShould : IDisposable
 
         await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async command to execute
 
-        _viewModel.RootFolders.Count.ShouldBe(2);
-        _viewModel.RootFolders[0].Name.ShouldBe("Folder 1");
-        _viewModel.RootFolders[1].Name.ShouldBe("Folder 2");
+        _viewModel.Folders.Count.ShouldBe(2);
+        _viewModel.Folders[0].Name.ShouldBe("Folder 1");
+        _viewModel.Folders[1].Name.ShouldBe("Folder 2");
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public void ClearRootFoldersWhenAccountIdIsNull()
     {
-        _viewModel.RootFolders.Add(new OneDriveFolderNode { DriveItemId = "test", Name = "Test" });
+        _viewModel.Folders.Add(new OneDriveFolderNode { DriveItemId = "test", Name = "Test" });
 
         _viewModel.SelectedAccountId = null;
         _ = _viewModel.LoadFoldersCommand.Execute().Subscribe();
 
-        _viewModel.RootFolders.ShouldBeEmpty();
+        _viewModel.Folders.ShouldBeEmpty();
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -240,7 +240,7 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public void ClearAllSelectionsWhenCommandExecuted()
     {
-        _viewModel.RootFolders.Add(new OneDriveFolderNode { DriveItemId = "folder1", Name = "Folder 1" });
+        _viewModel.Folders.Add(new OneDriveFolderNode { DriveItemId = "folder1", Name = "Folder 1" });
 
         _ = _viewModel.ClearSelectionsCommand.Execute().Subscribe();
 
@@ -280,9 +280,9 @@ public class SyncTreeViewModelShould : IDisposable
     public void RaiseCollectionChangedWhenRootFoldersModified()
     {
         var collectionChangedRaised = false;
-        _viewModel.RootFolders.CollectionChanged += (_, _) => collectionChangedRaised = true;
+        _viewModel.Folders.CollectionChanged += (_, _) => collectionChangedRaised = true;
 
-        _viewModel.RootFolders.Add(new OneDriveFolderNode());
+        _viewModel.Folders.Add(new OneDriveFolderNode());
 
         collectionChangedRaised.ShouldBeTrue();
     }

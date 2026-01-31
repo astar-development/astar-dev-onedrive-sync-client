@@ -103,7 +103,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
             IReadOnlyList<string> selectedFolders = await _syncConfigurationRepository.GetSelectedFoldersAsync(accountId, cancellationToken);
 
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Starting sync with {selectedFolders.Count} selected folders: {string.Join(", ", selectedFolders)}", cancellationToken);  
+            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Starting sync with {selectedFolders.Count} selected folders: {string.Join(", ", selectedFolders)}", cancellationToken);
             if(selectedFolders.Count == 0)
             {
                 ReportProgress(accountId, SyncStatus.Idle);
@@ -730,16 +730,17 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return (filesToDownload, totalFiles, totalBytes, downloadBytes);
     }
 
-    private static List<FileMetadata> GetFilesToDelete(IReadOnlyList<FileMetadata> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet,
-        HashSet<string> alreadyProcessedDeletions)
-        => [
-            .. existingFiles
+    private static List<FileMetadata> GetFilesToDelete(IReadOnlyList<FileMetadata> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet, HashSet<string> alreadyProcessedDeletions)
+        => localPathsSet.Count == 0
+            ? []
+            : [
+                .. existingFiles
                 .Where(f => !remotePathsSet.Contains(f.RelativePath) &&
                             !localPathsSet.Contains(f.RelativePath) &&
                             !string.IsNullOrWhiteSpace(f.Id) &&
                             !alreadyProcessedDeletions.Contains(f.Id))
                 .Where(f => f.Id is not null)
-        ];
+            ];
 
     private static List<FileMetadata> GetFilesDeletedLocally(List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet)
         => [

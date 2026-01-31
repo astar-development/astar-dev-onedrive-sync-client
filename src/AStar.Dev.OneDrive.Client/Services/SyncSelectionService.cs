@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
@@ -9,24 +10,8 @@ namespace AStar.Dev.OneDrive.Client.Services;
 /// <summary>
 ///     Service for managing folder selection state in the sync tree.
 /// </summary>
-public sealed class SyncSelectionService : ISyncSelectionService
+public sealed class SyncSelectionService(ISyncConfigurationRepository configurationRepository) : ISyncSelectionService
 {
-    private readonly ISyncConfigurationRepository? _configurationRepository;
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SyncSelectionService" /> class.
-    /// </summary>
-    public SyncSelectionService()
-    {
-        // Parameterless constructor for backward compatibility with existing tests
-    }
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="SyncSelectionService" /> class with database persistence.
-    /// </summary>
-    /// <param name="configurationRepository">The sync configuration repository.</param>
-    public SyncSelectionService(ISyncConfigurationRepository configurationRepository) => _configurationRepository = configurationRepository;
-
     /// <inheritdoc />
     public void SetSelection(OneDriveFolderNode folder, bool isSelected)
     {
@@ -122,12 +107,9 @@ public sealed class SyncSelectionService : ISyncSelectionService
     /// <inheritdoc />
     public async Task SaveSelectionsToDatabaseAsync(string accountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default)
     {
-        if(_configurationRepository is null)
-            return;
-
         IEnumerable<FileMetadata> configurations = rootFolders.Select(folder => new FileMetadata(folder.Id, accountId, folder.Name, folder.DriveItemId, folder.Path, 0, DateTime.UtcNow, "", true, false, folder.IsSelected ?? false));
 
-        await _configurationRepository.SaveBatchAsync(accountId, configurations, cancellationToken);
+        _ = await configurationRepository.UpdateFoldersByAccountIdAsync(accountId, configurations, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -135,10 +117,7 @@ public sealed class SyncSelectionService : ISyncSelectionService
     {
         DebugLogContext.SetAccountId(accountId);
 
-        if(_configurationRepository is null)
-            return;
-
-        IReadOnlyList<string> savedFolderPaths = await _configurationRepository.GetSelectedFoldersAsync(accountId, cancellationToken);
+        IReadOnlyList<string> savedFolderPaths = await configurationRepository.GetSelectedFoldersAsync(accountId, cancellationToken);
 
         await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Loading selections for account {accountId}", accountId, cancellationToken);
         await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Found {savedFolderPaths.Count} saved paths in database", accountId, cancellationToken);
@@ -220,6 +199,34 @@ public sealed class SyncSelectionService : ISyncSelectionService
         // 1. Root folders don't have parents
         // 2. Their children aren't loaded yet (just placeholder nodes)
         // 3. We've already manually set indeterminate state for roots with selected descendants
+    }
+
+    /// <inheritdoc />
+    public async Task<IList<OneDriveFolderNode>> LoadSelectionsFromDatabaseAsync(string accountId, CancellationToken cancellationToken = default)
+    {
+        DebugLogContext.SetAccountId(accountId);
+        IList<OneDriveFolderNode>folders = [];
+        IReadOnlyList<DriveItemEntity> savedFolders = await configurationRepository.GetFoldersByAccountIdAsync(accountId, cancellationToken);
+
+        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Loading selections for account {accountId}", accountId, cancellationToken);
+        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Found {savedFolders.Count} saved folders in database", accountId, cancellationToken);
+
+        foreach(DriveItemEntity entity in savedFolders)
+        {
+            var folderNode = new OneDriveFolderNode
+            {
+                Id = entity.Id,
+                DriveItemId = entity.DriveItemId,
+                Name = entity.Name??"",
+                Path = entity.RelativePath,
+                IsSelected = entity.IsSelected,
+                SelectionState = entity.IsSelected ?? false ? SelectionState.Checked : SelectionState.Unchecked
+            };
+
+            folders.Add(folderNode);
+        }
+
+        return folders;
     }
 
     /// <inheritdoc />

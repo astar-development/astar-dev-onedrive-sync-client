@@ -361,10 +361,10 @@ public sealed class ConflictResolverShould
             filePath, "",
             100,
             DateTime.UtcNow,
-            filePath, false, false,false, 
+            filePath, false, false, false,
             "ctag-123",
             "etag-456",
-            "hash-789",null,
+            "hash-789", null,
             FileSyncStatus.Synced,
             SyncDirection.Download);
 }
