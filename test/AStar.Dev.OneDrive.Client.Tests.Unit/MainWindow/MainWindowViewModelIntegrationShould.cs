@@ -5,9 +5,9 @@ using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 using AStar.Dev.OneDrive.Client.MainWindow;
-using AStar.Dev.OneDrive.Client.Models;
-using AStar.Dev.OneDrive.Client.Services;
+
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;

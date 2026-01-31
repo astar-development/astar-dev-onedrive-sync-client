@@ -1,5 +1,5 @@
 using System.Collections.Specialized;
-using AStar.Dev.OneDrive.Client.Models;
+using AStar.Dev.OneDrive.Client.Core.Models;
 using Avalonia.Controls;
 
 namespace AStar.Dev.OneDrive.Client.Syncronisation;
@@ -49,8 +49,7 @@ public partial class SyncTreeView : UserControl
         node.PropertyChanged += (s, e) =>
         {
             if(e.PropertyName == nameof(OneDriveFolderNode.IsExpanded) &&
-               node.IsExpanded &&
-               !node.ChildrenLoaded)
+               node is { IsExpanded: true, ChildrenLoaded: false })
             {
                 // Trigger lazy loading when expanded for the first time
                 _ = viewModel.LoadChildrenCommand.Execute(node).Subscribe();

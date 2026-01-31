@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using AStar.Dev.OneDrive.Client.Services;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
@@ -255,8 +255,10 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     private async Task BrowseFolderAsync()
     {
         // Get the top level from the current application
-        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop &&
-           desktop.MainWindow?.StorageProvider is { } storageProvider)
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+           {
+               MainWindow.StorageProvider: { } storageProvider
+           })
         {
             IReadOnlyList<IStorageFolder> result = await storageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions { Title = "Select Local Sync Path", AllowMultiple = false });
 

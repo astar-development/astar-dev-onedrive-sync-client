@@ -4,7 +4,7 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
-using AStar.Dev.OneDrive.Client.Services;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 

@@ -7,7 +7,7 @@ using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
 
-namespace AStar.Dev.OneDrive.Client.Tests.Integration.Services.OneDriveServices;
+namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Services.OneDriveServices;
 
 /// <summary>
 ///     Helper class for providing bearer token authentication to GraphServiceClient.

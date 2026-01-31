@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Client.Accounts;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using AStar.Dev.OneDrive.Client.Services;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Accounts;
 
