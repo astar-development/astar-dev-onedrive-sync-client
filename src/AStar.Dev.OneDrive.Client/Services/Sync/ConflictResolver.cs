@@ -30,13 +30,8 @@ public sealed class ConflictResolver(
     private readonly IFileMetadataRepository _metadataRepo = metadataRepo ?? throw new ArgumentNullException(nameof(metadataRepo));
 
     /// <inheritdoc />
-    public async Task ResolveAsync(
-        SyncConflict conflict,
-        ConflictResolutionStrategy strategy,
-        CancellationToken cancellationToken = default)
+    public async Task ResolveAsync(SyncConflict conflict, ConflictResolutionStrategy strategy, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(conflict);
-
         if(_logger.IsEnabled(LogLevel.Information))
         {
             _logger.LogInformation(

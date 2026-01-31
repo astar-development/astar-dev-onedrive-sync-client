@@ -6,24 +6,8 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 /// <summary>
 ///     Service for managing Microsoft authentication via MSAL.
 /// </summary>
-public sealed class AuthService : IAuthService
+public sealed class AuthService(IAuthenticationClient authClient, AuthConfiguration configuration) : IAuthService
 {
-    private readonly IAuthenticationClient _authClient;
-    private readonly AuthConfiguration _configuration;
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="AuthService" /> class.
-    /// </summary>
-    /// <param name="authClient">The authentication client wrapper.</param>
-    /// <param name="configuration">Authentication configuration.</param>
-    public AuthService(IAuthenticationClient authClient, AuthConfiguration configuration)
-    {
-        ArgumentNullException.ThrowIfNull(authClient);
-        ArgumentNullException.ThrowIfNull(configuration);
-        _authClient = authClient;
-        _configuration = configuration;
-    }
-
     /// <inheritdoc />
     public async Task<AuthenticationResult> LoginAsync(CancellationToken cancellationToken = default)
     {
@@ -32,8 +16,8 @@ public sealed class AuthService : IAuthService
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(30));
 
-            MsalAuthResult result = await _authClient
-                .AcquireTokenInteractiveAsync(_configuration.Scopes, cts.Token);
+            MsalAuthResult result = await authClient
+                .AcquireTokenInteractiveAsync(configuration.Scopes, cts.Token);
 
             return new AuthenticationResult(
                 true,
@@ -69,16 +53,14 @@ public sealed class AuthService : IAuthService
     /// <inheritdoc />
     public async Task<bool> LogoutAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         try
         {
-            IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
+            IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
             IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
             if(account is not null)
             {
-                await _authClient.RemoveAsync(account, cancellationToken);
+                await authClient.RemoveAsync(account, cancellationToken);
                 return true;
             }
 
@@ -95,7 +77,7 @@ public sealed class AuthService : IAuthService
     {
         try
         {
-            IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
+            IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
             return accounts
                 .Select(a => (a.HomeAccountId.Identifier, a.Username))
                 .ToList();
@@ -109,17 +91,15 @@ public sealed class AuthService : IAuthService
     /// <inheritdoc />
     public async Task<string?> GetAccessTokenAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         try
         {
-            IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
+            IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
             IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
             if(account is null) return null;
 
-            MsalAuthResult result = await _authClient
-                .AcquireTokenSilentAsync(_configuration.Scopes, account, cancellationToken);
+            MsalAuthResult result = await authClient
+                .AcquireTokenSilentAsync(configuration.Scopes, account, cancellationToken);
 
             return result.AccessToken;
         }
@@ -136,11 +116,9 @@ public sealed class AuthService : IAuthService
     /// <inheritdoc />
     public async Task<bool> IsAuthenticatedAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         try
         {
-            IEnumerable<IAccount> accounts = await _authClient.GetAccountsAsync(cancellationToken);
+            IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
             return accounts.Any(a => a.HomeAccountId.Identifier == accountId);
         }
         catch(MsalException)
@@ -160,8 +138,6 @@ public sealed class AuthService : IAuthService
     /// <returns>Configured AuthService instance.</returns>
     public static async Task<AuthService> CreateAsync(AuthConfiguration configuration)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
-
         IPublicClientApplication app = PublicClientApplicationBuilder
             .Create(configuration.ClientId)
             .WithAuthority(configuration.Authority)

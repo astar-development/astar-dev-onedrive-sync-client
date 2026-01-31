@@ -454,10 +454,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<SyncConflict>> GetConflictsAsync(string accountId, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(accountId);
-        return await _syncConflictRepository.GetUnresolvedByAccountIdAsync(accountId, cancellationToken);
-    }
+        =>  await _syncConflictRepository.GetUnresolvedByAccountIdAsync(accountId, cancellationToken);
 
     private async Task DeleteDeletedFilesFromDatabase(List<FileMetadata> filesToDelete, CancellationToken cancellationToken)
     {

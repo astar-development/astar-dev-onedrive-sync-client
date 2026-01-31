@@ -9,22 +9,12 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 /// <summary>
 ///     Repository implementation for managing file metadata.
 /// </summary>
-public sealed class FileMetadataRepository : IFileMetadataRepository
+public sealed class FileMetadataRepository(SyncDbContext context) : IFileMetadataRepository
 {
-    private readonly SyncDbContext _context;
-
-    public FileMetadataRepository(SyncDbContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        _context = context;
-    }
-
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        List<FileMetadataEntity> entities = await _context.FileMetadata
+        List<FileMetadataEntity> entities = await context.FileMetadata
             .AsNoTracking()
             .Where(fm => fm.AccountId == accountId)
             .ToListAsync(cancellationToken);
@@ -35,19 +25,14 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     /// <inheritdoc />
     public async Task<FileMetadata?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
-        FileMetadataEntity? entity = await _context.FileMetadata.FindAsync([id], cancellationToken);
+        FileMetadataEntity? entity = await context.FileMetadata.FindAsync([id], cancellationToken);
         return entity is null ? null : MapToModel(entity);
     }
 
     /// <inheritdoc />
     public async Task<FileMetadata?> GetByPathAsync(string accountId, string path, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(path);
-
-        FileMetadataEntity? entity = await _context.FileMetadata
+        FileMetadataEntity? entity = await context.FileMetadata
             .FirstOrDefaultAsync(fm => fm.AccountId == accountId && fm.Path == path, cancellationToken);
 
         return entity is null ? null : MapToModel(entity);
@@ -56,9 +41,7 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileMetadata>> GetByStatusAsync(string accountId, FileSyncStatus status, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        List<FileMetadataEntity> entities = await _context.FileMetadata
+        List<FileMetadataEntity> entities = await context.FileMetadata
             .Where(fm => fm.AccountId == accountId && fm.SyncStatus == (int)status)
             .ToListAsync(cancellationToken);
 
@@ -68,25 +51,21 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
     /// <inheritdoc />
     public async Task AddAsync(FileMetadata fileMetadata, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(fileMetadata);
-
         FileMetadataEntity entity = MapToEntity(fileMetadata);
-        if(_context.FileMetadata.Any(fm => fm.Id == entity.Id))
+        if(context.FileMetadata.Any(fm => fm.Id == entity.Id))
         {
             await UpdateAsync(fileMetadata, cancellationToken);
             return;
         }
 
-        _ = _context.FileMetadata.Add(entity);
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = context.FileMetadata.Add(entity);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task UpdateAsync(FileMetadata fileMetadata, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(fileMetadata);
-
-        FileMetadataEntity entity = await _context.FileMetadata.FindAsync([fileMetadata.Id], cancellationToken) ??
+        FileMetadataEntity entity = await context.FileMetadata.FindAsync([fileMetadata.Id], cancellationToken) ??
                                     throw new InvalidOperationException($"File metadata with ID '{fileMetadata.Id}' not found.");
 
         entity.AccountId = fileMetadata.AccountId;
@@ -101,52 +80,46 @@ public sealed class FileMetadataRepository : IFileMetadataRepository
         entity.SyncStatus = (int)fileMetadata.SyncStatus;
         entity.LastSyncDirection = fileMetadata.LastSyncDirection.HasValue ? (int)fileMetadata.LastSyncDirection.Value : null;
 
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task DeleteAsync(string id, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
-        FileMetadataEntity? entity = await _context.FileMetadata.FindAsync([id], cancellationToken);
+        FileMetadataEntity? entity = await context.FileMetadata.FindAsync([id], cancellationToken);
         if(entity is not null)
         {
-            _ = _context.FileMetadata.Remove(entity);
-            _ = await _context.SaveChangesAsync(cancellationToken);
+            _ = context.FileMetadata.Remove(entity);
+            _ = await context.SaveChangesAsync(cancellationToken);
         }
     }
 
     /// <inheritdoc />
     public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        List<FileMetadataEntity> entities = await _context.FileMetadata
+        List<FileMetadataEntity> entities = await context.FileMetadata
             .Where(fm => fm.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
-        _context.FileMetadata.RemoveRange(entities);
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        context.FileMetadata.RemoveRange(entities);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task SaveBatchAsync(IEnumerable<FileMetadata> fileMetadataList, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(fileMetadataList);
-
         var entities = fileMetadataList.Select(MapToEntity).ToList();
 
         foreach(FileMetadataEntity? entity in entities)
         {
-            FileMetadataEntity? existing = await _context.FileMetadata.FindAsync([entity.Id], cancellationToken);
+            FileMetadataEntity? existing = await context.FileMetadata.FindAsync([entity.Id], cancellationToken);
             if(existing is null)
-                _ = _context.FileMetadata.Add(entity);
+                _ = context.FileMetadata.Add(entity);
             else
-                _context.Entry(existing).CurrentValues.SetValues(entity);
+                context.Entry(existing).CurrentValues.SetValues(entity);
         }
 
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     private static FileMetadata MapToModel(FileMetadataEntity entity)

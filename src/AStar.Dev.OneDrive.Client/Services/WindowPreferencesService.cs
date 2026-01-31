@@ -8,20 +8,12 @@ namespace AStar.Dev.OneDrive.Client.Services;
 /// <summary>
 ///     Service for managing window position and size preferences using database storage.
 /// </summary>
-public sealed class WindowPreferencesService : IWindowPreferencesService
+public sealed class WindowPreferencesService(SyncDbContext context) : IWindowPreferencesService
 {
-    private readonly SyncDbContext _context;
-
-    public WindowPreferencesService(SyncDbContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        _context = context;
-    }
-
     /// <inheritdoc />
     public async Task<WindowPreferences?> LoadAsync(CancellationToken cancellationToken = default)
     {
-        WindowPreferencesEntity? entity = await _context.WindowPreferences
+        WindowPreferencesEntity? entity = await context.WindowPreferences
             .FirstOrDefaultAsync(cancellationToken);
 
         return entity is null ? null : MapToModel(entity);
@@ -30,9 +22,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
     /// <inheritdoc />
     public async Task SaveAsync(WindowPreferences preferences, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(preferences);
-
-        WindowPreferencesEntity? entity = await _context.WindowPreferences.FirstOrDefaultAsync(cancellationToken);
+        WindowPreferencesEntity? entity = await context.WindowPreferences.FirstOrDefaultAsync(cancellationToken);
 
         if(entity is null)
         {
@@ -44,7 +34,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
                 Height = preferences.Height,
                 IsMaximized = preferences.IsMaximized
             };
-            _ = _context.WindowPreferences.Add(entity);
+            _ = context.WindowPreferences.Add(entity);
         }
         else
         {
@@ -55,7 +45,7 @@ public sealed class WindowPreferencesService : IWindowPreferencesService
             entity.IsMaximized = preferences.IsMaximized;
         }
 
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     private static WindowPreferences MapToModel(WindowPreferencesEntity entity)

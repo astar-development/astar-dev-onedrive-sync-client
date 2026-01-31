@@ -21,13 +21,8 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
     /// </summary>
     /// <param name="accountRepository">Repository for account data.</param>
     /// <param name="fileOperationLogRepository">Repository for file operation logs.</param>
-    public ViewSyncHistoryViewModel(
-        IAccountRepository accountRepository,
-        IFileOperationLogRepository fileOperationLogRepository)
+    public ViewSyncHistoryViewModel(IAccountRepository accountRepository, IFileOperationLogRepository fileOperationLogRepository)
     {
-        ArgumentNullException.ThrowIfNull(accountRepository);
-        ArgumentNullException.ThrowIfNull(fileOperationLogRepository);
-
         _accountRepository = accountRepository;
         _fileOperationLogRepository = fileOperationLogRepository;
 
@@ -37,7 +32,6 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         LoadNextPageCommand = ReactiveCommand.CreateFromTask(LoadNextPageAsync);
         LoadPreviousPageCommand = ReactiveCommand.CreateFromTask(LoadPreviousPageAsync);
 
-        // Load accounts on initialization
         _ = LoadAccountsAsync();
     }
 

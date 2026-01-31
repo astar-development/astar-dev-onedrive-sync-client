@@ -16,8 +16,6 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
     /// <inheritdoc />
     public async Task<IReadOnlyList<SyncSessionLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         List<SyncSessionLogEntity> entities = await _context.SyncSessionLogs
             .AsNoTracking()
             .Where(s => s.AccountId == accountId)
@@ -30,8 +28,6 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
     /// <inheritdoc />
     public async Task<SyncSessionLog?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(id);
-
         SyncSessionLogEntity? entity = await _context.SyncSessionLogs
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
@@ -42,8 +38,6 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
     /// <inheritdoc />
     public async Task AddAsync(SyncSessionLog sessionLog, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(sessionLog);
-
         SyncSessionLogEntity entity = MapToEntity(sessionLog);
         _ = _context.SyncSessionLogs.Add(entity);
         _ = await _context.SaveChangesAsync(cancellationToken);
@@ -52,8 +46,6 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
     /// <inheritdoc />
     public async Task UpdateAsync(SyncSessionLog sessionLog, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(sessionLog);
-
         SyncSessionLogEntity entity = await _context.SyncSessionLogs.FindAsync([sessionLog.Id], cancellationToken) ??
                                       throw new InvalidOperationException($"Sync session log with ID '{sessionLog.Id}' not found.");
 
@@ -69,14 +61,9 @@ public sealed class SyncSessionLogRepository(SyncDbContext context) : ISyncSessi
     }
 
     /// <inheritdoc />
-    public async Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        _ = await _context.SyncSessionLogs
+    public async Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default) => _ = await _context.SyncSessionLogs
             .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
             .ExecuteDeleteAsync(cancellationToken);
-    }
 
     private static SyncSessionLog MapToModel(SyncSessionLogEntity entity)
         => new(

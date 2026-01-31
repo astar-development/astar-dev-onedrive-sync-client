@@ -9,22 +9,12 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 /// <summary>
 ///     Repository implementation for managing sync configuration data.
 /// </summary>
-public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
+public sealed class SyncConfigurationRepository(SyncDbContext context) : ISyncConfigurationRepository
 {
-    private readonly SyncDbContext _context;
-
-    public SyncConfigurationRepository(SyncDbContext context)
-    {
-        ArgumentNullException.ThrowIfNull(context);
-        _context = context;
-    }
-
     /// <inheritdoc />
     public async Task<IReadOnlyList<SyncConfiguration>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        List<SyncConfigurationEntity> entities = await _context.SyncConfigurations
+        List<SyncConfigurationEntity> entities = await context.SyncConfigurations
             .Where(sc => sc.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
@@ -33,7 +23,7 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<string>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken = default)
-        => await _context.SyncConfigurations
+        => await context.SyncConfigurations
                 .Where(sc => sc.AccountId == accountId && sc.IsSelected)
                 .Select(sc => CleanUpPath(sc.FolderPath))
                 .Distinct()
@@ -41,7 +31,7 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
 
     /// <inheritdoc />
     public async Task<Result<IList<string>, ErrorResponse>> GetSelectedFolders2Async(string accountId, CancellationToken cancellationToken = default)
-        => await _context.SyncConfigurations
+        => await context.SyncConfigurations
             .Where(sc => sc.AccountId == accountId && sc.IsSelected)
             .Select(sc => CleanUpPath(sc.FolderPath))
             .Distinct()
@@ -50,15 +40,14 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
     /// <inheritdoc />
     public async Task<SyncConfiguration> AddAsync(SyncConfiguration configuration, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
-        SyncConfigurationEntity? existingEntity = await _context.SyncConfigurations
+        SyncConfigurationEntity? existingEntity = await context.SyncConfigurations
             .FirstOrDefaultAsync(sc => sc.AccountId == configuration.AccountId && sc.FolderPath == configuration.FolderPath, cancellationToken);
 
         if(existingEntity is not null) return configuration;
 
         SyncConfigurationEntity entity = MapToEntity(configuration);
-        _ = _context.SyncConfigurations.Add(entity);
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = context.SyncConfigurations.Add(entity);
+        _ = await context.SaveChangesAsync(cancellationToken);
 
         return configuration;
     }
@@ -66,9 +55,7 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
     /// <inheritdoc />
     public async Task UpdateAsync(SyncConfiguration configuration, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        SyncConfigurationEntity entity = await _context.SyncConfigurations.FindAsync([configuration.Id], cancellationToken) ??
+        SyncConfigurationEntity entity = await context.SyncConfigurations.FindAsync([configuration.Id], cancellationToken) ??
                                          throw new InvalidOperationException($"Sync configuration with ID '{configuration.Id}' not found.");
 
         entity.AccountId = configuration.AccountId;
@@ -76,55 +63,50 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
         entity.IsSelected = configuration.IsSelected;
         entity.LastModifiedUtc = configuration.LastModifiedUtc;
 
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        SyncConfigurationEntity? entity = await _context.SyncConfigurations.FindAsync([id], cancellationToken);
+        SyncConfigurationEntity? entity = await context.SyncConfigurations.FindAsync([id], cancellationToken);
         if(entity is not null)
         {
-            _ = _context.SyncConfigurations.Remove(entity);
-            _ = await _context.SaveChangesAsync(cancellationToken);
+            _ = context.SyncConfigurations.Remove(entity);
+            _ = await context.SaveChangesAsync(cancellationToken);
         }
     }
 
     /// <inheritdoc />
     public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        List<SyncConfigurationEntity> entities = await _context.SyncConfigurations
+        List<SyncConfigurationEntity> entities = await context.SyncConfigurations
             .Where(sc => sc.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
-        _context.SyncConfigurations.RemoveRange(entities);
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        context.SyncConfigurations.RemoveRange(entities);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task SaveBatchAsync(string accountId, IEnumerable<SyncConfiguration> configurations, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(configurations);
-
-        List<SyncConfigurationEntity> existingEntities = await _context.SyncConfigurations
+        List<SyncConfigurationEntity> existingEntities = await context.SyncConfigurations
             .Where(sc => sc.AccountId == accountId)
             .ToListAsync(cancellationToken);
 
-        _context.SyncConfigurations.RemoveRange(existingEntities);
+        context.SyncConfigurations.RemoveRange(existingEntities);
 
         var newEntities = configurations.Select(MapToEntity).ToList();
-        _context.SyncConfigurations.AddRange(newEntities);
+        context.SyncConfigurations.AddRange(newEntities);
 
-        _ = await _context.SaveChangesAsync(cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task<SyncConfigurationEntity?> GetParentFolderAsync(string accountId, string parentPath, string possibleParentPath, CancellationToken cancellationToken)
     {
-        SyncConfigurationEntity? parentEntity = await _context.SyncConfigurations
+        SyncConfigurationEntity? parentEntity = await context.SyncConfigurations
             .FirstOrDefaultAsync(sc => sc.AccountId == accountId && (sc.FolderPath == parentPath || sc.FolderPath == possibleParentPath), cancellationToken);
 
         return parentEntity;

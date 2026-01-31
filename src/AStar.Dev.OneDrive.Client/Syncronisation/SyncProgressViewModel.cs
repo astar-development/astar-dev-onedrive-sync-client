@@ -30,15 +30,8 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <param name="logger">The logger instance.</param>
     /// <exception cref="ArgumentException">Thrown if <paramref name="accountId" /> is null or whitespace.</exception>
     /// <exception cref="ArgumentNullException">Thrown if any parameter is <c>null</c>.</exception>
-    public SyncProgressViewModel(
-        string accountId,
-        ISyncEngine syncEngine,
-        ILogger<SyncProgressViewModel> logger)
+    public SyncProgressViewModel(string accountId, ISyncEngine syncEngine, ILogger<SyncProgressViewModel> logger)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
-        ArgumentNullException.ThrowIfNull(syncEngine);
-        ArgumentNullException.ThrowIfNull(logger);
-
         AccountId = accountId;
         _syncEngine = syncEngine;
         _logger = logger;

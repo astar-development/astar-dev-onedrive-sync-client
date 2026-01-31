@@ -11,37 +11,15 @@ namespace AStar.Dev.OneDrive.Client.Services.OneDriveServices;
 /// <summary>
 ///     Service for retrieving and managing OneDrive folder hierarchies.
 /// </summary>
-public sealed class FolderTreeService : IFolderTreeService
+public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthService authService, ISyncConfigurationRepository syncConfigurationRepository) : IFolderTreeService
 {
-    private readonly IAuthService _authService;
-    private readonly IGraphApiClient _graphApiClient;
-    private readonly ISyncConfigurationRepository _syncConfigurationRepository;
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="FolderTreeService" /> class.
-    /// </summary>
-    /// <param name="graphApiClient">The Graph API client.</param>
-    /// <param name="authService">The authentication service.</param>
-    /// <param name="syncConfigurationRepository">The sync configuration repository.</param>
-    public FolderTreeService(IGraphApiClient graphApiClient, IAuthService authService, ISyncConfigurationRepository syncConfigurationRepository)
-    {
-        ArgumentNullException.ThrowIfNull(graphApiClient);
-        ArgumentNullException.ThrowIfNull(authService);
-        _graphApiClient = graphApiClient;
-        _authService = authService;
-        _syncConfigurationRepository = syncConfigurationRepository;
-    }
-
     /// <inheritdoc />
     public async Task<IReadOnlyList<OneDriveFolderNode>> GetRootFoldersAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        // Verify account is authenticated
-        var isAuthenticated = await _authService.IsAuthenticatedAsync(accountId, cancellationToken);
+        var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated) return [];
 
-        IEnumerable<DriveItem> driveItems = await _graphApiClient.GetRootChildrenAsync(accountId, cancellationToken);
+        IEnumerable<DriveItem> driveItems = await graphApiClient.GetRootChildrenAsync(accountId, cancellationToken);
         IEnumerable<DriveItem> folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
@@ -63,7 +41,7 @@ public sealed class FolderTreeService : IFolderTreeService
             var possibleParentPath = SyncEngine.FormatScanningFolderForDisplay(item.Name)!.Replace("OneDrive: ", string.Empty);
             SyncConfiguration configuration = await UpdateParentPathIfExistsAsync(accountId, node, possibleParentPath, cancellationToken);
 
-            await _syncConfigurationRepository.AddAsync(configuration, cancellationToken);
+            _ = await syncConfigurationRepository.AddAsync(configuration, cancellationToken);
         }
 
         return nodes;
@@ -77,7 +55,7 @@ public sealed class FolderTreeService : IFolderTreeService
         if(lastIndexOf > 0)
         {
             var parentPath = configuration.FolderPath[..lastIndexOf];
-            SyncConfigurationEntity? parentEntity = await _syncConfigurationRepository.GetParentFolderAsync(accountId, parentPath, possibleParentPath, cancellationToken);
+            SyncConfigurationEntity? parentEntity = await syncConfigurationRepository.GetParentFolderAsync(accountId, parentPath, possibleParentPath, cancellationToken);
 
             if(parentEntity is not null)
             {
@@ -92,20 +70,15 @@ public sealed class FolderTreeService : IFolderTreeService
     /// <inheritdoc />
     public async Task<IReadOnlyList<OneDriveFolderNode>> GetChildFoldersAsync(string accountId, string parentFolderId, bool? parentIsSelected = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(parentFolderId);
-
-        // Verify account is authenticated
-        var isAuthenticated = await _authService.IsAuthenticatedAsync(accountId, cancellationToken);
+        var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated) return [];
 
-        // Get the parent folder to build paths
-        DriveItem? parentItem = await _graphApiClient.GetDriveItemAsync(accountId, parentFolderId, cancellationToken);
+        DriveItem? parentItem = await graphApiClient.GetDriveItemAsync(accountId, parentFolderId, cancellationToken);
         var parentPath = parentItem?.ParentReference?.Path is not null
             ? $"{parentItem.ParentReference.Path}/{parentItem.Name}"
             : $"/{parentItem?.Name}";
 
-        IEnumerable<DriveItem> driveItems = await _graphApiClient.GetDriveItemChildrenAsync(accountId, parentFolderId, cancellationToken);
+        IEnumerable<DriveItem> driveItems = await graphApiClient.GetDriveItemChildrenAsync(accountId, parentFolderId, cancellationToken);
         IEnumerable<DriveItem> folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
@@ -113,7 +86,6 @@ public sealed class FolderTreeService : IFolderTreeService
         {
             if(item.Id is null || item.Name is null) continue;
 
-            // If the parent is selected, propagate the selection to children
             var node = new OneDriveFolderNode(
                 item.Id,
                 item.Name,
@@ -144,10 +116,7 @@ public sealed class FolderTreeService : IFolderTreeService
     /// <inheritdoc />
     public async Task<IReadOnlyList<OneDriveFolderNode>> GetFolderHierarchyAsync(string accountId, int? maxDepth = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        // Verify account is authenticated
-        var isAuthenticated = await _authService.IsAuthenticatedAsync(accountId, cancellationToken);
+        var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated) return [];
 
         IReadOnlyList<OneDriveFolderNode> rootFolders = await GetRootFoldersAsync(accountId, cancellationToken);

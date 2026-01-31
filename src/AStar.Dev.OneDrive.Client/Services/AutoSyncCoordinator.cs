@@ -1,6 +1,5 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
-using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Services;
@@ -8,7 +7,7 @@ namespace AStar.Dev.OneDrive.Client.Services;
 /// <inheritdoc />
 #pragma warning disable CA1848 // Use LoggerMessage delegates
 #pragma warning disable CA1873 // Avoid string interpolation in logging
-public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, ISyncEngine syncEngine, IAccountRepository accountRepository, ILogger<AutoSyncCoordinator> logger) : IAutoSyncCoordinator
+public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, ISyncEngine syncEngine, ILogger<AutoSyncCoordinator> logger) : IAutoSyncCoordinator
 {
     private readonly Dictionary<string, IDisposable> _accountSubscriptions = [];
     private readonly CompositeDisposable _disposables = [];

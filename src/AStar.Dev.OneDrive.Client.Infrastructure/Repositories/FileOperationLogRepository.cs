@@ -16,8 +16,6 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileOperationLog>> GetBySessionIdAsync(string syncSessionId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(syncSessionId);
-
         List<FileOperationLogEntity> entities = await _context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.SyncSessionId == syncSessionId)
@@ -30,8 +28,6 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         List<FileOperationLogEntity> entities = await _context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.AccountId == accountId)
@@ -44,8 +40,6 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
     /// <inheritdoc />
     public async Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(string accountId, int pageSize, int skip, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         List<FileOperationLogEntity> entities = await _context.FileOperationLogs
             .AsNoTracking()
             .Where(f => f.AccountId == accountId)
@@ -60,8 +54,6 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
     /// <inheritdoc />
     public async Task AddAsync(FileOperationLog operationLog, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(operationLog);
-
         FileOperationLogEntity entity = MapToEntity(operationLog);
         _ = _context.FileOperationLogs.Add(entity);
         _ = await _context.SaveChangesAsync(cancellationToken);
@@ -69,13 +61,9 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
 
     /// <inheritdoc />
     public async Task DeleteOldOperationsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        _ = await _context.FileOperationLogs
+        =>  await _context.FileOperationLogs
             .Where(f => f.AccountId == accountId && f.Timestamp < olderThan)
             .ExecuteDeleteAsync(cancellationToken);
-    }
 
     private static FileOperationLog MapToModel(FileOperationLogEntity entity)
         => new(
