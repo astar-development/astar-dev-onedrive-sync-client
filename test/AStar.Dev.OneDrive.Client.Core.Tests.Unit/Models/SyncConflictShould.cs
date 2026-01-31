@@ -10,11 +10,11 @@ public class SyncConflictShould
     {
         var accountId = "account-id";
         var filePath = "/path/to/conflicted/file.txt";
-        DateTime localModifiedUtc = DateTime.UtcNow.AddMinutes(-10);
-        DateTime remoteModifiedUtc = DateTime.UtcNow.AddMinutes(-5);
+        DateTimeOffset localModifiedUtc = DateTime.UtcNow.AddMinutes(-10);
+        DateTimeOffset remoteModifiedUtc = DateTime.UtcNow.AddMinutes(-5);
         var localSize = 1024L;
         var remoteSize = 2048L;
-        DateTime detectedUtc = DateTime.UtcNow;
+        DateTimeOffset detectedUtc = DateTime.UtcNow;
         ConflictResolutionStrategy resolutionStrategy = ConflictResolutionStrategy.None;
         var isResolved = false;
 

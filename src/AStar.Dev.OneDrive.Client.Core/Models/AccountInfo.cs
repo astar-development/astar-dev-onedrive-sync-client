@@ -19,7 +19,7 @@ public sealed record AccountInfo(
     string DisplayName,
     string LocalSyncPath,
     bool IsAuthenticated,
-    DateTime? LastSyncUtc,
+    DateTimeOffset? LastSyncUtc,
     string? DeltaToken,
     bool EnableDetailedSyncLogging,
     bool EnableDebugLogging,

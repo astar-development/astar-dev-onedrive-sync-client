@@ -1,6 +1,6 @@
 using System.Reactive.Subjects;
-using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Models;
 using AStar.Dev.OneDrive.Client.Services;
@@ -197,8 +197,8 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     }
 
     private static List<OneDriveFolderNode> CreateTestFolders()
-        =>
-        [
+
+        => [
             CreateFolder("1", "Folder1", "/Folder1"),
             CreateFolder("2", "Folder2", "/Folder2"),
             CreateFolder("3", "Folder3", "/Folder3")

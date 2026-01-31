@@ -8,7 +8,7 @@ public class FileOperationLogEntity
     public string Id { get; set; } = string.Empty;
     public string SyncSessionId { get; set; } = string.Empty;
     public string AccountId { get; set; } = string.Empty;
-    public DateTime Timestamp { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
     public int Operation { get; set; }
     public string FilePath { get; set; } = string.Empty;
     public string LocalPath { get; set; } = string.Empty;
@@ -16,6 +16,6 @@ public class FileOperationLogEntity
     public long FileSize { get; set; }
     public string? LocalHash { get; set; }
     public string? RemoteHash { get; set; }
-    public DateTime LastModifiedUtc { get; set; }
+    public DateTimeOffset LastModifiedUtc { get; set; }
     public string Reason { get; set; } = string.Empty;
 }

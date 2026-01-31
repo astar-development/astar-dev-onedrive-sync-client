@@ -1,7 +1,5 @@
 using System.Reactive.Subjects;
 using AStar.Dev.OneDrive.Client.Accounts;
-using AStar.Dev.OneDrive.Client.Authentication;
-using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Models;
@@ -9,6 +7,8 @@ using AStar.Dev.OneDrive.Client.Services;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using AStar.Dev.OneDrive.Client.MainWindow;
 using Microsoft.EntityFrameworkCore;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
+using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.MainWindow;
 

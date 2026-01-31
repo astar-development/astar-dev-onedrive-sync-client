@@ -1,6 +1,6 @@
-using AStar.Dev.OneDrive.Client.Authentication;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 using Microsoft.Identity.Client;
-using AuthenticationResult = AStar.Dev.OneDrive.Client.Authentication.AuthenticationResult;
+using AuthenticationResult = AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication.AuthenticationResult;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Authentication;
 

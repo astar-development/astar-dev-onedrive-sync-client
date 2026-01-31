@@ -1,4 +1,5 @@
-using AStar.Dev.OneDrive.Client.Authentication;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 using AStar.Dev.OneDrive.Client.Models;
 using AStar.Dev.OneDrive.Client.Services.OneDriveServices;
 using Microsoft.Graph.Models;

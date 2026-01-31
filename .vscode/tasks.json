@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/AStarOneDriveClient.slnx",
+                "${workspaceFolder}/AStar.Dev.OneDrive.Client.slnx",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/AStarOneDriveClient.slnx",
+                "${workspaceFolder}/AStar.Dev.OneDrive.Client.slnx",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/src/AStarOneDriveClient/AStarOneDriveClient.csproj"
+                "${workspaceFolder}/src/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

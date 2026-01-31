@@ -19,16 +19,16 @@ public sealed record SyncConflict(
     string Id,
     string AccountId,
     string FilePath,
-    DateTime LocalModifiedUtc,
-    DateTime RemoteModifiedUtc,
+    DateTimeOffset LocalModifiedUtc,
+    DateTimeOffset RemoteModifiedUtc,
     long LocalSize,
     long RemoteSize,
-    DateTime DetectedUtc,
+    DateTimeOffset DetectedUtc,
     ConflictResolutionStrategy ResolutionStrategy,
     bool IsResolved
 )
 {
-    public static SyncConflict CreateUnresolvedConflict(string accountId, string filePath, DateTime localModifiedUtc, DateTime remoteModifiedUtc, long localSize, long remoteSize) => new(
+    public static SyncConflict CreateUnresolvedConflict(string accountId, string filePath, DateTimeOffset localModifiedUtc, DateTimeOffset remoteModifiedUtc, long localSize, long remoteSize) => new(
         Guid.CreateVersion7().ToString(),
         accountId,
         filePath,

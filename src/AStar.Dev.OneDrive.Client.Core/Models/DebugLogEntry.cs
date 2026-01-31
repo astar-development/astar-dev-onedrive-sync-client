@@ -13,7 +13,7 @@ namespace AStar.Dev.OneDrive.Client.Core.Models;
 public sealed record DebugLogEntry(
     int Id,
     string AccountId,
-    DateTime Timestamp,
+    DateTimeOffset Timestamp,
     string LogLevel,
     string Source,
     string Message,

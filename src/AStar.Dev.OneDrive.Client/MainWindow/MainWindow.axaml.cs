@@ -1,6 +1,6 @@
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Models;
 using AStar.Dev.OneDrive.Client.Services;
-using AStar.Dev.OneDrive.Client.MainWindow;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;

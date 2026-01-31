@@ -3,9 +3,9 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using AStar.Dev.OneDrive.Client.Authentication;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Client.Accounts;
@@ -28,9 +28,6 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
     /// <param name="accountRepository">The account repository.</param>
     public AccountManagementViewModel(IAuthService authService, IAccountRepository accountRepository)
     {
-        ArgumentNullException.ThrowIfNull(authService);
-        ArgumentNullException.ThrowIfNull(accountRepository);
-
         _authService = authService;
         _accountRepository = accountRepository;
         Accounts = [];

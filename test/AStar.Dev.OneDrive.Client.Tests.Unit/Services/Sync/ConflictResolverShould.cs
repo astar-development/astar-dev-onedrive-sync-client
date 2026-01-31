@@ -1,8 +1,8 @@
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Services;
-using AStar.Dev.OneDrive.Client.Services.OneDriveServices;
 using AStar.Dev.OneDrive.Client.Services.Sync;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;

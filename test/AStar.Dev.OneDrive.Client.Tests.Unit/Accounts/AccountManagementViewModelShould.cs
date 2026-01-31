@@ -1,8 +1,8 @@
 using System.Reactive.Linq;
 using AStar.Dev.OneDrive.Client.Accounts;
-using AStar.Dev.OneDrive.Client.Authentication;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Accounts;
 

@@ -1,9 +1,8 @@
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using AStar.Dev.OneDrive.Client.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Services;
-using AStar.Dev.OneDrive.Client.Services.OneDriveServices;
 using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Services;
@@ -378,7 +377,7 @@ public class SyncEngineShould
     public async Task DetectConflictWhenBothFilesModified()
     {
         (SyncEngine? engine, TestMocks? mocks) = CreateTestEngine();
-        DateTime baseTime = DateTime.UtcNow;
+        DateTimeOffset baseTime = DateTime.UtcNow;
 
         var localFile = new FileMetadata("file1", "acc1", "conflict.txt", "/Documents/conflict.txt", 150,
             baseTime.AddMinutes(5), @"C:\Sync\Documents\conflict.txt", null, null, "localhash",
@@ -670,7 +669,7 @@ public class SyncEngineShould
     public async Task HandleFileModifiedWithoutHashChange()
     {
         (SyncEngine? engine, TestMocks? mocks) = CreateTestEngine();
-        DateTime baseTime = DateTime.UtcNow;
+        DateTimeOffset baseTime = DateTime.UtcNow;
 
         var localFile = new FileMetadata("file1", "acc1", "samehash.txt", "/Documents/samehash.txt", 100,
             baseTime.AddMinutes(10), @"C:\Sync\Documents\samehash.txt", null, null, "samehash",
@@ -861,7 +860,7 @@ public class SyncEngineShould
     public async Task DetectConflictWithExistingUnresolvedConflict()
     {
         (SyncEngine? engine, TestMocks? mocks) = CreateTestEngine();
-        DateTime baseTime = DateTime.UtcNow;
+        DateTimeOffset baseTime = DateTime.UtcNow;
 
         var localFile = new FileMetadata("file1", "acc1", "conflict.txt", "/Documents/conflict.txt", 150,
             baseTime.AddMinutes(10), @"C:\Sync\Documents\conflict.txt", null, null, "localhash",
@@ -945,7 +944,7 @@ public class SyncEngineShould
         ISyncSessionLogRepository syncSessionLogRepo = Substitute.For<ISyncSessionLogRepository>();
         IFileOperationLogRepository fileOperationLogRepo = Substitute.For<IFileOperationLogRepository>();
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, null!, null!);
         var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo);
 
         return (engine, mocks);

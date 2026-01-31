@@ -9,5 +9,5 @@ public sealed class SyncConfigurationEntity
     public required string AccountId { get; set; }
     public required string FolderPath { get; set; }
     public bool IsSelected { get; set; }
-    public DateTime LastModifiedUtc { get; set; }
+    public DateTimeOffset LastModifiedUtc { get; set; }
 }

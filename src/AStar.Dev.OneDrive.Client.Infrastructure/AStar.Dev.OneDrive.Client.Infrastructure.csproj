@@ -7,6 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <!-- Microsoft Identity (MSAL) -->
+        <PackageReference Include="Microsoft.Identity.Client" Version="4.81.0"/>
+        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0"/>
+
+        <!-- Microsoft Graph API -->
+        <PackageReference Include="Microsoft.Graph" Version="5.100.0"/>
+        <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8"/>
+
         <!-- Entity Framework Core + SQLite -->
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2"/>

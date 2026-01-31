@@ -1,6 +1,6 @@
-using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
@@ -82,7 +82,7 @@ public sealed class DebugLogRepository : IDebugLogRepository
     }
 
     /// <inheritdoc />
-    public async Task DeleteOlderThanAsync(DateTime olderThan, CancellationToken cancellationToken = default)
+    public async Task DeleteOlderThanAsync(DateTimeOffset olderThan, CancellationToken cancellationToken = default)
     {
         List<DebugLogEntity> entities = await _context.DebugLogs
             .Where(log => log.TimestampUtc < olderThan)

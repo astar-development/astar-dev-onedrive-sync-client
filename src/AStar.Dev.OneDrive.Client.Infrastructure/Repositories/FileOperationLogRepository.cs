@@ -1,7 +1,7 @@
-using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
+using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
@@ -68,7 +68,7 @@ public sealed class FileOperationLogRepository(SyncDbContext context) : IFileOpe
     }
 
     /// <inheritdoc />
-    public async Task DeleteOldOperationsAsync(string accountId, DateTime olderThan, CancellationToken cancellationToken = default)
+    public async Task DeleteOldOperationsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(accountId);
 

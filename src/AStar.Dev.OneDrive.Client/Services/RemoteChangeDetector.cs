@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
-using AStar.Dev.OneDrive.Client.Services.OneDriveServices;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Client.Services;
@@ -209,7 +209,7 @@ public sealed class RemoteChangeDetector : IRemoteChangeDetector
         item.Name ?? string.Empty,
         path,
         item.Size ?? 0,
-        item.LastModifiedDateTime?.UtcDateTime ?? DateTime.UtcNow,
+        item.LastModifiedDateTime ?? DateTimeOffset.UtcNow,
         string.Empty, // Will be set during download
         item.CTag,
         item.ETag,

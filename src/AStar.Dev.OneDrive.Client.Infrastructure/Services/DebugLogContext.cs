@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Client.Core;
+
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
 /// <summary>
@@ -11,7 +13,7 @@ public static class DebugLogContext
     /// <summary>
     ///     Gets the current account ID from the ambient context.
     /// </summary>
-    public static string? CurrentAccountId => _currentAccountId.Value;
+    public static string CurrentAccountId => _currentAccountId.Value ?? AdminAccountMetadata.AccountId;
 
     /// <summary>
     ///     Sets the current account ID for the ambient context.

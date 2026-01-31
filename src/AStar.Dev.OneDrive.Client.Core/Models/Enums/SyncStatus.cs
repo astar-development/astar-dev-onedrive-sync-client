@@ -33,5 +33,15 @@ public enum SyncStatus
     /// <summary>
     ///     Synchronization is waiting to start.
     /// </summary>
-    Queued = 5
+    Queued = 5,
+
+    /// <summary>
+    ///     Starting the initial Delta Sync.
+    /// </summary>
+    InitialDeltaSync = 6,
+
+    /// <summary>
+    ///     Starting the incremental Delta Sync.
+    /// </summary>
+    IncrementalDeltaSync = 7
 }

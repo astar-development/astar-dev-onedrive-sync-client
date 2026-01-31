@@ -108,7 +108,7 @@ public sealed record AccountInfo
     public required string DisplayName { get; init; }    // User-friendly name (email)
     public required string LocalSyncPath { get; init; }  // User-selected local directory for this account
     public bool IsAuthenticated { get; init; }           // Current auth status
-    public DateTime? LastSyncUtc { get; init; }
+    public DateTimeOffset? LastSyncUtc { get; init; }
     public string? DeltaToken { get; init; }             // Graph API delta token for resuming sync
 }
 
@@ -120,7 +120,7 @@ public sealed record SyncConfiguration
     public required string AccountId { get; init; }
     public required IReadOnlyList<string> SelectedFolderIds { get; init; }  // OneDrive folder IDs to sync
     public required IReadOnlyDictionary<string, bool> FolderSelections { get; init; } // Path -> IsSelected
-    public DateTime LastModifiedUtc { get; init; } = DateTime.UtcNow;
+    public DateTimeOffset LastModifiedUtc { get; init; } = DateTime.UtcNow;
 }
 
 /// <summary>
@@ -139,7 +139,7 @@ public sealed record SyncState
     public int ConflictsDetected { get; init; }          // Files with conflicts
     public double MegabytesPerSecond { get; init; }
     public TimeSpan? EstimatedTimeRemaining { get; init; }
-    public DateTime? LastUpdateUtc { get; init; }
+    public DateTimeOffset? LastUpdateUtc { get; init; }
 }
 
 public enum SyncStatus
@@ -158,8 +158,8 @@ public sealed record SyncConflict
 {
     public required string FileId { get; init; }
     public required string FilePath { get; init; }
-    public DateTime LocalModifiedUtc { get; init; }
-    public DateTime RemoteModifiedUtc { get; init; }
+    public DateTimeOffset LocalModifiedUtc { get; init; }
+    public DateTimeOffset RemoteModifiedUtc { get; init; }
     public long LocalSize { get; init; }
     public long RemoteSize { get; init; }
     public ConflictResolutionStrategy ResolvedStrategy { get; init; }
@@ -1097,7 +1097,7 @@ public sealed record FileChangeEvent
     public required string LocalPath { get; init; }
     public required string RelativePath { get; init; }
     public FileChangeType ChangeType { get; init; }
-    public DateTime DetectedUtc { get; init; } = DateTime.UtcNow;
+    public DateTimeOffset DetectedUtc { get; init; } = DateTime.UtcNow;
 }
 
 public enum FileChangeType
@@ -1463,7 +1463,7 @@ public sealed class DeltaSyncEngine : IDeltaSyncEngine
         long totalBytes,
         long completedBytes,
         int conflictsDetected,
-        DateTime startTime,
+        DateTimeOffset startTime,
         CancellationToken cancellationToken)
     {
         if (completedFiles % 10 != 0 && !ShouldUpdateProgress(startTime))
@@ -1811,8 +1811,8 @@ public sealed class ConflictItemViewModel : ReactiveObject
 {
     public string FileId { get; }
     public string FilePath { get; }
-    public DateTime LocalModifiedUtc { get; }
-    public DateTime RemoteModifiedUtc { get; }
+    public DateTimeOffset LocalModifiedUtc { get; }
+    public DateTimeOffset RemoteModifiedUtc { get; }
     public long LocalSize { get; }
     public long RemoteSize { get; }
     

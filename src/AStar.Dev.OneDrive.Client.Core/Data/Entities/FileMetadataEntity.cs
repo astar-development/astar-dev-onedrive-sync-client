@@ -10,7 +10,7 @@ public sealed class FileMetadataEntity
     public required string Name { get; set; }
     public required string Path { get; set; }
     public long Size { get; set; }
-    public DateTime LastModifiedUtc { get; set; }
+    public DateTimeOffset LastModifiedUtc { get; set; }
     public required string LocalPath { get; set; }
     public string? CTag { get; set; }
     public string? ETag { get; set; }

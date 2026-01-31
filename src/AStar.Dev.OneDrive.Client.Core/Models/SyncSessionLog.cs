@@ -18,8 +18,8 @@ namespace AStar.Dev.OneDrive.Client.Core.Models;
 public record SyncSessionLog(
     string Id,
     string AccountId,
-    DateTime StartedUtc,
-    DateTime? CompletedUtc,
+    DateTimeOffset StartedUtc,
+    DateTimeOffset? CompletedUtc,
     SyncStatus Status,
     int FilesUploaded,
     int FilesDownloaded,

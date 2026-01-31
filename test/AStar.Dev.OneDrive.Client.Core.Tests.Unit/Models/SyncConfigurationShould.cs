@@ -7,7 +7,7 @@ public class SyncConfigurationShould
     [Fact]
     public void InitializeWithAllProperties()
     {
-        DateTime timestamp = DateTime.UtcNow;
+        DateTimeOffset timestamp = DateTime.UtcNow;
 
         var sut = new SyncConfiguration(
             1,
@@ -37,7 +37,7 @@ public class SyncConfigurationShould
     [Fact]
     public void DifferentiateRecordsWithDifferentValues()
     {
-        DateTime timestamp = DateTime.UtcNow;
+        DateTimeOffset timestamp = DateTime.UtcNow;
         var config1 = new SyncConfiguration(1, "acc-1", "/Folder1", true, timestamp);
         var config2 = new SyncConfiguration(2, "acc-1", "/Folder2", true, timestamp);
 

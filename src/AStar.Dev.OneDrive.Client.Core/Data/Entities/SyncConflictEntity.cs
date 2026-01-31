@@ -25,12 +25,12 @@ public sealed class SyncConflictEntity
     /// <summary>
     ///     Gets or sets the local file modification timestamp.
     /// </summary>
-    public DateTime LocalModifiedUtc { get; set; }
+    public DateTimeOffset LocalModifiedUtc { get; set; }
 
     /// <summary>
     ///     Gets or sets the OneDrive file modification timestamp.
     /// </summary>
-    public DateTime RemoteModifiedUtc { get; set; }
+    public DateTimeOffset RemoteModifiedUtc { get; set; }
 
     /// <summary>
     ///     Gets or sets the local file size in bytes.
@@ -45,7 +45,7 @@ public sealed class SyncConflictEntity
     /// <summary>
     ///     Gets or sets the timestamp when the conflict was detected.
     /// </summary>
-    public DateTime DetectedUtc { get; set; }
+    public DateTimeOffset DetectedUtc { get; set; }
 
     /// <summary>
     ///     Gets or sets the strategy chosen to resolve the conflict.

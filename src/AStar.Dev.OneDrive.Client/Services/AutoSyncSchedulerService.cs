@@ -12,63 +12,40 @@ namespace AStar.Dev.OneDrive.Client.Services;
 /// <summary>
 ///     Service for scheduling automatic remote sync checks for accounts.
 /// </summary>
-public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
+public sealed class AutoSyncSchedulerService(IAccountRepository accountRepository, ISyncEngine syncEngine, ILogger<AutoSyncSchedulerService> logger) : IAutoSyncSchedulerService
 {
-    private readonly IAccountRepository _accountRepository;
-    private readonly ILogger<AutoSyncSchedulerService> _logger;
-    private readonly ISyncEngine _syncEngine;
     private readonly ConcurrentDictionary<string, Timer> _timers = new();
     private bool _isDisposed;
-
-    /// <summary>
-    ///     Initializes a new instance of the <see cref="AutoSyncSchedulerService" /> class.
-    /// </summary>
-    /// <param name="accountRepository">Repository for account data.</param>
-    /// <param name="syncEngine">Sync engine for performing synchronization.</param>
-    /// <param name="logger">Logger instance.</param>
-    public AutoSyncSchedulerService(
-        IAccountRepository accountRepository,
-        ISyncEngine syncEngine,
-        ILogger<AutoSyncSchedulerService> logger)
-    {
-        ArgumentNullException.ThrowIfNull(accountRepository);
-        ArgumentNullException.ThrowIfNull(syncEngine);
-        ArgumentNullException.ThrowIfNull(logger);
-
-        _accountRepository = accountRepository;
-        _syncEngine = syncEngine;
-        _logger = logger;
-    }
 
     /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Starting auto-sync scheduler");
+        logger.LogInformation("Starting auto-sync scheduler");
 
-        IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync(cancellationToken);
+        IReadOnlyList<AccountInfo> accounts = await accountRepository.GetAllAsync(cancellationToken);
         foreach(AccountInfo account in accounts)
         {
             if(account.AutoSyncIntervalMinutes.HasValue && account.IsAuthenticated)
                 UpdateSchedule(account.AccountId, account.AutoSyncIntervalMinutes.Value);
         }
 
-        _logger.LogInformation("Auto-sync scheduler started with {Count} scheduled accounts", _timers.Count);
+        logger.LogInformation("Auto-sync scheduler started with {Count} scheduled accounts", _timers.Count);
     }
 
     /// <inheritdoc />
     public Task StopAsync()
     {
-        _logger.LogInformation("Stopping auto-sync scheduler");
+        logger.LogInformation("Stopping auto-sync scheduler");
 
         foreach((var accountId, Timer? timer) in _timers)
         {
             timer.Stop();
             timer.Dispose();
-            _logger.LogDebug("Stopped timer for account {AccountId}", accountId);
+            logger.LogDebug("Stopped timer for account {AccountId}", accountId);
         }
 
         _timers.Clear();
-        _logger.LogInformation("Auto-sync scheduler stopped");
+        logger.LogInformation("Auto-sync scheduler stopped");
 
         return Task.CompletedTask;
     }
@@ -76,17 +53,13 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
     /// <inheritdoc />
     public void UpdateSchedule(string accountId, int? intervalMinutes)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        // Remove existing timer if present
         if(_timers.TryRemove(accountId, out Timer? existingTimer))
         {
             existingTimer.Stop();
             existingTimer.Dispose();
-            _logger.LogDebug("Removed existing timer for account {AccountId}", accountId);
+            logger.LogDebug("Removed existing timer for account {AccountId}", accountId);
         }
 
-        // Create new timer if interval is specified
         if(intervalMinutes.HasValue)
         {
             var clampedInterval = Math.Clamp(intervalMinutes.Value, 60, 1440); // 1 hour to 24 hours
@@ -98,19 +71,19 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
             {
                 try
                 {
-                    _logger.LogInformation("Auto-sync triggered for account {AccountId}", accountId);
-                    await _syncEngine.StartSyncAsync(accountId, CancellationToken.None);
+                    logger.LogInformation("Auto-sync triggered for account {AccountId}", accountId);
+                    await syncEngine.StartSyncAsync(accountId, CancellationToken.None);
                 }
                 catch(Exception ex)
                 {
-                    _logger.LogError(ex, "Auto-sync failed for account {AccountId}", accountId);
+                    logger.LogError(ex, "Auto-sync failed for account {AccountId}", accountId);
                 }
             };
 
             timer.Start();
             _timers[accountId] = timer;
 
-            _logger.LogInformation("Scheduled auto-sync for account {AccountId} every {Interval} minutes",
+            logger.LogInformation("Scheduled auto-sync for account {AccountId} every {Interval} minutes",
                 accountId, clampedInterval);
         }
     }
@@ -118,13 +91,11 @@ public sealed class AutoSyncSchedulerService : IAutoSyncSchedulerService
     /// <inheritdoc />
     public void RemoveSchedule(string accountId)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         if(_timers.TryRemove(accountId, out Timer? timer))
         {
             timer.Stop();
             timer.Dispose();
-            _logger.LogInformation("Removed auto-sync schedule for account {AccountId}", accountId);
+            logger.LogInformation("Removed auto-sync schedule for account {AccountId}", accountId);
         }
     }
 

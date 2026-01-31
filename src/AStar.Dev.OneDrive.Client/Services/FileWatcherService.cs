@@ -16,23 +16,11 @@ namespace AStar.Dev.OneDrive.Client.Services;
 ///     Wraps FileSystemWatcher with debouncing (500ms) to handle rapid file changes
 ///     and partial writes. Supports monitoring multiple account directories independently.
 /// </remarks>
-public sealed class FileWatcherService : IFileWatcherService
+public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFileWatcherService
 {
     private readonly Subject<FileChangeEvent> _fileChanges = new();
-    private readonly ILogger<FileWatcherService> _logger;
     private readonly Dictionary<string, WatcherContext> _watchers = [];
     private bool _disposed;
-
-    /// <summary>
-    ///     Initializes a new instance of <see cref="FileWatcherService" />.
-    /// </summary>
-    /// <param name="logger">Logger for diagnostic messages.</param>
-    /// <exception cref="ArgumentNullException">Thrown if logger is null.</exception>
-    public FileWatcherService(ILogger<FileWatcherService> logger)
-    {
-        ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
-    }
 
     /// <inheritdoc />
     public IObservable<FileChangeEvent> FileChanges => _fileChanges.AsObservable();
@@ -40,14 +28,11 @@ public sealed class FileWatcherService : IFileWatcherService
     /// <inheritdoc />
     public void StartWatching(string accountId, string localPath)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(localPath);
-
         if(!Directory.Exists(localPath)) throw new DirectoryNotFoundException($"Directory not found: {localPath}");
 
         if(_watchers.ContainsKey(accountId))
         {
-            _logger.LogWarning("Already watching path for account {AccountId}. Stopping existing watcher first.", accountId);
+            logger.LogWarning("Already watching path for account {AccountId}. Stopping existing watcher first.", accountId);
             StopWatching(accountId);
         }
 
@@ -77,11 +62,11 @@ public sealed class FileWatcherService : IFileWatcherService
             watcher.Error += (s, e) => HandleWatcherError(accountId, e);
 
             _watchers[accountId] = new WatcherContext(watcher, changeBuffer, subscription);
-            _logger.LogInformation("Started watching {Path} for account {AccountId}", localPath, accountId);
+            logger.LogInformation("Started watching {Path} for account {AccountId}", localPath, accountId);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Failed to start watching {Path} for account {AccountId}", localPath, accountId);
+            logger.LogError(ex, "Failed to start watching {Path} for account {AccountId}", localPath, accountId);
             throw;
         }
     }
@@ -89,12 +74,10 @@ public sealed class FileWatcherService : IFileWatcherService
     /// <inheritdoc />
     public void StopWatching(string accountId)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         if(_watchers.Remove(accountId, out WatcherContext? context))
         {
             context.Dispose();
-            _logger.LogInformation("Stopped watching for account {AccountId}", accountId);
+            logger.LogInformation("Stopped watching for account {AccountId}", accountId);
         }
     }
 
@@ -111,7 +94,7 @@ public sealed class FileWatcherService : IFileWatcherService
         _fileChanges.Dispose();
         _disposed = true;
 
-        _logger.LogInformation("FileWatcherService disposed");
+        logger.LogInformation("FileWatcherService disposed");
     }
 
     private void ProcessFileChange(string accountId, string basePath, FileSystemEventArgs e)
@@ -139,19 +122,19 @@ public sealed class FileWatcherService : IFileWatcherService
             );
 
             _fileChanges.OnNext(changeEvent);
-            _logger.LogDebug("File change detected: {ChangeType} - {RelativePath} (Account: {AccountId})",
+            logger.LogDebug("File change detected: {ChangeType} - {RelativePath} (Account: {AccountId})",
                 changeType, relativePath, accountId);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Error emitting file change event for {Path}", e.FullPath);
+            logger.LogError(ex, "Error emitting file change event for {Path}", e.FullPath);
         }
     }
 
     private void HandleWatcherError(string accountId, ErrorEventArgs e)
     {
         Exception exception = e.GetException();
-        _logger.LogError(exception, "FileSystemWatcher error for account {AccountId}", accountId);
+        logger.LogError(exception, "FileSystemWatcher error for account {AccountId}", accountId);
 
         // Optionally emit an error event or attempt to restart the watcher
         // For now, just log the error

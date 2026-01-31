@@ -4,7 +4,6 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
-using AStar.Dev.OneDrive.Client.Models;
 using AStar.Dev.OneDrive.Client.Services;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
@@ -135,8 +134,8 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
             var parts = new List<string>();
 
             // Show scanning folder if currently scanning
-            if(!string.IsNullOrEmpty(CurrentProgress.CurrentScanningFolder))
-                parts.Add($"Scanning: {CurrentProgress.CurrentScanningFolder}");
+            if(!string.IsNullOrEmpty(CurrentProgress.CurrentStatusMessage))
+                parts.Add($"Scanning: {CurrentProgress.CurrentStatusMessage}");
             else
             {
                 // Show upload/download counts during transfer
@@ -273,9 +272,9 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
             if(CurrentProgress.TotalFiles == 0)
             {
                 // During scanning phase, show the folder being scanned
-                StatusMessage = string.IsNullOrEmpty(CurrentProgress.CurrentScanningFolder)
+                StatusMessage = string.IsNullOrEmpty(CurrentProgress.CurrentStatusMessage)
                     ? "Scanning for changes..."
-                    : $"Scanning: {CurrentProgress.CurrentScanningFolder}";
+                    : $"Scanning: {CurrentProgress.CurrentStatusMessage}";
             }
             else
             {

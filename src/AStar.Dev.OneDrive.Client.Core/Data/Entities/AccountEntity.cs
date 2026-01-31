@@ -9,11 +9,27 @@ public sealed class AccountEntity
     public required string DisplayName { get; set; }
     public required string LocalSyncPath { get; set; }
     public bool IsAuthenticated { get; set; }
-    public DateTime? LastSyncUtc { get; set; }
+    public DateTimeOffset? LastSyncUtc { get; set; }
     public string? DeltaToken { get; set; }
     public bool EnableDetailedSyncLogging { get; set; }
     public bool EnableDebugLogging { get; set; }
     public int MaxParallelUpDownloads { get; set; }
     public int MaxItemsInBatch { get; set; }
     public int? AutoSyncIntervalMinutes { get; set; }
+
+    public static AccountEntity CreateSystemAccount()
+        => new ()
+                {
+                    AccountId = AdminAccountMetadata.AccountId,
+                    DisplayName = "System Admin",
+                    LocalSyncPath= ".",
+                    AutoSyncIntervalMinutes = 0,
+                    DeltaToken = null,
+                    EnableDebugLogging = true,
+                    EnableDetailedSyncLogging = true,
+                    IsAuthenticated = true,
+                    LastSyncUtc = DateTimeOffset.MinValue,
+                    MaxItemsInBatch = 1,
+                    MaxParallelUpDownloads = 1
+                };
 }

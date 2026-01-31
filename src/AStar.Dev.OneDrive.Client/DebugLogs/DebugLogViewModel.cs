@@ -20,13 +20,8 @@ public sealed class DebugLogViewModel : ReactiveObject
     /// </summary>
     /// <param name="accountRepository">Repository for account data.</param>
     /// <param name="debugLogRepository">Repository for debug log entries.</param>
-    public DebugLogViewModel(
-        IAccountRepository accountRepository,
-        IDebugLogRepository debugLogRepository)
+    public DebugLogViewModel(IAccountRepository accountRepository, IDebugLogRepository debugLogRepository)
     {
-        ArgumentNullException.ThrowIfNull(accountRepository);
-        ArgumentNullException.ThrowIfNull(debugLogRepository);
-
         _accountRepository = accountRepository;
         _debugLogRepository = debugLogRepository;
 

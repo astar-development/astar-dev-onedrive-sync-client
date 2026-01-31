@@ -1,6 +1,6 @@
-using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -108,7 +108,7 @@ public class DebugLogRepositoryShould
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DebugLogRepository(context);
 
-        DateTime cutoff = DateTime.UtcNow.AddDays(-7);
+        DateTimeOffset cutoff = DateTime.UtcNow.AddDays(-7);
 
         _ = context.DebugLogs.Add(new DebugLogEntity
         {

@@ -15,5 +15,5 @@ public sealed record FileChangeEvent(
     string LocalPath,
     string RelativePath,
     FileChangeType ChangeType,
-    DateTime DetectedUtc
+    DateTimeOffset DetectedUtc
 );

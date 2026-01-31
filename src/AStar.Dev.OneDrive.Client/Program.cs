@@ -14,7 +14,7 @@ internal static class Program
 
         try
         {
-            BuildAvaloniaApp()
+            _ = BuildAvaloniaApp()
                 .StartWithClassicDesktopLifetime(args);
         }
         catch(Exception ex)

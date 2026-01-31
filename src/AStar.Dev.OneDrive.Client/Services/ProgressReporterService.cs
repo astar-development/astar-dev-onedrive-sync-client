@@ -1,14 +1,14 @@
 using System.Reactive.Subjects;
-using AStar.Dev.OneDrive.Client.Models;
+using AStar.Dev.OneDrive.Client.Core.Models;
 
 namespace AStar.Dev.OneDrive.Client.Services;
 
 public static class ProgressReporterService
 {
-    public static (int placeholder, BehaviorSubject<SyncState> progressSubject) ReportProgress(SyncState progress, BehaviorSubject<SyncState> progressSubject, DateTime lastProgressUpdate,
-        long lastCompletedBytes, List<(DateTime Timestamp, long Bytes)> transferHistory)
+    public static (int placeholder, BehaviorSubject<SyncState> progressSubject) ReportProgress(SyncState progress, BehaviorSubject<SyncState> progressSubject, DateTimeOffset lastProgressUpdate,
+        long lastCompletedBytes, List<(DateTimeOffset Timestamp, long Bytes)> transferHistory)
     {
-        DateTime now = DateTime.UtcNow;
+        DateTimeOffset now = DateTime.UtcNow;
         var elapsedSeconds = (now - lastProgressUpdate).TotalSeconds;
 
         double megabytesPerSecond = 0;

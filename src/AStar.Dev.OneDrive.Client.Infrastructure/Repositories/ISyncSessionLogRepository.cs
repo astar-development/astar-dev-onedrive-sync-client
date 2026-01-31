@@ -43,5 +43,5 @@ public interface ISyncSessionLogRepository
     /// <param name="accountId">The account identifier.</param>
     /// <param name="olderThan">Delete sessions older than this date.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task DeleteOldSessionsAsync(string accountId, DateTime olderThan, CancellationToken cancellationToken = default);
+    Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default);
 }

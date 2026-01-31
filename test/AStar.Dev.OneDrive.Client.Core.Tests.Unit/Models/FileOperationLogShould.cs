@@ -16,8 +16,8 @@ public class FileOperationLogShould
         FileOperation operationType = FileOperation.ConflictDetected;
         var localHash = "local-file-hash";
         var fileSize = 2048L;
-        DateTime lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
-        DateTime remoteLastModifiedUtc = DateTime.UtcNow;
+        DateTimeOffset lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
+        DateTimeOffset remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
         var fileOperationLog = FileOperationLog.CreateSyncConflictLog(
@@ -53,8 +53,8 @@ public class FileOperationLogShould
         FileOperation operationType = FileOperation.Download;
         var localHash = "local-file-hash";
         var fileSize = 2048L;
-        DateTime lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
-        DateTime remoteLastModifiedUtc = DateTime.UtcNow;
+        DateTimeOffset lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
+        DateTimeOffset remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
         var fileOperationLog = FileOperationLog.CreateDownloadLog(
@@ -90,8 +90,8 @@ public class FileOperationLogShould
         FileOperation operationType = FileOperation.Upload;
         var localHash = "local-file-hash";
         var fileSize = 2048L;
-        DateTime lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
-        DateTime remoteLastModifiedUtc = DateTime.UtcNow;
+        DateTimeOffset lastModifiedUtc = DateTime.UtcNow.AddSeconds(-30);
+        DateTimeOffset remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
         var fileOperationLog = FileOperationLog.CreateUploadLog(

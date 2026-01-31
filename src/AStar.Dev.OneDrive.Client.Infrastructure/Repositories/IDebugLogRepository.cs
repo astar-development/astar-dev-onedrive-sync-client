@@ -45,5 +45,5 @@ public interface IDebugLogRepository
     /// </summary>
     /// <param name="olderThan">Delete entries older than this date.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task DeleteOlderThanAsync(DateTime olderThan, CancellationToken cancellationToken = default);
+    Task DeleteOlderThanAsync(DateTimeOffset olderThan, CancellationToken cancellationToken = default);
 }

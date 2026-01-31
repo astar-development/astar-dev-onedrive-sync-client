@@ -8,38 +8,10 @@ namespace AStar.Dev.OneDrive.Client.Services;
 /// <inheritdoc />
 #pragma warning disable CA1848 // Use LoggerMessage delegates
 #pragma warning disable CA1873 // Avoid string interpolation in logging
-public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
+public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, ISyncEngine syncEngine, IAccountRepository accountRepository, ILogger<AutoSyncCoordinator> logger) : IAutoSyncCoordinator
 {
-    private readonly IAccountRepository _accountRepository;
     private readonly Dictionary<string, IDisposable> _accountSubscriptions = [];
     private readonly CompositeDisposable _disposables = [];
-    private readonly IFileWatcherService _fileWatcherService;
-    private readonly ILogger<AutoSyncCoordinator> _logger;
-    private readonly ISyncEngine _syncEngine;
-
-    /// <summary>
-    ///     Initializes a new instance of <see cref="AutoSyncCoordinator" />.
-    /// </summary>
-    /// <param name="fileWatcherService">Service for monitoring file system changes.</param>
-    /// <param name="syncEngine">Sync engine for performing synchronization.</param>
-    /// <param name="accountRepository">Repository for account data.</param>
-    /// <param name="logger">Logger for diagnostic messages.</param>
-    public AutoSyncCoordinator(
-        IFileWatcherService fileWatcherService,
-        ISyncEngine syncEngine,
-        IAccountRepository accountRepository,
-        ILogger<AutoSyncCoordinator> logger)
-    {
-        ArgumentNullException.ThrowIfNull(fileWatcherService);
-        ArgumentNullException.ThrowIfNull(syncEngine);
-        ArgumentNullException.ThrowIfNull(accountRepository);
-        ArgumentNullException.ThrowIfNull(logger);
-
-        _fileWatcherService = fileWatcherService;
-        _syncEngine = syncEngine;
-        _accountRepository = accountRepository;
-        _logger = logger;
-    }
 
     /// <summary>
     ///     Starts monitoring an account's sync directory for changes.
@@ -53,46 +25,38 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
     /// </remarks>
     public async Task StartMonitoringAsync(string accountId, string localPath, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(localPath);
-
-        // Stop any existing monitoring for this account
         StopMonitoring(accountId);
 
         try
         {
-            // Start file watcher
-            _fileWatcherService.StartWatching(accountId, localPath);
+            fileWatcherService.StartWatching(accountId, localPath);
 
-            // Subscribe to file changes with debouncing (2 seconds)
-            // This groups rapid file changes into a single sync operation
-            IDisposable subscription = _fileWatcherService.FileChanges
+            IDisposable subscription = fileWatcherService.FileChanges
                 .Where(e => e.AccountId == accountId)
                 .Buffer(TimeSpan.FromSeconds(2))
                 .Where(changes => changes.Count > 0)
                 .Subscribe(async changes =>
                 {
-                    _logger.LogInformation("Detected {Count} file change(s) for account {AccountId}, triggering sync",
-                        changes.Count, accountId);
+                    logger.LogInformation("Detected {Count} file change(s) for account {AccountId}, triggering sync", changes.Count, accountId);
 
                     try
                     {
-                        await _syncEngine.StartSyncAsync(accountId, CancellationToken.None);
+                        await syncEngine.StartSyncAsync(accountId, CancellationToken.None);
                     }
                     catch(Exception ex)
                     {
-                        _logger.LogError(ex, "Auto-sync failed for account {AccountId}", accountId);
+                        logger.LogError(ex, "Auto-sync failed for account {AccountId}", accountId);
                     }
                 });
 
             _accountSubscriptions[accountId] = subscription;
 
-            _logger.LogInformation("Started auto-sync monitoring for account {AccountId} at {Path}",
+            logger.LogInformation("Started auto-sync monitoring for account {AccountId} at {Path}",
                 accountId, localPath);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Failed to start auto-sync monitoring for account {AccountId}", accountId);
+            logger.LogError(ex, "Failed to start auto-sync monitoring for account {AccountId}", accountId);
             throw;
         }
 
@@ -105,14 +69,12 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
     /// <param name="accountId">Account identifier.</param>
     public void StopMonitoring(string accountId)
     {
-        ArgumentNullException.ThrowIfNull(accountId);
-
         if(_accountSubscriptions.Remove(accountId, out IDisposable? subscription))
         {
             subscription.Dispose();
-            _fileWatcherService.StopWatching(accountId);
+            fileWatcherService.StopWatching(accountId);
 
-            _logger.LogInformation("Stopped auto-sync monitoring for account {AccountId}", accountId);
+            logger.LogInformation("Stopped auto-sync monitoring for account {AccountId}", accountId);
         }
     }
 
@@ -123,7 +85,7 @@ public sealed class AutoSyncCoordinator : IAutoSyncCoordinator
     {
         StopAll();
         _disposables.Dispose();
-        _logger.LogInformation("AutoSyncCoordinator disposed");
+        logger.LogInformation("AutoSyncCoordinator disposed");
     }
 
     /// <summary>

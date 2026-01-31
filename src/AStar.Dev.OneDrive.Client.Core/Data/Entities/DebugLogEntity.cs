@@ -7,7 +7,7 @@ public sealed class DebugLogEntity
 {
     public int Id { get; set; }
     public required string AccountId { get; set; }
-    public DateTime TimestampUtc { get; set; }
+    public DateTimeOffset TimestampUtc { get; set; }
     public required string LogLevel { get; set; }
     public required string Source { get; set; }
     public required string Message { get; set; }

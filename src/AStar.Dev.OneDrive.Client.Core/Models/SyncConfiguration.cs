@@ -8,10 +8,4 @@ namespace AStar.Dev.OneDrive.Client.Core.Models;
 /// <param name="FolderPath">OneDrive folder path.</param>
 /// <param name="IsSelected">Indicates whether this folder is selected for synchronization.</param>
 /// <param name="LastModifiedUtc">Timestamp when this configuration was last modified.</param>
-public sealed record SyncConfiguration(
-    int Id,
-    string AccountId,
-    string FolderPath,
-    bool IsSelected,
-    DateTime LastModifiedUtc
-);
+public sealed record SyncConfiguration(int Id, string AccountId, string FolderPath, bool IsSelected, DateTimeOffset LastModifiedUtc);

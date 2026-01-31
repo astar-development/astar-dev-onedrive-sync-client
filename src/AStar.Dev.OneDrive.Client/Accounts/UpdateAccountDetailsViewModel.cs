@@ -23,12 +23,8 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
     /// </summary>
     /// <param name="accountRepository">Repository for account data.</param>
     /// <param name="schedulerService">Service for scheduling automatic syncs.</param>
-    public UpdateAccountDetailsViewModel(
-        IAccountRepository accountRepository,
-        IAutoSyncSchedulerService schedulerService)
+    public UpdateAccountDetailsViewModel(IAccountRepository accountRepository, IAutoSyncSchedulerService schedulerService)
     {
-        ArgumentNullException.ThrowIfNull(accountRepository);
-        ArgumentNullException.ThrowIfNull(schedulerService);
         _accountRepository = accountRepository;
         _schedulerService = schedulerService;
 
@@ -114,7 +110,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
             var clampedValue = Math.Clamp(value, 1, 10);
             _ = this.RaiseAndSetIfChanged(ref field, clampedValue);
         }
-    } = 3;
+    } = 5;
 
     /// <summary>
     ///     Gets or sets the maximum number of items to process in a single batch (1-100).

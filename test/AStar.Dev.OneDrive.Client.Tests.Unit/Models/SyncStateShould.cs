@@ -1,5 +1,5 @@
+using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
-using AStar.Dev.OneDrive.Client.Models;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Models;
 
@@ -27,7 +27,7 @@ public class SyncStateShould
         Assert.Equal(0, syncState.ConflictsDetected);
         Assert.Equal(0.0, syncState.MegabytesPerSecond);
         Assert.Null(syncState.EstimatedSecondsRemaining);
-        Assert.Null(syncState.CurrentScanningFolder);
+        Assert.Null(syncState.CurrentStatusMessage);
         Assert.Null(syncState.LastUpdateUtc);
     }
 }

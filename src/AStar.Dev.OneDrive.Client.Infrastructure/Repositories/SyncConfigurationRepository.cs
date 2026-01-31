@@ -1,7 +1,7 @@
 using AStar.Dev.Functional.Extensions;
-using AStar.Dev.OneDrive.Client.Core.Data;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
@@ -33,15 +33,11 @@ public sealed class SyncConfigurationRepository : ISyncConfigurationRepository
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<string>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(accountId);
-
-        return await _context.SyncConfigurations
-            .Where(sc => sc.AccountId == accountId && sc.IsSelected)
-            .Select(sc => CleanUpPath(sc.FolderPath))
-            .Distinct()
-            .ToListAsync(cancellationToken);
-    }
+        => await _context.SyncConfigurations
+                .Where(sc => sc.AccountId == accountId && sc.IsSelected)
+                .Select(sc => CleanUpPath(sc.FolderPath))
+                .Distinct()
+                .ToListAsync(cancellationToken);
 
     /// <inheritdoc />
     public async Task<Result<IList<string>, ErrorResponse>> GetSelectedFolders2Async(string accountId, CancellationToken cancellationToken = default)

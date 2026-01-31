@@ -46,5 +46,5 @@ public interface IFileOperationLogRepository
     /// <param name="accountId">The account identifier.</param>
     /// <param name="olderThan">Delete operations older than this date.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task DeleteOldOperationsAsync(string accountId, DateTime olderThan, CancellationToken cancellationToken = default);
+    Task DeleteOldOperationsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default);
 }

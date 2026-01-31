@@ -1,4 +1,4 @@
-using AStar.Dev.OneDrive.Client.Core.Data;
+using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,7 +23,7 @@ public sealed class LogCleanupBackgroundService(IServiceProvider serviceProvider
             {
                 using IServiceScope scope = _scopeFactory.CreateScope();
                 SyncDbContext db = scope.ServiceProvider.GetRequiredService<SyncDbContext>();
-                DateTime cutoff = DateTime.UtcNow - RetentionPeriod;
+                DateTimeOffset cutoff = DateTime.UtcNow - RetentionPeriod;
 
                 var sessionLogsDeleted = await db.SyncSessionLogs
                     .Where(x => x.StartedUtc < cutoff)

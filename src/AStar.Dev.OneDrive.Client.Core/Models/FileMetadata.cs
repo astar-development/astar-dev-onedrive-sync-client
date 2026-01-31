@@ -23,7 +23,7 @@ public sealed record FileMetadata(
     string Name,
     string Path,
     long Size,
-    DateTime LastModifiedUtc,
+    DateTimeOffset LastModifiedUtc,
     string LocalPath,
     string? CTag,
     string? ETag,

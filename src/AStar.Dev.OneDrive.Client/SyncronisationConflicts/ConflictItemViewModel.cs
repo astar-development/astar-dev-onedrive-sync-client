@@ -51,12 +51,12 @@ public sealed class ConflictItemViewModel : ReactiveObject
     /// <summary>
     ///     Gets the local file's last modified timestamp (UTC).
     /// </summary>
-    public DateTime LocalModifiedUtc { get; }
+    public DateTimeOffset LocalModifiedUtc { get; }
 
     /// <summary>
     ///     Gets the remote file's last modified timestamp (UTC).
     /// </summary>
-    public DateTime RemoteModifiedUtc { get; }
+    public DateTimeOffset RemoteModifiedUtc { get; }
 
     /// <summary>
     ///     Gets the local file size in bytes.
@@ -71,7 +71,7 @@ public sealed class ConflictItemViewModel : ReactiveObject
     /// <summary>
     ///     Gets the timestamp when this conflict was detected (UTC).
     /// </summary>
-    public DateTime DetectedUtc { get; }
+    public DateTimeOffset DetectedUtc { get; }
 
     /// <summary>
     ///     Gets or sets the user's chosen resolution strategy for this conflict.

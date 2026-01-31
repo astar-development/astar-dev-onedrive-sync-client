@@ -2,28 +2,17 @@ using System.IO.Abstractions;
 using System.Security.Cryptography;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
 namespace AStar.Dev.OneDrive.Client.Services;
 
 /// <summary>
 ///     Service for scanning local file system and detecting file changes.
 /// </summary>
-public sealed class LocalFileScanner : ILocalFileScanner
+public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
 {
-    private readonly IFileSystem _fileSystem;
-
-    public LocalFileScanner(IFileSystem fileSystem)
-    {
-        ArgumentNullException.ThrowIfNull(fileSystem);
-        _fileSystem = fileSystem;
-    }
-
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FileMetadata>> ScanFolderAsync(
-        string accountId,
-        string localFolderPath,
-        string oneDriveFolderPath,
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileMetadata>> ScanFolderAsync(string accountId, string localFolderPath, string oneDriveFolderPath, CancellationToken cancellationToken = default)
     {
         var indexOfDrives = localFolderPath.IndexOf("drives", StringComparison.OrdinalIgnoreCase);
         if(indexOfDrives >= 0)
@@ -38,11 +27,8 @@ public sealed class LocalFileScanner : ILocalFileScanner
         }
 
         await DebugLog.EntryAsync("LocalFileScanner.ScanFolderAsync", cancellationToken);
-        ArgumentNullException.ThrowIfNull(accountId);
-        ArgumentNullException.ThrowIfNull(localFolderPath);
-        ArgumentNullException.ThrowIfNull(oneDriveFolderPath);
 
-        if(!_fileSystem.Directory.Exists(localFolderPath)) return [];
+        if(!fileSystem.Directory.Exists(localFolderPath)) return [];
 
         await DebugLog.InfoAsync("LocalFileScanner.ScanFolderAsync", $"Scanning folder: {localFolderPath}", cancellationToken);
         var fileMetadataList = new List<FileMetadata>();
@@ -60,31 +46,25 @@ public sealed class LocalFileScanner : ILocalFileScanner
     /// <inheritdoc />
     public async Task<string> ComputeFileHashAsync(string filePath, CancellationToken cancellationToken)
     {
-        using FileSystemStream stream = _fileSystem.File.OpenRead(filePath);
+        using FileSystemStream stream = fileSystem.File.OpenRead(filePath);
         var hashBytes = await SHA256.HashDataAsync(stream, cancellationToken);
         return Convert.ToHexString(hashBytes);
     }
 
-    private async Task ScanDirectoryRecursiveAsync(
-        string accountId,
-        string currentLocalPath,
-        string currentOneDrivePath,
-        List<FileMetadata> fileMetadataList,
-        CancellationToken cancellationToken)
+    private async Task ScanDirectoryRecursiveAsync(string accountId, string currentLocalPath, string currentOneDrivePath, List<FileMetadata> fileMetadataList, CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", cancellationToken);
-        cancellationToken.ThrowIfCancellationRequested();
 
         try
         {
-            var files = _fileSystem.Directory.GetFiles(currentLocalPath);
+            var files = fileSystem.Directory.GetFiles(currentLocalPath);
             foreach(var filePath in files)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 try
                 {
-                    IFileInfo fileInfo = _fileSystem.FileInfo.New(filePath);
+                    IFileInfo fileInfo = fileSystem.FileInfo.New(filePath);
                     if(!fileInfo.Exists) continue;
 
                     var relativePath = GetRelativePath(currentLocalPath, filePath);
@@ -117,7 +97,7 @@ public sealed class LocalFileScanner : ILocalFileScanner
                 }
             }
 
-            var directories = _fileSystem.Directory.GetDirectories(currentLocalPath);
+            var directories = fileSystem.Directory.GetDirectories(currentLocalPath);
             foreach(var directory in directories)
             {
                 var relativePath = GetRelativePath(currentLocalPath, directory);

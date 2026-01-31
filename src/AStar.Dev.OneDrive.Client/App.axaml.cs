@@ -1,6 +1,5 @@
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Services;
-using AStar.Dev.OneDrive.Client.MainWindow;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -26,7 +25,7 @@ public sealed class App : Application
     {
         // Configure dependency injection
         Services = ServiceConfiguration.ConfigureServices();
-        ServiceConfiguration.EnsureDatabaseCreated(Services);
+        ServiceConfiguration.EnsureDatabaseUpdated(Services);
 
         // Initialize static debug logger
         IDebugLogger debugLogger = Services.GetRequiredService<IDebugLogger>();
@@ -39,6 +38,8 @@ public sealed class App : Application
         if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow.MainWindow();
+
+            desktop.Startup += async (_, _) => await DebugLog.InfoAsync("App Startup", "Application has started", CancellationToken.None);
 
             // Cleanup on exit
             desktop.Exit += (_, _) =>
