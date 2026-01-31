@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Configuration;
 using Serilog;
+using ILogger = Serilog.ILogger;
 
 namespace AStar.Dev.Logging.Extensions.Serilog.Tests.Unit;
 

@@ -15,7 +15,7 @@ public static class SerilogExtensions
     /// <returns>An instance of <see cref="ILogger" /> configured with a minimal setup.</returns>
     public static ILogger CreateMinimalLogger() => new LoggerConfiguration()
         .MinimumLevel.Debug()
-        .WriteTo.Console()
+        .WriteTo.Console(formatProvider: System.Globalization.CultureInfo.InvariantCulture)
         .CreateBootstrapLogger();
 
     /// <summary>
@@ -52,7 +52,7 @@ public static class SerilogExtensions
             _ = Directory.CreateDirectory(logDir);
             var logPath = Path.Combine(logDir, "astar-dev-onedrive-client-.log");
 
-            return config.WriteTo.File(logPath, rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: LogEventLevel.Debug);
+            return config.WriteTo.File(logPath, rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: LogEventLevel.Debug, formatProvider: System.Globalization.CultureInfo.InvariantCulture);
         }
         catch
         {

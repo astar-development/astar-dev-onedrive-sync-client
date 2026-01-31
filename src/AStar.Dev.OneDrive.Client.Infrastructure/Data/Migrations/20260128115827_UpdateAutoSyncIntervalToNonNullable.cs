@@ -2,45 +2,44 @@
 
 #nullable disable
 
-namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
+namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations;
+
+/// <inheritdoc />
+public partial class UpdateAutoSyncIntervalToNonNullable : Migration
 {
     /// <inheritdoc />
-    public partial class UpdateAutoSyncIntervalToNonNullable : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.RenameColumn(
-                name: "Id",
-                table: "DriveItems",
-                newName: "DriveItemId");
+        _ = migrationBuilder.RenameColumn(
+            name: "Id",
+            table: "DriveItems",
+            newName: "DriveItemId");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "AutoSyncIntervalMinutes",
-                table: "Accounts",
-                type: "INTEGER",
-                nullable: false,
-                defaultValue: 0,
-                oldClrType: typeof(int),
-                oldType: "INTEGER",
-                oldNullable: true);
-        }
+        _ = migrationBuilder.AlterColumn<int>(
+            name: "AutoSyncIntervalMinutes",
+            table: "Accounts",
+            type: "INTEGER",
+            nullable: false,
+            defaultValue: 0,
+            oldClrType: typeof(int),
+            oldType: "INTEGER",
+            oldNullable: true);
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.RenameColumn(
-                name: "DriveItemId",
-                table: "DriveItems",
-                newName: "Id");
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        _ = migrationBuilder.RenameColumn(
+            name: "DriveItemId",
+            table: "DriveItems",
+            newName: "Id");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "AutoSyncIntervalMinutes",
-                table: "Accounts",
-                type: "INTEGER",
-                nullable: true,
-                oldClrType: typeof(int),
-                oldType: "INTEGER");
-        }
+        _ = migrationBuilder.AlterColumn<int>(
+            name: "AutoSyncIntervalMinutes",
+            table: "Accounts",
+            type: "INTEGER",
+            nullable: true,
+            oldClrType: typeof(int),
+            oldType: "INTEGER");
     }
 }

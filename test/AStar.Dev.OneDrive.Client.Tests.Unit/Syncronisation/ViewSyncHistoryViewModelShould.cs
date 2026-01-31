@@ -13,7 +13,7 @@ public class ViewSyncHistoryViewModelShould
     public ViewSyncHistoryViewModelShould()
     {
         _debugLogger = Substitute.For<IDebugLogger>();
-        
+
         _mockAccountRepo = Substitute.For<IAccountRepository>();
         _mockFileOpLogRepo = Substitute.For<IFileOperationLogRepository>();
     }

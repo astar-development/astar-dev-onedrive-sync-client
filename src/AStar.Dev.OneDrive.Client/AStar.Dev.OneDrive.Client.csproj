@@ -29,7 +29,7 @@
         <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0"/>
 
         <!-- Microsoft Graph API -->
-        <PackageReference Include="Microsoft.Graph" Version="5.100.0"/>
+        <PackageReference Include="Microsoft.Graph" Version="5.101.0"/>
         <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8"/>
 
         <!-- Reactive Extensions -->
@@ -67,7 +67,6 @@
         <ProjectReference Include="..\AStar.Dev.OneDrive.Client.Core\AStar.Dev.OneDrive.Client.Core.csproj"/>
         <ProjectReference Include="..\AStar.Dev.OneDrive.Client.Infrastructure\AStar.Dev.OneDrive.Client.Infrastructure.csproj"/>
         <ProjectReference Include="..\nuget-packages\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj"/>
-        <ProjectReference Include="..\nuget-packages\AStar.Dev.Logging.Extensions.Serilog\AStar.Dev.Logging.Extensions.Serilog.csproj"/>
         <ProjectReference Include="..\nuget-packages\AStar.Dev.Logging.Extensions\AStar.Dev.Logging.Extensions.csproj"/>
         <ProjectReference Include="..\nuget-packages\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj"/>
     </ItemGroup>

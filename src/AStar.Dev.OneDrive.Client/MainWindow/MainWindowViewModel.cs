@@ -185,10 +185,12 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         var window = new UpdateAccountDetailsWindow();
 
         if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
-           {
-               MainWindow: not null
-           } desktop)
+            {
+                MainWindow: not null
+            } desktop)
+        {
             _ = window.ShowDialog(desktop.MainWindow);
+        }
     }
 
     /// <summary>
@@ -199,10 +201,12 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         var window = new ViewSyncHistoryWindow();
 
         if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
-           {
-               MainWindow: not null
-           } desktop)
+            {
+                MainWindow: not null
+            } desktop)
+        {
             _ = window.ShowDialog(desktop.MainWindow);
+        }
     }
 
     /// <summary>
@@ -213,10 +217,12 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         var window = new DebugLogWindow();
 
         if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
-           {
-               MainWindow: not null
-           } desktop)
+            {
+                MainWindow: not null
+            } desktop)
+        {
             _ = window.ShowDialog(desktop.MainWindow);
+        }
     }
 
     private void WireUpTheAccountManagentViewModel(AccountManagementViewModel accountManagementViewModel, SyncTreeViewModel syncTreeViewModel)
@@ -264,8 +270,9 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                         .DisposeWith(_disposables);
 
                     _ = syncProgressVm.WhenAnyValue(vm => vm.CurrentProgress)
-                        .Where(progress => progress is not null &&
-                                           progress is { Status: SyncStatus.Completed, ConflictsDetected: 0 })
+                        .Where(progress => progress is not null and
+
+                        { Status: SyncStatus.Completed, ConflictsDetected: 0 })
                         .Delay(TimeSpan.FromSeconds(2))
                         .ObserveOn(RxApp.MainThreadScheduler)
                         .Subscribe(_ => CloseSyncProgressView())
@@ -331,8 +338,9 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                         // Auto-close overlay when sync completes successfully without conflicts
                         // Note: Do NOT auto-close on Failed status - user needs to see error details
                         _ = syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
-                            .Where(progress => progress is not null &&
-                                               progress is { Status: SyncStatus.Completed, ConflictsDetected: 0 })
+                            .Where(progress => progress is not null and
+
+                            { Status: SyncStatus.Completed, ConflictsDetected: 0 })
                             .Delay(TimeSpan.FromSeconds(2)) // Show completion message briefly
                             .ObserveOn(RxApp.MainThreadScheduler)
                             .Subscribe(_ => CloseSyncProgressView())

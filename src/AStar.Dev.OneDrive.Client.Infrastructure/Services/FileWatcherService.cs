@@ -1,7 +1,7 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using Microsoft.Extensions.Logging;
 
 #pragma warning disable CA1848 // Use LoggerMessage delegates
@@ -28,10 +28,10 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
     /// <inheritdoc />
     public void StartWatching(string accountId, string localPath)
     {
-        if (!Directory.Exists(localPath))
+        if(!Directory.Exists(localPath))
             throw new DirectoryNotFoundException($"Directory not found: {localPath}");
 
-        if (_watchers.ContainsKey(accountId))
+        if(_watchers.ContainsKey(accountId))
         {
             logger.LogWarning("Already watching path for account {AccountId}. Stopping existing watcher first.", accountId);
             StopWatching(accountId);
@@ -65,7 +65,7 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
             _watchers[accountId] = new WatcherContext(watcher, changeBuffer, subscription);
             logger.LogInformation("Started watching {Path} for account {AccountId}", localPath, accountId);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             logger.LogError(ex, "Failed to start watching {Path} for account {AccountId}", localPath, accountId);
             throw;
@@ -75,7 +75,7 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
     /// <inheritdoc />
     public void StopWatching(string accountId)
     {
-        if (_watchers.Remove(accountId, out WatcherContext? context))
+        if(_watchers.Remove(accountId, out WatcherContext? context))
         {
             context.Dispose();
             logger.LogInformation("Stopped watching for account {AccountId}", accountId);
@@ -87,10 +87,10 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
     /// </summary>
     public void Dispose()
     {
-        if (_disposed)
+        if(_disposed)
             return;
 
-        foreach (WatcherContext context in _watchers.Values)
+        foreach(WatcherContext context in _watchers.Values)
             context.Dispose();
 
         _watchers.Clear();
@@ -128,7 +128,7 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
             logger.LogDebug("File change detected: {ChangeType} - {RelativePath} (Account: {AccountId})",
                 changeType, relativePath, accountId);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             logger.LogError(ex, "Error emitting file change event for {Path}", e.FullPath);
         }

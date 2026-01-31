@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using Microsoft.EntityFrameworkCore;
+using Serilog.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Data;
 
@@ -54,7 +55,8 @@ public sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : DbC
         if(!optionsBuilder.IsConfigured)
             _ = optionsBuilder.UseSqlite(@"Data Source=C:\Users\jbarden\AppData\Local\AStar.Dev.OneDrive.Client\sync.db");
 
-        _ = optionsBuilder.EnableSensitiveDataLogging();
+        _ = optionsBuilder.UseLoggerFactory(new SerilogLoggerFactory());
+
         base.OnConfiguring(optionsBuilder);
     }
 

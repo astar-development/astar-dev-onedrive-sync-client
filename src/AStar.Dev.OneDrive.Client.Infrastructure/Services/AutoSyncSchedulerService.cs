@@ -26,7 +26,8 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
         IReadOnlyList<AccountInfo> accounts = await accountRepository.GetAllAsync(cancellationToken);
         foreach(AccountInfo account in accounts)
         {
-            if(account is not { AutoSyncIntervalMinutes: > 0, IsAuthenticated: true }) continue;
+            if(account is not { AutoSyncIntervalMinutes: > 0, IsAuthenticated: true })
+                continue;
             UpdateSchedule(account.AccountId, account.AutoSyncIntervalMinutes);
             autoSyncCount++;
             debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StartAsync, account.AccountId, "Stopping auto-sync scheduler", CancellationToken.None).GetAwaiter().GetResult();
@@ -53,7 +54,7 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
         {
             timer.Stop();
             timer.Dispose();
-            
+
             debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StopAsync, accountId, "Stopping auto-sync scheduler", CancellationToken.None).GetAwaiter().GetResult();
         }
 

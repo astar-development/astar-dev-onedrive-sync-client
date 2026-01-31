@@ -273,7 +273,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             IsLoading = false;
         }
     }
-    
+
     private async Task LoadChildrenAsync(OneDriveFolderNode folder, CancellationToken cancellationToken = default)
     {
         if(folder.ChildrenLoaded || string.IsNullOrEmpty(SelectedAccountId))
@@ -303,7 +303,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             folder.IsLoading = false;
         }
     }
-    
+
     private void ToggleSelection(OneDriveFolderNode folder)
     {
         var newState = folder.SelectionState switch

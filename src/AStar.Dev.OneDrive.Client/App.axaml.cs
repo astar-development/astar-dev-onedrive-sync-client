@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace AStar.Dev.OneDrive.Client;
 
@@ -12,27 +13,22 @@ namespace AStar.Dev.OneDrive.Client;
 /// </summary>
 public sealed class App : Application
 {
-    /// <summary>
-    ///     Gets the service provider for dependency injection.
-    /// </summary>
-    public static ServiceProvider? Services { get; private set; }
-
+    public static IHost Host { get; private set; } = null!;
+    
     /// <inheritdoc />
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     /// <inheritdoc />
     public override void OnFrameworkInitializationCompleted()
     {
-        // Configure dependency injection
-        Services = ServiceConfiguration.ConfigureServices();
-        ServiceConfiguration.EnsureDatabaseUpdated(Services);
+        Host = AppHost.BuildHost();
+        IServiceProvider services = Host.Services;
 
-        // Initialize static debug logger
-        IDebugLogger debugLogger = Services.GetRequiredService<IDebugLogger>();
-        DebugLog.Initialize(debugLogger);
+        _ = Host.StartAsync();
+        AppHost.EnsureDatabaseUpdated(services);
 
         // Start auto-sync scheduler
-        IAutoSyncSchedulerService scheduler = Services.GetRequiredService<IAutoSyncSchedulerService>();
+        IAutoSyncSchedulerService scheduler = services.GetRequiredService<IAutoSyncSchedulerService>();
         _ = scheduler.StartAsync();
 
         if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -41,12 +37,7 @@ public sealed class App : Application
 
             desktop.Startup += async (_, _) => await DebugLog.InfoAsync("App Startup", "Application has started", AdminAccountMetadata.AccountId, CancellationToken.None);
 
-            // Cleanup on exit
-            desktop.Exit += (_, _) =>
-            {
-                scheduler.Dispose();
-                Services?.Dispose();
-            };
+            desktop.Exit += (_, _) => scheduler.Dispose();
         }
 
         base.OnFrameworkInitializationCompleted();

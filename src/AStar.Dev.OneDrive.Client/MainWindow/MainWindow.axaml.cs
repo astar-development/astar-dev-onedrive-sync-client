@@ -20,10 +20,10 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
 
         // Retrieve the MainWindowViewModel from DI container
-        if(App.Services is not null)
+        if(App.Host.Services is not null)
         {
-            DataContext = App.Services.GetRequiredService<MainWindowViewModel>();
-            _preferencesService = App.Services.GetService<IWindowPreferencesService>();
+            DataContext = App.Host.Services.GetRequiredService<MainWindowViewModel>();
+            _preferencesService = App.Host.Services.GetService<IWindowPreferencesService>();
 
             // Load and apply saved window position
             _ = LoadWindowPreferencesAsync();

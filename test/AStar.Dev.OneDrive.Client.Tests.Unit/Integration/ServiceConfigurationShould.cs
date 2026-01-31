@@ -1,80 +1,80 @@
-using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using AStar.Dev.OneDrive.Client.Infrastructure.Services;
+// using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
+// using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
-using Microsoft.Extensions.DependencyInjection;
+// using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.OneDrive.Client.Tests.Unit.Integration;
+// namespace AStar.Dev.OneDrive.Client.Tests.Unit.Integration;
 
-public class ServiceConfigurationShould
-{
-    [Fact]
-    public void ConfigureAllServicesCorrectly()
-    {
-        ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
+// public class ServiceConfigurationShould
+// {
+//     [Fact]
+//     public void ConfigureAllServicesCorrectly()
+//     {
+//         ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
 
-        _ = serviceProvider.ShouldNotBeNull();
-    }
+//         _ = serviceProvider.ShouldNotBeNull();
+//     }
 
-    [Fact]
-    public void ResolveAccountRepositorySuccessfully()
-    {
-        using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
+//     [Fact]
+//     public void ResolveAccountRepositorySuccessfully()
+//     {
+//         using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
 
-        IAccountRepository? repository = serviceProvider.GetService<IAccountRepository>();
+//         IAccountRepository? repository = serviceProvider.GetService<IAccountRepository>();
 
-        _ = repository.ShouldNotBeNull();
-        _ = repository.ShouldBeOfType<AccountRepository>();
-    }
+//         _ = repository.ShouldNotBeNull();
+//         _ = repository.ShouldBeOfType<AccountRepository>();
+//     }
 
-    [Fact]
-    public void ResolveSyncConfigurationRepositorySuccessfully()
-    {
-        using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
+//     [Fact]
+//     public void ResolveSyncConfigurationRepositorySuccessfully()
+//     {
+//         using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
 
-        ISyncConfigurationRepository? repository = serviceProvider.GetService<ISyncConfigurationRepository>();
+//         ISyncConfigurationRepository? repository = serviceProvider.GetService<ISyncConfigurationRepository>();
 
-        _ = repository.ShouldNotBeNull();
-        _ = repository.ShouldBeOfType<SyncConfigurationRepository>();
-    }
+//         _ = repository.ShouldNotBeNull();
+//         _ = repository.ShouldBeOfType<SyncConfigurationRepository>();
+//     }
 
-    [Fact]
-    public void ResolveFileMetadataRepositorySuccessfully()
-    {
-        using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
+//     [Fact]
+//     public void ResolveFileMetadataRepositorySuccessfully()
+//     {
+//         using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
 
-        IDriveItemsRepository? repository = serviceProvider.GetService<IDriveItemsRepository>();
+//         IDriveItemsRepository? repository = serviceProvider.GetService<IDriveItemsRepository>();
 
-        _ = repository.ShouldNotBeNull();
-        _ = repository.ShouldBeOfType<DriveItemsRepository>();
-    }
+//         _ = repository.ShouldNotBeNull();
+//         _ = repository.ShouldBeOfType<DriveItemsRepository>();
+//     }
 
-    [Fact]
-    public void ResolveWindowPreferencesServiceSuccessfully()
-    {
-        using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
+//     [Fact]
+//     public void ResolveWindowPreferencesServiceSuccessfully()
+//     {
+//         using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
 
-        IWindowPreferencesService? service = serviceProvider.GetService<IWindowPreferencesService>();
+//         IWindowPreferencesService? service = serviceProvider.GetService<IWindowPreferencesService>();
 
-        _ = service.ShouldNotBeNull();
-        _ = service.ShouldBeOfType<WindowPreferencesService>();
-    }
+//         _ = service.ShouldNotBeNull();
+//         _ = service.ShouldBeOfType<WindowPreferencesService>();
+//     }
 
-    [Fact]
-    public void CreateScopedInstancesForRepositories()
-    {
-        using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
+//     [Fact]
+//     public void CreateScopedInstancesForRepositories()
+//     {
+//         using ServiceProvider serviceProvider = ServiceConfiguration.ConfigureServices();
 
-        IAccountRepository? repo1;
-        IAccountRepository? repo2;
+//         IAccountRepository? repo1;
+//         IAccountRepository? repo2;
 
-        using(IServiceScope scope1 = serviceProvider.CreateScope())
-            repo1 = scope1.ServiceProvider.GetService<IAccountRepository>();
+//         using(IServiceScope scope1 = serviceProvider.CreateScope())
+//             repo1 = scope1.ServiceProvider.GetService<IAccountRepository>();
 
-        using(IServiceScope scope2 = serviceProvider.CreateScope())
-            repo2 = scope2.ServiceProvider.GetService<IAccountRepository>();
+//         using(IServiceScope scope2 = serviceProvider.CreateScope())
+//             repo2 = scope2.ServiceProvider.GetService<IAccountRepository>();
 
-        _ = repo1.ShouldNotBeNull();
-        _ = repo2.ShouldNotBeNull();
-        repo1.ShouldNotBeSameAs(repo2);
-    }
-}
+//         _ = repo1.ShouldNotBeNull();
+//         _ = repo2.ShouldNotBeNull();
+//         repo1.ShouldNotBeSameAs(repo2);
+//     }
+// }

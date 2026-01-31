@@ -1,7 +1,6 @@
 using Avalonia;
 using ReactiveUI.Avalonia;
 using Serilog;
-using static AStar.Dev.Logging.Extensions.Serilog.SerilogExtensions;
 
 namespace AStar.Dev.OneDrive.Client;
 
@@ -10,8 +9,6 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        Log.Logger = CreateMinimalLogger();
-
         try
         {
             _ = BuildAvaloniaApp()
@@ -19,10 +16,11 @@ internal static class Program
         }
         catch(Exception ex)
         {
-            Log.Fatal(ex, "Application terminated unexpectedly");
+            Log.Fatal(ex, $"{ApplicationMetadata.ApplicationName} terminated unexpectedly");
         }
         finally
         {
+            Log.Information($"{ApplicationMetadata.ApplicationName} Shutting Down");
             Log.CloseAndFlush();
         }
     }
