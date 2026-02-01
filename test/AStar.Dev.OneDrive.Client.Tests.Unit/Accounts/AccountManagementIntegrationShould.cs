@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Accounts;
 
@@ -14,6 +15,7 @@ public class AccountManagementIntegrationShould : IDisposable
     private readonly SyncDbContext _dbContext;
     private readonly IAuthService _mockAuthService;
     private readonly IDbContextFactory<SyncDbContext> _contextFactory;
+    private readonly ILogger<AccountManagementViewModel> _mockLogger;
     private bool _disposed;
 
     public AccountManagementIntegrationShould()
@@ -26,6 +28,7 @@ public class AccountManagementIntegrationShould : IDisposable
 
         _accountRepository = new AccountRepository(_contextFactory);
         _mockAuthService = Substitute.For<IAuthService>();
+        _mockLogger = Substitute.For<ILogger<AccountManagementViewModel>>();
     }
 
     public void Dispose()
@@ -42,7 +45,7 @@ public class AccountManagementIntegrationShould : IDisposable
         await _accountRepository.AddAsync(account1, TestContext.Current.CancellationToken);
         await _accountRepository.AddAsync(account2, TestContext.Current.CancellationToken);
 
-        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
+        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Accounts.Count.ShouldBe(2);
@@ -56,7 +59,7 @@ public class AccountManagementIntegrationShould : IDisposable
         var authResult = new AuthenticationResult(true, "new-acc", "New User", null);
         _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
-        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
+        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         _ = viewModel.AddAccountCommand.Execute().Subscribe();
@@ -75,7 +78,7 @@ public class AccountManagementIntegrationShould : IDisposable
         var account = new AccountInfo("acc-to-delete", "User", "/path", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
-        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
+        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.SelectedAccount = viewModel.Accounts.First();
@@ -95,7 +98,7 @@ public class AccountManagementIntegrationShould : IDisposable
         var authResult = new AuthenticationResult(true, null, null, null);
         _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
-        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
+        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.SelectedAccount = viewModel.Accounts.First();
@@ -115,7 +118,7 @@ public class AccountManagementIntegrationShould : IDisposable
 
         _ = _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
 
-        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
+        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.SelectedAccount = viewModel.Accounts.First();
@@ -134,7 +137,7 @@ public class AccountManagementIntegrationShould : IDisposable
         _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
         _ = _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
 
-        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
+        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         _ = viewModel.AddAccountCommand.Execute().Subscribe();
@@ -157,7 +160,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact(Skip = "Doesnt work")]
     public async Task HandleEmptyDatabaseGracefully()
     {
-        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
+        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.Accounts.ShouldBeEmpty();
@@ -182,7 +185,7 @@ public class AccountManagementIntegrationShould : IDisposable
             0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
-        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository);
+        using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         AccountInfo loadedAccount = viewModel.Accounts.First();

@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 
 using AStar.Dev.OneDrive.Client.Syncronisation;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Syncronisation;
 
@@ -16,6 +17,7 @@ public class SyncTreeViewModelShould : IDisposable
     private readonly Subject<SyncState> _progressSubject;
     private readonly SyncTreeViewModel _viewModel;
     private readonly IDebugLogger _mockDebugLogger;
+    private readonly ILogger<SyncTreeViewModel> _logger;
 
     public SyncTreeViewModelShould()
     {
@@ -23,11 +25,12 @@ public class SyncTreeViewModelShould : IDisposable
         _mockSelectionService = Substitute.For<ISyncSelectionService>();
         _mockSyncEngine = Substitute.For<ISyncEngine>();
         _mockDebugLogger = Substitute.For<IDebugLogger>();
+        _logger = Substitute.For<ILogger<SyncTreeViewModel>>();
 
         _progressSubject = new Subject<SyncState>();
         _ = _mockSyncEngine.Progress.Returns(_progressSubject);
 
-        _viewModel = new SyncTreeViewModel(_mockFolderService, _mockSelectionService, _mockSyncEngine, _mockDebugLogger);
+        _viewModel = new SyncTreeViewModel(_mockFolderService, _mockSelectionService, _mockSyncEngine, _mockDebugLogger, _logger);
     }
 
     public void Dispose()
@@ -290,7 +293,7 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public void ThrowArgumentNullExceptionWhenFolderServiceIsNull()
     {
-        Exception? exception = Record.Exception(() => new SyncTreeViewModel(null!, _mockSelectionService, _mockSyncEngine, _mockDebugLogger));
+        Exception? exception = Record.Exception(() => new SyncTreeViewModel(null!, _mockSelectionService, _mockSyncEngine, _mockDebugLogger, _logger));
 
         _ = exception.ShouldNotBeNull();
         _ = exception.ShouldBeOfType<ArgumentNullException>();
@@ -299,7 +302,7 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public void ThrowArgumentNullExceptionWhenSelectionServiceIsNull()
     {
-        Exception? exception = Record.Exception(() => new SyncTreeViewModel(_mockFolderService, null!, _mockSyncEngine, _mockDebugLogger));
+        Exception? exception = Record.Exception(() => new SyncTreeViewModel(_mockFolderService, null!, _mockSyncEngine, _mockDebugLogger, _logger));
 
         _ = exception.ShouldNotBeNull();
         _ = exception.ShouldBeOfType<ArgumentNullException>();

@@ -11,6 +11,7 @@ using AStar.Dev.OneDrive.Client.MainWindow;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.MainWindow;
 
@@ -27,6 +28,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     private readonly Subject<SyncState> _progressSubject;
     private readonly ISyncSelectionService _syncSelectionService;
     private readonly IDbContextFactory<SyncDbContext> _contextFactory;
+    private readonly ILogger<AccountManagementViewModel> _mockLogger;
+    private readonly ILogger<SyncTreeViewModel> _logger;
 
     public MainWindowViewModelIntegrationShould()
     {
@@ -40,6 +43,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _syncSelectionService = Substitute.For<ISyncSelectionService>();
         _mockSyncEngine = Substitute.For<ISyncEngine>();
         _mockDebugLogger = Substitute.For<IDebugLogger>();
+        _mockLogger = Substitute.For<ILogger<AccountManagementViewModel>>();
+        _logger = Substitute.For<ILogger<SyncTreeViewModel>>();
 
         _progressSubject = new Subject<SyncState>();
         _ = _mockSyncEngine.Progress.Returns(_progressSubject);
@@ -73,8 +78,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-123", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([rootFolder]));
 
-        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger);
+        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
@@ -116,8 +121,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-456", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([rootFolder]));
 
-        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger);
+        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
@@ -152,8 +157,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-2", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([folder2]));
 
-        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger);
+        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
@@ -188,8 +193,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
             .Returns(Task.FromException<IReadOnlyList<OneDriveFolderNode>>(
                 new InvalidOperationException("Network error")));
 
-        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger);
+        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
@@ -218,8 +223,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
                 new OneDriveFolderNode { DriveItemId = "f1", Name = "TestFolder", Path = "/TestFolder", IsFolder = true }
             ]));
 
-        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository);
-        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger);
+        var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
+        var syncTreeVm = new SyncTreeViewModel(_mockFolderTreeService, _syncSelectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
         _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));

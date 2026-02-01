@@ -576,5 +576,24 @@
             <param name="addFileSink">When true, adds a rolling file sink; set to false in unit tests to avoid real IO.</param>
             <returns>The same <see cref="T:Serilog.LoggerConfiguration" /> for chaining.</returns>
         </member>
+        <member name="T:AStar.Dev.Logging.Extensions.Serilog.SerilogLogFileLocator">
+            <summary>
+             Locates Serilog log files in a specified directory.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.Serilog.SerilogLogFileLocator.GetLatestLogFile(System.String)">
+            <summary>
+              Gets the latest log file in the specified directory.
+            </summary>
+            <param name="logDir"></param>
+            <returns></returns>
+        </member>
+        <member name="M:AStar.Dev.Logging.Extensions.Serilog.SerilogLogFileLocator.GetAllLogFiles(System.String)">
+            <summary>
+             Gets all log files in the specified directory ordered by last write time descending.
+            </summary>
+            <param name="logDir"></param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

@@ -37,7 +37,14 @@ public static class AppHost
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .Enrich.FromLogContext()
-            .WriteTo.File(Path.Combine(logDir, "sync.log"), rollingInterval: RollingInterval.Day)
+            .WriteTo.File(
+                    formatter: new Serilog.Formatting.Json.JsonFormatter(),
+                    path: Path.Combine(logDir, "sync.log"),
+                    rollingInterval: RollingInterval.Day,
+                    retainedFileCountLimit: 7,
+                    shared: true,
+                    flushToDiskInterval: TimeSpan.FromSeconds(1)
+                )
             .CreateLogger();
 
         IHost host = Host.CreateDefaultBuilder()

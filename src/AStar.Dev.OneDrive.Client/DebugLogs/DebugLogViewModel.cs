@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
+using AStar.Dev.Logging.Extensions.Serilog;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
@@ -61,7 +62,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             if(value is not null)
             {
                 CurrentPage = 1;
-                _ = LoadDebugLogsAsync();
+                _ = LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
             }
         }
     }
@@ -155,58 +156,31 @@ public sealed class DebugLogViewModel : ReactiveObject
         }
     }
 
-    private async Task LoadDebugLogsAsync()
+    public async Task LoadAllLogsAsync(string applicationFolder)
     {
-        if(SelectedAccount is null)
-            return;
+        var logDir = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            applicationFolder, "logs");
+        IEnumerable<string> allFiles = SerilogLogFileLocator.GetAllLogFiles(logDir);
 
-        IsLoading = true;
-        try
+        DebugLogs.Clear();
+
+        var id = 1;
+
+        var accountHash = SelectedAccount is not null
+            ? AccountIdHasher.Hash(SelectedAccount.AccountId)
+            : string.Empty;
+            
+        foreach (var file in allFiles.Where(f => f.Contains(accountHash)))
         {
-            var skip = (CurrentPage - 1) * _pageSize;
+            var lines = await File.ReadAllLinesAsync(file);
 
-            // Fetch PageSize + 1 to determine if there are more records
-            IReadOnlyList<DebugLogEntry> logs = await _debugLogRepository.GetByAccountIdAsync(
-                SelectedAccount.AccountId,
-                _pageSize + 1,
-                skip);
-
-            TotalRecordCount = await _debugLogRepository.GetDebugLogCountByAccountIdAsync(SelectedAccount.AccountId);
-
-            DebugLogs.Clear();
-
-            // If we got more than PageSize, there are more records
-            HasMoreRecords = logs.Count > _pageSize;
-
-            // Only show PageSize records
-            IEnumerable<DebugLogEntry> logsToDisplay = logs.Take(_pageSize);
-            foreach(DebugLogEntry? log in logsToDisplay)
-                DebugLogs.Add(log);
-
-            // Update total count estimate based on current position
-            if(HasMoreRecords)
+            foreach (var line in lines)
             {
-                // We know there are at least (CurrentPage * PageSize) + 1 records
-                TotalRecordCount = Math.Max(TotalRecordCount, (CurrentPage * _pageSize) + 1);
+                DebugLogEntry? entry = SerilogLogParser.Parse(line, id++);
+                if (entry is not null)
+                    DebugLogs.Add(entry);
             }
-            else
-            {
-                // We're on the last page, so we know the exact total
-                TotalRecordCount = skip + DebugLogs.Count;
-            }
-
-            // Notify property changes for navigation buttons
-            this.RaisePropertyChanged(nameof(CanGoToNextPage));
-            this.RaisePropertyChanged(nameof(CanGoToPreviousPage));
-        }
-        catch(Exception ex)
-        {
-            var errorMessage = $"Failed to load folders: {ex.GetBaseException().Message}";
-            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", SelectedAccount.AccountId, $"Loading folders for account {SelectedAccount.AccountId}. {errorMessage}", cancellationToken: CancellationToken.None);
-        }
-        finally
-        {
-            IsLoading = false;
         }
     }
 
@@ -216,7 +190,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             return;
 
         CurrentPage++;
-        await LoadDebugLogsAsync();
+        await LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
     }
 
     private async Task LoadPreviousPageAsync()
@@ -225,7 +199,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             return;
 
         CurrentPage--;
-        await LoadDebugLogsAsync();
+        await LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
     }
 
     private async Task ClearLogsAsync()
@@ -238,7 +212,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         {
             await _debugLogRepository.DeleteByAccountIdAsync(SelectedAccount.AccountId);
             CurrentPage = 1;
-            await LoadDebugLogsAsync();
+            await LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
         }
         catch(Exception)
         {

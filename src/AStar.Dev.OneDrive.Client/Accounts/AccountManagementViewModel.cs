@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Client.Accounts;
@@ -16,6 +17,7 @@ namespace AStar.Dev.OneDrive.Client.Accounts;
 public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 {
     private readonly IAccountRepository _accountRepository;
+    private readonly ILogger<AccountManagementViewModel> _logger;
     private readonly IAuthService _authService;
     private readonly CompositeDisposable _disposables = [];
 
@@ -26,16 +28,15 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
     /// </summary>
     /// <param name="authService">The authentication service.</param>
     /// <param name="accountRepository">The account repository.</param>
-    public AccountManagementViewModel(IAuthService authService, IAccountRepository accountRepository)
+    public AccountManagementViewModel(IAuthService authService, IAccountRepository accountRepository, ILogger<AccountManagementViewModel> logger)
     {
         _authService = authService;
         _accountRepository = accountRepository;
+        _logger = logger;
         Accounts = [];
 
-        // Add Account command - always enabled
         AddAccountCommand = ReactiveCommand.CreateFromTask(AddAccountAsync, outputScheduler: RxApp.MainThreadScheduler);
 
-        // Remove Account command - enabled when account is selected
         IObservable<bool> canRemove = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null);
         RemoveAccountCommand = ReactiveCommand.CreateFromTask(
@@ -43,7 +44,6 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             canRemove,
             RxApp.MainThreadScheduler);
 
-        // Login command - enabled when account is selected and not authenticated
         IObservable<bool> canLogin = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null && !account.IsAuthenticated);
         LoginCommand = ReactiveCommand.CreateFromTask(
@@ -51,7 +51,6 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             canLogin,
             RxApp.MainThreadScheduler);
 
-        // Logout command - enabled when account is selected and authenticated
         IObservable<bool> canLogout = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null && account.IsAuthenticated);
         LogoutCommand = ReactiveCommand.CreateFromTask(
@@ -59,12 +58,10 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             canLogout,
             RxApp.MainThreadScheduler);
 
-        // Dispose observables
         _ = canRemove.Subscribe().DisposeWith(_disposables);
         _ = canLogin.Subscribe().DisposeWith(_disposables);
         _ = canLogout.Subscribe().DisposeWith(_disposables);
 
-        // Load accounts on initialization
         _ = LoadAccountsAsync();
     }
 
@@ -153,7 +150,6 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            // Clear any existing toast and start fresh
             _toastCts?.Cancel();
             ToastMessage = null;
             ToastVisible = false;
@@ -161,7 +157,6 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             AuthenticationResult result = await _authService.LoginAsync();
             if(result is { Success: true, AccountId: not null, DisplayName: not null })
             {
-                // Create new account with default sync path
                 var defaultPath = Path.Combine(
                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                     ApplicationMetadata.ApplicationFolder,
@@ -221,7 +216,6 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            // Clear any existing toast and start fresh
             _toastCts?.Cancel();
             ToastMessage = null;
             ToastVisible = false;
@@ -237,6 +231,11 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                 {
                     Accounts[index] = updatedAccount;
                     SelectedAccount = updatedAccount;
+                    var accountHash = AccountIdHasher.Hash(updatedAccount.AccountId); 
+                    using (Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
+                    {
+                        _logger.LogInformation("Starting sync for account");
+                    }
                 }
             }
             else if(result is { Success: false, ErrorMessage: not null })

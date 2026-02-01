@@ -12,28 +12,20 @@ namespace AStar.Dev.OneDrive.Client.MainWindow;
 /// </summary>
 public sealed partial class MainWindow : Window
 {
-    private readonly IWindowPreferencesService? _preferencesService;
-    private readonly DispatcherTimer? _savePreferencesTimer;
+    private readonly IWindowPreferencesService _preferencesService;
+    private readonly DispatcherTimer _savePreferencesTimer;
 
     public MainWindow()
     {
         InitializeComponent();
 
-        // Retrieve the MainWindowViewModel from DI container
-        if(App.Host.Services is not null)
-        {
-            DataContext = App.Host.Services.GetRequiredService<MainWindowViewModel>();
-            _preferencesService = App.Host.Services.GetService<IWindowPreferencesService>();
+        DataContext = App.Host.Services.GetRequiredService<MainWindowViewModel>();
+        _preferencesService = App.Host.Services.GetRequiredService<IWindowPreferencesService>();
+        _ = LoadWindowPreferencesAsync();
 
-            // Load and apply saved window position
-            _ = LoadWindowPreferencesAsync();
-        }
-
-        // Save window position when it changes
         PositionChanged += OnPositionChanged;
         PropertyChanged += OnWindowPropertyChanged;
 
-        // Initialize debounce timer for saving preferences (1 second delay)
         _savePreferencesTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
         _savePreferencesTimer.Tick += async (s, e) =>
         {
@@ -52,7 +44,6 @@ public sealed partial class MainWindow : Window
             WindowPreferences? preferences = await _preferencesService.LoadAsync();
             if(preferences is not null)
             {
-                // Apply saved preferences
                 if(preferences.IsMaximized)
                 {
                     WindowState = WindowState.Maximized;
@@ -73,7 +64,6 @@ public sealed partial class MainWindow : Window
 
     private void OnPositionChanged(object? sender, PixelPointEventArgs e)
     {
-        // Restart timer - this debounces the save operation
         _savePreferencesTimer?.Stop();
         _savePreferencesTimer?.Start();
     }
@@ -82,7 +72,6 @@ public sealed partial class MainWindow : Window
     {
         if(e.Property == WindowStateProperty || e.Property == WidthProperty || e.Property == HeightProperty)
         {
-            // Restart timer - this debounces the save operation
             _savePreferencesTimer?.Stop();
             _savePreferencesTimer?.Start();
         }

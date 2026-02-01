@@ -140,7 +140,7 @@ public class MainWindowViewModelShould
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-        return new AccountManagementViewModel(mockAuth, mockRepo);
+        return new AccountManagementViewModel(mockAuth, mockRepo, Substitute.For<Microsoft.Extensions.Logging.ILogger<AccountManagementViewModel>>());
     }
 
     private static SyncTreeViewModel CreateSyncTreeViewModel()
@@ -152,6 +152,6 @@ public class MainWindowViewModelShould
         var progressSubject = new Subject<SyncState>();
         _ = mockSyncEngine.Progress.Returns(progressSubject);
 
-        return new SyncTreeViewModel(mockFolderService, mockSelectionService, mockSyncEngine, Substitute.For<IDebugLogger>());
+        return new SyncTreeViewModel(mockFolderService, mockSelectionService, mockSyncEngine, Substitute.For<IDebugLogger>(), Substitute.For<Microsoft.Extensions.Logging.ILogger<SyncTreeViewModel>>());
     }
 }

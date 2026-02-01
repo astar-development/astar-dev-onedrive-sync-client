@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Syncronisation;
 
@@ -24,6 +25,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     private readonly SyncSelectionService _selectionService;
     private readonly IDebugLogger _mockDebugLogger;
     private readonly IDbContextFactory<SyncDbContext> _contextFactory;
+    private readonly ILogger<SyncTreeViewModel> _logger;
 
     public SyncTreeViewModelPersistenceIntegrationShould()
     {
@@ -37,6 +39,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         _mockFolderTreeService = Substitute.For<IFolderTreeService>();
         _mockSyncEngine = Substitute.For<ISyncEngine>();
         _mockDebugLogger = Substitute.For<IDebugLogger>();
+        _logger = Substitute.For<ILogger<SyncTreeViewModel>>();
 
         _progressSubject = new Subject<SyncState>();
         _ = _mockSyncEngine.Progress.Returns(_progressSubject);
@@ -56,7 +59,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
 
-        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger);
+        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async load
 
@@ -83,7 +86,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
 
         // Act - Load folders (should restore selections)
-        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger);
+        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
@@ -105,7 +108,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
 
-        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger);
+        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
@@ -134,7 +137,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
 
         // Act - Load account 1
-        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger);
+        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
@@ -157,7 +160,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
 
         // Act - Should not throw even if database is unavailable
-        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger);
+        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
@@ -188,7 +191,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([parent]));
 
         // Act
-        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger);
+        using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _logger);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
 

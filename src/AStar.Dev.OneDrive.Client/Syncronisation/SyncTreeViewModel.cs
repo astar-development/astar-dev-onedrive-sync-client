@@ -8,6 +8,7 @@ using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Client.Syncronisation;
@@ -22,6 +23,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     private readonly ISyncSelectionService _selectionService;
     private readonly ISyncEngine _syncEngine;
     private readonly IDebugLogger _debugLogger;
+    private readonly ILogger<SyncTreeViewModel> _logger;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SyncTreeViewModel" /> class.
@@ -30,12 +32,13 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// <param name="selectionService">Service for managing selection state.</param>
     /// <param name="syncEngine">Service for file synchronization.</param>
     /// <param name="debugLogger">Service for logging debug information.</param>
-    public SyncTreeViewModel(IFolderTreeService folderTreeService, ISyncSelectionService selectionService, ISyncEngine syncEngine, IDebugLogger debugLogger)
+    public SyncTreeViewModel(IFolderTreeService folderTreeService, ISyncSelectionService selectionService, ISyncEngine syncEngine, IDebugLogger debugLogger,  ILogger<SyncTreeViewModel> logger)
     {
         _folderTreeService = folderTreeService ?? throw new ArgumentNullException(nameof(folderTreeService));
         _selectionService = selectionService ?? throw new ArgumentNullException(nameof(selectionService));
         _syncEngine = syncEngine ?? throw new ArgumentNullException(nameof(syncEngine));
         _debugLogger = debugLogger ?? throw new ArgumentNullException(nameof(debugLogger));
+        _logger = logger;
 
         LoadFoldersCommand = ReactiveCommand.CreateFromTask(LoadFoldersAsync);
         LoadChildrenCommand = ReactiveCommand.CreateFromTask<OneDriveFolderNode>(LoadChildrenAsync);
@@ -68,6 +71,12 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 this.RaisePropertyChanged(nameof(ProgressText));
             })
             .DisposeWith(_disposables);
+
+            var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? string.Empty); 
+                    using (Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
+                    {
+                        _logger.LogInformation("Starting sync for account");
+                    }
     }
 
     /// <summary>
