@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <NoWarn>1701;1702;</NoWarn>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+        <NoWarn>1701;1702;</NoWarn>
+    </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Dependency Injection -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
+
+    <!-- Data Access: Entity Framework Core & PostgreSQL -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
+
+    <!-- Authentication: OAuth 2.0 with MSAL -->
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.82.0" />
+
+    <!-- Microsoft Graph API: Kiota abstractions and client -->
+    <PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.21.2" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Json" Version="1.21.2" />
+    <PackageReference Include="Microsoft.Kiota.Serialization.Text" Version="1.21.2" />
+
+    <!-- UI Framework: AvaloniaUI with ReactiveUI MVVM -->
+    <PackageReference Include="Avalonia" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="11.3.8" />
+    <PackageReference Include="ReactiveUI" Version="22.3.1" />
+
+    <!-- Observability: OpenTelemetry for distributed tracing and metrics -->
+    <PackageReference Include="OpenTelemetry" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.InMemory" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+
+    <!-- Structured Logging: Serilog with PostgreSQL sink -->
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.PostgreSQL" Version="2.3.0" />
+  </ItemGroup>
+
+</Project>
