@@ -6,7 +6,7 @@ This document describes the directory structure and organization of the OneDrive
 
 ## Directory Layout
 
-```
+``` lang="text"
 src/AStar.Dev.OneDrive.Sync.Client/
 ├── Features/                           # Feature-based organization (vertical slices)
 │   ├── Authentication/                 # OAuth, token management, account login
@@ -40,7 +40,7 @@ src/AStar.Dev.OneDrive.Sync.Client/
 
 Each feature follows a consistent internal structure with all layers represented:
 
-```
+``` lang="text"
 Features/[FeatureName]/
 ├── Controllers/                # UI entry points, commands, event handlers
 ├── ViewModels/                 # ReactiveUI ViewModels for UI binding
@@ -52,7 +52,7 @@ Features/[FeatureName]/
 
 ### Example: Authentication Feature
 
-```
+``` lang="text"
 Features/Authentication/
 ├── Controllers/                # Auth command handlers
 ├── ViewModels/
@@ -122,7 +122,7 @@ Each feature implements these layers (as applicable):
 
 Tests are organized in a separate project: `test/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/`
 
-```
+``` lang="text"
 test/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/
 ├── Features/
 │   ├── Authentication/
@@ -145,20 +145,23 @@ test/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/
 ```
 
 **Testing Tools:**
+
 - **xUnit**: Test framework
 - **NSubstitute**: Mocking and test doubles
 - **Shouldly**: Assertion library
-- **SpecFlow**: BDD feature files (for integration/acceptance tests)
+- **Playwright**: BDD feature files (for integration/acceptance tests)
 - **Testcontainers**: PostgreSQL container for integration tests
 
 ## Naming Conventions
 
 ### Namespaces
+
 - Feature namespaces: `AStar.Dev.OneDrive.Sync.Client.Features.Authentication`
 - Common namespaces: `AStar.Dev.OneDrive.Sync.Client.Common.Utilities`
 - Infrastructure namespaces: `AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database`
 
 ### Classes
+
 - Services: `[Feature]Service` (e.g., `AuthenticationService`)
 - Repositories: `[Entity]Repository` (e.g., `AccountRepository`)
 - ViewModels: `[Feature]ViewModel` or `[Action][Feature]ViewModel` (e.g., `AddAccountViewModel`)

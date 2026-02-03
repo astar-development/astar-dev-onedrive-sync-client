@@ -127,6 +127,7 @@ src/
 - Use MSAL (Microsoft Authentication Library) for token acquisition
 - Implement Device Code Flow or Interactive Browser Flow for user authentication
 - Proactive token refresh: check expiry before each Graph API call; refresh if expiry < 5 minutes
+- Login should timeout after 30 seconds. The user should be informed to try again if timeout occurs with a message "Login timed out. Please try again.". The notification should be via a Toast notification that auto dismisses after 5 seconds.
 
 **Cross-Platform Secure Storage**
 - Abstract interface: `ISecureTokenStorage`
@@ -151,6 +152,9 @@ src/
 - Connection string configuration in `appsettings.json`
 - EF Core migrations applied with schema specification
 - Schema creation handled automatically via migrations
+- Schema migrations should be applied on application startup if pending
+- No data loss should occur during migrations; use `ALTER TABLE` statements
+- Installation of PostgreSQL should be a separate step outside of application installation. The requirements for PostgreSQL version (e.g., 12+) should be documented.
 
 ```sql
 -- Core account table
@@ -429,7 +433,7 @@ public class BackgroundSyncWorker : BackgroundService
 
 ### 8. Telemetry & Logging Feature Slice
 
-**OpenTelemetry Configuration**
+**Serilog Configuration**
 - Export traces to PostgreSQL database (`onedrive` schema) as primary destination
 - Fallback to local file (`{AppDataFolder}/logs/traces.json`) if database unavailable
 - Metrics: sync duration, items uploaded/downloaded, conflict count, API call latency
@@ -437,12 +441,14 @@ public class BackgroundSyncWorker : BackgroundService
 
 **Per-Account Diagnostic Logging**
 - `DiagnosticSettings` table: log level per account
-- `EnableDebugLogging` flag in `Accounts` table for quick toggle
+- `EnableDebugLogging` flag in `Accounts` table for quick toggle. Default should be false. The user can enable it via the Edit Account settings dialog. If they enable, a dialog should inform them that debug logs may contain sensitive information and should only be enabled temporarily for troubleshooting.
 - Factory: `ILoggerProvider` respects per-account log level
 - UI: Settings dialog (Edit Account) allows user to enable debug logging
+- Log retention policy: purge logs older than 15 days via scheduled job, exception being critical errors which should be retained for 30 days
+- User can elect to manually clear all logs from UI
 
 **Components**
-- `OpenTelemetryConfiguration`: Setup traces, metrics, logs
+- `SerilogConfiguration`: Setup traces, metrics, logs
 - `DatabaseTraceExporter`: Custom exporter writing to database
 - `DatabaseLogProvider`: Custom log provider writing to `ApplicationLogs` table
 - `DiagnosticSettingsService`: CRUD operations on DiagnosticSettings
@@ -507,6 +513,25 @@ public class LogViewerService
 > **IMPORTANT**: Each checkbox below represents a **single, independent task** that should be implemented and tested separately. Do NOT combine multiple tasks into one implementation. Each task should result in a focused, reviewable pull request.
 
 ---
+
+### Phase 0: Foundation Setup
+
+**Purpose**: Set up project settings
+
+**Task 0.1**: Create appsettings.json, appsettings.Development.json
+- [ ] Define connection strings, logging settings, OAuth client IDs
+- [ ] Configure environment-specific overrides
+- [ ] Validate configuration loading in Program.cs
+- [ ] Add User Secrets for local development
+- [ ] Document configuration options in README.md
+- [ ] Verify configuration binding with unit tests
+- [ ] Create EntraId app registration for OAuth guide
+
+**Task 0.2**: Document Polly retry policies
+- [ ] Define standard retry policies for transient failures
+- [ ] Create documentation with examples for usage
+- [ ] Include guidelines for exponential backoff and circuit breaker patterns
+- [ ] Review and validate policies with team
 
 ### Phase 1: Foundation (Layers & DI)
 
@@ -582,6 +607,8 @@ public class LogViewerService
 **Task 2.1**: Implement AuthenticationService (MSAL integration)
 - [ ] Create `AuthenticationService` class with MSAL integration
 - [ ] Implement OAuth Device Code Flow for cross-platform support
+- [ ] Use CancellationTokenSource for timeout handling (30 seconds)
+- [ ] OperationCanceledException should be caught and a user-friendly message "Login timed out. Please try again." should be displayed via a Toast notification that auto dismisses after 5 seconds.
 - [ ] Add unit tests for authentication flow
 
 **Task 2.2**: Implement token refresh logic
@@ -620,6 +647,7 @@ public class LogViewerService
 - [ ] Implement update for HomeSyncDirectory, MaxConcurrent settings
 - [ ] Implement debug logging toggle
 - [ ] Add unit tests for update scenarios
+- [ ] Implement per-account MaxBandwidthKBps configuration, rate-limiting stream wrapper, metered connection detection via platform APIs, and UI controls for pause/resume with bandwidth slider.
 
 **Task 2.9**: Implement account deletion with GDPR compliance
 - [ ] Implement cascade delete for all related data
@@ -713,6 +741,7 @@ public class LogViewerService
 - [ ] Create `DeltaSyncService` class
 - [ ] Implement Graph API delta query with saved token
 - [ ] Implement change parsing (add/update/delete)
+- [ ] Status Code 429 should have retry with exponential backoff according to Retry-After header. If no header is present, use default backoff strategy with random jitter.
 - [ ] Add unit tests mocking Graph API client
 
 **Task 3.8**: Implement remote change mapping
@@ -745,6 +774,9 @@ public class LogViewerService
 - [ ] Create `RemoteFileOperationService` class
 - [ ] Implement file upload via Graph API
 - [ ] Implement multipart upload for large files (> 4MB)
+- [ ] Upload should handle Status Code 429 with retry using exponential backoff according to Retry-After header. If no header is present, use default backoff strategy with random jitter.
+- [ ] Upload should resume from last byte on transient failures.
+- [ ] CancellationToken support for upload operations
 - [ ] Add unit tests mocking Graph API client
 
 **Task 3.14**: Implement remote delete and rename operations
@@ -825,6 +857,7 @@ public class LogViewerService
 - [ ] Test: Download remote changes → verify local files created
 - [ ] Test: Upload local changes → verify remote files created
 - [ ] Write BDD scenario for bidirectional sync
+- [ ] implement connectivity monitoring via System.Net.NetworkInformation, automatic queue pause on disconnect, change queuing while offline, auto-resume on reconnect, and offline status indicator in UI.
 
 ---
 
@@ -848,6 +881,11 @@ public class LogViewerService
 - [ ] Implement timestamp comparison logic
 - [ ] Implement hash comparison logic
 - [ ] Determine conflict type (local_newer, remote_newer, both_modified)
+- [ ] If one file has deleted and the other modified, treat as conflict.
+- [ ] Handle edge cases (e.g., identical timestamps but different hashes)
+- [ ] Log conflicts to ConflictLogs table
+- [ ] Support cancellation token
+- [ ] File casing conflicts should be detected during both upload and download phases of sync. Should be treated as a conflict in ConflictLogs.
 - [ ] Add unit tests for various conflict scenarios
 
 **Task 4.4**: Integrate conflict detection into sync workflow
@@ -1050,6 +1088,10 @@ public class LogViewerService
 - [ ] Test: Navigate pages → verify correct rows displayed
 - [ ] Write BDD scenario for log viewing
 
+**Task 7.10**: Real-time statistics display
+- [ ] During sync operations, display real-time stats in UI
+- [ ] Show number of files uploaded, downloaded, conflicts detected, sync duration, and current upload/download speeds, ETA for completion.
+
 ---
 
 ### Phase 8: Refinement & Testing
@@ -1143,7 +1185,9 @@ public class LogViewerService
 - [ ] Document build and deployment process
 
 **Task 8.18**: Prepare for release
-- [ ] Create release build configurations
+- [ ] Create release build configurations - MSIX for windows, .dmg for macOS, AppImage for Linux
+- [ ] Verify all dependencies are included
+- [ ] Implement appropriate auto-update mechanism for each platform
 - [ ] Test installer/deployment packages for all platforms
 - [ ] Prepare release notes
 
