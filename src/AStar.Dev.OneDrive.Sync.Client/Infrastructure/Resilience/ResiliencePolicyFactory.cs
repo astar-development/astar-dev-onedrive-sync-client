@@ -1,6 +1,5 @@
-using Polly;
-using Polly.CircuitBreaker;
 using System.Net;
+using Polly;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Resilience;
 

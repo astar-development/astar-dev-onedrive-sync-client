@@ -3,6 +3,7 @@
         "appsettings",
         "MVVM",
         "onedrive",
-        "Shouldly"
+        "Shouldly",
+        "Xunit"
     ]
 }
