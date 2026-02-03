@@ -4,7 +4,8 @@ This document describes the standard retry policies implemented using Polly for 
 
 ## Overview
 
-The ResiliencePolicyFactory provides pre-configured resilience policies for:
+The `ResiliencePolicyFactory` provides pre-configured resilience policies for:
+
 - HTTP requests with exponential backoff
 - Database operations with exponential backoff
 - Circuit breaker patterns
@@ -31,6 +32,7 @@ var response = await policy.ExecuteAsync(() =>
 ```
 
 **Default Behavior:**
+
 - Retries: 3 attempts
 - Backoff: Exponential (1s, 2s, 4s)
 - Retries on: HTTP 5xx, 408 (Request Timeout), 429 (Too Many Requests)
@@ -52,6 +54,7 @@ await policy.ExecuteAsync(async () =>
 ```
 
 **Default Behavior:**
+
 - Retries: 3 attempts
 - Backoff: Exponential (1s, 2s, 4s)
 - Retries on: TimeoutException, timeout-related errors
@@ -70,6 +73,7 @@ var policy = factory.CreateCircuitBreakerPolicy<HttpResponseMessage>(
 ```
 
 **States:**
+
 - **Closed**: Normal operation
 - **Open**: After threshold failures, blocks all requests
 - **Half-Open**: After duration, allows one test request
@@ -93,11 +97,12 @@ var response = await policy.ExecuteAsync(() =>
 
 The retry delay follows exponential backoff:
 
-```
+```text
 delay = initialDelay * 2^retryAttempt
 ```
 
 **Example with initialDelay = 1 second:**
+
 - 1st retry: 2s delay
 - 2nd retry: 4s delay
 - 3rd retry: 8s delay
@@ -107,12 +112,14 @@ delay = initialDelay * 2^retryAttempt
 ### When to Use Retry Policies
 
 ✅ **Use for:**
+
 - HTTP requests to external APIs (Microsoft Graph, etc.)
 - Database operations
 - File I/O operations
 - Network-dependent operations
 
 ❌ **Do NOT use for:**
+
 - User authentication failures (not transient)
 - Validation errors (immediate, not transient)
 - Operations with side effects that shouldn't be repeated
@@ -146,7 +153,8 @@ services.AddSingleton(sp =>
 
 ## Testing Resilience Policies
 
-See ResiliencePolicyFactoryShould.cs for comprehensive test examples including:
+See `ResiliencePolicyFactoryShould.cs` for comprehensive test examples including:
+
 - Verifying retry behavior
 - Testing circuit breaker state transitions
 - Validating exponential backoff timing
