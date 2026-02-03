@@ -45,6 +45,7 @@ Prompting techniques: Input collection checklist with mandatory enforcement gate
 <PROCESS_REQUIREMENTS type="MANDATORY">
 - If any inputs are missing or ambiguous, ask targeted questions and pause drafting until clarified.
 - Confirm inferred inputs with the requester before proceeding.
+- Insure all linting and formatting rules are applied in the final output.
 </PROCESS_REQUIREMENTS>
 
 <!--
