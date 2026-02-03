@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -10,7 +11,7 @@ internal class Program
     [STAThread]
     public static int Main(string[] args)
     {
-        var configuration = BuildConfiguration(args);
+        var configuration = ConfigurationFactory.Build(args);
 
         Log.Logger = new LoggerConfiguration()
             .ReadFrom.Configuration(configuration)
@@ -38,22 +39,6 @@ internal class Program
         {
             Log.CloseAndFlush();
         }
-    }
-
-    private static IConfiguration BuildConfiguration(string[] args)
-    {
-        var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") 
-                         ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") 
-                         ?? "Production";
-
-        return new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true)
-            .AddUserSecrets<Program>(optional: true)
-            .AddEnvironmentVariables()
-            .AddCommandLine(args)
-            .Build();
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args, IConfiguration configuration) =>

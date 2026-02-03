@@ -32,6 +32,7 @@ The application uses a hierarchical configuration system with the following prio
 
 1. Install PostgreSQL 12 or later
 2. Create the database:
+
    ```sql
    CREATE DATABASE "astar-dev-onedrive-sync-db";
    CREATE USER "astar-admin" WITH PASSWORD 'your-secure-password';
@@ -39,6 +40,7 @@ The application uses a hierarchical configuration system with the following prio
    ```
 
 3. Configure the database password using User Secrets (recommended for development):
+
    ```bash
    cd src/AStar.Dev.OneDrive.Sync.Client
    dotnet user-secrets set "ConnectionStrings:DatabasePassword" "your-secure-password"
@@ -59,6 +61,7 @@ Located in `appsettings.json` and overridden by User Secrets:
 ```
 
 **User Secret Keys:**
+
 - `ConnectionStrings:DatabasePassword` - PostgreSQL database password (REQUIRED)
 
 #### Authentication Settings
@@ -90,6 +93,7 @@ OAuth 2.0 configuration for Microsoft Personal accounts:
 - `TokenRefreshMargin` - Minutes before expiry to refresh tokens (default: 5)
 
 **User Secret Keys:**
+
 - `Authentication:Microsoft:ClientSecret` - OAuth client secret (if required by your app registration)
 
 #### Sync Settings
@@ -213,6 +217,7 @@ Development overrides enable verbose logging and faster sync intervals:
 ```
 
 To use development configuration:
+
 ```bash
 # Windows
 $env:ASPNETCORE_ENVIRONMENT="Development"
@@ -242,6 +247,7 @@ dotnet user-secrets list
 ```
 
 **Important:** User Secrets are stored outside the repository in:
+
 - **Windows**: `%APPDATA%\Microsoft\UserSecrets\<user-secrets-id>\secrets.json`
 - **Linux/macOS**: `~/.microsoft/usersecrets/<user-secrets-id>/secrets.json`
 
@@ -258,9 +264,9 @@ dotnet user-secrets list
 
 The following settings should **NEVER** be committed to the repository:
 
-| Setting | Location | Description |
-|---------|----------|-------------|
-| `ConnectionStrings:DatabasePassword` | User Secrets | PostgreSQL password |
+| Setting                                 | Location     | Description                         |
+|-----------------------------------------|--------------|-------------------------------------|
+| `ConnectionStrings:DatabasePassword`    | User Secrets | PostgreSQL password                 |
 | `Authentication:Microsoft:ClientSecret` | User Secrets | OAuth client secret (if applicable) |
 
 All other configuration can be safely committed to the repository.

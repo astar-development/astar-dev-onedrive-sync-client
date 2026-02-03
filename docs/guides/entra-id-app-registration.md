@@ -29,9 +29,11 @@ The OneDrive Sync Client uses OAuth 2.0 to authenticate users and access their O
      - **Accounts in any organizational directory and personal Microsoft accounts** (Recommended for this app)
      - This allows both work/school accounts and personal Microsoft accounts
    - **Redirect URI**: Select **Public client/native (mobile & desktop)** and enter:
-     ```
+
+     ```text
      http://localhost
      ```
+
    - Click **Register**
 
 ## Step 2: Note Your Application (Client) ID
@@ -55,7 +57,8 @@ After registration, you'll be redirected to the app's overview page.
 2. **Add Additional Redirect URIs** (if needed)
    - Under **Platform configurations**, find your **Mobile and desktop applications** entry
    - Recommended additional URIs:
-     ```
+
+     ```text
      http://localhost:8080
      http://localhost:3000
      http://127.0.0.1
@@ -161,6 +164,7 @@ dotnet user-secrets set "Authentication:Microsoft:ClientSecret" "your-secret-val
 ## Step 7: Test Authentication
 
 1. **Build and Run the Application**
+
    ```bash
    dotnet run --project src/AStar.Dev.OneDrive.Sync.Client
    ```
@@ -178,24 +182,28 @@ dotnet user-secrets set "Authentication:Microsoft:ClientSecret" "your-secret-val
 ## Troubleshooting
 
 ### Error: "AADSTS7000215: Invalid client secret provided"
+
 - **Solution**: The client secret is expired or incorrect. Generate a new secret and update User Secrets.
 
 ### Error: "AADSTS50011: The reply URL specified in the request does not match"
+
 - **Solution**: Ensure the redirect URI in your app registration matches exactly what's in `appsettings.json`.
 
 ### Error: "AADSTS65001: The user or administrator has not consented"
-- **Solution**: 
+
+- **Solution**:
   - For personal accounts: User needs to go through the consent flow on first login
   - For organizational accounts: An admin may need to grant tenant-wide consent
 
 ### Error: "AADSTS700016: Application not found in the directory"
+
 - **Solution**: Verify you're using the correct Application (client) ID and that you're authenticating against the correct tenant.
 
 ### Error: "Login timed out"
-- **Solution**: 
-  - Increase `LoginTimeout` value in configuration
-  - Check your network connection
-  - Try again - Azure AD may be experiencing temporary issues
+
+- Increase `LoginTimeout` value in configuration
+- Check your network connection
+- Try again - Azure AD may be experiencing temporary issues
 
 ## Security Best Practices
 
@@ -237,6 +245,6 @@ If you encounter issues not covered in this guide:
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: February 3, 2026  
+**Document Version**: 1.0
+**Last Updated**: February 3, 2026
 **Applies To**: AStar OneDrive Sync Client v1.0+
