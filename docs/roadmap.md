@@ -59,8 +59,6 @@ Establish the foundational architecture, dependency injection, and database infr
 
 **Task 1.5**: Add observability NuGet packages
 
-- [ ] Add OpenTelemetry core packages
-- [ ] Add OpenTelemetry exporters (InMemory for testing)
 - [ ] Add Serilog and PostgreSQL sink
 
 **Task 1.6**: Create DbContext with schema configuration
