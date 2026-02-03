@@ -30,7 +30,7 @@ The OneDrive Sync Client uses OAuth 2.0 to authenticate users and access their O
      - This allows both work/school accounts and personal Microsoft accounts
    - **Redirect URI**: Select **Public client/native (mobile & desktop)** and enter:
 
-     ```
+     ```text
      http://localhost
      ```
 
@@ -58,7 +58,7 @@ After registration, you'll be redirected to the app's overview page.
    - Under **Platform configurations**, find your **Mobile and desktop applications** entry
    - Recommended additional URIs:
 
-     ```
+     ```text
      http://localhost:8080
      http://localhost:3000
      http://127.0.0.1
