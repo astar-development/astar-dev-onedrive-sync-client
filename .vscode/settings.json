@@ -5,5 +5,24 @@
         "onedrive",
         "Shouldly",
         "Xunit"
-    ]
+    ],
+    "coverage-gutters.coverageFileNames": [
+        "coverage.cobertura.xml"
+    ],
+    "coverage-gutters.coverageBaseDir": ".",
+    "coverage-gutters.remotePathResolve": [
+        "/_/",
+        ""
+    ],
+    "coverage-gutters.showLineCoverage": true,
+    "coverage-gutters.showRulerCoverage": true,
+    "coverage-gutters.showGutterCoverage": true,
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/bin/**": true,
+        "**/obj/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/TestResults/**": true
+    }
 }

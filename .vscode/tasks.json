@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "test",
+      "command": "dotnet",
+      "type": "process",
+      "args": ["test"],
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "test-with-coverage",
+      "command": "dotnet-coverage",
+      "type": "shell",
+      "args": [
+        "collect",
+        "\"dotnet test\"",
+        "-f",
+        "cobertura",
+        "-o",
+        "coverage.cobertura.xml"
+      ],
+      "problemMatcher": "$msCompile",
+      "presentation": {
+        "reveal": "always"
+      }
+    },
+    {
+      "label": "install-reportgenerator",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "tool",
+        "install",
+        "--global",
+        "dotnet-reportgenerator-globaltool"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "generate-coverage-report",
+      "command": "reportgenerator",
+      "type": "shell",
+      "args": [
+        "-reports:coverage.cobertura.xml",
+        "-targetdir:coveragereport",
+        "-reporttypes:Html"
+      ],
+      "problemMatcher": [],
+      "dependsOn": ["test-with-coverage"],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "open-coverage-report",
+      "command": "Start-Process",
+      "type": "shell",
+      "args": [
+        "coveragereport/index.html"
+      ],
+      "problemMatcher": [],
+      "dependsOn": ["generate-coverage-report"],
+      "presentation": {
+        "reveal": "never"
+      }
+    },
+    {
+      "label": "coverage-html",
+      "dependsOn": ["test-with-coverage", "generate-coverage-report", "open-coverage-report"],
+      "problemMatcher": [],
+      "group": {
+        "kind": "test",
+        "isDefault": false
+      }
+    }
+  ]
+}
