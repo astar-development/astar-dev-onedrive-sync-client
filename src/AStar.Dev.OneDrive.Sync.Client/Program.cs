@@ -1,6 +1,5 @@
 ﻿using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 

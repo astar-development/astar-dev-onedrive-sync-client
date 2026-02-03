@@ -18,12 +18,12 @@ This document outlines the complete implementation plan for the OneDrive Sync Cl
 - [x] Verify configuration binding with unit tests
 - [x] Create Entra ID app registration guide
 
-### Task 0.2: Polly Retry Policies
+### Task 0.2: Polly Retry Policies ✅
 
-- [ ] Define standard retry policies for transient failures
-- [ ] Create documentation with examples
-- [ ] Include guidelines for exponential backoff and circuit breaker patterns
-- [ ] Review and validate policies with team
+- [x] Define standard retry policies for transient failures
+- [x] Create documentation with examples
+- [x] Include guidelines for exponential backoff and circuit breaker patterns
+- [x] Review and validate policies with team
 
 ---
 

@@ -1,6 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
-using Shouldly;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Configuration;
 
