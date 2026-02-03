@@ -123,13 +123,15 @@ src/
 
 ### 1. Authentication & Secure Token Storage
 
-**OAuth 2.0 Flow for Microsoft Personal Accounts**
+#### OAuth 2.0 Flow for Microsoft Personal Accounts
+
 - Use MSAL (Microsoft Authentication Library) for token acquisition
 - Implement Device Code Flow or Interactive Browser Flow for user authentication
 - Proactive token refresh: check expiry before each Graph API call; refresh if expiry < 5 minutes
 - Login should timeout after 30 seconds. The user should be informed to try again if timeout occurs with a message "Login timed out. Please try again.". The notification should be via a Toast notification that auto dismisses after 5 seconds.
 
-**Cross-Platform Secure Storage**
+#### Cross-Platform Secure Storage
+
 - Abstract interface: `ISecureTokenStorage`
 - Platform-specific implementations:
   - **Windows**: DPAPI (System.Security.Cryptography.DataProtectionScope.CurrentUser)
@@ -138,16 +140,20 @@ src/
 - Fallback: Encrypted file storage using `System.Security.Cryptography.Aes` if platform-specific unavailable
 - Factory pattern to select implementation at runtime
 
-**Token Refresh Strategy**
+#### Token Refresh Strategy
+
 - Background task checks token expiry every 5 minutes
 - Proactive refresh 5 minutes before expiry
 - On-demand refresh if expired (with exponential backoff on transient failures)
 
 ### 2. Database Design
 
-**Schema Overview** (PostgreSQL with EF Core, using `onedrive` schema)
+#### Schema Overview
 
-**PostgreSQL Setup**
+PostgreSQL with EF Core, using `onedrive` schema.
+
+#### PostgreSQL Setup
+
 - All tables reside in the `onedrive` schema for isolation
 - Connection string configuration in `appsettings.json`
 - EF Core migrations applied with schema specification
@@ -516,7 +522,9 @@ public class LogViewerService
 
 ### Phase 0: Foundation Setup
 
-**Purpose**: Set up project settings
+#### Purpose
+
+Set up project settings.
 
 **Task 0.1**: Create appsettings.json, appsettings.Development.json
 - [x] Define connection strings, logging settings, OAuth client IDs
@@ -535,7 +543,9 @@ public class LogViewerService
 
 ### Phase 1: Foundation (Layers & DI)
 
-**Purpose**: Establish the foundational architecture, dependency injection, and database infrastructure.
+#### Purpose
+
+Establish the foundational architecture, dependency injection, and database infrastructure.
 
 **Task 1.1**: Set up project structure
 - [ ] Create `Features/` folder structure for all feature slices
@@ -602,9 +612,11 @@ public class LogViewerService
 
 ### Phase 2: Authentication & Accounts
 
-**Purpose**: Implement OAuth authentication, account management, and secure token handling.
+#### Purpose
 
-**Task 2.1**: Implement AuthenticationService (MSAL integration)
+Implement OAuth authentication, account management, and secure token handling.
+
+**Task 2.1**: Implement AuthenticationService (MSAL integration
 - [ ] Create `AuthenticationService` class with MSAL integration
 - [ ] Implement OAuth Device Code Flow for cross-platform support
 - [ ] Use CancellationTokenSource for timeout handling (30 seconds)
@@ -705,7 +717,9 @@ public class LogViewerService
 
 ### Phase 3: File Sync & Delta (Two-Way)
 
-**Purpose**: Implement bidirectional file synchronization with Microsoft Graph API.
+#### Purpose
+
+Implement bidirectional file synchronization with Microsoft Graph API.
 
 **Task 3.1**: Generate Kiota client for Microsoft Graph API
 - [ ] Install Kiota CLI tool
@@ -980,7 +994,9 @@ public class LogViewerService
 
 ### Phase 6: Telemetry & Diagnostics
 
-**Purpose**: Implement OpenTelemetry for observability and per-account diagnostic logging.
+#### Purpose
+
+Implement OpenTelemetry for observability and per-account diagnostic logging.
 
 **Task 6.1**: Configure OpenTelemetry traces
 - [ ] Add OpenTelemetry configuration in `Program.cs`
