@@ -519,13 +519,13 @@ public class LogViewerService
 **Purpose**: Set up project settings
 
 **Task 0.1**: Create appsettings.json, appsettings.Development.json
-- [ ] Define connection strings, logging settings, OAuth client IDs
-- [ ] Configure environment-specific overrides
-- [ ] Validate configuration loading in Program.cs
-- [ ] Add User Secrets for local development
-- [ ] Document configuration options in README.md
-- [ ] Verify configuration binding with unit tests
-- [ ] Create EntraId app registration for OAuth guide
+- [x] Define connection strings, logging settings, OAuth client IDs
+- [x] Configure environment-specific overrides
+- [x] Validate configuration loading in Program.cs
+- [x] Add User Secrets for local development
+- [x] Document configuration options in README.md
+- [x] Verify configuration binding with unit tests
+- [x] Create EntraId app registration for OAuth guide
 
 **Task 0.2**: Document Polly retry policies
 - [ ] Define standard retry policies for transient failures
