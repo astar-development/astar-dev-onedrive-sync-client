@@ -31,7 +31,7 @@ This plan has been split into focused documents for better maintainability:
 ## Quick Links
 
 - [Project Structure](PROJECT_STRUCTURE.md) - Folder organization and conventions
-- [Entra ID Setup Guide](guides/entra-id-app-registration.md) - OAuth app registration  
+- [Entra ID Setup Guide](guides/entra-id-app-registration.md) - OAuth app registration
 - [README](../README.md) - Getting started and dependencies
 
 ## Current Status

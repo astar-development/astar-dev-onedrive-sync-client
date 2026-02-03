@@ -163,6 +163,6 @@ Deleting an account record:
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: February 3, 2026  
+**Document Version**: 1.0
+**Last Updated**: February 3, 2026
 **Related Documents**: [Architecture](architecture.md) | [Configuration Reference](configuration.md)
