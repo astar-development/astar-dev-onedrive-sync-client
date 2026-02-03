@@ -11,7 +11,7 @@ This document outlines the complete implementation plan for the OneDrive Sync Cl
 ### Task 0.1: Configuration Files ✅
 
 - [x] Define connection strings, logging settings, OAuth client IDs
-- [x] Configure environment-specific overrides  
+- [x] Configure environment-specific overrides
 - [x] Validate configuration loading in Program.cs
 - [x] Add User Secrets for local development
 - [x] Document configuration options in README.md
@@ -26,6 +26,7 @@ This document outlines the complete implementation plan for the OneDrive Sync Cl
 - [ ] Review and validate policies with team
 
 ---
+
 ### Phase 1: Foundation (Layers & DI)
 
 #### Purpose
@@ -33,50 +34,60 @@ This document outlines the complete implementation plan for the OneDrive Sync Cl
 Establish the foundational architecture, dependency injection, and database infrastructure.
 
 **Task 1.1**: Set up project structure
+
 - [ ] Create `Features/` folder structure for all feature slices
 - [ ] Create `Common/` folder for shared models, extensions, constants
 - [ ] Create `Infrastructure/` folder for cross-cutting concerns
 
 **Task 1.2**: Configure Dependency Injection
+
 - [ ] Add `Microsoft.Extensions.DependencyInjection` NuGet package
 - [ ] Create `AppModule.cs` for DI container registration
 - [ ] Configure service lifetimes (Singleton, Scoped, Transient)
 
 **Task 1.3**: Add core NuGet packages
+
 - [ ] Add EF Core and PostgreSQL provider (`Npgsql.EntityFrameworkCore.PostgreSQL`)
 - [ ] Add MSAL for OAuth authentication
 - [ ] Add Kiota abstractions for Graph API
 
 **Task 1.4**: Add UI NuGet packages
+
 - [ ] Add AvaloniaUI core package
 - [ ] Add Avalonia.ReactiveUI for MVVM integration
 - [ ] Add ReactiveUI framework
 
 **Task 1.5**: Add observability NuGet packages
+
 - [ ] Add OpenTelemetry core packages
 - [ ] Add OpenTelemetry exporters (InMemory for testing)
 - [ ] Add Serilog and PostgreSQL sink
 
 **Task 1.6**: Create DbContext with schema configuration
+
 - [ ] Create `OneDriveSyncDbContext` class
 - [ ] Configure `onedrive` schema in `OnModelCreating`
 - [ ] Add connection string to `appsettings.json`
 
 **Task 1.7**: Create initial database migrations
+
 - [ ] Add migration for `Accounts` table with hashing fields
 - [ ] Add migration for `DeltaTokens` table
 - [ ] Add migration for `FileSystemItems` table with hash tracking
 
 **Task 1.8**: Create remaining database migrations
+
 - [ ] Add migration for `ConflictLogs` table
 - [ ] Add migration for `SyncHistory` table
 - [ ] Add migration for `DiagnosticSettings` table
 
 **Task 1.9**: Create logging table migration
+
 - [ ] Add migration for `ApplicationLogs` table with indexes
 - [ ] Verify all foreign key constraints are correctly configured
 
 **Task 1.10**: Implement `ISecureTokenStorage` abstraction and factory
+
 - [ ] Define `ISecureTokenStorage` interface in Infrastructure layer
 - [ ] Create `SecureTokenStorageFactory` for platform detection
 - [ ] Implement `WindowsSecureTokenStorage` (DPAPI-based)
@@ -86,6 +97,7 @@ Establish the foundational architecture, dependency injection, and database infr
 - [ ] Create factory pattern for platform-specific selection
 
 **Task 1.11**: Implement unit tests for secure storage
+
 - [ ] Create base test class with common scenarios (SecureTokenStorageTestsBase)
 - [ ] Add unit tests for Windows DPAPI storage with encryption/decryption verification
 - [ ] Add unit tests for AES-256 encrypted storage with integrity checks
@@ -95,13 +107,10 @@ Establish the foundational architecture, dependency injection, and database infr
 
 ---
 
-
----
-
 See [plan-onedriveSyncClient.prompt.md](plan-onedriveSyncClient.prompt.md) for complete task details for Phases 1-8.
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: February 3, 2026  
+**Document Version**: 1.0
+**Last Updated**: February 3, 2026
 **Related Documents**: [Architecture](architecture.md) | [Testing Strategy](testing-strategy.md)

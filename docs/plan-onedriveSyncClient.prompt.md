@@ -65,6 +65,6 @@ See `.github/copilot-instructions.md` for branch naming and commit conventions.
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: February 3, 2026  
+**Document Version**: 1.0
+**Last Updated**: February 3, 2026
 **Maintained By**: AStar Development Team
