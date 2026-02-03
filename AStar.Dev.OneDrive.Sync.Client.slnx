@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.csproj" />
+  </Folder>
+</Solution>
