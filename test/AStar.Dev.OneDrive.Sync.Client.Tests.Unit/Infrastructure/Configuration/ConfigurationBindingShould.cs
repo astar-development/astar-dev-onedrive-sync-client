@@ -6,256 +6,269 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Configuration
 
 public class ConfigurationBindingShould
 {
-    public class AuthenticationConfiguration
+    private readonly string _testProjectPath;
+
+    public ConfigurationBindingShould()
     {
-        [Fact]
-        public void BindAuthenticationOptionsFromConfiguration()
-        {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["Authentication:Microsoft:ClientId"] = "test-client-id",
-                ["Authentication:Microsoft:TenantId"] = "test-tenant",
-                ["Authentication:Microsoft:RedirectUri"] = "http://test-redirect",
-                ["Authentication:Microsoft:Scopes:0"] = "Files.ReadWrite",
-                ["Authentication:Microsoft:Scopes:1"] = "offline_access",
-                ["Authentication:Microsoft:LoginTimeout"] = "45",
-                ["Authentication:Microsoft:TokenRefreshMargin"] = "10"
-            });
-
-            var options = configuration
-                .GetSection(AuthenticationOptions.SectionName)
-                .Get<AuthenticationOptions>();
-
-            options.ShouldNotBeNull();
-            options.Microsoft.ClientId.ShouldBe("test-client-id");
-            options.Microsoft.TenantId.ShouldBe("test-tenant");
-            options.Microsoft.RedirectUri.ShouldBe("http://test-redirect");
-            options.Microsoft.Scopes.ShouldBe(["Files.ReadWrite", "offline_access"]);
-            options.Microsoft.LoginTimeout.ShouldBe(45);
-            options.Microsoft.TokenRefreshMargin.ShouldBe(10);
-        }
-
-        [Fact]
-        public void UseDefaultValuesWhenNotConfigured()
-        {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>());
-
-            var options = configuration
-                .GetSection(AuthenticationOptions.SectionName)
-                .Get<AuthenticationOptions>() ?? new AuthenticationOptions();
-
-            options.Microsoft.ClientId.ShouldBe(string.Empty);
-            options.Microsoft.LoginTimeout.ShouldBe(30);
-            options.Microsoft.TokenRefreshMargin.ShouldBe(5);
-            options.Microsoft.ClientSecret.ShouldBeNull();
-        }
-
-        [Fact]
-        public void BindClientSecretFromUserSecretsOrEnvironment()
-        {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["Authentication:Microsoft:ClientId"] = "test-client-id",
-                ["Authentication:Microsoft:ClientSecret"] = "secret-from-user-secrets"
-            });
-
-            var options = configuration
-                .GetSection(AuthenticationOptions.SectionName)
-                .Get<AuthenticationOptions>();
-
-            options.ShouldNotBeNull();
-            options.Microsoft.ClientSecret.ShouldBe("secret-from-user-secrets");
-        }
+        var testAssemblyPath = Directory.GetCurrentDirectory();
+        _testProjectPath = Path.GetFullPath(Path.Combine(
+            testAssemblyPath,
+            "..", "..", "..", "..", "..",
+            "src", "AStar.Dev.OneDrive.Sync.Client"));
     }
 
-    public class SyncConfiguration
+    public class ProductionConfigurationLoading : ConfigurationBindingShould
     {
         [Fact]
-        public void BindSyncOptionsFromConfiguration()
+        public void LoadAppsettingsJsonFromProduction()
         {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["Sync:DefaultConcurrentUploads"] = "10",
-                ["Sync:DefaultConcurrentDownloads"] = "8",
-                ["Sync:DefaultSyncInterval"] = "600",
-                ["Sync:ConflictResolutionTimeout"] = "120",
-                ["Sync:MaxRetryAttempts"] = "5",
-                ["Sync:RetryBackoffSeconds"] = "10"
-            });
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var options = configuration
+            configuration.ShouldNotBeNull();
+            var connectionString = configuration.GetConnectionString("OneDriveSync");
+            connectionString.ShouldNotBeNull();
+            connectionString.ShouldContain("Host=localhost");
+            connectionString.ShouldContain("Database=astar-dev-onedrive-sync-db");
+        }
+
+        [Fact]
+        public void LoadAuthenticationSettingsFromAppsettingsJson()
+        {
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+
+            var authOptions = configuration
+                .GetSection(AuthenticationOptions.SectionName)
+                .Get<AuthenticationOptions>();
+
+            authOptions.ShouldNotBeNull();
+            authOptions.Microsoft.ClientId.ShouldBe("3057f494-687d-4abb-a653-4b8066230b6e");
+            authOptions.Microsoft.TenantId.ShouldBe("common");
+            authOptions.Microsoft.RedirectUri.ShouldBe("http://localhost");
+            authOptions.Microsoft.Scopes.ShouldContain("Files.ReadWrite");
+            authOptions.Microsoft.Scopes.ShouldContain("offline_access");
+            authOptions.Microsoft.LoginTimeout.ShouldBe(30);
+            authOptions.Microsoft.TokenRefreshMargin.ShouldBe(5);
+        }
+
+        [Fact]
+        public void LoadSyncSettingsFromAppsettingsJson()
+        {
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+
+            var syncOptions = configuration
                 .GetSection(SyncOptions.SectionName)
                 .Get<SyncOptions>();
 
-            options.ShouldNotBeNull();
-            options.DefaultConcurrentUploads.ShouldBe(10);
-            options.DefaultConcurrentDownloads.ShouldBe(8);
-            options.DefaultSyncInterval.ShouldBe(600);
-            options.ConflictResolutionTimeout.ShouldBe(120);
-            options.MaxRetryAttempts.ShouldBe(5);
-            options.RetryBackoffSeconds.ShouldBe(10);
+            syncOptions.ShouldNotBeNull();
+            syncOptions.DefaultConcurrentUploads.ShouldBe(5);
+            syncOptions.DefaultConcurrentDownloads.ShouldBe(5);
+            syncOptions.DefaultSyncInterval.ShouldBe(300);
+            syncOptions.ConflictResolutionTimeout.ShouldBe(60);
+            syncOptions.MaxRetryAttempts.ShouldBe(3);
+            syncOptions.RetryBackoffSeconds.ShouldBe(5);
         }
 
         [Fact]
-        public void UseDefaultValuesWhenNotConfigured()
+        public void LoadStorageSettingsFromAppsettingsJson()
         {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>());
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var options = configuration
-                .GetSection(SyncOptions.SectionName)
-                .Get<SyncOptions>() ?? new SyncOptions();
-
-            options.DefaultConcurrentUploads.ShouldBe(5);
-            options.DefaultConcurrentDownloads.ShouldBe(5);
-            options.DefaultSyncInterval.ShouldBe(300);
-            options.ConflictResolutionTimeout.ShouldBe(60);
-            options.MaxRetryAttempts.ShouldBe(3);
-            options.RetryBackoffSeconds.ShouldBe(5);
-        }
-    }
-
-    public class StorageConfiguration
-    {
-        [Fact]
-        public void BindStorageOptionsFromConfiguration()
-        {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["Storage:DefaultSyncDirectory"] = "C:\\CustomSync",
-                ["Storage:FallbackSecureStorage"] = "false"
-            });
-
-            var options = configuration
+            var storageOptions = configuration
                 .GetSection(StorageOptions.SectionName)
                 .Get<StorageOptions>();
 
-            options.ShouldNotBeNull();
-            options.DefaultSyncDirectory.ShouldBe("C:\\CustomSync");
-            options.FallbackSecureStorage.ShouldBeFalse();
+            storageOptions.ShouldNotBeNull();
+            storageOptions.DefaultSyncDirectory.ShouldBe("%USERPROFILE%\\OneDriveSync");
+            storageOptions.FallbackSecureStorage.ShouldBeTrue();
         }
 
         [Fact]
-        public void UseDefaultValuesWhenNotConfigured()
+        public void LoadTelemetrySettingsFromAppsettingsJson()
         {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>());
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var options = configuration
-                .GetSection(StorageOptions.SectionName)
-                .Get<StorageOptions>() ?? new StorageOptions();
-
-            options.DefaultSyncDirectory.ShouldBe("%USERPROFILE%\\OneDriveSync");
-            options.FallbackSecureStorage.ShouldBeTrue();
-        }
-    }
-
-    public class TelemetryConfiguration
-    {
-        [Fact]
-        public void BindTelemetryOptionsFromConfiguration()
-        {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["Telemetry:Enabled"] = "false",
-                ["Telemetry:ExportToDatabase"] = "false",
-                ["Telemetry:LogRetentionDays"] = "30",
-                ["Telemetry:CriticalLogRetentionDays"] = "60"
-            });
-
-            var options = configuration
+            var telemetryOptions = configuration
                 .GetSection(TelemetryOptions.SectionName)
                 .Get<TelemetryOptions>();
 
-            options.ShouldNotBeNull();
-            options.Enabled.ShouldBeFalse();
-            options.ExportToDatabase.ShouldBeFalse();
-            options.LogRetentionDays.ShouldBe(30);
-            options.CriticalLogRetentionDays.ShouldBe(60);
+            telemetryOptions.ShouldNotBeNull();
+            telemetryOptions.Enabled.ShouldBeTrue();
+            telemetryOptions.ExportToDatabase.ShouldBeTrue();
+            telemetryOptions.LogRetentionDays.ShouldBe(15);
+            telemetryOptions.CriticalLogRetentionDays.ShouldBe(30);
+        }
+    }
+
+    public class EnvironmentSpecificConfiguration : ConfigurationBindingShould
+    {
+        [Fact]
+        public void LoadDevelopmentOverridesWhenEnvironmentIsDevelopment()
+        {
+            var configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
+
+            var syncOptions = configuration
+                .GetSection(SyncOptions.SectionName)
+                .Get<SyncOptions>();
+
+            syncOptions.ShouldNotBeNull();
+            syncOptions.DefaultSyncInterval.ShouldBe(60);
+            syncOptions.MaxRetryAttempts.ShouldBe(5);
         }
 
         [Fact]
-        public void UseDefaultValuesWhenNotConfigured()
+        public void DevelopmentConfigurationEnablesVerboseLogging()
         {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>());
+            var configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
 
-            var options = configuration
+            var logLevel = configuration["Logging:LogLevel:Default"];
+            logLevel.ShouldBe("Debug");
+        }
+
+        [Fact]
+        public void DevelopmentConfigurationDisablesDatabaseTelemetry()
+        {
+            var configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
+
+            var telemetryOptions = configuration
                 .GetSection(TelemetryOptions.SectionName)
-                .Get<TelemetryOptions>() ?? new TelemetryOptions();
+                .Get<TelemetryOptions>();
 
-            options.Enabled.ShouldBeTrue();
-            options.ExportToDatabase.ShouldBeTrue();
-            options.LogRetentionDays.ShouldBe(15);
-            options.CriticalLogRetentionDays.ShouldBe(30);
+            telemetryOptions.ShouldNotBeNull();
+            telemetryOptions.ExportToDatabase.ShouldBeFalse();
         }
     }
 
-    public class ConnectionStringConfiguration
+    public class CommandLineOverrides : ConfigurationBindingShould
     {
         [Fact]
-        public void ReadConnectionStringFromConfiguration()
+        public void CommandLineArgumentsOverrideJsonSettings()
         {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["ConnectionStrings:OneDriveSync"] = "Host=localhost;Database=test-db;Username=test-user;Password=test-pwd"
-            });
+            var args = new[] 
+            { 
+                "--Sync:DefaultSyncInterval=999",
+                "--Sync:MaxRetryAttempts=10"
+            };
 
-            var connectionString = configuration.GetConnectionString("OneDriveSync");
+            var configuration = ConfigurationFactory.Build(args, _testProjectPath);
 
-            connectionString.ShouldNotBeNull();
-            connectionString.ShouldContain("Host=localhost");
-            connectionString.ShouldContain("Database=test-db");
-        }
-
-        [Fact]
-        public void ReplacePasswordPlaceholderWithActualPassword()
-        {
-            var configuration = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["ConnectionStrings:OneDriveSync"] = "Host=localhost;Password=<from-user-secrets>",
-                ["ConnectionStrings:DatabasePassword"] = "actual-secret-password"
-            });
-
-            var connectionString = configuration.GetConnectionString("OneDriveSync");
-            var password = configuration["ConnectionStrings:DatabasePassword"];
-
-            connectionString.ShouldNotBeNull();
-            password.ShouldBe("actual-secret-password");
-        }
-    }
-
-    public class EnvironmentSpecificConfiguration
-    {
-        [Fact]
-        public void DevelopmentOverridesProductionSettings()
-        {
-            var productionConfig = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["Sync:DefaultSyncInterval"] = "300"
-            });
-
-            var devConfig = BuildConfiguration(new Dictionary<string, string?>
-            {
-                ["Sync:DefaultSyncInterval"] = "60"
-            });
-
-            var prodOptions = productionConfig
+            var syncOptions = configuration
                 .GetSection(SyncOptions.SectionName)
                 .Get<SyncOptions>();
 
-            var devOptions = devConfig
-                .GetSection(SyncOptions.SectionName)
-                .Get<SyncOptions>();
-
-            prodOptions.ShouldNotBeNull();
-            devOptions.ShouldNotBeNull();
-            prodOptions.DefaultSyncInterval.ShouldBe(300);
-            devOptions.DefaultSyncInterval.ShouldBe(60);
+            syncOptions.ShouldNotBeNull();
+            syncOptions.DefaultSyncInterval.ShouldBe(999);
+            syncOptions.MaxRetryAttempts.ShouldBe(10);
         }
     }
 
-    private static IConfiguration BuildConfiguration(Dictionary<string, string?> initialData)
+    [Collection("EnvironmentVariableTests")]
+    public class EnvironmentVariableOverrides : ConfigurationBindingShould, IDisposable
     {
-        return new ConfigurationBuilder()
-            .AddInMemoryCollection(initialData)
-            .Build();
+        public EnvironmentVariableOverrides()
+        {
+            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", null);
+            Environment.SetEnvironmentVariable("Telemetry__Enabled", null);
+        }
+
+        [Fact]
+        public void EnvironmentVariablesOverrideJsonSettings()
+        {
+            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", "1234");
+            Environment.SetEnvironmentVariable("Telemetry__Enabled", "false");
+
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+
+            var syncOptions = configuration
+                .GetSection(SyncOptions.SectionName)
+                .Get<SyncOptions>();
+
+            var telemetryOptions = configuration
+                .GetSection(TelemetryOptions.SectionName)
+                .Get<TelemetryOptions>();
+
+            syncOptions.ShouldNotBeNull();
+            syncOptions.DefaultSyncInterval.ShouldBe(1234);
+
+            telemetryOptions.ShouldNotBeNull();
+            telemetryOptions.Enabled.ShouldBeFalse();
+        }
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", null);
+            Environment.SetEnvironmentVariable("Telemetry__Enabled", null);
+        }
+    }
+
+    [Collection("EnvironmentVariableTests")]
+    public class ConfigurationHierarchy : ConfigurationBindingShould, IDisposable
+    {
+        public ConfigurationHierarchy()
+        {
+            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", null);
+        }
+
+        [Fact]
+        public void CommandLineOverridesEnvironmentVariables()
+        {
+            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", "888");
+
+            var args = new[] { "--Sync:DefaultSyncInterval=777" };
+            var configuration = ConfigurationFactory.Build(args, _testProjectPath);
+
+            var syncOptions = configuration
+                .GetSection(SyncOptions.SectionName)
+                .Get<SyncOptions>();
+
+            syncOptions.ShouldNotBeNull();
+            syncOptions.DefaultSyncInterval.ShouldBe(777);
+        }
+
+        [Fact]
+        public void EnvironmentVariablesOverrideJsonFiles()
+        {
+            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", "555");
+
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+
+            var syncOptions = configuration
+                .GetSection(SyncOptions.SectionName)
+                .Get<SyncOptions>();
+
+            syncOptions.ShouldNotBeNull();
+            syncOptions.DefaultSyncInterval.ShouldBe(555);
+        }
+
+        public void Dispose()
+        {
+            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", null);
+        }
+    }
+
+    public class SerilogConfiguration : ConfigurationBindingShould
+    {
+        [Fact]
+        public void LoadsSerilogSinkConfigurationFromAppsettings()
+        {
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+
+            var sinkNames = configuration.GetSection("Serilog:WriteTo")
+                .GetChildren()
+                .Select(c => c["Name"])
+                .ToList();
+
+            sinkNames.ShouldContain("Console");
+            sinkNames.ShouldContain("File");
+            sinkNames.ShouldContain("PostgreSQL");
+        }
+
+        [Fact]
+        public void LoadsSerilogMinimumLevelFromAppsettings()
+        {
+            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+
+            var minLevel = configuration["Serilog:MinimumLevel:Default"];
+            minLevel.ShouldBe("Information");
+        }
     }
 }
