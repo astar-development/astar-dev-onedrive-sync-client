@@ -201,9 +201,9 @@ dotnet user-secrets set "Authentication:Microsoft:ClientSecret" "your-secret-val
 
 ### Error: "Login timed out"
 
-  - Increase `LoginTimeout` value in configuration
-  - Check your network connection
-  - Try again - Azure AD may be experiencing temporary issues
+- Increase `LoginTimeout` value in configuration
+- Check your network connection
+- Try again - Azure AD may be experiencing temporary issues
 
 ## Security Best Practices
 
@@ -245,6 +245,6 @@ If you encounter issues not covered in this guide:
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: February 3, 2026  
+**Document Version**: 1.0
+**Last Updated**: February 3, 2026
 **Applies To**: AStar OneDrive Sync Client v1.0+
