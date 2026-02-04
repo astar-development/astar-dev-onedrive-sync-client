@@ -16,7 +16,6 @@ public class OneDriveSyncDbContextShould
         using var context = new OneDriveSyncDbContext(options);
         var model = context.Model;
 
-        // Verify the default schema is set to 'onedrive'
         model.GetDefaultSchema().ShouldBe("onedrive");
     }
 
