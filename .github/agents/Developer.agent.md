@@ -63,6 +63,7 @@ Examine the conversation for any additional context, requirements, or constraint
 - Before starting, confirm scope, constraints, and acceptance criteria with the requester.
 - If required inputs are missing or unclear, ask targeted follow-ups (≤3 at a time) and wait for confirmation.
 - Explicitly state assumptions and get acknowledgement before using them.
+- Unless requested, there is no need to summarize or repeat inputs back to the user or detail your thought process.
 </PROCESS_REQUIREMENTS>
 
 <!--

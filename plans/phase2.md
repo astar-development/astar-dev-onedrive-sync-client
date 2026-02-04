@@ -30,27 +30,27 @@
 
 **Task 2.3**: Create Account domain models
 
-- [ ] Create `Account` entity class with all properties
-- [ ] Create `AccountSettings` value object
-- [ ] Add validation rules for account data
+- [x] Create `Account` entity class with all properties
+- [x] Create `AccountSettings` value object
+- [x] Add validation rules for account data
 
 **Task 2.4**: Implement AccountRepository
 
-- [ ] Create `AccountRepository` class with EF Core
-- [ ] Implement CRUD operations (Create, Read, Update, Delete)
-- [ ] Add unit tests mocking DbContext
+- [x] Create `AccountRepository` class with EF Core
+- [x] Implement CRUD operations (Create, Read, Update, Delete)
+- [x] Add unit tests mocking DbContext
 
 **Task 2.5**: Implement AccountCreationService (NEW - orchestration layer)
 
-- [ ] Create `AccountCreationService` orchestration layer
-- [ ] Accept `AuthToken` from `AuthenticationService` as input
-- [ ] Retrieve user profile from Graph API (email, account ID)
-- [ ] Hash email and account ID using `HashingService`
-- [ ] Save token to `ISecureTokenStorage` with hashed key
-- [ ] Create account record in database via `AccountRepository`
-- [ ] Return `Result<Account, AccountCreationError>` with functional error handling
-- [ ] Add unit tests with repository and storage mocks
-- [ ] **Separation of concerns**: This service bridges authentication and persistence
+- [x] Create `AccountCreationService` orchestration layer
+- [x] Accept `AuthToken` from `AuthenticationService` as input
+- [x] Retrieve user profile from Graph API (email, account ID)
+- [x] Hash email and account ID using `HashingService`
+- [x] Save token to `ISecureTokenStorage` with hashed key
+- [x] Create account record in database via `AccountRepository`
+- [x] Return `Result<Account, AccountCreationError>` with functional error handling
+- [x] Add unit tests with repository and storage mocks
+- [x] **Separation of concerns**: This service bridges authentication and persistence
 
 **Task 2.6**: Implement AccountManagementService (update/delete operations)
 
