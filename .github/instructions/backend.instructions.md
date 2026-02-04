@@ -57,6 +57,8 @@ Follow idiomatic practices for the chosen programming language and framework. Pr
 - **Dependency Management**: Use NuGet for package management.
 - **Coding Style**: Follow the Microsoft C# Coding Conventions.
 - **Async/Await**: Use `async` and `await` for non-blocking I/O operations.
+- **Functional Programming**: Leverage LINQ and functional programming paradigms where appropriate.
+ - **AStar.Dev.Functional.Extensions**: Utilize the AStar.Dev.Functional.Extensions library for enhanced functional programming capabilities in C#. Option, Result, and Try types should be used to handle nullability and error scenarios more effectively.
 
 #### ASP.NET Core
 
