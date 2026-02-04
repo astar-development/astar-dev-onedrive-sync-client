@@ -1,4 +1,5 @@
-using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models.AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
+using AStar.Dev.OneDrive.Sync.Client.Common.Models;
+using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
 
@@ -7,7 +8,6 @@ public class AccountShould
     [Fact]
     public void CreateAccountWithValidProperties()
     {
-        // Arrange
         var accountId = Guid.NewGuid();
         const string hashedEmail = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
         const string hashedAccountIdValue = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3";
@@ -16,7 +16,6 @@ public class AccountShould
         const bool debugLoggingEnabled = false;
         const bool isAdmin = false;
 
-        // Act
         var account = new Account
         {
             Id = accountId,
@@ -28,7 +27,6 @@ public class AccountShould
             IsAdmin = isAdmin
         };
 
-        // Assert
         account.Id.ShouldBe(accountId);
         account.HashedEmail.ShouldBe(hashedEmail);
         account.HashedAccountId.ShouldBe(hashedAccountIdValue);
@@ -83,52 +81,43 @@ public class AccountShould
     [Fact]
     public void AllowEmptyHomeSyncDirectory()
     {
-        // Arrange & Act
         var account = new Account
         {
             HomeSyncDirectory = string.Empty
         };
 
-        // Assert
         account.HomeSyncDirectory.ShouldBe(string.Empty);
     }
 
     [Fact]
     public void AllowNullHomeSyncDirectory()
     {
-        // Arrange & Act
         var account = new Account
         {
             HomeSyncDirectory = null
         };
 
-        // Assert
         account.HomeSyncDirectory.ShouldBeNull();
     }
 
     [Fact]
     public void AllowAnyStringForHomeSyncDirectory()
     {
-        // Arrange
         const string invalidPath = "this/is/not/valid/but/allowed";
 
-        // Act
         var account = new Account
         {
             HomeSyncDirectory = invalidPath
         };
 
-        // Assert
         account.HomeSyncDirectory.ShouldBe(invalidPath);
     }
 
     [Fact]
     public void HaveDefaultMaxConcurrentAndFlags()
     {
-        // Arrange & Act
         var account = new Account();
 
-        // Assert
         account.MaxConcurrent.ShouldBe(5);
         account.DebugLoggingEnabled.ShouldBeFalse();
         account.IsAdmin.ShouldBeFalse();
@@ -139,7 +128,6 @@ public class AccountShould
     {
         DateTime beforeCreation = DateTime.UtcNow;
 
-        // Act
         var account = new Account();
         DateTime afterCreation = DateTime.UtcNow;
 
@@ -151,7 +139,6 @@ public class AccountShould
     [Fact]
     public void TrackUpdatedAtTimestamp()
     {
-        // Arrange & Act
         var account = new Account();
 
         account.UpdatedAt.ShouldNotBe(default);
@@ -161,10 +148,8 @@ public class AccountShould
     [Fact]
     public void InitializeNavigationCollectionsAsEmpty()
     {
-        // Arrange & Act
         var account = new Account();
 
-        // Assert
         account.FileSystemItems.ShouldNotBeNull();
         account.FileSystemItems.ShouldBeEmpty();
         account.DeltaTokens.ShouldNotBeNull();
@@ -178,41 +163,33 @@ public class AccountShould
     [Fact]
     public void AllowCustomMaxConcurrentValue()
     {
-        // Arrange & Act
         var account = new Account { MaxConcurrent = 10 };
 
-        // Assert
         account.MaxConcurrent.ShouldBe(10);
     }
 
     [Fact]
     public void AllowToggleDebugLogging()
     {
-        // Arrange & Act
         var account = new Account { DebugLoggingEnabled = true };
 
-        // Assert
         account.DebugLoggingEnabled.ShouldBeTrue();
     }
 
     [Fact]
     public void AllowToggleAdminFlag()
     {
-        // Arrange & Act
         var account = new Account { IsAdmin = true };
 
-        // Assert
         account.IsAdmin.ShouldBeTrue();
     }
 
     [Fact]
     public void GenerateUniqueIdOnCreation()
     {
-        // Arrange & Act
         var account1 = new Account();
         var account2 = new Account();
 
-        // Assert
         account1.Id.ShouldNotBe(Guid.Empty);
         account2.Id.ShouldNotBe(Guid.Empty);
         account1.Id.ShouldNotBe(account2.Id);

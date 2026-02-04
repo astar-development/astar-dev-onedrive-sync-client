@@ -4,9 +4,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 /// Represents a successfully authenticated access token.
 /// Refresh tokens are managed internally by MSAL and not exposed.
 /// </summary>
-public sealed record AuthToken(
-    string AccessToken,
-    DateTime ExpiresAt)
+public sealed record AuthToken(string AccessToken, DateTime ExpiresAt)
 {
     /// <summary>
     /// Gets the number of minutes until token expiry.

@@ -15,7 +15,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task CreateAccountAndPersistToDatabase()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -32,7 +32,7 @@ public class AccountRepositoryShould
         };
 
         await repository.CreateAsync(account);
-        var retrievedAccount = await repository.GetByIdAsync(account.Id);
+        Account? retrievedAccount = await repository.GetByIdAsync(account.Id);
 
         retrievedAccount.ShouldNotBeNull();
         retrievedAccount.HashedEmail.ShouldBe(account.HashedEmail);
@@ -42,7 +42,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task GetAccountByIdReturnsAccountWhenExists()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -52,7 +52,7 @@ public class AccountRepositoryShould
         var account = new Account { HashedEmail = "test1@example.com", HashedAccountId = "id1" };
         await repository.CreateAsync(account);
 
-        var retrieved = await repository.GetByIdAsync(account.Id);
+        Account? retrieved = await repository.GetByIdAsync(account.Id);
 
         retrieved.ShouldNotBeNull();
         retrieved.Id.ShouldBe(account.Id);
@@ -61,14 +61,14 @@ public class AccountRepositoryShould
     [Fact]
     public async Task GetAccountByIdReturnsNullWhenNotExists()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
         using var context = new OneDriveSyncDbContext(options);
         var repository = new AccountRepository(context);
 
-        var retrieved = await repository.GetByIdAsync(Guid.NewGuid());
+        Account? retrieved = await repository.GetByIdAsync(Guid.NewGuid());
 
         retrieved.ShouldBeNull();
     }
@@ -76,7 +76,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task GetByHashedEmailReturnsAccountWhenExists()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -87,7 +87,7 @@ public class AccountRepositoryShould
         var account = new Account { HashedEmail = hashedEmail, HashedAccountId = "id2" };
         await repository.CreateAsync(account);
 
-        var retrieved = await repository.GetByHashedEmailAsync(hashedEmail);
+        Account? retrieved = await repository.GetByHashedEmailAsync(hashedEmail);
 
         retrieved.ShouldNotBeNull();
         retrieved.HashedEmail.ShouldBe(hashedEmail);
@@ -96,14 +96,14 @@ public class AccountRepositoryShould
     [Fact]
     public async Task GetByHashedEmailReturnsNullWhenNotExists()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
         using var context = new OneDriveSyncDbContext(options);
         var repository = new AccountRepository(context);
 
-        var retrieved = await repository.GetByHashedEmailAsync("nonexistent@email.com");
+        Account? retrieved = await repository.GetByHashedEmailAsync("nonexistent@email.com");
 
         retrieved.ShouldBeNull();
     }
@@ -111,7 +111,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task UpdateAccountPersistsChangesToDatabase()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -127,7 +127,7 @@ public class AccountRepositoryShould
         await repository.UpdateAsync(account);
 
         using var verifyContext = new OneDriveSyncDbContext(options);
-        var retrieved = await verifyContext.Accounts.FindAsync(account.Id);
+        Account? retrieved = await verifyContext.Accounts.FindAsync(account.Id);
 
         retrieved.ShouldNotBeNull();
         retrieved.HomeSyncDirectory.ShouldBe("/new/sync/path");
@@ -137,7 +137,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task DeleteAccountRemovesItFromDatabase()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -146,12 +146,12 @@ public class AccountRepositoryShould
 
         var account = new Account { HashedEmail = "test4@example.com", HashedAccountId = "id5" };
         await repository.CreateAsync(account);
-        var accountId = account.Id;
+        Guid accountId = account.Id;
 
         await repository.DeleteAsync(accountId);
 
         using var verifyContext = new OneDriveSyncDbContext(options);
-        var retrieved = await verifyContext.Accounts.FindAsync(accountId);
+        Account? retrieved = await verifyContext.Accounts.FindAsync(accountId);
 
         retrieved.ShouldBeNull();
     }
@@ -159,14 +159,14 @@ public class AccountRepositoryShould
     [Fact]
     public async Task DeleteNonexistentAccountDoesNotThrow()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
         using var context = new OneDriveSyncDbContext(options);
         var repository = new AccountRepository(context);
 
-        var act = async () => await repository.DeleteAsync(Guid.NewGuid());
+        Func<Task> act = async () => await repository.DeleteAsync(Guid.NewGuid());
 
         await act.ShouldNotThrowAsync();
     }
@@ -174,7 +174,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task GetAllAccountsReturnsAllAccounts()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -203,7 +203,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task GetAllAccountsReturnsEmptyListWhenNoAccountsExist()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -218,7 +218,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task IsEmailHashUniqueReturnsTrueWhenHashDoesNotExist()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -233,7 +233,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task IsEmailHashUniqueReturnsFalseWhenHashExists()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -251,7 +251,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task GetAdminAccountsReturnsOnlyAdminAccounts()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -277,7 +277,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task DoesAccountExistReturnsTrueWhenIdExists()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
@@ -295,7 +295,7 @@ public class AccountRepositoryShould
     [Fact]
     public async Task DoesAccountExistReturnsFalseWhenIdDoesNotExist()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 

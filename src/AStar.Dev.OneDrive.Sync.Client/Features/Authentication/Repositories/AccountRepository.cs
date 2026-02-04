@@ -66,7 +66,7 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     /// </summary>
     public async Task DeleteAsync(Guid id)
     {
-        var account = await _context.Accounts.FindAsync(id);
+        Account? account = await _context.Accounts.FindAsync(id);
         if (account != null)
         {
             _context.Accounts.Remove(account);
