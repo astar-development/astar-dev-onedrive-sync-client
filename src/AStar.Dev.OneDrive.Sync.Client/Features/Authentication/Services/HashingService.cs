@@ -1,8 +1,8 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
 
 using System.Security.Cryptography;
 using System.Text;
 
+namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
 /// <summary>
 /// Implements SHA256 hashing for email and account ID obfuscation.
 /// Ensures consistent, deterministic hashes for database lookups.
@@ -14,12 +14,9 @@ public class HashingService : IHashingService
     {
         ArgumentNullException.ThrowIfNull(email);
 
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            throw new ArgumentException("Email cannot be empty or whitespace.", nameof(email));
-        }
-
-        return await Task.FromResult(HashValue(email.ToLowerInvariant()));
+        return string.IsNullOrWhiteSpace(email)
+            ? throw new ArgumentException("Email cannot be empty or whitespace.", nameof(email))
+            : await Task.FromResult(HashValue(email.ToLowerInvariant()));
     }
 
     /// <inheritdoc/>
@@ -27,13 +24,13 @@ public class HashingService : IHashingService
     {
         ArgumentNullException.ThrowIfNull(accountId);
 
-        if (string.IsNullOrWhiteSpace(accountId))
+        if(string.IsNullOrWhiteSpace(accountId))
         {
             throw new ArgumentException("Account ID cannot be empty or whitespace.", nameof(accountId));
         }
 
-        string saltedValue = $"{accountId}:{createdAtTicks}";
-        
+        var saltedValue = $"{accountId}:{createdAtTicks}";
+
         return await Task.FromResult(HashValue(saltedValue));
     }
 
@@ -45,7 +42,7 @@ public class HashingService : IHashingService
     private static string HashValue(string value)
     {
         using var sha256 = SHA256.Create();
-        byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
+        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
 
         return Convert.ToHexString(hashedBytes).ToLowerInvariant();
     }

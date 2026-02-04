@@ -6,16 +6,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 /// <summary>
 /// Database context for OneDrive sync application using PostgreSQL with the 'onedrive' schema.
 /// </summary>
-public class OneDriveSyncDbContext : DbContext
+/// <remarks>
+/// Initializes a new instance of the <see cref="OneDriveSyncDbContext"/> class.
+/// </remarks>
+/// <param name="options">The options to configure the context.</param>
+public class OneDriveSyncDbContext(DbContextOptions<OneDriveSyncDbContext> options) : DbContext(options)
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OneDriveSyncDbContext"/> class.
-    /// </summary>
-    /// <param name="options">The options to configure the context.</param>
-    public OneDriveSyncDbContext(DbContextOptions<OneDriveSyncDbContext> options)
-        : base(options)
-    {
-    }
 
     /// <summary>
     /// Gets or sets the Accounts DbSet.

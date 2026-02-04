@@ -2,10 +2,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Mode
 
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 
-/// <summary>
-/// Unit tests for AccountSettings value object.
-/// Tests immutability and record semantics.
-/// </summary>
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
 public class AccountSettingsShould
 {
     [Fact]
@@ -73,8 +70,7 @@ public class AccountSettingsShould
         // Arrange
         var originalSettings = new AccountSettings("/sync", 5, false);
 
-        // Act
-        var updatedSettings = originalSettings with { MaxConcurrent = 10 };
+        AccountSettings updatedSettings = originalSettings with { MaxConcurrent = 10 };
 
         // Assert
         updatedSettings.HomeSyncDirectory.ShouldBe("/sync");
@@ -89,8 +85,7 @@ public class AccountSettingsShould
         // Arrange
         var originalSettings = new AccountSettings("/sync", 5, false);
 
-        // Act
-        var updatedSettings = originalSettings with
+        AccountSettings updatedSettings = originalSettings with
         {
             HomeSyncDirectory = "/new/sync",
             MaxConcurrent = 15,

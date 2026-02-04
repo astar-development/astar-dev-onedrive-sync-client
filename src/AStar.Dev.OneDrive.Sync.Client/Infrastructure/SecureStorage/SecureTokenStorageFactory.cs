@@ -3,15 +3,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 /// <summary>
 /// Factory for creating platform-specific secure token storage implementations.
 /// </summary>
-public class SecureTokenStorageFactory
+/// <remarks>
+/// Initializes a new instance of the <see cref="SecureTokenStorageFactory"/> class.
+/// </remarks>
+/// <param name="useFallback">If true, always use AES fallback instead of platform-specific storage.</param>
+public class SecureTokenStorageFactory(bool useFallback = false)
 {
-    private readonly bool _useFallback;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SecureTokenStorageFactory"/> class.
-    /// </summary>
-    /// <param name="useFallback">If true, always use AES fallback instead of platform-specific storage.</param>
-    public SecureTokenStorageFactory(bool useFallback = false) => _useFallback = useFallback;
+    private readonly bool _useFallback = useFallback;
 
     /// <summary>
     /// Creates the appropriate secure token storage for the current platform.

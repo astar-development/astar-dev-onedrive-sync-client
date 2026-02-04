@@ -2,10 +2,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Mode
 
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 
-/// <summary>
-/// Unit tests for Account entity class.
-/// Tests account creation, validation, and property management.
-/// </summary>
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
+
 public class AccountShould
 {
     [Fact]
@@ -45,54 +43,42 @@ public class AccountShould
     [Fact]
     public void ThrowArgumentExceptionForNullHashedEmail()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedEmail = null! }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedEmail = null! }; });
         ex.Message.ShouldContain("HashedEmail");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForEmptyHashedEmail()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedEmail = string.Empty }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedEmail = string.Empty }; });
         ex.Message.ShouldContain("HashedEmail");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForWhitespaceHashedEmail()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedEmail = "   " }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedEmail = "   " }; });
         ex.Message.ShouldContain("HashedEmail");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForNullHashedAccountId()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedAccountId = null! }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedAccountId = null! }; });
         ex.Message.ShouldContain("HashedAccountId");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForEmptyHashedAccountId()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedAccountId = string.Empty }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedAccountId = string.Empty }; });
         ex.Message.ShouldContain("HashedAccountId");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForWhitespaceHashedAccountId()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedAccountId = "   " }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedAccountId = "   " }; });
         ex.Message.ShouldContain("HashedAccountId");
     }
 
@@ -153,15 +139,13 @@ public class AccountShould
     [Fact]
     public void TrackCreatedAtTimestamp()
     {
-        // Arrange
-        var beforeCreation = DateTime.UtcNow;
+        DateTime beforeCreation = DateTime.UtcNow;
 
         // Act
         var account = new Account();
-        var afterCreation = DateTime.UtcNow;
+        DateTime afterCreation = DateTime.UtcNow;
 
-        // Assert
-        account.CreatedAt.ShouldNotBe(default(DateTime));
+        account.CreatedAt.ShouldNotBe(default);
         account.CreatedAt.ShouldBeGreaterThanOrEqualTo(beforeCreation);
         account.CreatedAt.ShouldBeLessThanOrEqualTo(afterCreation);
     }
@@ -172,8 +156,7 @@ public class AccountShould
         // Arrange & Act
         var account = new Account();
 
-        // Assert
-        account.UpdatedAt.ShouldNotBe(default(DateTime));
+        account.UpdatedAt.ShouldNotBe(default);
         account.UpdatedAt.ShouldBeGreaterThanOrEqualTo(account.CreatedAt);
     }
 
