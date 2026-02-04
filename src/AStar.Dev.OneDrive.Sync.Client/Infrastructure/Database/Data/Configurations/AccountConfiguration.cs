@@ -38,6 +38,8 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
         _ = builder.Property(e => e.IsAdmin)
             .HasDefaultValue(false);
 
+        _ = builder.Property(e => e.MaxBandwidthKBps);
+
         _ = builder.Property(e => e.CreatedAt);
 
         _ = builder.Property(e => e.UpdatedAt);

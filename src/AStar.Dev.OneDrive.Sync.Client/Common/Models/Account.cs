@@ -65,6 +65,12 @@ public class Account
     public bool IsAdmin { get; set; }
 
     /// <summary>
+    /// Maximum bandwidth in kilobytes per second (KBps) for this account.
+    /// Null means unlimited. Used for rate-limiting uploads/downloads.
+    /// </summary>
+    public int? MaxBandwidthKBps { get; set; }
+
+    /// <summary>
     /// Account creation timestamp (UTC).
     /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
