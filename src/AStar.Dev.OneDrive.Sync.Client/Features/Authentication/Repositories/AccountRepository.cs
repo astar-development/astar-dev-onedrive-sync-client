@@ -50,6 +50,18 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     }
 
     /// <summary>
+    /// Retrieves an account by its hashed account ID.
+    /// </summary>
+    public async Task<Account?> GetByHashedAccountIdAsync(string hashedAccountId)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(hashedAccountId);
+        
+        return await _context.Accounts
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.HashedAccountId == hashedAccountId);
+    }
+
+    /// <summary>
     /// Updates an existing account.
     /// </summary>
     public async Task UpdateAsync(Account account)

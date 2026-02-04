@@ -26,31 +26,31 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task GetAccountByIdReturnsAccountWhenExists()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id"
+            HashedAccountId = hashedAccountId
         };
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.GetAccountByIdAsync(accountId);
+        Result<Account, AccountManagementError> result = await _accountManagementService.GetAccountByIdAsync(hashedAccountId);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Ok>();
         var okResult = result as Result<Account, AccountManagementError>.Ok;
-        okResult!.Value.Id.ShouldBe(accountId);
+        okResult!.Value.HashedAccountId.ShouldBe(hashedAccountId);
     }
 
     [Fact]
     public async Task GetAccountByIdReturnsAccountNotFoundWhenNotExists()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "nonexistent-hashed-id";
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(null));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(null));
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.GetAccountByIdAsync(accountId);
+        Result<Account, AccountManagementError> result = await _accountManagementService.GetAccountByIdAsync(hashedAccountId);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Error>();
         var errorResult = result as Result<Account, AccountManagementError>.Error;
@@ -60,11 +60,11 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task GetAccountByIdReturnsRepositoryErrorWhenExceptionThrown()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "error-hashed-id";
 
-        _accountRepository.GetByIdAsync(accountId).Throws(new InvalidOperationException("Database error"));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Throws(new InvalidOperationException("Database error"));
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.GetAccountByIdAsync(accountId);
+        Result<Account, AccountManagementError> result = await _accountManagementService.GetAccountByIdAsync(hashedAccountId);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Error>();
         var errorResult = result as Result<Account, AccountManagementError>.Error;
@@ -74,20 +74,20 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateHomeSyncDirectoryUpdatesSuccessfully()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id",
+            HashedAccountId = hashedAccountId,
             HomeSyncDirectory = "/old/path"
         };
         const string newDirectory = "/new/sync/path";
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
         _accountRepository.UpdateAsync(Arg.Any<Account>()).Returns(Task.CompletedTask);
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateHomeSyncDirectoryAsync(accountId, newDirectory);
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateHomeSyncDirectoryAsync(hashedAccountId, newDirectory);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Ok>();
         var okResult = result as Result<Account, AccountManagementError>.Ok;
@@ -98,12 +98,12 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateHomeSyncDirectoryReturnsAccountNotFoundWhenNotExists()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "nonexistent-hashed-id";
         const string newDirectory = "/new/path";
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(null));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(null));
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateHomeSyncDirectoryAsync(accountId, newDirectory);
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateHomeSyncDirectoryAsync(hashedAccountId, newDirectory);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Error>();
         var errorResult = result as Result<Account, AccountManagementError>.Error;
@@ -113,20 +113,20 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateMaxConcurrentUpdatesSuccessfully()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id",
+            HashedAccountId = hashedAccountId,
             MaxConcurrent = 5
         };
         const int newMaxConcurrent = 10;
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
         _accountRepository.UpdateAsync(Arg.Any<Account>()).Returns(Task.CompletedTask);
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxConcurrentAsync(accountId, newMaxConcurrent);
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxConcurrentAsync(hashedAccountId, newMaxConcurrent);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Ok>();
         var okResult = result as Result<Account, AccountManagementError>.Ok;
@@ -137,10 +137,10 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateMaxConcurrentReturnsValidationErrorForInvalidValue()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         const int invalidMaxConcurrent = 0;
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxConcurrentAsync(accountId, invalidMaxConcurrent);
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxConcurrentAsync(hashedAccountId, invalidMaxConcurrent);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Error>();
         var errorResult = result as Result<Account, AccountManagementError>.Error;
@@ -150,20 +150,20 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateDebugLoggingUpdatesSuccessfully()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id",
+            HashedAccountId = hashedAccountId,
             DebugLoggingEnabled = false
         };
         const bool newDebugLoggingEnabled = true;
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
         _accountRepository.UpdateAsync(Arg.Any<Account>()).Returns(Task.CompletedTask);
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateDebugLoggingAsync(accountId, newDebugLoggingEnabled);
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateDebugLoggingAsync(hashedAccountId, newDebugLoggingEnabled);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Ok>();
         var okResult = result as Result<Account, AccountManagementError>.Ok;
@@ -174,20 +174,20 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateMaxBandwidthKBpsUpdatesSuccessfully()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id",
+            HashedAccountId = hashedAccountId,
             MaxBandwidthKBps = null
         };
         const int newMaxBandwidth = 1024;
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
         _accountRepository.UpdateAsync(Arg.Any<Account>()).Returns(Task.CompletedTask);
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxBandwidthKBpsAsync(accountId, newMaxBandwidth);
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxBandwidthKBpsAsync(hashedAccountId, newMaxBandwidth);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Ok>();
         var okResult = result as Result<Account, AccountManagementError>.Ok;
@@ -198,19 +198,19 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateMaxBandwidthKBpsAllowsNullForUnlimited()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id",
+            HashedAccountId = hashedAccountId,
             MaxBandwidthKBps = 1024
         };
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
         _accountRepository.UpdateAsync(Arg.Any<Account>()).Returns(Task.CompletedTask);
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxBandwidthKBpsAsync(accountId, null);
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxBandwidthKBpsAsync(hashedAccountId, null);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Ok>();
         var okResult = result as Result<Account, AccountManagementError>.Ok;
@@ -221,10 +221,10 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateMaxBandwidthKBpsReturnsValidationErrorForNegativeValue()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         const int invalidBandwidth = -100;
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxBandwidthKBpsAsync(accountId, invalidBandwidth);
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateMaxBandwidthKBpsAsync(hashedAccountId, invalidBandwidth);
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Error>();
         var errorResult = result as Result<Account, AccountManagementError>.Error;
@@ -234,33 +234,33 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task DeleteAccountDeletesSuccessfully()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id"
+            HashedAccountId = hashedAccountId
         };
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
-        _accountRepository.DeleteAsync(accountId).Returns(Task.CompletedTask);
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.DeleteAsync(account.Id).Returns(Task.CompletedTask);
 
-        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(accountId);
+        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(hashedAccountId);
 
         result.ShouldBeOfType<Result<bool, AccountManagementError>.Ok>();
         var okResult = result as Result<bool, AccountManagementError>.Ok;
         okResult!.Value.ShouldBeTrue();
-        await _accountRepository.Received(1).DeleteAsync(accountId);
+        await _accountRepository.Received(1).DeleteAsync(account.Id);
     }
 
     [Fact]
     public async Task DeleteAccountReturnsAccountNotFoundWhenNotExists()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "nonexistent-hashed-id";
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(null));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(null));
 
-        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(accountId);
+        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(hashedAccountId);
 
         result.ShouldBeOfType<Result<bool, AccountManagementError>.Error>();
         var errorResult = result as Result<bool, AccountManagementError>.Error;
@@ -270,18 +270,18 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task UpdateReturnsRepositoryErrorWhenDbUpdateExceptionThrown()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "hashed-account-id-test";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id"
+            HashedAccountId = hashedAccountId
         };
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
         _accountRepository.UpdateAsync(Arg.Any<Account>()).Throws(new DbUpdateException("Database error"));
 
-        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateHomeSyncDirectoryAsync(accountId, "/new/path");
+        Result<Account, AccountManagementError> result = await _accountManagementService.UpdateHomeSyncDirectoryAsync(hashedAccountId, "/new/path");
 
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Error>();
         var errorResult = result as Result<Account, AccountManagementError>.Error;
@@ -291,18 +291,18 @@ public class AccountManagementServiceShould
     [Fact]
     public async Task DeleteReturnsRepositoryErrorWhenExceptionThrown()
     {
-        var accountId = Guid.NewGuid();
+        const string hashedAccountId = "error-hashed-id";
         var account = new Account
         {
-            Id = accountId,
+            Id = Guid.NewGuid(),
             HashedEmail = "test@example.com",
-            HashedAccountId = "hashed-id"
+            HashedAccountId = hashedAccountId
         };
 
-        _accountRepository.GetByIdAsync(accountId).Returns(Task.FromResult<Account?>(account));
-        _accountRepository.DeleteAsync(accountId).Throws(new InvalidOperationException("Database error"));
+        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
+        _accountRepository.DeleteAsync(account.Id).Throws(new InvalidOperationException("Delete failed"));
 
-        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(accountId);
+        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(hashedAccountId);
 
         result.ShouldBeOfType<Result<bool, AccountManagementError>.Error>();
         var errorResult = result as Result<bool, AccountManagementError>.Error;

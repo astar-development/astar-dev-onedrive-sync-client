@@ -109,6 +109,41 @@ public class AccountRepositoryShould
     }
 
     [Fact]
+    public async Task GetByHashedAccountIdReturnsAccountWhenExists()
+    {
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        using var context = new OneDriveSyncDbContext(options);
+        var repository = new AccountRepository(context);
+
+        const string hashedAccountId = "hashed-account-id-123";
+        var account = new Account { HashedEmail = "test@example.com", HashedAccountId = hashedAccountId };
+        await repository.CreateAsync(account);
+
+        Account? retrieved = await repository.GetByHashedAccountIdAsync(hashedAccountId);
+
+        retrieved.ShouldNotBeNull();
+        retrieved.HashedAccountId.ShouldBe(hashedAccountId);
+    }
+
+    [Fact]
+    public async Task GetByHashedAccountIdReturnsNullWhenNotExists()
+    {
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        using var context = new OneDriveSyncDbContext(options);
+        var repository = new AccountRepository(context);
+
+        Account? retrieved = await repository.GetByHashedAccountIdAsync("nonexistent-id");
+
+        retrieved.ShouldBeNull();
+    }
+
+    [Fact]
     public async Task UpdateAccountPersistsChangesToDatabase()
     {
         DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()

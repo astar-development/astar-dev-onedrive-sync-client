@@ -24,45 +24,45 @@ public class AccountManagementService(IAccountRepository accountRepository, ILog
     private readonly ILogger<AccountManagementService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     /// <inheritdoc/>
-    public async Task<Result<Account, AccountManagementError>> GetAccountByIdAsync(Guid accountId)
+    public async Task<Result<Account, AccountManagementError>> GetAccountByIdAsync(string hashedAccountId)
     {
         try
         {
-            _logger.LogInformation("Retrieving account with ID {AccountId}", accountId);
+            _logger.LogInformation("Retrieving account with hashed ID {HashedAccountId}", hashedAccountId);
 
-            Account? account = await _accountRepository.GetByIdAsync(accountId);
+            Account? account = await _accountRepository.GetByHashedAccountIdAsync(hashedAccountId);
 
             if(account is null)
             {
-                _logger.LogWarning("Account with ID {AccountId} not found", accountId);
+                _logger.LogWarning("Account with hashed ID {HashedAccountId} not found", hashedAccountId);
 
                 return new Result<Account, AccountManagementError>.Error(AccountManagementError.AccountNotFound);
             }
 
-            _logger.LogInformation("Account {AccountId} retrieved successfully", accountId);
+            _logger.LogInformation("Account {HashedAccountId} retrieved successfully", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Ok(account);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error retrieving account {AccountId}", accountId);
+            _logger.LogError(ex, "Unexpected error retrieving account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.UnexpectedError);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Account, AccountManagementError>> UpdateHomeSyncDirectoryAsync(Guid accountId, string? homeSyncDirectory)
+    public async Task<Result<Account, AccountManagementError>> UpdateHomeSyncDirectoryAsync(string hashedAccountId, string? homeSyncDirectory)
     {
         try
         {
-            _logger.LogInformation("Updating home sync directory for account {AccountId}", accountId);
+            _logger.LogInformation("Updating home sync directory for account {HashedAccountId}", hashedAccountId);
 
-            Account? account = await _accountRepository.GetByIdAsync(accountId);
+            Account? account = await _accountRepository.GetByHashedAccountIdAsync(hashedAccountId);
 
             if(account is null)
             {
-                _logger.LogWarning("Account with ID {AccountId} not found", accountId);
+                _logger.LogWarning("Account with hashed ID {HashedAccountId} not found", hashedAccountId);
 
                 return new Result<Account, AccountManagementError>.Error(AccountManagementError.AccountNotFound);
             }
@@ -72,26 +72,26 @@ public class AccountManagementService(IAccountRepository accountRepository, ILog
 
             await _accountRepository.UpdateAsync(account);
 
-            _logger.LogInformation("Home sync directory updated for account {AccountId}", accountId);
+            _logger.LogInformation("Home sync directory updated for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Ok(account);
         }
         catch(DbUpdateException ex)
         {
-            _logger.LogError(ex, "Repository error updating home sync directory for account {AccountId}", accountId);
+            _logger.LogError(ex, "Repository error updating home sync directory for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.RepositoryError);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error updating home sync directory for account {AccountId}", accountId);
+            _logger.LogError(ex, "Unexpected error updating home sync directory for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.UnexpectedError);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Account, AccountManagementError>> UpdateMaxConcurrentAsync(Guid accountId, int maxConcurrent)
+    public async Task<Result<Account, AccountManagementError>> UpdateMaxConcurrentAsync(string hashedAccountId, int maxConcurrent)
     {
         try
         {
@@ -102,13 +102,13 @@ public class AccountManagementService(IAccountRepository accountRepository, ILog
                 return new Result<Account, AccountManagementError>.Error(AccountManagementError.ValidationError);
             }
 
-            _logger.LogInformation("Updating MaxConcurrent to {MaxConcurrent} for account {AccountId}", maxConcurrent, accountId);
+            _logger.LogInformation("Updating MaxConcurrent to {MaxConcurrent} for account {HashedAccountId}", maxConcurrent, hashedAccountId);
 
-            Account? account = await _accountRepository.GetByIdAsync(accountId);
+            Account? account = await _accountRepository.GetByHashedAccountIdAsync(hashedAccountId);
 
             if(account is null)
             {
-                _logger.LogWarning("Account with ID {AccountId} not found", accountId);
+                _logger.LogWarning("Account with hashed ID {HashedAccountId} not found", hashedAccountId);
 
                 return new Result<Account, AccountManagementError>.Error(AccountManagementError.AccountNotFound);
             }
@@ -118,36 +118,36 @@ public class AccountManagementService(IAccountRepository accountRepository, ILog
 
             await _accountRepository.UpdateAsync(account);
 
-            _logger.LogInformation("MaxConcurrent updated for account {AccountId}", accountId);
+            _logger.LogInformation("MaxConcurrent updated for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Ok(account);
         }
         catch(DbUpdateException ex)
         {
-            _logger.LogError(ex, "Repository error updating MaxConcurrent for account {AccountId}", accountId);
+            _logger.LogError(ex, "Repository error updating MaxConcurrent for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.RepositoryError);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error updating MaxConcurrent for account {AccountId}", accountId);
+            _logger.LogError(ex, "Unexpected error updating MaxConcurrent for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.UnexpectedError);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Account, AccountManagementError>> UpdateDebugLoggingAsync(Guid accountId, bool enabled)
+    public async Task<Result<Account, AccountManagementError>> UpdateDebugLoggingAsync(string hashedAccountId, bool enabled)
     {
         try
         {
-            _logger.LogInformation("Updating debug logging to {Enabled} for account {AccountId}", enabled, accountId);
+            _logger.LogInformation("Updating debug logging to {Enabled} for account {HashedAccountId}", enabled, hashedAccountId);
 
-            Account? account = await _accountRepository.GetByIdAsync(accountId);
+            Account? account = await _accountRepository.GetByHashedAccountIdAsync(hashedAccountId);
 
             if(account is null)
             {
-                _logger.LogWarning("Account with ID {AccountId} not found", accountId);
+                _logger.LogWarning("Account with hashed ID {HashedAccountId} not found", hashedAccountId);
 
                 return new Result<Account, AccountManagementError>.Error(AccountManagementError.AccountNotFound);
             }
@@ -157,26 +157,26 @@ public class AccountManagementService(IAccountRepository accountRepository, ILog
 
             await _accountRepository.UpdateAsync(account);
 
-            _logger.LogInformation("Debug logging updated for account {AccountId}", accountId);
+            _logger.LogInformation("Debug logging updated for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Ok(account);
         }
         catch(DbUpdateException ex)
         {
-            _logger.LogError(ex, "Repository error updating debug logging for account {AccountId}", accountId);
+            _logger.LogError(ex, "Repository error updating debug logging for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.RepositoryError);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error updating debug logging for account {AccountId}", accountId);
+            _logger.LogError(ex, "Unexpected error updating debug logging for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.UnexpectedError);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<Result<Account, AccountManagementError>> UpdateMaxBandwidthKBpsAsync(Guid accountId, int? maxBandwidthKBps)
+    public async Task<Result<Account, AccountManagementError>> UpdateMaxBandwidthKBpsAsync(string hashedAccountId, int? maxBandwidthKBps)
     {
         try
         {
@@ -187,13 +187,13 @@ public class AccountManagementService(IAccountRepository accountRepository, ILog
                 return new Result<Account, AccountManagementError>.Error(AccountManagementError.ValidationError);
             }
 
-            _logger.LogInformation("Updating MaxBandwidthKBps to {MaxBandwidthKBps} for account {AccountId}", maxBandwidthKBps, accountId);
+            _logger.LogInformation("Updating MaxBandwidthKBps to {MaxBandwidthKBps} for account {HashedAccountId}", maxBandwidthKBps, hashedAccountId);
 
-            Account? account = await _accountRepository.GetByIdAsync(accountId);
+            Account? account = await _accountRepository.GetByHashedAccountIdAsync(hashedAccountId);
 
             if(account is null)
             {
-                _logger.LogWarning("Account with ID {AccountId} not found", accountId);
+                _logger.LogWarning("Account with hashed ID {HashedAccountId} not found", hashedAccountId);
 
                 return new Result<Account, AccountManagementError>.Error(AccountManagementError.AccountNotFound);
             }
@@ -203,49 +203,49 @@ public class AccountManagementService(IAccountRepository accountRepository, ILog
 
             await _accountRepository.UpdateAsync(account);
 
-            _logger.LogInformation("MaxBandwidthKBps updated for account {AccountId}", accountId);
+            _logger.LogInformation("MaxBandwidthKBps updated for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Ok(account);
         }
         catch(DbUpdateException ex)
         {
-            _logger.LogError(ex, "Repository error updating MaxBandwidthKBps for account {AccountId}", accountId);
+            _logger.LogError(ex, "Repository error updating MaxBandwidthKBps for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.RepositoryError);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error updating MaxBandwidthKBps for account {AccountId}", accountId);
+            _logger.LogError(ex, "Unexpected error updating MaxBandwidthKBps for account {HashedAccountId}", hashedAccountId);
 
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.UnexpectedError);
         }
     }
 
     /// <inheritdoc/>
-    public async Task<Result<bool, AccountManagementError>> DeleteAccountAsync(Guid accountId)
+    public async Task<Result<bool, AccountManagementError>> DeleteAccountAsync(string hashedAccountId)
     {
         try
         {
-            _logger.LogInformation("Deleting account {AccountId}", accountId);
+            _logger.LogInformation("Deleting account {HashedAccountId}", hashedAccountId);
 
-            Account? account = await _accountRepository.GetByIdAsync(accountId);
+            Account? account = await _accountRepository.GetByHashedAccountIdAsync(hashedAccountId);
 
             if(account is null)
             {
-                _logger.LogWarning("Account with ID {AccountId} not found", accountId);
+                _logger.LogWarning("Account with hashed ID {HashedAccountId} not found", hashedAccountId);
 
                 return new Result<bool, AccountManagementError>.Error(AccountManagementError.AccountNotFound);
             }
 
-            await _accountRepository.DeleteAsync(accountId);
+            await _accountRepository.DeleteAsync(account.Id);
 
-            _logger.LogInformation("Account {AccountId} deleted successfully", accountId);
+            _logger.LogInformation("Account {HashedAccountId} deleted successfully", hashedAccountId);
 
             return new Result<bool, AccountManagementError>.Ok(true);
         }
         catch(Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error deleting account {AccountId}", accountId);
+            _logger.LogError(ex, "Unexpected error deleting account {HashedAccountId}", hashedAccountId);
 
             return new Result<bool, AccountManagementError>.Error(AccountManagementError.UnexpectedError);
         }
