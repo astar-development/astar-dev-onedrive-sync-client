@@ -37,7 +37,7 @@ public class SecureTokenStorageFactory
         else if (OperatingSystem.IsMacOS())
         {
             storage = new MacOSSecureTokenStorage();
-            // macOS implementation is not complete, fall back to AES
+            // Fall back to AES if Keychain tools are not available
             if (!storage.IsAvailable)
             {
                 storage = new AesSecureTokenStorage();
@@ -46,7 +46,7 @@ public class SecureTokenStorageFactory
         else if (OperatingSystem.IsLinux())
         {
             storage = new LinuxSecureTokenStorage();
-            // Linux implementation is not complete, fall back to AES
+            // Fall back to AES if secret-tool is not available
             if (!storage.IsAvailable)
             {
                 storage = new AesSecureTokenStorage();
