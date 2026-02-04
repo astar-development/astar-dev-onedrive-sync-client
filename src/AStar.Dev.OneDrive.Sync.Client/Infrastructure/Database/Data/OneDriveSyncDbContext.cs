@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.DbContext;
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 
 /// <summary>
 /// Database context for OneDrive sync application using PostgreSQL with the 'onedrive' schema.
