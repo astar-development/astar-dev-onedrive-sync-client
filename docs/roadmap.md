@@ -51,11 +51,11 @@ Establish the foundational architecture, dependency injection, and database infr
 - [x] Add MSAL for OAuth authentication
 - [x] Add Kiota abstractions for Graph API
 
-**Task 1.4**: Add UI NuGet packages
+**Task 1.4**: Add UI NuGet packages ✅
 
-- [ ] Add AvaloniaUI core package
-- [ ] Add Avalonia.ReactiveUI for MVVM integration
-- [ ] Add ReactiveUI framework
+- [x] Add AvaloniaUI core package
+- [x] Add Avalonia.ReactiveUI for MVVM integration
+- [x] Add ReactiveUI framework
 
 **Task 1.5**: Add observability NuGet packages
 
