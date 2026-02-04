@@ -6,6 +6,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 /// </summary>
 public class Account
 {
+    private string _hashedEmail = string.Empty;
+    private string _hashedAccountId = string.Empty;
 
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -40,7 +42,7 @@ public class Account
             }
 
             field = value;
-        }
+    }
     } = string.Empty;
 
     /// <summary>
