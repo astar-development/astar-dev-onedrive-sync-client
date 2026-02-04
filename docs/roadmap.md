@@ -57,15 +57,15 @@ Establish the foundational architecture, dependency injection, and database infr
 - [x] Add Avalonia.ReactiveUI for MVVM integration
 - [x] Add ReactiveUI framework
 
-**Task 1.5**: Add observability NuGet packages
+**Task 1.5**: Add observability NuGet packages ✅
 
-- [ ] Add Serilog and PostgreSQL sink
+- [x] Add Serilog and PostgreSQL sink
 
-**Task 1.6**: Create DbContext with schema configuration
+**Task 1.6**: Create DbContext with schema configuration ✅
 
-- [ ] Create `OneDriveSyncDbContext` class
-- [ ] Configure `onedrive` schema in `OnModelCreating`
-- [ ] Add connection string to `appsettings.json`
+- [x] Create `OneDriveSyncDbContext` class
+- [x] Configure `onedrive` schema in `OnModelCreating`
+- [x] Add connection string to `appsettings.json`
 
 **Task 1.7**: Create initial database migrations
 
