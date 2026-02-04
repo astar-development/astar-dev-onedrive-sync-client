@@ -34,6 +34,21 @@ public class OneDriveSyncDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<FileSystemItem> FileSystemItems { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the ConflictLogs DbSet.
+    /// </summary>
+    public DbSet<ConflictLog> ConflictLogs { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the SyncHistory DbSet.
+    /// </summary>
+    public DbSet<SyncHistory> SyncHistory { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the DiagnosticSettings DbSet.
+    /// </summary>
+    public DbSet<DiagnosticSettings> DiagnosticSettings { get; set; } = null!;
+
+    /// <summary>
     /// Configures the model for the context, including schema configuration and entity configurations.
     /// </summary>
     /// <param name="modelBuilder">The builder being used to construct the model.</param>
@@ -48,5 +63,8 @@ public class OneDriveSyncDbContext : Microsoft.EntityFrameworkCore.DbContext
         modelBuilder.ApplyConfiguration(new AccountConfiguration());
         modelBuilder.ApplyConfiguration(new DeltaTokenConfiguration());
         modelBuilder.ApplyConfiguration(new FileSystemItemConfiguration());
+        modelBuilder.ApplyConfiguration(new ConflictLogConfiguration());
+        modelBuilder.ApplyConfiguration(new SyncHistoryConfiguration());
+        modelBuilder.ApplyConfiguration(new DiagnosticSettingsConfiguration());
     }
 }

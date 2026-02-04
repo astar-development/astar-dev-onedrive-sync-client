@@ -3,6 +3,7 @@ using System;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(OneDriveSyncDbContext))]
-    partial class OneDriveSyncDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260204090212_RemainingMigration_ConflictLogsSyncHistoryDiagnosticSettings")]
+    partial class RemainingMigration_ConflictLogsSyncHistoryDiagnosticSettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
