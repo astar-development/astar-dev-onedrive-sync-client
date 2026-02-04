@@ -67,11 +67,11 @@ Establish the foundational architecture, dependency injection, and database infr
 - [x] Configure `onedrive` schema in `OnModelCreating`
 - [x] Add connection string to `appsettings.json`
 
-**Task 1.7**: Create initial database migrations
+**Task 1.7**: Create initial database migrations ✅
 
-- [ ] Add migration for `Accounts` table with hashing fields
-- [ ] Add migration for `DeltaTokens` table
-- [ ] Add migration for `FileSystemItems` table with hash tracking
+- [x] Add migration for `Accounts` table with hashing fields
+- [x] Add migration for `DeltaTokens` table
+- [x] Add migration for `FileSystemItems` table with hash tracking
 
 **Task 1.8**: Create remaining database migrations
 
