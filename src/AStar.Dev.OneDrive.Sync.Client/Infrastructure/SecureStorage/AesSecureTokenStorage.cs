@@ -70,6 +70,10 @@ public class AesSecureTokenStorage : ISecureTokenStorage
             using var aes = Aes.Create();
             aes.Key = _key;
 
+            // Validate data is large enough to contain IV
+            if (data.Length < aes.IV.Length)
+                return null; // File is too small to be valid encrypted data
+
             // Extract IV from beginning of data
             var iv = new byte[aes.IV.Length];
             Buffer.BlockCopy(data, 0, iv, 0, iv.Length);
@@ -86,6 +90,11 @@ public class AesSecureTokenStorage : ISecureTokenStorage
         catch (CryptographicException)
         {
             // Decryption failed - token may be corrupted
+            return null;
+        }
+        catch (ArgumentException)
+        {
+            // Invalid data format - file is corrupted
             return null;
         }
     }
