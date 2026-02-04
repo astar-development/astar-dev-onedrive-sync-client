@@ -1,8 +1,8 @@
 # UI/UX Flow
 
-### First Launch
+## First Launch
 
-```
+``` text
 App Start
   ↓
 Main Window (Empty)
@@ -20,9 +20,9 @@ Add account to database with default settings (HomeSyncDirectory, MaxConcurrent=
 Refresh UI → Account List (left sidebar)
 ```
 
-### Subsequent Launches
+## Subsequent Launches
 
-```
+``` text
 App Start
   ↓
 Load Accounts from database
@@ -46,9 +46,9 @@ Background scheduler continues periodic bidirectional checks
 If conflicts found → show conflict resolution dialog
 ```
 
-### UI Layout (Updated)
+## UI Layout (Updated)
 
-```
+``` text
 ┌─────────────────────────────────────────────┐
 │ OneDrive Sync Client     [View Logs] [⚙]   │
 ├──────────────┬──────────────────────────────┤
@@ -68,12 +68,12 @@ If conflicts found → show conflict resolution dialog
 └──────────────┴──────────────────────────────┘
 ```
 
-**Home Screen Menu Items**
+### Home Screen Menu Items
 
 - **View Logs**: Opens log viewer dialog with account selector
 - **Settings (⚙)**: Global app settings (sync interval, etc.)
 
-**Per-Account Actions**
+### Per-Account Actions
 
 - **[Edit]**: Opens Edit Account dialog with:
   - Home Sync Directory (folder picker)
@@ -120,7 +120,7 @@ If conflicts found → show conflict resolution dialog
 }
 ```
 
-**Environment Variables**
+### Environment Variables
 
 - `ONEDRIVE_SYNC_CLIENT_ID`: OAuth client ID
 - `ONEDRIVE_SYNC_DB_CONNECTION`: Override database connection string
@@ -147,13 +147,13 @@ If conflicts found → show conflict resolution dialog
 
 **Unit Tests** (target 95% coverage for core domain)
 
-**Framework & Tooling**
+### Framework & Tooling
 
 - **Testing Framework**: xUnit
 - **Mocking**: NSubstitute for creating test doubles and verifying interactions
 - **Assertions**: Shouldly for fluent, readable assertions
 
-**Test Coverage by Component**
+### Test Coverage by Component
 
 1. **AuthenticationService Tests**
    - Token refresh triggers proactively before expiry (< 5 min remaining)
@@ -286,16 +286,16 @@ If conflicts found → show conflict resolution dialog
 
 **End-to-End Tests** (BDD scenarios with SpecFlow or similar)
 
-**Framework & Tooling**
+## Framework & Tooling 2
 
 - **BDD Framework**: SpecFlow (integrates with xUnit)
 - **Assertions**: Shouldly for readable BDD assertions
 - **Test Data**: Use in-memory PostgreSQL (TestContainers) or SQLite for test isolation
 - **Mocking**: NSubstitute for external dependencies (Graph API)
 
-**BDD Feature Files**
+## BDD Feature Files
 
-**Feature 1: Account Management**
+### Feature 1: Account Management
 
 ```gherkin
 Feature: Account Management
@@ -329,7 +329,7 @@ Scenario: Remove account
   And secure storage should be cleared for that account
 ```
 
-**Feature 2: Folder Selection and Sync**
+### Feature 2: Folder Selection and Sync
 
 ```gherkin
 Feature: Folder Selection and Sync
@@ -363,7 +363,7 @@ Scenario: Bidirectional sync uploads local changes
   And SyncHistory should record 3 uploads
 ```
 
-**Feature 3: Conflict Resolution**
+### Feature 3: Conflict Resolution
 
 ```gherkin
 Feature: Conflict Resolution
@@ -396,7 +396,7 @@ Scenario: Resolve conflict by keeping both versions
   And the conflict should be marked as resolved
 ```
 
-**Feature 4: Background Scheduling**
+### Feature 4: Background Scheduling
 
 ```gherkin
 Feature: Background Scheduling
@@ -421,7 +421,7 @@ Scenario: Background sync detects and queues conflicts
   And the conflict dialog should be shown
 ```
 
-**Feature 5: Log Viewer**
+### Feature 5: Log Viewer
 
 ```gherkin
 Feature: Log Viewer
@@ -451,7 +451,7 @@ Scenario: Navigate log pages
   And page indicator should show "Page 2 of 5"
 ```
 
-**Feature 6: Concurrent Operations**
+### Feature 6: Concurrent Operations
 
 ```gherkin
 Feature: Concurrent Operations
@@ -474,7 +474,7 @@ Scenario: Respect concurrent upload limit
   And remaining files should wait in queue
 ```
 
-**Feature 7: GDPR Compliance**
+### Feature 7: GDPR Compliance
 
 ```gherkin
 Feature: GDPR Compliance
@@ -497,7 +497,7 @@ Scenario: Right to erasure
   And no PII should remain in the system
 ```
 
-**Performance Tests**
+### Performance Tests
 
 - Concurrent downloads/uploads with various limits (1, 5, 10, 20)
 - Large file sync (1GB+ files)
