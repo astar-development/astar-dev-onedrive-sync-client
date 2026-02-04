@@ -1,21 +1,16 @@
-using Shouldly;
-using Xunit;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.SecureStorage;
 
-/// <summary>
-/// Base test class for secure token storage implementations.
-/// Provides common test scenarios that all implementations must pass.
-/// </summary>
 public abstract class SecureTokenStorageTestsBase
 {
-    protected abstract AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage.ISecureTokenStorage CreateStorage();
+    protected abstract Client.Infrastructure.SecureStorage.ISecureTokenStorage CreateStorage();
 
     [Fact]
     public async Task StoreAndRetrieve_ValidToken_ReturnsToken()
     {
-        var storage = CreateStorage();
-        if (!storage.IsAvailable)
+        ISecureTokenStorage storage = CreateStorage();
+        if(!storage.IsAvailable)
         {
             return;
         }
@@ -39,8 +34,8 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task Retrieve_NonExistentKey_ReturnsNull()
     {
-        var storage = CreateStorage();
-        if (!storage.IsAvailable)
+        ISecureTokenStorage storage = CreateStorage();
+        if(!storage.IsAvailable)
         {
             return;
         }
@@ -53,8 +48,8 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task Delete_ExistingToken_RemovesToken()
     {
-        var storage = CreateStorage();
-        if (!storage.IsAvailable)
+        ISecureTokenStorage storage = CreateStorage();
+        if(!storage.IsAvailable)
         {
             return;
         }
@@ -71,8 +66,8 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task Delete_NonExistentToken_DoesNotThrow()
     {
-        var storage = CreateStorage();
-        if (!storage.IsAvailable)
+        ISecureTokenStorage storage = CreateStorage();
+        if(!storage.IsAvailable)
         {
             return;
         }
@@ -84,8 +79,8 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task StoreAndRetrieve_SpecialCharacters_HandlesCorrectly()
     {
-        var storage = CreateStorage();
-        if (!storage.IsAvailable)
+        ISecureTokenStorage storage = CreateStorage();
+        if(!storage.IsAvailable)
         {
             return;
         }
@@ -109,8 +104,8 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task StoreAndRetrieve_LongToken_HandlesCorrectly()
     {
-        var storage = CreateStorage();
-        if (!storage.IsAvailable)
+        ISecureTokenStorage storage = CreateStorage();
+        if(!storage.IsAvailable)
         {
             return;
         }
@@ -134,8 +129,8 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task Store_OverwriteExisting_UpdatesToken()
     {
-        var storage = CreateStorage();
-        if (!storage.IsAvailable)
+        ISecureTokenStorage storage = CreateStorage();
+        if(!storage.IsAvailable)
         {
             return;
         }
@@ -161,8 +156,8 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task StoreAndRetrieve_MultipleKeys_IsolatesValues()
     {
-        var storage = CreateStorage();
-        if (!storage.IsAvailable)
+        ISecureTokenStorage storage = CreateStorage();
+        if(!storage.IsAvailable)
         {
             return;
         }
@@ -192,14 +187,14 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public void Name_ShouldNotBeNullOrEmpty()
     {
-        var storage = CreateStorage();
+        ISecureTokenStorage storage = CreateStorage();
         storage.Name.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]
     public void IsAvailable_ShouldReturnBool()
     {
-        var storage = CreateStorage();
+        ISecureTokenStorage storage = CreateStorage();
         storage.IsAvailable.ShouldBeOfType<bool>();
     }
 }

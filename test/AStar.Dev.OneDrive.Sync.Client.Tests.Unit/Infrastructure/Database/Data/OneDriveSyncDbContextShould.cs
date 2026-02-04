@@ -1,6 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 using Microsoft.EntityFrameworkCore;
-using Shouldly;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Database.Data;
 
@@ -9,12 +9,12 @@ public class OneDriveSyncDbContextShould
     [Fact]
     public void ConfigureOneDriveSchemaAsDefault()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_Schema")
             .Options;
 
         using var context = new OneDriveSyncDbContext(options);
-        var model = context.Model;
+        IModel model = context.Model;
 
         model.GetDefaultSchema().ShouldBe("onedrive");
     }
@@ -22,37 +22,37 @@ public class OneDriveSyncDbContextShould
     [Fact]
     public void ImplementDbContext()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_Implementation")
             .Options;
 
         using var context = new OneDriveSyncDbContext(options);
-        
+
         context.ShouldNotBeNull();
-        context.ShouldBeAssignableTo<Microsoft.EntityFrameworkCore.DbContext>();
+        context.ShouldBeAssignableTo<DbContext>();
     }
 
     [Fact]
     public void AcceptDbContextOptions()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_Options")
             .Options;
 
-        var act = () => new OneDriveSyncDbContext(options);
-        
+        Func<OneDriveSyncDbContext> act = () => new OneDriveSyncDbContext(options);
+
         act.ShouldNotThrow();
     }
 
     [Fact]
     public void ProvideAccessToModel()
     {
-        var options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
+        DbContextOptions<OneDriveSyncDbContext> options = new DbContextOptionsBuilder<OneDriveSyncDbContext>()
             .UseInMemoryDatabase(databaseName: "TestDb_Model")
             .Options;
 
         using var context = new OneDriveSyncDbContext(options);
-        
+
         context.Model.ShouldNotBeNull();
     }
 }

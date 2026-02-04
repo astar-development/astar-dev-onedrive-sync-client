@@ -15,36 +15,33 @@ public class ApplicationLogConfiguration : IEntityTypeConfiguration<ApplicationL
     /// <param name="builder">The entity type builder.</param>
     public void Configure(EntityTypeBuilder<ApplicationLog> builder)
     {
-        builder.HasKey(e => e.Id);
-        
-        builder.Property(e => e.Id)
+        _ = builder.HasKey(e => e.Id);
+
+        _ = builder.Property(e => e.Id)
             .ValueGeneratedOnAdd()
             .IsRequired();
-        
-        builder.Property(e => e.LogLevel)
+
+        _ = builder.Property(e => e.LogLevel)
             .IsRequired();
-        
-        builder.Property(e => e.Timestamp)
+
+        _ = builder.Property(e => e.Timestamp)
             .IsRequired()
             .HasDefaultValueSql("NOW()");
-        
-        // Configure JSONB column type for PostgreSQL
-        builder.Property(e => e.Properties)
+
+        _ = builder.Property(e => e.Properties)
             .HasColumnType("jsonb");
-        
-        // Configure foreign key relationship (nullable for global logs)
-        builder.HasOne(e => e.Account)
+
+        _ = builder.HasOne(e => e.Account)
             .WithMany()
             .HasForeignKey(e => e.AccountId)
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired(false);
-        
-        // Create indexes for log viewer paging and filtering
-        builder.HasIndex(e => new { e.AccountId, e.Timestamp })
+
+        _ = builder.HasIndex(e => new { e.AccountId, e.Timestamp })
             .HasDatabaseName("idx_applicationlogs_accountid_timestamp")
             .IsDescending(false, true); // Timestamp DESC for recent-first ordering
-        
-        builder.HasIndex(e => e.LogLevel)
+
+        _ = builder.HasIndex(e => e.LogLevel)
             .HasDatabaseName("idx_applicationlogs_loglevel");
     }
 }

@@ -15,24 +15,24 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
     /// <param name="builder">The entity type builder.</param>
     public void Configure(EntityTypeBuilder<Account> builder)
     {
-        builder.HasKey(e => e.Id);
-        
-        builder.HasIndex(e => e.HashedEmail)
+        _ = builder.HasKey(e => e.Id);
+
+        _ = builder.HasIndex(e => e.HashedEmail)
             .IsUnique();
-        
-        builder.Property(e => e.Id)
+
+        _ = builder.Property(e => e.Id)
             .IsRequired();
-        
-        builder.Property(e => e.HashedEmail)
+
+        _ = builder.Property(e => e.HashedEmail)
             .IsRequired();
-        
-        builder.Property(e => e.MaxConcurrentDownloads)
+
+        _ = builder.Property(e => e.MaxConcurrentDownloads)
             .HasDefaultValue(5);
-        
-        builder.Property(e => e.MaxConcurrentUploads)
+
+        _ = builder.Property(e => e.MaxConcurrentUploads)
             .HasDefaultValue(5);
-        
-        builder.Property(e => e.EnableDebugLogging)
+
+        _ = builder.Property(e => e.EnableDebugLogging)
             .HasDefaultValue(false);
     }
 }

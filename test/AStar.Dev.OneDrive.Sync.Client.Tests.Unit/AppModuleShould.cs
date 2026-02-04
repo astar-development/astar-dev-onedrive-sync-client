@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Sync.Client;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Resilience;
 using Microsoft.Extensions.Configuration;
@@ -13,10 +12,10 @@ public class AppModuleShould
     public void RegisterServicesWithValidConfiguration()
     {
         var services = new ServiceCollection();
-        var configuration = BuildTestConfiguration();
+        IConfiguration configuration = BuildTestConfiguration();
 
         services.AddAppModule(configuration);
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
         serviceProvider.ShouldNotBeNull();
     }
@@ -25,12 +24,12 @@ public class AppModuleShould
     public void RegisterAuthenticationOptionsWithCorrectValues()
     {
         var services = new ServiceCollection();
-        var configuration = BuildTestConfiguration();
+        IConfiguration configuration = BuildTestConfiguration();
 
         services.AddAppModule(configuration);
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        var authOptions = serviceProvider.GetRequiredService<AuthenticationOptions>();
+        AuthenticationOptions authOptions = serviceProvider.GetRequiredService<AuthenticationOptions>();
         authOptions.ShouldNotBeNull();
         authOptions.Microsoft.ClientId.ShouldBe("test-client-id");
         authOptions.Microsoft.TenantId.ShouldBe("test-tenant-id");
@@ -41,12 +40,12 @@ public class AppModuleShould
     public void RegisterSyncOptionsWithCorrectValues()
     {
         var services = new ServiceCollection();
-        var configuration = BuildTestConfiguration();
+        IConfiguration configuration = BuildTestConfiguration();
 
         services.AddAppModule(configuration);
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        var syncOptions = serviceProvider.GetRequiredService<SyncOptions>();
+        SyncOptions syncOptions = serviceProvider.GetRequiredService<SyncOptions>();
         syncOptions.ShouldNotBeNull();
         syncOptions.DefaultConcurrentUploads.ShouldBe(5);
         syncOptions.DefaultConcurrentDownloads.ShouldBe(5);
@@ -56,12 +55,12 @@ public class AppModuleShould
     public void RegisterTelemetryOptionsWithCorrectValues()
     {
         var services = new ServiceCollection();
-        var configuration = BuildTestConfiguration();
+        IConfiguration configuration = BuildTestConfiguration();
 
         services.AddAppModule(configuration);
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        var telemetryOptions = serviceProvider.GetRequiredService<TelemetryOptions>();
+        TelemetryOptions telemetryOptions = serviceProvider.GetRequiredService<TelemetryOptions>();
         telemetryOptions.ShouldNotBeNull();
         telemetryOptions.Enabled.ShouldBe(true);
     }
@@ -70,12 +69,12 @@ public class AppModuleShould
     public void RegisterOptionsPatternForAuthenticationOptions()
     {
         var services = new ServiceCollection();
-        var configuration = BuildTestConfiguration();
+        IConfiguration configuration = BuildTestConfiguration();
 
         services.AddAppModule(configuration);
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        var options = serviceProvider.GetRequiredService<IOptions<AuthenticationOptions>>();
+        IOptions<AuthenticationOptions> options = serviceProvider.GetRequiredService<IOptions<AuthenticationOptions>>();
         options.Value.Microsoft.ClientId.ShouldBe("test-client-id");
     }
 
@@ -83,14 +82,14 @@ public class AppModuleShould
     public void RegisterResiliencePolicyFactoryAsSingleton()
     {
         var services = new ServiceCollection();
-        var configuration = BuildTestConfiguration();
+        IConfiguration configuration = BuildTestConfiguration();
 
         services.AddAppModule(configuration);
-        var serviceProvider = services.BuildServiceProvider();
+        ServiceProvider serviceProvider = services.BuildServiceProvider();
 
-        var factory1 = serviceProvider.GetRequiredService<ResiliencePolicyFactory>();
-        var factory2 = serviceProvider.GetRequiredService<ResiliencePolicyFactory>();
-        
+        ResiliencePolicyFactory factory1 = serviceProvider.GetRequiredService<ResiliencePolicyFactory>();
+        ResiliencePolicyFactory factory2 = serviceProvider.GetRequiredService<ResiliencePolicyFactory>();
+
         factory1.ShouldNotBeNull();
         factory1.ShouldBe(factory2);
     }

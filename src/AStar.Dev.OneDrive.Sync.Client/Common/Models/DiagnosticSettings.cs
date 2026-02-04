@@ -19,7 +19,7 @@ public class DiagnosticSettings
     /// <summary>
     /// Gets or sets the log level: 'Trace', 'Debug', 'Information', 'Warning', 'Error', 'Critical'.
     /// </summary>
-    public string? LogLevel { get; set; }
+    public ApplicationLogLevel LogLevel { get; set; } = ApplicationLogLevel.Information;
 
     /// <summary>
     /// Gets or sets a value indicating whether diagnostic logging is enabled for this account.

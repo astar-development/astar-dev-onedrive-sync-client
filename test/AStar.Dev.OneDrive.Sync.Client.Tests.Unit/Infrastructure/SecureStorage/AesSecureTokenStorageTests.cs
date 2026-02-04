@@ -1,30 +1,22 @@
-using Shouldly;
-using Xunit;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.SecureStorage;
 
-/// <summary>
-/// Tests for AES-256 encrypted fallback storage.
-/// </summary>
 public class AesSecureTokenStorageTests : SecureTokenStorageTestsBase
 {
-    protected override ISecureTokenStorage CreateStorage()
-    {
-        return new AesSecureTokenStorage();
-    }
+    protected override ISecureTokenStorage CreateStorage() => new AesSecureTokenStorage();
 
     [Fact]
-    public void IsAvailable_AlwaysReturnsTrue()
+    public void IsAvailableAlwaysReturnsTrue()
     {
-        var storage = CreateStorage();
+        ISecureTokenStorage storage = CreateStorage();
         storage.IsAvailable.ShouldBeTrue();
     }
 
     [Fact]
-    public void Name_ReturnsCorrectValue()
+    public void ReturnCorrectValueFromName()
     {
-        var storage = CreateStorage();
+        ISecureTokenStorage storage = CreateStorage();
         storage.Name.ShouldBe("AES-256 Fallback");
     }
 
@@ -66,7 +58,6 @@ public class AesSecureTokenStorageTests : SecureTokenStorageTestsBase
         {
             await storage1.StoreTokenAsync(key, token);
 
-            // Retrieve with second instance
             var retrieved = await storage2.RetrieveTokenAsync(key);
             retrieved.ShouldBe(token);
         }
@@ -99,7 +90,7 @@ public class AesSecureTokenStorageTests : SecureTokenStorageTestsBase
         }
         finally
         {
-            if (File.Exists(filePath))
+            if(File.Exists(filePath))
             {
                 File.Delete(filePath);
             }

@@ -11,10 +11,7 @@ public class SecureTokenStorageFactory
     /// Initializes a new instance of the <see cref="SecureTokenStorageFactory"/> class.
     /// </summary>
     /// <param name="useFallback">If true, always use AES fallback instead of platform-specific storage.</param>
-    public SecureTokenStorageFactory(bool useFallback = false)
-    {
-        _useFallback = useFallback;
-    }
+    public SecureTokenStorageFactory(bool useFallback = false) => _useFallback = useFallback;
 
     /// <summary>
     /// Creates the appropriate secure token storage for the current platform.
@@ -22,38 +19,36 @@ public class SecureTokenStorageFactory
     /// <returns>An instance of <see cref="ISecureTokenStorage"/> appropriate for the platform.</returns>
     public ISecureTokenStorage CreateStorage()
     {
-        if (_useFallback)
+        if(_useFallback)
         {
             return new AesSecureTokenStorage();
         }
 
-        // Try platform-specific implementations first
         ISecureTokenStorage? storage = null;
 
-        if (OperatingSystem.IsWindows())
+        if(OperatingSystem.IsWindows())
         {
             storage = new WindowsSecureTokenStorage();
         }
-        else if (OperatingSystem.IsMacOS())
+        else if(OperatingSystem.IsMacOS())
         {
             storage = new MacOSSecureTokenStorage();
-            // Fall back to AES if Keychain tools are not available
-            if (!storage.IsAvailable)
+
+            if(!storage.IsAvailable)
             {
                 storage = new AesSecureTokenStorage();
             }
         }
-        else if (OperatingSystem.IsLinux())
+        else if(OperatingSystem.IsLinux())
         {
             storage = new LinuxSecureTokenStorage();
-            // Fall back to AES if secret-tool is not available
-            if (!storage.IsAvailable)
+
+            if(!storage.IsAvailable)
             {
                 storage = new AesSecureTokenStorage();
             }
         }
 
-        // Final fallback to AES if no platform-specific implementation is available
         return storage ?? new AesSecureTokenStorage();
     }
 
@@ -61,8 +56,5 @@ public class SecureTokenStorageFactory
     /// Gets the name of the storage implementation that would be created for the current platform.
     /// </summary>
     /// <returns>The name of the storage implementation.</returns>
-    public string GetStorageName()
-    {
-        return CreateStorage().Name;
-    }
+    public string GetStorageName() => CreateStorage().Name;
 }

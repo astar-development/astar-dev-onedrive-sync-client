@@ -74,13 +74,13 @@ public class FileSystemItem
     /// Gets or sets the current sync status.
     /// Values: 'synced', 'pending_upload', 'pending_download', 'conflict', 'failed'.
     /// </summary>
-    public string? SyncStatus { get; set; }
+    public SyncStatus SyncStatus { get; set; } = this.SyncStatus.None;
 
     /// <summary>
     /// Gets or sets the last sync direction.
     /// Values: 'upload', 'download', 'bidirectional'.
     /// </summary>
-    public string? LastSyncDirection { get; set; }
+    public SyncDirection LastSyncDirection { get; set; } = SyncDirection.None;
 
     /// <summary>
     /// Gets or sets the navigation property to the associated account.

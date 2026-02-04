@@ -7,7 +7,6 @@ public class ApplicationLog
 {
     /// <summary>
     /// Gets or sets the unique identifier for the log entry.
-    /// Uses auto-incrementing BigInt (BIGSERIAL in PostgreSQL).
     /// </summary>
     public long Id { get; set; }
 
@@ -16,11 +15,6 @@ public class ApplicationLog
     /// NULL for global logs not associated with a specific account.
     /// </summary>
     public string? AccountId { get; set; }
-
-    /// <summary>
-    /// Gets or sets the log level: 'Trace', 'Debug', 'Information', 'Warning', 'Error', 'Critical'.
-    /// </summary>
-    public string LogLevel { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the timestamp when the log entry was created.
@@ -52,4 +46,9 @@ public class ApplicationLog
     /// NULL for global logs.
     /// </summary>
     public Account? Account { get; set; }
+
+    /// <summary>
+    /// Gets or sets the log level: 'None', 'Trace', 'Debug', 'Information', 'Warning', 'Error', 'Critical'.
+    /// </summary>
+    public ApplicationLogLevel LogLevel { get; set; } = ApplicationLogLevel.Information;
 }

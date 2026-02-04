@@ -1,9 +1,17 @@
 {
     "cSpell.words": [
         "appsettings",
+        "ASPNETCORE",
+        "Decryptor",
+        "DPAPI",
+        "Encryptor",
+        "MSAL",
         "MVVM",
+        "Npgsql",
         "onedrive",
         "Shouldly",
+        "timespan",
+        "USERPROFILE",
         "Xunit"
     ],
     "coverage-gutters.coverageFileNames": [

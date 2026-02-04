@@ -19,10 +19,10 @@ public class WindowsSecureTokenStorage : ISecureTokenStorage
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         _storageDirectory = Path.Combine(appData, "AStar", "OneDriveSync", "Tokens");
-        
-        if (!Directory.Exists(_storageDirectory))
+
+        if(!Directory.Exists(_storageDirectory))
         {
-            Directory.CreateDirectory(_storageDirectory);
+            _ = Directory.CreateDirectory(_storageDirectory);
         }
     }
 
@@ -35,12 +35,12 @@ public class WindowsSecureTokenStorage : ISecureTokenStorage
     /// <inheritdoc/>
     public async Task StoreTokenAsync(string key, string token)
     {
-        if (!IsAvailable)
+        if(!IsAvailable)
             throw new PlatformNotSupportedException("Windows DPAPI is only available on Windows.");
 
         var tokenBytes = Encoding.UTF8.GetBytes(token);
         var encryptedBytes = ProtectedData.Protect(tokenBytes, null, DataProtectionScope.CurrentUser);
-        
+
         var filePath = GetFilePath(key);
         await File.WriteAllBytesAsync(filePath, encryptedBytes);
     }
@@ -48,12 +48,12 @@ public class WindowsSecureTokenStorage : ISecureTokenStorage
     /// <inheritdoc/>
     public async Task<string?> RetrieveTokenAsync(string key)
     {
-        if (!IsAvailable)
+        if(!IsAvailable)
             throw new PlatformNotSupportedException("Windows DPAPI is only available on Windows.");
 
         var filePath = GetFilePath(key);
-        
-        if (!File.Exists(filePath))
+
+        if(!File.Exists(filePath))
             return null;
 
         try
@@ -62,9 +62,8 @@ public class WindowsSecureTokenStorage : ISecureTokenStorage
             var tokenBytes = ProtectedData.Unprotect(encryptedBytes, null, DataProtectionScope.CurrentUser);
             return Encoding.UTF8.GetString(tokenBytes);
         }
-        catch (CryptographicException)
+        catch(CryptographicException)
         {
-            // Token was encrypted by a different user or is corrupted
             return null;
         }
     }
@@ -72,12 +71,12 @@ public class WindowsSecureTokenStorage : ISecureTokenStorage
     /// <inheritdoc/>
     public Task DeleteTokenAsync(string key)
     {
-        if (!IsAvailable)
+        if(!IsAvailable)
             throw new PlatformNotSupportedException("Windows DPAPI is only available on Windows.");
 
         var filePath = GetFilePath(key);
-        
-        if (File.Exists(filePath))
+
+        if(File.Exists(filePath))
         {
             File.Delete(filePath);
         }

@@ -85,3 +85,17 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Do not comment test methods; the code should be self-explanatory.
 - Group related tests into nested classes within the test class to improve organization and readability.
 - Use xUnitV3 as the testing framework.
+
+## General Coding Conventions
+
+- Follow .editorconfig settings for code formatting.
+- Use `var` for local variable declarations when the type is obvious from the right-hand side
+- Use explicit types for local variable declarations when the type is not obvious
+- Use expression-bodied members for simple properties and methods
+- Use string interpolation instead of `String.Format` or concatenation
+- Use pattern matching where appropriate
+- Use null-coalescing operator (`??`) and null-coalescing assignment operator (`??=`) where appropriate
+- Use `using` declarations for disposable objects when possible
+- Prefer `foreach` loops over `for` loops when iterating collections
+- When a limited number of constant values are needed, prefer enums over static constant fields / nullable strings etc.
+- Insert a blank line before return statements for better readability

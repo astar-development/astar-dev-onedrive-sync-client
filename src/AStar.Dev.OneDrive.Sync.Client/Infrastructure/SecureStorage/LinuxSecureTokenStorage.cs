@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 
@@ -20,7 +19,7 @@ public class LinuxSecureTokenStorage : ISecureTokenStorage
     /// <inheritdoc/>
     public async Task StoreTokenAsync(string key, string token)
     {
-        if (!IsAvailable)
+        if(!IsAvailable)
             throw new PlatformNotSupportedException("Linux Secret Service is only available on Linux.");
 
         var process = new Process
@@ -37,16 +36,16 @@ public class LinuxSecureTokenStorage : ISecureTokenStorage
             }
         };
 
-        process.Start();
-        
+        _ = process.Start();
+
         // Write the token to stdin
         await process.StandardInput.WriteAsync(token);
         await process.StandardInput.FlushAsync();
         process.StandardInput.Close();
-        
+
         await process.WaitForExitAsync();
 
-        if (process.ExitCode != 0)
+        if(process.ExitCode != 0)
         {
             var error = await process.StandardError.ReadToEndAsync();
             throw new InvalidOperationException($"Failed to store token in Secret Service: {error}");
@@ -56,7 +55,7 @@ public class LinuxSecureTokenStorage : ISecureTokenStorage
     /// <inheritdoc/>
     public async Task<string?> RetrieveTokenAsync(string key)
     {
-        if (!IsAvailable)
+        if(!IsAvailable)
             throw new PlatformNotSupportedException("Linux Secret Service is only available on Linux.");
 
         var process = new Process
@@ -72,23 +71,17 @@ public class LinuxSecureTokenStorage : ISecureTokenStorage
             }
         };
 
-        process.Start();
+        _ = process.Start();
         var output = await process.StandardOutput.ReadToEndAsync();
         await process.WaitForExitAsync();
 
-        if (process.ExitCode != 0)
-        {
-            // Token not found or other error
-            return null;
-        }
-
-        return output.TrimEnd('\n', '\r');
+        return process.ExitCode != 0 ? null : output.TrimEnd('\n', '\r');
     }
 
     /// <inheritdoc/>
     public async Task DeleteTokenAsync(string key)
     {
-        if (!IsAvailable)
+        if(!IsAvailable)
             throw new PlatformNotSupportedException("Linux Secret Service is only available on Linux.");
 
         var process = new Process
@@ -104,10 +97,8 @@ public class LinuxSecureTokenStorage : ISecureTokenStorage
             }
         };
 
-        process.Start();
+        _ = process.Start();
         await process.WaitForExitAsync();
-
-        // We don't throw an error if the token doesn't exist
     }
 
     private static bool IsSecretToolAvailable()
@@ -125,7 +116,7 @@ public class LinuxSecureTokenStorage : ISecureTokenStorage
                     CreateNoWindow = true
                 }
             };
-            process.Start();
+            _ = process.Start();
             process.WaitForExit();
             return process.ExitCode == 0;
         }
