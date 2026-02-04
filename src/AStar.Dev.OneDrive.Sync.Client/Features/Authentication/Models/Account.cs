@@ -6,8 +6,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 /// </summary>
 public class Account
 {
-    private string _hashedEmail = string.Empty;
-    private string _hashedAccountId = string.Empty;
 
     public Guid Id { get; set; } = Guid.NewGuid();
 
@@ -16,32 +14,34 @@ public class Account
     /// </summary>
     public string HashedEmail
     {
-        get => _hashedEmail;
+        get;
         set
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if(string.IsNullOrWhiteSpace(value))
             {
                 throw new ArgumentException("HashedEmail cannot be null or whitespace.", nameof(value));
             }
-            _hashedEmail = value;
+
+            field = value;
         }
-    }
+    } = string.Empty;
 
     /// <summary>
     /// SHA256 hash of the account ID with salt (createdAtTicks).
     /// </summary>
     public string HashedAccountId
     {
-        get => _hashedAccountId;
+        get;
         set
         {
-            if (string.IsNullOrWhiteSpace(value))
+            if(string.IsNullOrWhiteSpace(value))
             {
                 throw new ArgumentException("HashedAccountId cannot be null or whitespace.", nameof(value));
             }
-            _hashedAccountId = value;
+
+            field = value;
         }
-    }
+    } = string.Empty;
 
     /// <summary>
     /// User-configured directory for syncing files.
@@ -78,20 +78,20 @@ public class Account
     /// <summary>
     /// Navigation property: FileSystemItems (folders selected for sync).
     /// </summary>
-    public ICollection<object> FileSystemItems { get; } = new List<object>();
+    public ICollection<object> FileSystemItems { get; } = [];
 
     /// <summary>
     /// Navigation property: DeltaTokens (one per OneDrive drive).
     /// </summary>
-    public ICollection<object> DeltaTokens { get; } = new List<object>();
+    public ICollection<object> DeltaTokens { get; } = [];
 
     /// <summary>
     /// Navigation property: ConflictLogs (sync conflict history).
     /// </summary>
-    public ICollection<object> ConflictLogs { get; } = new List<object>();
+    public ICollection<object> ConflictLogs { get; } = [];
 
     /// <summary>
     /// Navigation property: ApplicationLogs (per-account debug logs).
     /// </summary>
-    public ICollection<object> ApplicationLogs { get; } = new List<object>();
+    public ICollection<object> ApplicationLogs { get; } = [];
 }

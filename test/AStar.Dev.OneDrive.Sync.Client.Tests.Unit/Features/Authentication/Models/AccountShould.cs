@@ -1,17 +1,13 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
 
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 
-/// <summary>
-/// Unit tests for Account entity class.
-/// Tests account creation, validation, and property management.
-/// </summary>
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
+
 public class AccountShould
 {
     [Fact]
     public void CreateAccountWithValidProperties()
     {
-        // Arrange
         var accountId = Guid.NewGuid();
         const string hashedEmail = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
         const string hashedAccountIdValue = "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3";
@@ -20,7 +16,6 @@ public class AccountShould
         const bool debugLoggingEnabled = false;
         const bool isAdmin = false;
 
-        // Act
         var account = new Account
         {
             Id = accountId,
@@ -32,7 +27,6 @@ public class AccountShould
             IsAdmin = isAdmin
         };
 
-        // Assert
         account.Id.ShouldBe(accountId);
         account.HashedEmail.ShouldBe(hashedEmail);
         account.HashedAccountId.ShouldBe(hashedAccountIdValue);
@@ -45,106 +39,85 @@ public class AccountShould
     [Fact]
     public void ThrowArgumentExceptionForNullHashedEmail()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedEmail = null! }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedEmail = null! }; });
         ex.Message.ShouldContain("HashedEmail");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForEmptyHashedEmail()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedEmail = string.Empty }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedEmail = string.Empty }; });
         ex.Message.ShouldContain("HashedEmail");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForWhitespaceHashedEmail()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedEmail = "   " }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedEmail = "   " }; });
         ex.Message.ShouldContain("HashedEmail");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForNullHashedAccountId()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedAccountId = null! }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedAccountId = null! }; });
         ex.Message.ShouldContain("HashedAccountId");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForEmptyHashedAccountId()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedAccountId = string.Empty }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedAccountId = string.Empty }; });
         ex.Message.ShouldContain("HashedAccountId");
     }
 
     [Fact]
     public void ThrowArgumentExceptionForWhitespaceHashedAccountId()
     {
-        // Act & Assert
-        var ex = Assert.Throws<ArgumentException>(
-            () => { var _ = new Account { HashedAccountId = "   " }; });
+        ArgumentException ex = Assert.Throws<ArgumentException>(() => { var _ = new Account { HashedAccountId = "   " }; });
         ex.Message.ShouldContain("HashedAccountId");
     }
 
     [Fact]
     public void AllowEmptyHomeSyncDirectory()
     {
-        // Arrange & Act
         var account = new Account
         {
             HomeSyncDirectory = string.Empty
         };
 
-        // Assert
         account.HomeSyncDirectory.ShouldBe(string.Empty);
     }
 
     [Fact]
     public void AllowNullHomeSyncDirectory()
     {
-        // Arrange & Act
         var account = new Account
         {
             HomeSyncDirectory = null
         };
 
-        // Assert
         account.HomeSyncDirectory.ShouldBeNull();
     }
 
     [Fact]
     public void AllowAnyStringForHomeSyncDirectory()
     {
-        // Arrange
         const string invalidPath = "this/is/not/valid/but/allowed";
 
-        // Act
         var account = new Account
         {
             HomeSyncDirectory = invalidPath
         };
 
-        // Assert
         account.HomeSyncDirectory.ShouldBe(invalidPath);
     }
 
     [Fact]
     public void HaveDefaultMaxConcurrentAndFlags()
     {
-        // Arrange & Act
         var account = new Account();
 
-        // Assert
         account.MaxConcurrent.ShouldBe(5);
         account.DebugLoggingEnabled.ShouldBeFalse();
         account.IsAdmin.ShouldBeFalse();
@@ -153,15 +126,12 @@ public class AccountShould
     [Fact]
     public void TrackCreatedAtTimestamp()
     {
-        // Arrange
-        var beforeCreation = DateTime.UtcNow;
+        DateTime beforeCreation = DateTime.UtcNow;
 
-        // Act
         var account = new Account();
-        var afterCreation = DateTime.UtcNow;
+        DateTime afterCreation = DateTime.UtcNow;
 
-        // Assert
-        account.CreatedAt.ShouldNotBe(default(DateTime));
+        account.CreatedAt.ShouldNotBe(default);
         account.CreatedAt.ShouldBeGreaterThanOrEqualTo(beforeCreation);
         account.CreatedAt.ShouldBeLessThanOrEqualTo(afterCreation);
     }
@@ -169,21 +139,17 @@ public class AccountShould
     [Fact]
     public void TrackUpdatedAtTimestamp()
     {
-        // Arrange & Act
         var account = new Account();
 
-        // Assert
-        account.UpdatedAt.ShouldNotBe(default(DateTime));
+        account.UpdatedAt.ShouldNotBe(default);
         account.UpdatedAt.ShouldBeGreaterThanOrEqualTo(account.CreatedAt);
     }
 
     [Fact]
     public void InitializeNavigationCollectionsAsEmpty()
     {
-        // Arrange & Act
         var account = new Account();
 
-        // Assert
         account.FileSystemItems.ShouldNotBeNull();
         account.FileSystemItems.ShouldBeEmpty();
         account.DeltaTokens.ShouldNotBeNull();
@@ -197,41 +163,33 @@ public class AccountShould
     [Fact]
     public void AllowCustomMaxConcurrentValue()
     {
-        // Arrange & Act
         var account = new Account { MaxConcurrent = 10 };
 
-        // Assert
         account.MaxConcurrent.ShouldBe(10);
     }
 
     [Fact]
     public void AllowToggleDebugLogging()
     {
-        // Arrange & Act
         var account = new Account { DebugLoggingEnabled = true };
 
-        // Assert
         account.DebugLoggingEnabled.ShouldBeTrue();
     }
 
     [Fact]
     public void AllowToggleAdminFlag()
     {
-        // Arrange & Act
         var account = new Account { IsAdmin = true };
 
-        // Assert
         account.IsAdmin.ShouldBeTrue();
     }
 
     [Fact]
     public void GenerateUniqueIdOnCreation()
     {
-        // Arrange & Act
         var account1 = new Account();
         var account2 = new Account();
 
-        // Assert
         account1.Id.ShouldNotBe(Guid.Empty);
         account2.Id.ShouldNotBe(Guid.Empty);
         account1.Id.ShouldNotBe(account2.Id);

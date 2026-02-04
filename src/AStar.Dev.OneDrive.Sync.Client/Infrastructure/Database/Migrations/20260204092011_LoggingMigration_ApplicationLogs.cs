@@ -42,8 +42,8 @@ public partial class LoggingMigration_ApplicationLogs : Migration
             name: "idx_applicationlogs_accountid_timestamp",
             schema: "onedrive",
             table: "ApplicationLogs",
-            columns: new[] { "AccountId", "Timestamp" },
-            descending: new[] { false, true });
+            columns: ["AccountId", "Timestamp"],
+            descending: [false, true]);
 
         _ = migrationBuilder.CreateIndex(
             name: "idx_applicationlogs_loglevel",
