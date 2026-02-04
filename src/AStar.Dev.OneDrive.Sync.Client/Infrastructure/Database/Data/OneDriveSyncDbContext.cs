@@ -49,6 +49,11 @@ public class OneDriveSyncDbContext : Microsoft.EntityFrameworkCore.DbContext
     public DbSet<DiagnosticSettings> DiagnosticSettings { get; set; } = null!;
 
     /// <summary>
+    /// Gets or sets the ApplicationLogs DbSet.
+    /// </summary>
+    public DbSet<ApplicationLog> ApplicationLogs { get; set; } = null!;
+
+    /// <summary>
     /// Configures the model for the context, including schema configuration and entity configurations.
     /// </summary>
     /// <param name="modelBuilder">The builder being used to construct the model.</param>
@@ -66,5 +71,6 @@ public class OneDriveSyncDbContext : Microsoft.EntityFrameworkCore.DbContext
         modelBuilder.ApplyConfiguration(new ConflictLogConfiguration());
         modelBuilder.ApplyConfiguration(new SyncHistoryConfiguration());
         modelBuilder.ApplyConfiguration(new DiagnosticSettingsConfiguration());
+        modelBuilder.ApplyConfiguration(new ApplicationLogConfiguration());
     }
 }
