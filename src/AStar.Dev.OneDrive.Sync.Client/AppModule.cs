@@ -2,6 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Resilience;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -48,6 +49,14 @@ public static class AppModule
         this IServiceCollection services)
     {
         services.AddSingleton<ResiliencePolicyFactory>();
+        
+        // Register secure token storage factory and implementation
+        services.AddSingleton<SecureTokenStorageFactory>();
+        services.AddSingleton<ISecureTokenStorage>(sp =>
+        {
+            var factory = sp.GetRequiredService<SecureTokenStorageFactory>();
+            return factory.CreateStorage();
+        });
 
         return services;
     }
