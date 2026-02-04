@@ -14,11 +14,9 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task StoreAndRetrieve_ValidToken_ReturnsToken()
     {
-        // Arrange
         var storage = CreateStorage();
         if (!storage.IsAvailable)
         {
-            // Skip test if storage is not available on this platform
             return;
         }
 
@@ -27,17 +25,13 @@ public abstract class SecureTokenStorageTestsBase
 
         try
         {
-            // Act
             await storage.StoreTokenAsync(key, token);
             var retrieved = await storage.RetrieveTokenAsync(key);
-
-            // Assert
             retrieved.ShouldNotBeNull();
             retrieved.ShouldBe(token);
         }
         finally
         {
-            // Cleanup
             await storage.DeleteTokenAsync(key);
         }
     }
@@ -45,7 +39,6 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task Retrieve_NonExistentKey_ReturnsNull()
     {
-        // Arrange
         var storage = CreateStorage();
         if (!storage.IsAvailable)
         {
@@ -53,18 +46,13 @@ public abstract class SecureTokenStorageTestsBase
         }
 
         const string key = "non-existent-key";
-
-        // Act
         var retrieved = await storage.RetrieveTokenAsync(key);
-
-        // Assert
         retrieved.ShouldBeNull();
     }
 
     [Fact]
     public async Task Delete_ExistingToken_RemovesToken()
     {
-        // Arrange
         var storage = CreateStorage();
         if (!storage.IsAvailable)
         {
@@ -75,19 +63,14 @@ public abstract class SecureTokenStorageTestsBase
         const string token = "token-to-delete";
 
         await storage.StoreTokenAsync(key, token);
-
-        // Act
         await storage.DeleteTokenAsync(key);
         var retrieved = await storage.RetrieveTokenAsync(key);
-
-        // Assert
         retrieved.ShouldBeNull();
     }
 
     [Fact]
     public async Task Delete_NonExistentToken_DoesNotThrow()
     {
-        // Arrange
         var storage = CreateStorage();
         if (!storage.IsAvailable)
         {
@@ -95,15 +78,12 @@ public abstract class SecureTokenStorageTestsBase
         }
 
         const string key = "non-existent-delete-key";
-
-        // Act & Assert - Should not throw
         await storage.DeleteTokenAsync(key);
     }
 
     [Fact]
     public async Task StoreAndRetrieve_SpecialCharacters_HandlesCorrectly()
     {
-        // Arrange
         var storage = CreateStorage();
         if (!storage.IsAvailable)
         {
@@ -115,11 +95,8 @@ public abstract class SecureTokenStorageTestsBase
 
         try
         {
-            // Act
             await storage.StoreTokenAsync(key, token);
             var retrieved = await storage.RetrieveTokenAsync(key);
-
-            // Assert
             retrieved.ShouldNotBeNull();
             retrieved.ShouldBe(token);
         }
@@ -132,7 +109,6 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task StoreAndRetrieve_LongToken_HandlesCorrectly()
     {
-        // Arrange
         var storage = CreateStorage();
         if (!storage.IsAvailable)
         {
@@ -144,11 +120,8 @@ public abstract class SecureTokenStorageTestsBase
 
         try
         {
-            // Act
             await storage.StoreTokenAsync(key, token);
             var retrieved = await storage.RetrieveTokenAsync(key);
-
-            // Assert
             retrieved.ShouldNotBeNull();
             retrieved.ShouldBe(token);
         }
@@ -161,7 +134,6 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task Store_OverwriteExisting_UpdatesToken()
     {
-        // Arrange
         var storage = CreateStorage();
         if (!storage.IsAvailable)
         {
@@ -174,12 +146,9 @@ public abstract class SecureTokenStorageTestsBase
 
         try
         {
-            // Act
             await storage.StoreTokenAsync(key, token1);
             await storage.StoreTokenAsync(key, token2);
             var retrieved = await storage.RetrieveTokenAsync(key);
-
-            // Assert
             retrieved.ShouldNotBeNull();
             retrieved.ShouldBe(token2);
         }
@@ -192,7 +161,6 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public async Task StoreAndRetrieve_MultipleKeys_IsolatesValues()
     {
-        // Arrange
         var storage = CreateStorage();
         if (!storage.IsAvailable)
         {
@@ -206,14 +174,11 @@ public abstract class SecureTokenStorageTestsBase
 
         try
         {
-            // Act
             await storage.StoreTokenAsync(key1, token1);
             await storage.StoreTokenAsync(key2, token2);
 
             var retrieved1 = await storage.RetrieveTokenAsync(key1);
             var retrieved2 = await storage.RetrieveTokenAsync(key2);
-
-            // Assert
             retrieved1.ShouldBe(token1);
             retrieved2.ShouldBe(token2);
         }
@@ -227,20 +192,14 @@ public abstract class SecureTokenStorageTestsBase
     [Fact]
     public void Name_ShouldNotBeNullOrEmpty()
     {
-        // Arrange
         var storage = CreateStorage();
-
-        // Assert
         storage.Name.ShouldNotBeNullOrWhiteSpace();
     }
 
     [Fact]
     public void IsAvailable_ShouldReturnBool()
     {
-        // Arrange
         var storage = CreateStorage();
-
-        // Assert
         storage.IsAvailable.ShouldBeOfType<bool>();
     }
 }

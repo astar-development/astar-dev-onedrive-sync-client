@@ -21,10 +21,7 @@ public class WindowsSecureTokenStorageTests : SecureTokenStorageTestsBase
     [Fact]
     public void IsAvailable_OnWindows_ReturnsTrue()
     {
-        // Arrange
         var storage = CreateStorage();
-
-        // Assert
         if (OperatingSystem.IsWindows())
         {
             storage.IsAvailable.ShouldBeTrue();
@@ -38,26 +35,19 @@ public class WindowsSecureTokenStorageTests : SecureTokenStorageTestsBase
     [Fact]
     public void Name_ReturnsCorrectValue()
     {
-        // Arrange
         var storage = CreateStorage();
-
-        // Assert
         storage.Name.ShouldBe("Windows DPAPI");
     }
 
     [Fact]
     public async Task StoreToken_OnNonWindows_ThrowsPlatformNotSupportedException()
     {
-        // Arrange
         var storage = CreateStorage();
 
         if (OperatingSystem.IsWindows())
         {
-            // Skip this test on Windows
             return;
         }
-
-        // Act & Assert
         await Should.ThrowAsync<PlatformNotSupportedException>(async () =>
             await storage.StoreTokenAsync("key", "token"));
     }
@@ -65,16 +55,12 @@ public class WindowsSecureTokenStorageTests : SecureTokenStorageTestsBase
     [Fact]
     public async Task RetrieveToken_OnNonWindows_ThrowsPlatformNotSupportedException()
     {
-        // Arrange
         var storage = CreateStorage();
 
         if (OperatingSystem.IsWindows())
         {
-            // Skip this test on Windows
             return;
         }
-
-        // Act & Assert
         await Should.ThrowAsync<PlatformNotSupportedException>(async () =>
             await storage.RetrieveTokenAsync("key"));
     }
@@ -82,16 +68,12 @@ public class WindowsSecureTokenStorageTests : SecureTokenStorageTestsBase
     [Fact]
     public async Task DeleteToken_OnNonWindows_ThrowsPlatformNotSupportedException()
     {
-        // Arrange
         var storage = CreateStorage();
 
         if (OperatingSystem.IsWindows())
         {
-            // Skip this test on Windows
             return;
         }
-
-        // Act & Assert
         await Should.ThrowAsync<PlatformNotSupportedException>(async () =>
             await storage.DeleteTokenAsync("key"));
     }
