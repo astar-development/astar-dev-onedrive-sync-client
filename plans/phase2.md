@@ -21,12 +21,12 @@
 - MSAL manages refresh tokens internally; they are not exposed in `AuthToken`
 - Token storage integration is deferred to `AccountCreationService` (post-authentication)
 
-**Task 2.2**: Implement hashing service
+**Task 2.2**: Implement hashing service ✅
 
-- [ ] Create `HashingService` for SHA256 hashing
-- [ ] Implement email hashing (case-insensitive)
-- [ ] Implement account ID hashing with salt (createdAtTicks)
-- [ ] Add unit tests with various input scenarios
+- [x] Create `HashingService` for SHA256 hashing
+- [x] Implement email hashing (case-insensitive)
+- [x] Implement account ID hashing with salt (createdAtTicks)
+- [x] Add unit tests with various input scenarios (14 comprehensive tests)
 
 **Task 2.3**: Create Account domain models
 
