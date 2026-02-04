@@ -17,6 +17,7 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Avoid unnecessary nested namespaces; keep the structure flat when possible.
 
 ## Classes and Methods
+
 - Define one class per file, and name the file after the class.
 - Follow SOLID principles for class and method design.
 - Ensure good cohesion within classes and methods.
@@ -40,10 +41,12 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Do not comment private methods or fields; the code should be clear enough without comments.
 
 ## Immutability
+
 - Prefer immutable data structures and objects where possible.
 - Prefer record over classes for immutable types.
 
 ## Record Design
+
 - Define record properties on the same line with the record declaration when possible.
 - Accompany each record `<name>` with a corresponding `<name>Factory` static factory class.
 - Place the factory class in the same file as the record it creates.
@@ -53,7 +56,16 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Use immutable collections (e.g., `IReadOnlyList<T>`, `IReadOnlyDictionary<TKey, TValue>`) for record properties that hold multiple values.
 - Avoid methods on records; use extension methods instead for any behavior related to the record.
 
+## Entity Framework Core
+
+- Define entity classes as regular classes, not records.
+- Place DbContext classes in a `Data` folder within the data access layer.
+- Use separate configuration classes implementing `IEntityTypeConfiguration<T>` for entity configuration.
+- Place entity configuration classes in a separate `Configurations` folder within the data folder.
+- Use Fluent API for entity configuration; avoid data annotations.
+
 ## Discriminated Unions
+
 - Use records with inheritance to model discriminated unions.
 - Define an abstract base record for the union type and derive specific case records from it.
 - Place all case records in the same file as the base record.
