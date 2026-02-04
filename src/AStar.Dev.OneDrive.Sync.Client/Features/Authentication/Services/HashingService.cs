@@ -12,10 +12,7 @@ public class HashingService : IHashingService
     /// <inheritdoc/>
     public async Task<string> HashEmailAsync(string email)
     {
-        if (email == null)
-        {
-            throw new ArgumentNullException(nameof(email));
-        }
+        ArgumentNullException.ThrowIfNull(email);
 
         if (string.IsNullOrWhiteSpace(email))
         {
@@ -28,18 +25,15 @@ public class HashingService : IHashingService
     /// <inheritdoc/>
     public async Task<string> HashAccountIdAsync(string accountId, long createdAtTicks)
     {
-        if (accountId == null)
-        {
-            throw new ArgumentNullException(nameof(accountId));
-        }
+        ArgumentNullException.ThrowIfNull(accountId);
 
         if (string.IsNullOrWhiteSpace(accountId))
         {
             throw new ArgumentException("Account ID cannot be empty or whitespace.", nameof(accountId));
         }
 
-        // Combine accountId with salt (createdAtTicks) to ensure unique hashes per account
         string saltedValue = $"{accountId}:{createdAtTicks}";
+        
         return await Task.FromResult(HashValue(saltedValue));
     }
 
@@ -50,10 +44,9 @@ public class HashingService : IHashingService
     /// <returns>A 64-character hex-encoded SHA256 hash.</returns>
     private static string HashValue(string value)
     {
-        using (var sha256 = SHA256.Create())
-        {
-            byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
-            return Convert.ToHexString(hashedBytes).ToLowerInvariant();
-        }
+        using var sha256 = SHA256.Create();
+        byte[] hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
+
+        return Convert.ToHexString(hashedBytes).ToLowerInvariant();
     }
 }
