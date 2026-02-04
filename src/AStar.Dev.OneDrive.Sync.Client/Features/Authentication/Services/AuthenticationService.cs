@@ -42,11 +42,11 @@ public class AuthenticationService : IAuthenticationService
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(AuthenticationTimeoutSeconds));
 
-            var builder = _publicClientApp.AcquireTokenWithDeviceCode(
+            AcquireTokenWithDeviceCodeParameterBuilder builder = _publicClientApp.AcquireTokenWithDeviceCode(
                 new[] { GraphScope },
                 DisplayDeviceCodeAsync);
 
-            var authResult = await builder.ExecuteAsync(cts.Token);
+            AuthenticationResult authResult = await builder.ExecuteAsync(cts.Token);
 
             _logger.LogInformation("User authenticated successfully via Device Code Flow");
 
@@ -98,8 +98,8 @@ public class AuthenticationService : IAuthenticationService
         {
             try
             {
-                var accounts = await _publicClientApp.GetAccountsAsync();
-                var account = accounts.FirstOrDefault();
+                IEnumerable<IAccount> accounts = await _publicClientApp.GetAccountsAsync();
+                IAccount? account = accounts.FirstOrDefault();
 
                 if (account is null)
                 {
@@ -107,11 +107,11 @@ public class AuthenticationService : IAuthenticationService
                         new AuthenticationError.ConfigurationError("No cached account found for silent authentication"));
                 }
 
-                var builder = _publicClientApp.AcquireTokenSilent(
+                AcquireTokenSilentParameterBuilder builder = _publicClientApp.AcquireTokenSilent(
                     new[] { GraphScope },
                     account);
 
-                var authResult = await builder.ExecuteAsync(cancellationToken);
+                AuthenticationResult authResult = await builder.ExecuteAsync(cancellationToken);
 
                 _logger.LogInformation("Token refreshed successfully");
 

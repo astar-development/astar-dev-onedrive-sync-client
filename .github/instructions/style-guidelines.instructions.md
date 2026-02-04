@@ -9,12 +9,14 @@ Coding standards and style guidelines / preferences for C# files in this reposit
 - Enable "Treat Warnings as Errors" in all C# project files to enforce code quality. Specific ignore rules can be added as needed.
 - Set the C# language version to the latest stable version in all project files to leverage the newest language features.
 
-## Namespaces
+## Namespaces and Using Directives
 
 - Use file-scoped namespaces.
 - Namespace names should follow the pattern: Company.Project.Module (e.g., Contoso.Sales.Reporting). Additional levels can be added for sub-modules as needed.
 - Align namespace structure with folder structure.
 - Avoid unnecessary nested namespaces; keep the structure flat when possible.
+- Place using directives outside the namespace declaration.
+- Order using directives alphabetically
 
 ## Classes and Methods
 
