@@ -11,9 +11,10 @@ public class DeltaToken
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the account identifier this token belongs to.
+    /// Gets or sets the hashed account identifier this token belongs to.
+    /// GDPR compliant: stores hashed ID, not actual account ID.
     /// </summary>
-    public string AccountId { get; set; } = string.Empty;
+    public string HashedAccountId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the drive name (e.g., "root", "documents", "photos").
@@ -30,8 +31,4 @@ public class DeltaToken
     /// </summary>
     public DateTime? LastSyncAt { get; set; }
 
-    /// <summary>
-    /// Gets or sets the navigation property to the associated account.
-    /// </summary>
-    public Account? Account { get; set; }
 }

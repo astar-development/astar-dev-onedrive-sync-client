@@ -1,68 +1,96 @@
 namespace AStar.Dev.OneDrive.Sync.Client.Common.Models;
 
 /// <summary>
-/// Represents a OneDrive account in the sync client.
-/// Uses hashed identifiers for GDPR compliance.
+/// Account entity representing a OneDrive account with secure token storage and sync settings.
+/// Hashed identifiers are used to comply with GDPR privacy requirements.
 /// </summary>
 public class Account
 {
-    /// <summary>
-    /// Gets or sets the unique identifier. SHA256 hash of email + timestamp.
-    /// </summary>
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; } = Guid.NewGuid();
 
     /// <summary>
-    /// Gets or sets the hashed email for lookups. SHA256(email.ToLower()).
+    /// SHA256 hash of the user's email (case-insensitive).
     /// </summary>
-    public string HashedEmail { get; set; } = string.Empty;
+    public string HashedEmail
+    {
+        get;
+        set
+        {
+            if(string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException("HashedEmail cannot be null or whitespace.", nameof(value));
+            }
+
+            field = value;
+        }
+    } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the display name (user-provided or nickname).
+    /// SHA256 hash of the account ID with salt (createdAtTicks).
     /// </summary>
-    public string? DisplayName { get; set; }
+    public string HashedAccountId
+    {
+        get;
+        set
+        {
+            if(string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException("HashedAccountId cannot be null or whitespace.", nameof(value));
+            }
+
+            field = value;
+        }
+    } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the token storage key reference.
-    /// </summary>
-    public string? TokenStorageKey { get; set; }
-
-    /// <summary>
-    /// Gets or sets the user-configurable local sync directory path.
+    /// User-configured directory for syncing files.
+    /// Can be empty/null if not yet configured.
     /// </summary>
     public string? HomeSyncDirectory { get; set; }
 
     /// <summary>
-    /// Gets or sets the maximum concurrent downloads limit.
+    /// Maximum concurrent operations (uploads/downloads).
+    /// Default: 5. Range: 1-unlimited (validated at service level).
     /// </summary>
-    public int MaxConcurrentDownloads { get; set; } = 5;
+    public int MaxConcurrent { get; set; } = 5;
 
     /// <summary>
-    /// Gets or sets the maximum concurrent uploads limit.
+    /// Enable verbose debug logging for this account.
     /// </summary>
-    public int MaxConcurrentUploads { get; set; } = 5;
+    public bool DebugLoggingEnabled { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether debug logging is enabled for this account.
+    /// Administrative flag for special account privileges.
     /// </summary>
-    public bool EnableDebugLogging { get; set; } = false;
+    public bool IsAdmin { get; set; }
 
     /// <summary>
-    /// Gets or sets the account creation timestamp.
+    /// Account creation timestamp (UTC).
     /// </summary>
-    public DateTime? CreatedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Gets or sets the last authentication refresh timestamp.
+    /// Last update timestamp (UTC).
     /// </summary>
-    public DateTime? LastAuthRefresh { get; set; }
+    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the account is active.
+    /// Navigation property: DeltaTokens (one per OneDrive drive).
     /// </summary>
-    public bool? IsActive { get; set; }
+    public ICollection<DeltaToken> DeltaTokens => [];
 
     /// <summary>
-    /// Gets or sets a value indicating whether the account is an administrator.
+    /// Navigation property: FileSystemItems (OneDrive file/folder tracking).
     /// </summary>
-    public bool? IsAdmin { get; set; }
+    public ICollection<FileSystemItem> FileSystemItems => [];
+
+    /// <summary>
+    /// Navigation property: ConflictLogs (sync conflict history).
+    /// </summary>
+    public ICollection<ConflictLog> ConflictLogs => [];
+
+    /// <summary>
+    /// Navigation property: ApplicationLogs (per-account debug logs).
+    /// </summary>
+    public ICollection<ApplicationLog> ApplicationLogs => [];
 }

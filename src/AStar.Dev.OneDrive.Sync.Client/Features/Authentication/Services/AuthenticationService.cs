@@ -1,4 +1,3 @@
-
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
@@ -6,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
+
 /// <summary>
 /// Implements OAuth authentication with Microsoft using Device Code Flow.
 /// Handles token acquisition, expiry detection, and refresh with exponential backoff.

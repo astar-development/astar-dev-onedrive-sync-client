@@ -1,7 +1,9 @@
-using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models.AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
+using AStar.Dev.OneDrive.Sync.Client.Common.Models;
+using Shouldly;
+using Xunit;
 
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Common.Models;
 public class AccountShould
 {
     [Fact]

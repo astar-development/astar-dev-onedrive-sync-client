@@ -20,7 +20,7 @@ public class FileSystemItemConfiguration : IEntityTypeConfiguration<FileSystemIt
         _ = builder.Property(e => e.Id)
             .IsRequired();
 
-        _ = builder.Property(e => e.AccountId)
+        _ = builder.Property(e => e.HashedAccountId)
             .IsRequired();
 
         _ = builder.Property(e => e.DriveItemId)
@@ -38,9 +38,6 @@ public class FileSystemItemConfiguration : IEntityTypeConfiguration<FileSystemIt
         _ = builder.Property(e => e.IsSelected)
             .HasDefaultValue(false);
 
-        _ = builder.HasOne(e => e.Account)
-            .WithMany()
-            .HasForeignKey(e => e.AccountId)
-            .OnDelete(DeleteBehavior.Cascade);
+        _ = builder.HasIndex(e => e.HashedAccountId);
     }
 }

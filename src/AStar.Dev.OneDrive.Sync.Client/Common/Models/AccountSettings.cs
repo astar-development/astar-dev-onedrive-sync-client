@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
+namespace AStar.Dev.OneDrive.Sync.Client.Common.Models;
 
 /// <summary>
 /// AccountSettings value object (record) for account configuration.

@@ -2,10 +2,6 @@ using Microsoft.Extensions.Configuration;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 
-internal sealed class ConfigurationMarker
-{
-}
-
 public static class ConfigurationFactory
 {
     public static IConfiguration Build(string[] args, string? basePath = null, string? environment = null)
@@ -21,7 +17,7 @@ public static class ConfigurationFactory
             .SetBasePath(resolvedBasePath)
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile($"appsettings.{resolvedEnvironment}.json", optional: true, reloadOnChange: true)
-            .AddUserSecrets<ConfigurationMarker>(optional: true)
+            .AddUserSecrets<IAssemblyMarker>(optional: true)
             .AddEnvironmentVariables()
             .AddCommandLine(args)
             .Build();

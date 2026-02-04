@@ -20,18 +20,13 @@ public class DiagnosticSettingsConfiguration : IEntityTypeConfiguration<Diagnost
         _ = builder.Property(e => e.Id)
             .IsRequired();
 
-        _ = builder.Property(e => e.AccountId)
+        _ = builder.Property(e => e.HashedAccountId)
             .IsRequired();
 
-        _ = builder.HasIndex(e => e.AccountId)
+        _ = builder.HasIndex(e => e.HashedAccountId)
             .IsUnique();
 
         _ = builder.Property(e => e.IsEnabled)
             .HasDefaultValue(true);
-
-        _ = builder.HasOne(e => e.Account)
-            .WithMany()
-            .HasForeignKey(e => e.AccountId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

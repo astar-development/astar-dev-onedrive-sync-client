@@ -20,15 +20,10 @@ public class DeltaTokenConfiguration : IEntityTypeConfiguration<DeltaToken>
         _ = builder.Property(e => e.Id)
             .IsRequired();
 
-        _ = builder.Property(e => e.AccountId)
+        _ = builder.Property(e => e.HashedAccountId)
             .IsRequired();
 
         _ = builder.Property(e => e.DriveName)
             .IsRequired();
-
-        _ = builder.HasOne(e => e.Account)
-            .WithMany()
-            .HasForeignKey(e => e.AccountId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }
