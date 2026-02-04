@@ -86,13 +86,13 @@ Establish the foundational architecture, dependency injection, and database infr
 
 > **Task 1.10**: Implement `ISecureTokenStorage` abstraction and factory ✅
 
-  - [x] Define `ISecureTokenStorage` interface in Infrastructure layer
-  - [x] Create `SecureTokenStorageFactory` for platform detection
-  - [x] Implement `WindowsSecureTokenStorage` (DPAPI-based)
-  - [x] Implement `MacOSSecureTokenStorage` (Keychain-based)
-  - [x] Implement `LinuxSecureTokenStorage` (SecretService D-Bus)
-  - [x] Implement `AesSecureTokenStorage` (AES-256 encrypted fallback)
-  - [x] Create factory pattern for platform-specific selection
+- [x] Define `ISecureTokenStorage` interface in Infrastructure layer
+- [x] Create `SecureTokenStorageFactory` for platform detection
+- [x] Implement `WindowsSecureTokenStorage` (DPAPI-based)
+- [x] Implement `MacOSSecureTokenStorage` (Keychain-based)
+- [x] Implement `LinuxSecureTokenStorage` (SecretService D-Bus)
+- [x] Implement `AesSecureTokenStorage` (AES-256 encrypted fallback)
+- [x] Create factory pattern for platform-specific selection
 
 - [ ] Create base test class with common scenarios (SecureTokenStorageTestsBase)
 - [ ] Add unit tests for Windows DPAPI storage with encryption/decryption verification
