@@ -73,16 +73,16 @@ Establish the foundational architecture, dependency injection, and database infr
 - [x] Add migration for `DeltaTokens` table
 - [x] Add migration for `FileSystemItems` table with hash tracking
 
-**Task 1.8**: Create remaining database migrations
+> **Task 1.8**: Create remaining database migrations ✅
 
-- [ ] Add migration for `ConflictLogs` table
-- [ ] Add migration for `SyncHistory` table
-- [ ] Add migration for `DiagnosticSettings` table
+- [x] Add migration for `ConflictLogs` table
+- [x] Add migration for `SyncHistory` table
+- [x] Add migration for `DiagnosticSettings` table
 
-**Task 1.9**: Create logging table migration
+> **Task 1.9**: Create logging table migration ✅
 
-- [ ] Add migration for `ApplicationLogs` table with indexes
-- [ ] Verify all foreign key constraints are correctly configured
+- [x] Add migration for `ApplicationLogs` table with indexes
+- [x] Verify all foreign key constraints are correctly configured
 
 **Task 1.10**: Implement `ISecureTokenStorage` abstraction and factory
 
