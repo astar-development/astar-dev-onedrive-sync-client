@@ -60,4 +60,9 @@ public class Account
     /// Gets or sets a value indicating whether the account is active.
     /// </summary>
     public bool? IsActive { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the account is an administrator.
+    /// </summary>
+    public bool? IsAdmin { get; set; }
 }

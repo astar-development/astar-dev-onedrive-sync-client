@@ -49,6 +49,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                     b.Property<bool?>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<bool?>("IsAdmin")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime?>("LastAuthRefresh")
                         .HasColumnType("timestamp with time zone");
 
@@ -87,9 +90,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                     b.Property<string>("Exception")
                         .HasColumnType("text");
 
-                    b.Property<string>("LogLevel")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("LogLevel")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Message")
                         .HasColumnType("text");
@@ -126,8 +128,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ConflictType")
-                        .HasColumnType("text");
+                    b.Property<int>("ConflictType")
+                        .HasColumnType("integer");
 
                     b.Property<string>("ItemId")
                         .IsRequired()
@@ -142,8 +144,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                     b.Property<DateTime?>("RemoteLastModified")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("ResolutionAction")
-                        .HasColumnType("text");
+                    b.Property<int>("ResolutionAction")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("ResolvedAt")
                         .HasColumnType("timestamp with time zone");
@@ -198,8 +200,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(true);
 
-                    b.Property<string>("LogLevel")
-                        .HasColumnType("text");
+                    b.Property<int>("LogLevel")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -230,8 +232,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
 
-                    b.Property<string>("LastSyncDirection")
-                        .HasColumnType("text");
+                    b.Property<int>("LastSyncDirection")
+                        .HasColumnType("integer");
 
                     b.Property<string>("LocalHash")
                         .HasColumnType("text");
@@ -259,8 +261,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                     b.Property<DateTime?>("RemoteModifiedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("SyncStatus")
-                        .HasColumnType("text");
+                    b.Property<int>("SyncStatus")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -293,14 +295,14 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                     b.Property<DateTime?>("StartedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
+                    b.Property<int>("SyncDirection")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("SyncDirection")
-                        .HasColumnType("text");
+                    b.Property<int>("SyncResult")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("SyncType")
-                        .HasColumnType("text");
+                    b.Property<int>("SyncType")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 

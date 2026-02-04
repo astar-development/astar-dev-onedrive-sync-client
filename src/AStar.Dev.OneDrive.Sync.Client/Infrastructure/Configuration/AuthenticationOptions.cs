@@ -3,7 +3,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 public record AuthenticationOptions
 {
     public const string SectionName = "Authentication";
-    
+
     public MicrosoftOptions Microsoft { get; init; } = new();
 }
 

@@ -21,7 +21,7 @@ public class ConfigurationBindingShould
         [Fact]
         public void LoadAppsettingsJsonFromProduction()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
             configuration.ShouldNotBeNull();
             var connectionString = configuration.GetConnectionString("OneDriveSync");
@@ -33,9 +33,9 @@ public class ConfigurationBindingShould
         [Fact]
         public void LoadAuthenticationSettingsFromAppsettingsJson()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var authOptions = configuration
+            AuthenticationOptions? authOptions = configuration
                 .GetSection(AuthenticationOptions.SectionName)
                 .Get<AuthenticationOptions>();
 
@@ -52,9 +52,9 @@ public class ConfigurationBindingShould
         [Fact]
         public void LoadSyncSettingsFromAppsettingsJson()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var syncOptions = configuration
+            SyncOptions? syncOptions = configuration
                 .GetSection(SyncOptions.SectionName)
                 .Get<SyncOptions>();
 
@@ -70,9 +70,9 @@ public class ConfigurationBindingShould
         [Fact]
         public void LoadStorageSettingsFromAppsettingsJson()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var storageOptions = configuration
+            StorageOptions? storageOptions = configuration
                 .GetSection(StorageOptions.SectionName)
                 .Get<StorageOptions>();
 
@@ -84,9 +84,9 @@ public class ConfigurationBindingShould
         [Fact]
         public void LoadTelemetrySettingsFromAppsettingsJson()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var telemetryOptions = configuration
+            TelemetryOptions? telemetryOptions = configuration
                 .GetSection(TelemetryOptions.SectionName)
                 .Get<TelemetryOptions>();
 
@@ -103,9 +103,9 @@ public class ConfigurationBindingShould
         [Fact]
         public void LoadDevelopmentOverridesWhenEnvironmentIsDevelopment()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
 
-            var syncOptions = configuration
+            SyncOptions? syncOptions = configuration
                 .GetSection(SyncOptions.SectionName)
                 .Get<SyncOptions>();
 
@@ -117,7 +117,7 @@ public class ConfigurationBindingShould
         [Fact]
         public void DevelopmentConfigurationEnablesVerboseLogging()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
 
             var logLevel = configuration["Logging:LogLevel:Default"];
             logLevel.ShouldBe("Debug");
@@ -126,9 +126,9 @@ public class ConfigurationBindingShould
         [Fact]
         public void DevelopmentConfigurationDisablesDatabaseTelemetry()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath, "Development");
 
-            var telemetryOptions = configuration
+            TelemetryOptions? telemetryOptions = configuration
                 .GetSection(TelemetryOptions.SectionName)
                 .Get<TelemetryOptions>();
 
@@ -142,15 +142,15 @@ public class ConfigurationBindingShould
         [Fact]
         public void CommandLineArgumentsOverrideJsonSettings()
         {
-            var args = new[] 
-            { 
+            var args = new[]
+            {
                 "--Sync:DefaultSyncInterval=999",
                 "--Sync:MaxRetryAttempts=10"
             };
 
-            var configuration = ConfigurationFactory.Build(args, _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build(args, _testProjectPath);
 
-            var syncOptions = configuration
+            SyncOptions? syncOptions = configuration
                 .GetSection(SyncOptions.SectionName)
                 .Get<SyncOptions>();
 
@@ -175,13 +175,13 @@ public class ConfigurationBindingShould
             Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", "1234");
             Environment.SetEnvironmentVariable("Telemetry__Enabled", "false");
 
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var syncOptions = configuration
+            SyncOptions? syncOptions = configuration
                 .GetSection(SyncOptions.SectionName)
                 .Get<SyncOptions>();
 
-            var telemetryOptions = configuration
+            TelemetryOptions? telemetryOptions = configuration
                 .GetSection(TelemetryOptions.SectionName)
                 .Get<TelemetryOptions>();
 
@@ -202,10 +202,7 @@ public class ConfigurationBindingShould
     [Collection("EnvironmentVariableTests")]
     public class ConfigurationHierarchy : ConfigurationBindingShould, IDisposable
     {
-        public ConfigurationHierarchy()
-        {
-            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", null);
-        }
+        public ConfigurationHierarchy() => Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", null);
 
         [Fact]
         public void CommandLineOverridesEnvironmentVariables()
@@ -213,9 +210,9 @@ public class ConfigurationBindingShould
             Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", "888");
 
             var args = new[] { "--Sync:DefaultSyncInterval=777" };
-            var configuration = ConfigurationFactory.Build(args, _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build(args, _testProjectPath);
 
-            var syncOptions = configuration
+            SyncOptions? syncOptions = configuration
                 .GetSection(SyncOptions.SectionName)
                 .Get<SyncOptions>();
 
@@ -228,9 +225,9 @@ public class ConfigurationBindingShould
         {
             Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", "555");
 
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
-            var syncOptions = configuration
+            SyncOptions? syncOptions = configuration
                 .GetSection(SyncOptions.SectionName)
                 .Get<SyncOptions>();
 
@@ -238,18 +235,15 @@ public class ConfigurationBindingShould
             syncOptions.DefaultSyncInterval.ShouldBe(555);
         }
 
-        public void Dispose()
-        {
-            Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", null);
-        }
+        public void Dispose() => Environment.SetEnvironmentVariable("Sync__DefaultSyncInterval", null);
     }
 
     public class SerilogConfiguration : ConfigurationBindingShould
     {
         [Fact]
-        public void LoadsSerilogSinkConfigurationFromAppsettings()
+        public void LoadSerilogSinkConfigurationFromAppsettings()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
             var sinkNames = configuration.GetSection("Serilog:WriteTo")
                 .GetChildren()
@@ -262,9 +256,9 @@ public class ConfigurationBindingShould
         }
 
         [Fact]
-        public void LoadsSerilogMinimumLevelFromAppsettings()
+        public void LoadSerilogMinimumLevelFromAppsettings()
         {
-            var configuration = ConfigurationFactory.Build([], _testProjectPath);
+            IConfiguration configuration = ConfigurationFactory.Build([], _testProjectPath);
 
             var minLevel = configuration["Serilog:MinimumLevel:Default"];
             minLevel.ShouldBe("Information");

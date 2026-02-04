@@ -14,13 +14,11 @@ public class ResiliencePolicyFactory
     /// </summary>
     public AsyncPolicy<HttpResponseMessage> CreateHttpRetryPolicy(
         int maxRetryAttempts = 3,
-        int initialDelaySeconds = 1)
-    {
-        return Policy
+        int initialDelaySeconds = 1) => Policy
             .HandleResult<HttpResponseMessage>(r =>
-                r.StatusCode >= HttpStatusCode.InternalServerError || // 5xx
-                r.StatusCode == HttpStatusCode.RequestTimeout ||      // 408
-                r.StatusCode == (HttpStatusCode)429)                   // Too Many Requests
+                r.StatusCode is >= HttpStatusCode.InternalServerError or // 5xx
+                HttpStatusCode.RequestTimeout or      // 408
+                ((HttpStatusCode)429))                   // Too Many Requests
             .WaitAndRetryAsync(
                 retryCount: maxRetryAttempts,
                 sleepDurationProvider: retryAttempt =>
@@ -29,7 +27,6 @@ public class ResiliencePolicyFactory
                 {
                     // TODO: Add logging
                 });
-    }
 
     /// <summary>
     /// Creates a retry policy for database operations with exponential backoff.
@@ -37,9 +34,7 @@ public class ResiliencePolicyFactory
     /// </summary>
     public AsyncPolicy CreateDatabaseRetryPolicy(
         int maxRetryAttempts = 3,
-        int initialDelaySeconds = 1)
-    {
-        return Policy
+        int initialDelaySeconds = 1) => Policy
             .Handle<Exception>(ex =>
                 ex is TimeoutException ||
                 ex.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase) ||
@@ -52,7 +47,6 @@ public class ResiliencePolicyFactory
                 {
                     // TODO: Add logging
                 });
-    }
 
     /// <summary>
     /// Creates a circuit breaker policy with configurable thresholds.
@@ -62,7 +56,7 @@ public class ResiliencePolicyFactory
         int exceptionsAllowedBeforeBreaking = 3,
         TimeSpan? durationOfBreak = null)
     {
-        var breakDuration = durationOfBreak ?? TimeSpan.FromSeconds(30);
+        TimeSpan breakDuration = durationOfBreak ?? TimeSpan.FromSeconds(30);
 
         return Policy<T>
             .Handle<Exception>()
@@ -82,10 +76,7 @@ public class ResiliencePolicyFactory
     /// <summary>
     /// Creates a timeout policy.
     /// </summary>
-    public AsyncPolicy CreateTimeoutPolicy(TimeSpan timeout)
-    {
-        return Policy.TimeoutAsync(timeout);
-    }
+    public AsyncPolicy CreateTimeoutPolicy(TimeSpan timeout) => Policy.TimeoutAsync(timeout);
 
     /// <summary>
     /// Creates a combined policy (retry + circuit breaker) for HTTP requests.
@@ -95,8 +86,8 @@ public class ResiliencePolicyFactory
         int exceptionsAllowedBeforeBreaking = 5,
         TimeSpan? circuitBreakerDuration = null)
     {
-        var retryPolicy = CreateHttpRetryPolicy(maxRetryAttempts);
-        var circuitBreakerPolicy = CreateCircuitBreakerPolicy<HttpResponseMessage>(
+        AsyncPolicy<HttpResponseMessage> retryPolicy = CreateHttpRetryPolicy(maxRetryAttempts);
+        AsyncPolicy<HttpResponseMessage> circuitBreakerPolicy = CreateCircuitBreakerPolicy<HttpResponseMessage>(
             exceptionsAllowedBeforeBreaking,
             circuitBreakerDuration);
 

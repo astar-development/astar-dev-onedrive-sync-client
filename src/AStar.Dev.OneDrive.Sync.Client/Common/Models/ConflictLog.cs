@@ -26,11 +26,6 @@ public class ConflictLog
     public string? LocalPath { get; set; }
 
     /// <summary>
-    /// Gets or sets the type of conflict: 'local_newer', 'remote_newer', 'both_modified'.
-    /// </summary>
-    public string? ConflictType { get; set; }
-
-    /// <summary>
     /// Gets or sets the timestamp when the local file was last modified.
     /// </summary>
     public DateTime? LocalLastModified { get; set; }
@@ -41,11 +36,6 @@ public class ConflictLog
     public DateTime? RemoteLastModified { get; set; }
 
     /// <summary>
-    /// Gets or sets the resolution action taken: 'keep_local', 'keep_remote', 'both', 'ignore'.
-    /// </summary>
-    public string? ResolutionAction { get; set; }
-
-    /// <summary>
     /// Gets or sets the timestamp when the conflict was resolved.
     /// </summary>
     public DateTime? ResolvedAt { get; set; }
@@ -54,4 +44,14 @@ public class ConflictLog
     /// Navigation property to the associated account.
     /// </summary>
     public Account Account { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the resolution action taken: 'keep_local', 'keep_remote', 'both', 'ignore'.
+    /// </summary>
+    public ResolutionAction ResolutionAction { get; set; }
+
+    /// <summary>
+    /// Gets or sets the type of conflict: 'none', 'local_newer', 'remote_newer', 'both_modified'.
+    /// </summary>
+    public ConflictType ConflictType { get; set; }
 }

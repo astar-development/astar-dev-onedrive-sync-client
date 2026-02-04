@@ -15,30 +15,30 @@ public class FileSystemItemConfiguration : IEntityTypeConfiguration<FileSystemIt
     /// <param name="builder">The entity type builder.</param>
     public void Configure(EntityTypeBuilder<FileSystemItem> builder)
     {
-        builder.HasKey(e => e.Id);
-        
-        builder.Property(e => e.Id)
+        _ = builder.HasKey(e => e.Id);
+
+        _ = builder.Property(e => e.Id)
             .IsRequired();
-        
-        builder.Property(e => e.AccountId)
+
+        _ = builder.Property(e => e.AccountId)
             .IsRequired();
-        
-        builder.Property(e => e.DriveItemId)
+
+        _ = builder.Property(e => e.DriveItemId)
             .IsRequired();
-        
-        builder.Property(e => e.Name)
+
+        _ = builder.Property(e => e.Name)
             .IsRequired();
-        
-        builder.Property(e => e.Path)
+
+        _ = builder.Property(e => e.Path)
             .IsRequired();
-        
-        builder.Property(e => e.IsFolder)
+
+        _ = builder.Property(e => e.IsFolder)
             .IsRequired();
-        
-        builder.Property(e => e.IsSelected)
+
+        _ = builder.Property(e => e.IsSelected)
             .HasDefaultValue(false);
-        
-        builder.HasOne(e => e.Account)
+
+        _ = builder.HasOne(e => e.Account)
             .WithMany()
             .HasForeignKey(e => e.AccountId)
             .OnDelete(DeleteBehavior.Cascade);

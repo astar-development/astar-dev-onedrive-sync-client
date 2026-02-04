@@ -15,18 +15,18 @@ public class DeltaTokenConfiguration : IEntityTypeConfiguration<DeltaToken>
     /// <param name="builder">The entity type builder.</param>
     public void Configure(EntityTypeBuilder<DeltaToken> builder)
     {
-        builder.HasKey(e => e.Id);
-        
-        builder.Property(e => e.Id)
+        _ = builder.HasKey(e => e.Id);
+
+        _ = builder.Property(e => e.Id)
             .IsRequired();
-        
-        builder.Property(e => e.AccountId)
+
+        _ = builder.Property(e => e.AccountId)
             .IsRequired();
-        
-        builder.Property(e => e.DriveName)
+
+        _ = builder.Property(e => e.DriveName)
             .IsRequired();
-        
-        builder.HasOne(e => e.Account)
+
+        _ = builder.HasOne(e => e.Account)
             .WithMany()
             .HasForeignKey(e => e.AccountId)
             .OnDelete(DeleteBehavior.Cascade);

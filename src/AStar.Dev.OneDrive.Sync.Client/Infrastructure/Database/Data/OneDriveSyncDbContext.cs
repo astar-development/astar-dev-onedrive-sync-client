@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
@@ -7,7 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 /// <summary>
 /// Database context for OneDrive sync application using PostgreSQL with the 'onedrive' schema.
 /// </summary>
-public class OneDriveSyncDbContext : Microsoft.EntityFrameworkCore.DbContext
+public class OneDriveSyncDbContext : DbContext
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OneDriveSyncDbContext"/> class.
@@ -61,16 +60,8 @@ public class OneDriveSyncDbContext : Microsoft.EntityFrameworkCore.DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Configure all entities to use the 'onedrive' schema
-        modelBuilder.HasDefaultSchema("onedrive");
+        _ = modelBuilder.HasDefaultSchema("onedrive");
 
-        // Apply entity configurations
-        modelBuilder.ApplyConfiguration(new AccountConfiguration());
-        modelBuilder.ApplyConfiguration(new DeltaTokenConfiguration());
-        modelBuilder.ApplyConfiguration(new FileSystemItemConfiguration());
-        modelBuilder.ApplyConfiguration(new ConflictLogConfiguration());
-        modelBuilder.ApplyConfiguration(new SyncHistoryConfiguration());
-        modelBuilder.ApplyConfiguration(new DiagnosticSettingsConfiguration());
-        modelBuilder.ApplyConfiguration(new ApplicationLogConfiguration());
+        _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(OneDriveSyncDbContext).Assembly);
     }
 }

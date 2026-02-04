@@ -8,32 +8,29 @@ public class ResiliencePolicyFactoryShould
 {
     private readonly ResiliencePolicyFactory _factory;
 
-    public ResiliencePolicyFactoryShould()
-    {
-        _factory = new ResiliencePolicyFactory();
-    }
+    public ResiliencePolicyFactoryShould() => _factory = new ResiliencePolicyFactory();
 
     [Fact]
-    public void CreateHttpRetryPolicy_WithExponentialBackoff()
+    public void CreateHttpRetryPolicyWithExponentialBackoff()
     {
-        var policy = _factory.CreateHttpRetryPolicy();
+        AsyncPolicy<HttpResponseMessage> policy = _factory.CreateHttpRetryPolicy();
 
         policy.ShouldNotBeNull();
         policy.ShouldBeAssignableTo<AsyncPolicy<HttpResponseMessage>>();
     }
 
     [Fact]
-    public void CreateDatabaseRetryPolicy_WithExponentialBackoff()
+    public void CreateDatabaseRetryPolicyWithExponentialBackoff()
     {
-        var policy = _factory.CreateDatabaseRetryPolicy();
+        AsyncPolicy policy = _factory.CreateDatabaseRetryPolicy();
 
         policy.ShouldNotBeNull();
     }
 
     [Fact]
-    public void CreateCircuitBreakerPolicy_WithConfigurableThresholds()
+    public void CreateCircuitBreakerPolicyWithConfigurableThresholds()
     {
-        var policy = _factory.CreateCircuitBreakerPolicy<HttpResponseMessage>(
+        AsyncPolicy<HttpResponseMessage> policy = _factory.CreateCircuitBreakerPolicy<HttpResponseMessage>(
             exceptionsAllowedBeforeBreaking: 3,
             durationOfBreak: TimeSpan.FromSeconds(30));
 
@@ -41,19 +38,17 @@ public class ResiliencePolicyFactoryShould
     }
 
     [Fact]
-    public async Task HttpRetryPolicy_ShouldRetryTransientFailures()
+    public async Task RetryTransientFailures()
     {
-        var policy = _factory.CreateHttpRetryPolicy();
+        AsyncPolicy<HttpResponseMessage> policy = _factory.CreateHttpRetryPolicy();
         var attempt = 0;
 
-        var result = await policy.ExecuteAsync(async () =>
+        HttpResponseMessage result = await policy.ExecuteAsync(async () =>
         {
             attempt++;
-            if (attempt < 3)
-            {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable);
-            }
-            return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            return attempt < 3
+                ? new HttpResponseMessage(System.Net.HttpStatusCode.ServiceUnavailable)
+                : new HttpResponseMessage(System.Net.HttpStatusCode.OK);
         });
 
         result.StatusCode.ShouldBe(System.Net.HttpStatusCode.OK);
@@ -61,15 +56,15 @@ public class ResiliencePolicyFactoryShould
     }
 
     [Fact]
-    public async Task CircuitBreakerPolicy_ShouldOpenAfterConsecutiveFailures()
+    public async Task OpenTheCircuitBreakerAfterConsecutiveFailures()
     {
-        var policy = _factory.CreateCircuitBreakerPolicy<int>(
+        AsyncPolicy<int> policy = _factory.CreateCircuitBreakerPolicy<int>(
             exceptionsAllowedBeforeBreaking: 2,
             durationOfBreak: TimeSpan.FromMilliseconds(100));
 
         await Should.ThrowAsync<InvalidOperationException>(() =>
             policy.ExecuteAsync(() => throw new InvalidOperationException("Test failure")));
-        
+
         await Should.ThrowAsync<InvalidOperationException>(() =>
             policy.ExecuteAsync(() => throw new InvalidOperationException("Test failure")));
 

@@ -17,13 +17,16 @@ public class OneDriveSyncDbContextFactory : IDesignTimeDbContextFactory<OneDrive
     public OneDriveSyncDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<OneDriveSyncDbContext>();
-        
-        // Use a temporary connection string for design-time only
-        // The actual connection string comes from configuration at runtime
-        optionsBuilder.UseNpgsql(
-            "Host=localhost;Port=5432;Database=astar-dev-onedrive-sync-db;Username=astar-admin;Password=placeholder;Schema=onedrive",
+
+        _ = optionsBuilder.UseNpgsql(
+            CreateDesignTimeConnectionString(),
             b => b.MigrationsHistoryTable("__EFMigrationsHistory", "onedrive"));
 
         return new OneDriveSyncDbContext(optionsBuilder.Options);
+
+        static string CreateDesignTimeConnectionString()
+        {
+            return "Host=localhost;Port=5432;Database=astar-dev-onedrive-sync-db;Username=astar-admin;Password=placeholder;Schema=onedrive";
+        }
     }
 }

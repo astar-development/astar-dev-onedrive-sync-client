@@ -18,12 +18,12 @@ public class SyncHistory
     /// <summary>
     /// Gets or sets the type of sync: 'manual', 'scheduled', 'background'.
     /// </summary>
-    public string? SyncType { get; set; }
+    public SyncType SyncType { get; set; } = SyncType.Manual;
 
     /// <summary>
     /// Gets or sets the sync direction: 'upload', 'download', 'bidirectional'.
     /// </summary>
-    public string? SyncDirection { get; set; }
+    public SyncDirection SyncDirection { get; set; } = SyncDirection.None;
 
     /// <summary>
     /// Gets or sets the timestamp when the sync operation started.
@@ -38,7 +38,7 @@ public class SyncHistory
     /// <summary>
     /// Gets or sets the status of the sync operation: 'success', 'partial', 'failed'.
     /// </summary>
-    public string? Status { get; set; }
+    public SyncResult SyncResult { get; set; } = SyncResult.None;
 
     /// <summary>
     /// Gets or sets the number of items uploaded during this sync.

@@ -84,17 +84,15 @@ Establish the foundational architecture, dependency injection, and database infr
 - [x] Add migration for `ApplicationLogs` table with indexes
 - [x] Verify all foreign key constraints are correctly configured
 
-**Task 1.10**: Implement `ISecureTokenStorage` abstraction and factory
+> **Task 1.10**: Implement `ISecureTokenStorage` abstraction and factory ✅
 
-- [ ] Define `ISecureTokenStorage` interface in Infrastructure layer
-- [ ] Create `SecureTokenStorageFactory` for platform detection
-- [ ] Implement `WindowsSecureTokenStorage` (DPAPI-based)
-- [ ] Implement `MacOSSecureTokenStorage` (Keychain-based)
-- [ ] Implement `LinuxSecureTokenStorage` (SecretService D-Bus)
-- [ ] Implement `AesSecureTokenStorage` (AES-256 encrypted fallback)
-- [ ] Create factory pattern for platform-specific selection
-
-**Task 1.11**: Implement unit tests for secure storage
+- [x] Define `ISecureTokenStorage` interface in Infrastructure layer
+- [x] Create `SecureTokenStorageFactory` for platform detection
+- [x] Implement `WindowsSecureTokenStorage` (DPAPI-based)
+- [x] Implement `MacOSSecureTokenStorage` (Keychain-based)
+- [x] Implement `LinuxSecureTokenStorage` (SecretService D-Bus)
+- [x] Implement `AesSecureTokenStorage` (AES-256 encrypted fallback)
+- [x] Create factory pattern for platform-specific selection
 
 - [ ] Create base test class with common scenarios (SecureTokenStorageTestsBase)
 - [ ] Add unit tests for Windows DPAPI storage with encryption/decryption verification
