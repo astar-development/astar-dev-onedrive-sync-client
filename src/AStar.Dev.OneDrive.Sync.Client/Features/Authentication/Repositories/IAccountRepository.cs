@@ -33,6 +33,13 @@ public interface IAccountRepository
     Task<Account?> GetByHashedEmailAsync(string hashedEmail);
 
     /// <summary>
+    /// Retrieves an account by its hashed account ID.
+    /// </summary>
+    /// <param name="hashedAccountId">The hashed account ID to search for.</param>
+    /// <returns>The account if found; otherwise null.</returns>
+    Task<Account?> GetByHashedAccountIdAsync(string hashedAccountId);
+
+    /// <summary>
     /// Updates an existing account.
     /// </summary>
     /// <param name="account">The account to update.</param>
