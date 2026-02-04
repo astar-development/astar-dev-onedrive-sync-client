@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Common.Models;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data.Configurations;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
@@ -17,7 +19,22 @@ public class OneDriveSyncDbContext : Microsoft.EntityFrameworkCore.DbContext
     }
 
     /// <summary>
-    /// Configures the model for the context, including schema configuration.
+    /// Gets or sets the Accounts DbSet.
+    /// </summary>
+    public DbSet<Account> Accounts { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the DeltaTokens DbSet.
+    /// </summary>
+    public DbSet<DeltaToken> DeltaTokens { get; set; } = null!;
+
+    /// <summary>
+    /// Gets or sets the FileSystemItems DbSet.
+    /// </summary>
+    public DbSet<FileSystemItem> FileSystemItems { get; set; } = null!;
+
+    /// <summary>
+    /// Configures the model for the context, including schema configuration and entity configurations.
     /// </summary>
     /// <param name="modelBuilder">The builder being used to construct the model.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,5 +43,10 @@ public class OneDriveSyncDbContext : Microsoft.EntityFrameworkCore.DbContext
 
         // Configure all entities to use the 'onedrive' schema
         modelBuilder.HasDefaultSchema("onedrive");
+
+        // Apply entity configurations
+        modelBuilder.ApplyConfiguration(new AccountConfiguration());
+        modelBuilder.ApplyConfiguration(new DeltaTokenConfiguration());
+        modelBuilder.ApplyConfiguration(new FileSystemItemConfiguration());
     }
 }
