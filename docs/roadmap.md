@@ -45,11 +45,11 @@ Establish the foundational architecture, dependency injection, and database infr
 - [x] Create `AppModule.cs` for DI container registration
 - [x] Configure service lifetimes (Singleton, Scoped, Transient)
 
-**Task 1.3**: Add core NuGet packages
+**Task 1.3**: Add core NuGet packages ✅
 
-- [ ] Add EF Core and PostgreSQL provider (`Npgsql.EntityFrameworkCore.PostgreSQL`)
-- [ ] Add MSAL for OAuth authentication
-- [ ] Add Kiota abstractions for Graph API
+- [x] Add EF Core and PostgreSQL provider (`Npgsql.EntityFrameworkCore.PostgreSQL`)
+- [x] Add MSAL for OAuth authentication
+- [x] Add Kiota abstractions for Graph API
 
 **Task 1.4**: Add UI NuGet packages ✅
 
