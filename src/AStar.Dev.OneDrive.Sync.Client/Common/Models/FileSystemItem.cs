@@ -11,9 +11,10 @@ public class FileSystemItem
     public string Id { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the account identifier this item belongs to.
+    /// Gets or sets the hashed account identifier this item belongs to.
+    /// GDPR compliant: stores hashed ID, not actual account ID.
     /// </summary>
-    public string AccountId { get; set; } = string.Empty;
+    public string HashedAccountId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the OneDrive item ID from Graph API.
@@ -81,9 +82,4 @@ public class FileSystemItem
     /// Values: 'upload', 'download', 'bidirectional'.
     /// </summary>
     public SyncDirection LastSyncDirection { get; set; } = SyncDirection.None;
-
-    /// <summary>
-    /// Gets or sets the navigation property to the associated account.
-    /// </summary>
-    public Account? Account { get; set; }
 }

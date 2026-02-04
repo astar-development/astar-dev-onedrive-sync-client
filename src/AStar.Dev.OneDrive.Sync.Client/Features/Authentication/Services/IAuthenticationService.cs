@@ -1,8 +1,8 @@
-
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
+
 /// <summary>
 /// Service for handling OAuth authentication with Microsoft using Device Code Flow.
 /// Authenticates users and manages token lifecycle.

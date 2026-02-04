@@ -11,10 +11,11 @@ public class DiagnosticSettings
     public string Id { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the account ID associated with these diagnostic settings.
+    /// Gets or sets the hashed account ID associated with these diagnostic settings.
     /// This should be unique per account.
+    /// GDPR compliant: stores hashed ID, not actual account ID.
     /// </summary>
-    public string AccountId { get; set; } = null!;
+    public string HashedAccountId { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the log level: 'Trace', 'Debug', 'Information', 'Warning', 'Error', 'Critical'.
@@ -30,9 +31,4 @@ public class DiagnosticSettings
     /// Gets or sets the timestamp when these diagnostic settings were created.
     /// </summary>
     public DateTime? CreatedAt { get; set; }
-
-    /// <summary>
-    /// Navigation property to the associated account.
-    /// </summary>
-    public Account Account { get; set; } = null!;
 }

@@ -11,9 +11,10 @@ public class ConflictLog
     public string Id { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the account ID associated with this conflict.
+    /// Gets or sets the hashed account ID associated with this conflict.
+    /// GDPR compliant: stores hashed ID, not actual account ID.
     /// </summary>
-    public string AccountId { get; set; } = null!;
+    public string HashedAccountId { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the file system item ID involved in the conflict.
@@ -39,11 +40,6 @@ public class ConflictLog
     /// Gets or sets the timestamp when the conflict was resolved.
     /// </summary>
     public DateTime? ResolvedAt { get; set; }
-
-    /// <summary>
-    /// Navigation property to the associated account.
-    /// </summary>
-    public Account Account { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the resolution action taken: 'keep_local', 'keep_remote', 'both', 'ignore'.

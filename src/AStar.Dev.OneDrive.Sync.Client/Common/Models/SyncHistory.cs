@@ -11,9 +11,10 @@ public class SyncHistory
     public string Id { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the account ID associated with this sync operation.
+    /// Gets or sets the hashed account ID associated with this sync operation.
+    /// GDPR compliant: stores hashed ID, not actual account ID.
     /// </summary>
-    public string AccountId { get; set; } = null!;
+    public string HashedAccountId { get; set; } = null!;
 
     /// <summary>
     /// Gets or sets the type of sync: 'manual', 'scheduled', 'background'.
@@ -55,8 +56,4 @@ public class SyncHistory
     /// </summary>
     public string? ErrorMessage { get; set; }
 
-    /// <summary>
-    /// Navigation property to the associated account.
-    /// </summary>
-    public Account Account { get; set; } = null!;
 }

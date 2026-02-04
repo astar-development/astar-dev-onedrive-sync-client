@@ -1,8 +1,8 @@
-
 using System.Security.Cryptography;
 using System.Text;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
+
 /// <summary>
 /// Implements SHA256 hashing for email and account ID obfuscation.
 /// Ensures consistent, deterministic hashes for database lookups.
@@ -41,8 +41,7 @@ public class HashingService : IHashingService
     /// <returns>A 64-character hex-encoded SHA256 hash.</returns>
     private static string HashValue(string value)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(value));
+        var hashedBytes = SHA256.HashData(Encoding.UTF8.GetBytes(value));
 
         return Convert.ToHexString(hashedBytes).ToLowerInvariant();
     }

@@ -31,14 +31,12 @@ public class ApplicationLogConfiguration : IEntityTypeConfiguration<ApplicationL
         _ = builder.Property(e => e.Properties)
             .HasColumnType("jsonb");
 
-        _ = builder.HasOne(e => e.Account)
-            .WithMany()
-            .HasForeignKey(e => e.AccountId)
-            .OnDelete(DeleteBehavior.Cascade)
+        // Store hashed account ID for GDPR compliance (denormalized lookup, not FK)
+        _ = builder.Property(e => e.HashedAccountId)
             .IsRequired(false);
 
-        _ = builder.HasIndex(e => new { e.AccountId, e.Timestamp })
-            .HasDatabaseName("idx_applicationlogs_accountid_timestamp")
+        _ = builder.HasIndex(e => new { e.HashedAccountId, e.Timestamp })
+            .HasDatabaseName("idx_applicationlogs_hashedaccountid_timestamp")
             .IsDescending(false, true); // Timestamp DESC for recent-first ordering
 
         _ = builder.HasIndex(e => e.LogLevel)

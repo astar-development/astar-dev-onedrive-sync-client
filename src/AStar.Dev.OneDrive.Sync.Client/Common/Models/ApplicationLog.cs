@@ -11,10 +11,11 @@ public class ApplicationLog
     public long Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the account ID associated with this log entry.
+    /// Gets or sets the hashed account ID associated with this log entry.
     /// NULL for global logs not associated with a specific account.
+    /// GDPR compliant: stores hashed ID, not actual account ID.
     /// </summary>
-    public string? AccountId { get; set; }
+    public string? HashedAccountId { get; set; }
 
     /// <summary>
     /// Gets or sets the timestamp when the log entry was created.
@@ -40,12 +41,6 @@ public class ApplicationLog
     /// Gets or sets the structured log properties as JSONB.
     /// </summary>
     public string? Properties { get; set; }
-
-    /// <summary>
-    /// Navigation property to the associated account.
-    /// NULL for global logs.
-    /// </summary>
-    public Account? Account { get; set; }
 
     /// <summary>
     /// Gets or sets the log level: 'None', 'Trace', 'Debug', 'Information', 'Warning', 'Error', 'Critical'.

@@ -26,13 +26,20 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
         _ = builder.Property(e => e.HashedEmail)
             .IsRequired();
 
-        _ = builder.Property(e => e.MaxConcurrentDownloads)
+        _ = builder.Property(e => e.HashedAccountId)
+            .IsRequired();
+
+        _ = builder.Property(e => e.MaxConcurrent)
             .HasDefaultValue(5);
 
-        _ = builder.Property(e => e.MaxConcurrentUploads)
-            .HasDefaultValue(5);
-
-        _ = builder.Property(e => e.EnableDebugLogging)
+        _ = builder.Property(e => e.DebugLoggingEnabled)
             .HasDefaultValue(false);
+
+        _ = builder.Property(e => e.IsAdmin)
+            .HasDefaultValue(false);
+
+        _ = builder.Property(e => e.CreatedAt);
+
+        _ = builder.Property(e => e.UpdatedAt);
     }
 }
