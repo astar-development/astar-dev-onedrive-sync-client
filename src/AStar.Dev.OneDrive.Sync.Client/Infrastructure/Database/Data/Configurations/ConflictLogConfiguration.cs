@@ -25,5 +25,11 @@ public class ConflictLogConfiguration : IEntityTypeConfiguration<ConflictLog>
 
         _ = builder.Property(e => e.ItemId)
             .IsRequired();
+
+        // Foreign key relationship with CASCADE DELETE for GDPR-compliant account deletion
+        _ = builder.HasOne<Account>()
+            .WithMany(a => a.ConflictLogs)
+            .HasForeignKey("AccountId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

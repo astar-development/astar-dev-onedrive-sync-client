@@ -220,34 +220,4 @@ public class AccountManagementService(IAccountRepository accountRepository, ILog
             return new Result<Account, AccountManagementError>.Error(AccountManagementError.UnexpectedError);
         }
     }
-
-    /// <inheritdoc/>
-    public async Task<Result<bool, AccountManagementError>> DeleteAccountAsync(string hashedAccountId)
-    {
-        try
-        {
-            _logger.LogInformation("Deleting account {HashedAccountId}", hashedAccountId);
-
-            Account? account = await _accountRepository.GetByHashedAccountIdAsync(hashedAccountId);
-
-            if(account is null)
-            {
-                _logger.LogWarning("Account with hashed ID {HashedAccountId} not found", hashedAccountId);
-
-                return new Result<bool, AccountManagementError>.Error(AccountManagementError.AccountNotFound);
-            }
-
-            await _accountRepository.DeleteAsync(account.Id);
-
-            _logger.LogInformation("Account {HashedAccountId} deleted successfully", hashedAccountId);
-
-            return new Result<bool, AccountManagementError>.Ok(true);
-        }
-        catch(Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error deleting account {HashedAccountId}", hashedAccountId);
-
-            return new Result<bool, AccountManagementError>.Error(AccountManagementError.UnexpectedError);
-        }
-    }
 }
