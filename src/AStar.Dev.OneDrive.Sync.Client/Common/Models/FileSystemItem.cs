@@ -74,7 +74,7 @@ public class FileSystemItem
     /// Gets or sets the current sync status.
     /// Values: 'synced', 'pending_upload', 'pending_download', 'conflict', 'failed'.
     /// </summary>
-    public SyncStatus SyncStatus { get; set; } = this.SyncStatus.None;
+    public SyncStatus SyncStatus { get; set; } = SyncStatus.None;
 
     /// <summary>
     /// Gets or sets the last sync direction.
