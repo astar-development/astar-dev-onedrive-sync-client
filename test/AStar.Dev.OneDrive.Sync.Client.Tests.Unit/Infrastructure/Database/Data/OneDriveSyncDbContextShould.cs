@@ -1,8 +1,8 @@
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.DbContext;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Database.DbContext;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Infrastructure.Database.Data;
 
 public class OneDriveSyncDbContextShould
 {
