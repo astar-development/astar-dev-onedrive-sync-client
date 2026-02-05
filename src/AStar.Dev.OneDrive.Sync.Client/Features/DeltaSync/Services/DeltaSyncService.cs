@@ -3,6 +3,8 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.GraphApi;
 using AStar.Dev.OneDrive.Sync.Client.Features.DeltaSync.Repositories;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
+using Microsoft.Kiota.Abstractions;
+using Microsoft.Kiota.Abstractions.Serialization;
 using DeltaChangeType = AStar.Dev.OneDrive.Sync.Client.Features.DeltaSync.Models.ChangeType;
 using DeltaChangeModel = AStar.Dev.OneDrive.Sync.Client.Features.DeltaSync.Models.DeltaChange;
 
@@ -24,19 +26,108 @@ public class DeltaSyncService(GraphApiClientFactory graphFactory, IDeltaTokenRep
         ArgumentException.ThrowIfNullOrWhiteSpace(driveName);
 
         GraphServiceClient client = _graphFactory.CreateClient(accessToken);
-
         DeltaToken? savedToken = await _deltaTokenRepository.GetByAccountAndDriveAsync(hashedAccountId, driveName);
         
-        // Note: This is a simplified implementation.
-        // Full delta query implementation with delta tokens requires additional Microsoft Graph SDK setup.
-        // For now, we'll return an empty result to allow the structure to compile.
-        // TODO: Implement actual delta query when Graph SDK delta support is properly configured.
+        var changes = new List<DeltaChangeModel>();
+        string? newDeltaToken = null;
+
+        // Determine the delta query URL based on whether we have a saved token
+        string? deltaUrl = null;
         
+        if (!string.IsNullOrWhiteSpace(savedToken?.Token))
+        {
+            // Use the saved delta token URL
+            deltaUrl = savedToken.Token;
+        }
+        else
+        {
+            // Initial sync - construct the delta endpoint
+            deltaUrl = driveName.Equals("root", StringComparison.OrdinalIgnoreCase)
+                ? "/me/drive/root/delta"
+                : $"/me/drive/items/{driveName}/delta";
+        }
+
+        // Execute delta query with pagination
+        DeltaItemCollectionResponse? deltaResponse = await ExecuteDeltaQueryAsync(client, deltaUrl, cancellationToken);
+        
+        // Process first page of results
+        if (deltaResponse?.Value is not null)
+        {
+            foreach (DriveItem? item in deltaResponse.Value)
+            {
+                if (item is not null)
+                {
+                    changes.Add(ParseDriveItem(item));
+                }
+            }
+        }
+
+        // Handle pagination using @odata.nextLink
+        string? nextLink = deltaResponse?.OdataNextLink;
+        while (!string.IsNullOrWhiteSpace(nextLink))
+        {
+            deltaResponse = await ExecuteDeltaQueryAsync(client, nextLink, cancellationToken);
+            
+            if (deltaResponse?.Value is not null)
+            {
+                foreach (DriveItem? item in deltaResponse.Value)
+                {
+                    if (item is not null)
+                    {
+                        changes.Add(ParseDriveItem(item));
+                    }
+                }
+            }
+
+            nextLink = deltaResponse?.OdataNextLink;
+        }
+
+        // Extract delta token from @odata.deltaLink (only present on the final page)
+        newDeltaToken = deltaResponse?.OdataDeltaLink;
+
+        // Save the new delta token if we got one
+        if (!string.IsNullOrWhiteSpace(newDeltaToken))
+        {
+            var tokenToSave = new DeltaToken
+            {
+                Id = savedToken?.Id ?? Guid.NewGuid().ToString(),
+                HashedAccountId = hashedAccountId,
+                DriveName = driveName,
+                Token = newDeltaToken,
+                LastSyncAt = DateTime.UtcNow
+            };
+
+            await _deltaTokenRepository.SaveAsync(tokenToSave);
+        }
+
         return new DeltaSyncResult
         {
-            Changes = Array.Empty<DeltaChangeModel>(),
-            DeltaToken = savedToken?.Token
+            Changes = changes.AsReadOnly(),
+            DeltaToken = newDeltaToken
         };
+    }
+
+    private static async Task<DeltaItemCollectionResponse?> ExecuteDeltaQueryAsync(GraphServiceClient client, string deltaUrl, CancellationToken cancellationToken)
+    {
+        // Use the RequestAdapter to execute the delta query directly
+        var requestInfo = new RequestInformation
+        {
+            HttpMethod = Method.GET,
+            UrlTemplate = deltaUrl
+        };
+
+        // If the URL doesn't start with http, it's a relative path - prepend the base URL
+        if (!deltaUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+        {
+            string baseUrl = client.RequestAdapter.BaseUrl ?? "https://graph.microsoft.com/v1.0";
+            requestInfo.URI = new Uri(baseUrl.TrimEnd('/') + "/" + deltaUrl.TrimStart('/'));
+        }
+        else
+        {
+            requestInfo.URI = new Uri(deltaUrl);
+        }
+
+        return await client.RequestAdapter.SendAsync(requestInfo, DeltaItemCollectionResponse.CreateFromDiscriminatorValue, default, cancellationToken);
     }
 
     private static DeltaChangeModel ParseDriveItem(DriveItem item)
@@ -57,5 +148,52 @@ public class DeltaSyncService(GraphApiClientFactory graphFactory, IDeltaTokenRep
             RemoteModifiedAt = item.LastModifiedDateTime?.DateTime,
             RemoteHash = item.File?.Hashes?.QuickXorHash
         };
+    }
+}
+
+/// <summary>
+/// Response model for delta query results from Microsoft Graph API.
+/// </summary>
+internal class DeltaItemCollectionResponse : IParsable
+{
+    /// <summary>
+    /// Gets or sets the collection of drive items.
+    /// </summary>
+    public List<DriveItem>? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets the URL for the next page of results.
+    /// </summary>
+    public string? OdataNextLink { get; set; }
+
+    /// <summary>
+    /// Gets or sets the delta link for tracking changes.
+    /// </summary>
+    public string? OdataDeltaLink { get; set; }
+
+    /// <inheritdoc />
+    public IDictionary<string, Action<IParseNode>> GetFieldDeserializers() => new Dictionary<string, Action<IParseNode>>
+    {
+        { "value", n => Value = n.GetCollectionOfObjectValues(DriveItem.CreateFromDiscriminatorValue)?.ToList() },
+        { "@odata.nextLink", n => OdataNextLink = n.GetStringValue() },
+        { "@odata.deltaLink", n => OdataDeltaLink = n.GetStringValue() }
+    };
+
+    /// <inheritdoc />
+    public void Serialize(ISerializationWriter writer)
+    {
+        ArgumentNullException.ThrowIfNull(writer);
+        writer.WriteCollectionOfObjectValues("value", Value);
+        writer.WriteStringValue("@odata.nextLink", OdataNextLink);
+        writer.WriteStringValue("@odata.deltaLink", OdataDeltaLink);
+    }
+
+    /// <summary>
+    /// Factory method for creating instances from discriminator values.
+    /// </summary>
+    public static DeltaItemCollectionResponse CreateFromDiscriminatorValue(IParseNode parseNode)
+    {
+        ArgumentNullException.ThrowIfNull(parseNode);
+        return new DeltaItemCollectionResponse();
     }
 }
