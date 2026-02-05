@@ -1,10 +1,8 @@
-﻿using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
-using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Avalonia;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Serilog;
+using System;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -23,14 +21,10 @@ internal class Program
         {
             Log.Information("Starting AStar OneDrive Sync Client");
 
-            IHost host = CreateHostBuilder(args, configuration).Build();
-
-            host.Run();
-
-            Log.Information("Application shut down successfully");
-            return 0;
+            return BuildAvaloniaApp()
+                .StartWithClassicDesktopLifetime(args);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             Log.Fatal(ex, "Application terminated unexpectedly");
             return 1;
@@ -41,16 +35,8 @@ internal class Program
         }
     }
 
-    private static IHostBuilder CreateHostBuilder(string[] args, IConfiguration configuration)
-        => Host.CreateDefaultBuilder(args)
-            .UseSerilog()
-            .ConfigureAppConfiguration((context, config) =>
-            {
-                config.Sources.Clear();
-                _ = config.AddConfiguration(configuration);
-            })
-            .ConfigureServices((context, services) =>
-            {
-                // Register additional services when they do not fit into AppModule
-            });
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .LogToTrace();
 }
