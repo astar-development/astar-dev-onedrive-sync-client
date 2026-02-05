@@ -170,11 +170,45 @@
 - [-] Status Code 429 retry with exponential backoff (deferred)
 - [ ] Add comprehensive integration tests with mocked Graph API responses
 
-**Task 3.8**: Implement remote change mapping
+**Task 3.8**: ✅ Implement remote change mapping (Done)
 
-- [ ] Map Graph API responses to FileSystemItem entities
-- [ ] Implement hash comparison for change detection
-- [ ] Add unit tests for mapping logic
+**Implementation Notes**:
+
+- Created DeltaChangeMapper static class with extension method ToFileSystemItem:
+  - Maps DeltaChange from Graph API to FileSystemItem entity
+  - Accepts hashedAccountId for account association
+  - Accepts optional existingItem for hash comparison and property preservation
+  - Generates new GUID for Id when no existing item provided
+  - Preserves local properties (LocalPath, LocalHash, LocalModifiedAt, LastSyncDirection) from existing item
+- Implemented DetermineSyncStatus method for intelligent status assignment:
+  - ChangeType.Deleted → SyncStatus.PendingDownload (mark for local deletion)
+  - ChangeType.Added → SyncStatus.PendingDownload (mark for download)
+  - ChangeType.Modified with hash difference → SyncStatus.PendingDownload (needs update)
+  - ChangeType.Modified with same hash → SyncStatus.Synced (no action needed)
+  - Folders ignore hash comparison (always Synced for modified folders)
+- Implemented HasRemoteChanges method for hash comparison:
+  - Returns true if existingItem is null (new item needs download)
+  - Returns false for folders (folders don't have content hash)
+  - Returns true if either remote or existing hash is null/empty (conservative approach)
+  - Returns false only when hashes match exactly (ordinal comparison)
+- Created 13 comprehensive unit tests in DeltaChangeMapperShould.cs:
+  - ThrowArgumentNullExceptionWhenChangeIsNull
+  - ThrowArgumentExceptionWhenHashedAccountIdIsNull/Empty/Whitespace
+  - MapAddedChangeToFileSystemItemWithPendingDownloadStatus
+  - MapDeletedChangeToFileSystemItemWithPendingDownloadStatus
+  - MapModifiedChangeWithDifferentHashToPendingDownload
+  - MapModifiedChangeWithSameHashToSyncedStatus
+  - MapFolderChangeIgnoresHashComparison
+  - MapChangeWithNullRemoteHashToPendingDownload
+  - PreserveExistingItemPropertiesWhenMappingWithExistingItem
+  - GenerateNewIdWhenNoExistingItem
+  - MapRemoteModifiedAtFromChange
+- All 742 tests passing (13 new mapper tests added)
+- Build verified successful
+
+- [x] Map Graph API responses to FileSystemItem entities
+- [x] Implement hash comparison for change detection
+- [x] Add unit tests for mapping logic
 
 **Task 3.9**: Implement delta token persistence
 
