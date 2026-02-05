@@ -5,6 +5,7 @@
 **Task 3.1**: ✅ Add Microsoft Graph SDK (Done)
 
 **Implementation Notes**:
+
 - Added Microsoft.Graph v5.101.0 package (main SDK)
 - Added Microsoft.Graph.Core v3.2.5 package (core functionality)  
 - SDK provides GraphServiceClient for authenticated Graph API access
@@ -16,6 +17,7 @@
 **Task 3.2**: ✅ Configure Graph API Client Factory (Done)
 
 **Implementation Notes**:
+
 - Created GraphApiClientFactory with StaticTokenCredential for token-based authentication
 - Implemented GraphApiClient wrapper around Microsoft Graph SDK's GraphServiceClient
 - Registered factory as Singleton and GraphApiClient as Scoped service in DI container
