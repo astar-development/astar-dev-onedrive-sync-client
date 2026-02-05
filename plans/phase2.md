@@ -17,6 +17,7 @@
 - [x] **Separation of concerns**: AuthenticationService handles ONLY authentication, does NOT create accounts or know about MS Graph
 
 **Note on Task 2.1 Implementation:**
+
 - ViewModels will handle Result matching and display Toast notifications (e.g., "Login timed out. Please try again.")
 - MSAL manages refresh tokens internally; they are not exposed in `AuthToken`
 - Token storage integration is deferred to `AccountCreationService` (post-authentication)
@@ -71,7 +72,7 @@
 **Task 2.7**: Implement account deletion with GDPR compliance ✅
 
 - [x] Implement cascade delete for all related data
-- [x] Implement secure storage cleanup  
+- [x] Implement secure storage cleanup
 - [x] Add unit tests verifying complete data removal
 
 **Task 2.8**: Build Add Account ViewModel ✅
@@ -93,6 +94,7 @@
 - [x] Build and test successful (all 646 tests passing)
 
 **Implementation Notes:**
+
 - Created UserControl with data binding to AddAccountViewModel
 - Implemented status messages, error display, and progress indicators
 - Used Avalonia converters for visibility binding (StringConverters.IsNotNullOrEmpty, ObjectConverters.IsNotNull)
@@ -111,6 +113,7 @@
 - [x] Add unit tests for list management (7 comprehensive tests)
 
 **Implementation Notes:**
+
 - Used ObservableCollection<Account> with collection initializer syntax `[]`
 - All properties use expression-bodied members with `RaiseAndSetIfChanged`
 - LoadAccountsCommand clears existing accounts before loading new ones
@@ -127,6 +130,7 @@
 - [x] Build successful with all tests passing
 
 **Implementation Notes:**
+
 - Created UserControl with DockPanel layout for sidebar structure
 - Add Account button docked at top with stretch alignment
 - Loading indicator with IsVisible binding to IsLoading property
@@ -137,20 +141,42 @@
 - Design-time DataContext for Avalonia designer support
 - All 653 tests passing
 
-**Task 2.12**: Build Edit Account ViewModel
+**Task 2.12**: Build Edit Account ViewModel ✅
 
-- [ ] Create `EditAccountViewModel` with ReactiveUI
-- [ ] Implement reactive properties for settings (sync directory, concurrency, debug)
-- [ ] Add validation logic for input fields
-- [ ] Add unit tests for validation and state management
+- [x] Create `EditAccountViewModel` with ReactiveUI
+- [x] Implement reactive properties for settings (sync directory, concurrency, debug)
+- [x] Add validation logic for input fields
+- [x] Add unit tests for validation and state management
 
-**Task 2.13**: Build Edit Account View (UI)
+**Implementation Notes:**
 
-- [ ] Create `EditAccountView.axaml` settings dialog
-- [ ] Implement folder picker for HomeSyncDirectory
-- [ ] Implement sliders for concurrent operations (1-20)
-- [ ] Implement debug logging toggle
-- [ ] Bind View to ViewModel
+- Created ViewModel with 10 reactive properties using expression-bodied members
+- Implemented real-time validation for MaxConcurrent (≥1) and MaxBandwidthKBps (≥0 or null)
+- SaveCommand performs sequential async updates with pattern matching on Result types
+- LoadAccount method initializes properties from Account entity
+- All 11 comprehensive unit tests passing
+- Follows ReactiveUI patterns with ReactiveObject base class
+
+**Task 2.13**: Build Edit Account View (UI) ✅
+
+- [x] Create `EditAccountView.axaml` settings dialog
+- [x] Implement folder picker for HomeSyncDirectory
+- [x] Implement sliders for concurrent operations (1-20)
+- [x] Implement debug logging toggle
+- [x] Bind View to ViewModel
+
+**Implementation Notes:**
+
+- Created UserControl with StackPanel layout for settings form
+- Folder picker button uses Avalonia.Platform.Storage API with async dialog
+- Slider with Minimum="1" Maximum="20" for MaxConcurrent with live value display
+- CheckBox for DebugLoggingEnabled toggle
+- TextBox for MaxBandwidthKBps with watermark for "Unlimited"
+- Real-time error display for validation messages (MaxConcurrentError, MaxBandwidthError)
+- Success message displays when SaveSuccessful is true
+- Save button disabled during IsSaving state
+- Code-behind uses expression-bodied members following style guidelines
+- All 657 tests passing (no regressions)
 
 **Task 2.14**: Implement end-to-end authentication flow
 
@@ -171,12 +197,14 @@
 ### Separation of Concerns
 
 **AuthenticationService** (Task 2.1 ✅)
+
 - **Responsibility**: OAuth authentication with Microsoft using Device Code Flow
 - **Input**: None (starts fresh authentication)
 - **Output**: `Result<AuthToken, AuthenticationError>` with access token and expiry
 - **Does NOT**: Create accounts, store tokens, or call Graph API for user profile
 
 **AccountCreationService** (Task 2.5 - NEW)
+
 - **Responsibility**: Orchestrate post-authentication account creation
 - **Input**: `AuthToken` from successful authentication
 - **Dependencies**: `IGraphApiClient`, `IHashingService`, `IAccountRepository`, `ISecureTokenStorage`
@@ -188,12 +216,14 @@
 - **Output**: `Result<Account, AccountCreationError>`
 
 **AccountManagementService** (Task 2.6)
+
 - **Responsibility**: Account lifecycle operations (update settings, delete account)
 - **Operations**: Retrieve, update HomeSyncDirectory, update concurrency settings, delete with GDPR compliance
 
 ### Error Handling Strategy
 
 All services use `Result<TSuccess, TError>` from `AStar.Dev.Functional.Extensions`:
+
 - **Success path**: `Result<T, E>.Ok(value)`
 - **Error path**: `Result<T, E>.Error(reason)`
 - **ViewModels**: Use `.Match()` or `.MatchAsync()` to handle both cases
