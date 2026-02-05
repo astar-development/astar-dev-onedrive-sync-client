@@ -39,5 +39,11 @@ public class FileSystemItemConfiguration : IEntityTypeConfiguration<FileSystemIt
             .HasDefaultValue(false);
 
         _ = builder.HasIndex(e => e.HashedAccountId);
+
+        // Foreign key relationship with CASCADE DELETE for GDPR-compliant account deletion
+        _ = builder.HasOne<Account>()
+            .WithMany(a => a.FileSystemItems)
+            .HasForeignKey("AccountId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -25,5 +25,11 @@ public class DeltaTokenConfiguration : IEntityTypeConfiguration<DeltaToken>
 
         _ = builder.Property(e => e.DriveName)
             .IsRequired();
+
+        // Foreign key relationship with CASCADE DELETE for GDPR-compliant account deletion
+        _ = builder.HasOne<Account>()
+            .WithMany(a => a.DeltaTokens)
+            .HasForeignKey("AccountId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

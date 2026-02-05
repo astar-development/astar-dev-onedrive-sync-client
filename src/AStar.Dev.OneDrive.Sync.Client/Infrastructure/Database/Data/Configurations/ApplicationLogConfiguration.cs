@@ -41,5 +41,11 @@ public class ApplicationLogConfiguration : IEntityTypeConfiguration<ApplicationL
 
         _ = builder.HasIndex(e => e.LogLevel)
             .HasDatabaseName("idx_applicationlogs_loglevel");
+
+        // Foreign key relationship with CASCADE DELETE for GDPR-compliant account deletion
+        _ = builder.HasOne<Account>()
+            .WithMany(a => a.ApplicationLogs)
+            .HasForeignKey("AccountId")
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

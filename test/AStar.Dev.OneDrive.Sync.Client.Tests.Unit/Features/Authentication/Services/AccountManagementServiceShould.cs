@@ -232,42 +232,6 @@ public class AccountManagementServiceShould
     }
 
     [Fact]
-    public async Task DeleteAccountDeletesSuccessfully()
-    {
-        const string hashedAccountId = "hashed-account-id-test";
-        var account = new Account
-        {
-            Id = Guid.NewGuid(),
-            HashedEmail = "test@example.com",
-            HashedAccountId = hashedAccountId
-        };
-
-        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
-        _accountRepository.DeleteAsync(account.Id).Returns(Task.CompletedTask);
-
-        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(hashedAccountId);
-
-        result.ShouldBeOfType<Result<bool, AccountManagementError>.Ok>();
-        var okResult = result as Result<bool, AccountManagementError>.Ok;
-        okResult!.Value.ShouldBeTrue();
-        await _accountRepository.Received(1).DeleteAsync(account.Id);
-    }
-
-    [Fact]
-    public async Task DeleteAccountReturnsAccountNotFoundWhenNotExists()
-    {
-        const string hashedAccountId = "nonexistent-hashed-id";
-
-        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(null));
-
-        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(hashedAccountId);
-
-        result.ShouldBeOfType<Result<bool, AccountManagementError>.Error>();
-        var errorResult = result as Result<bool, AccountManagementError>.Error;
-        errorResult!.Reason.ShouldBe(AccountManagementError.AccountNotFound);
-    }
-
-    [Fact]
     public async Task UpdateReturnsRepositoryErrorWhenDbUpdateExceptionThrown()
     {
         const string hashedAccountId = "hashed-account-id-test";
@@ -286,26 +250,5 @@ public class AccountManagementServiceShould
         result.ShouldBeOfType<Result<Account, AccountManagementError>.Error>();
         var errorResult = result as Result<Account, AccountManagementError>.Error;
         errorResult!.Reason.ShouldBe(AccountManagementError.RepositoryError);
-    }
-
-    [Fact]
-    public async Task DeleteReturnsRepositoryErrorWhenExceptionThrown()
-    {
-        const string hashedAccountId = "error-hashed-id";
-        var account = new Account
-        {
-            Id = Guid.NewGuid(),
-            HashedEmail = "test@example.com",
-            HashedAccountId = hashedAccountId
-        };
-
-        _accountRepository.GetByHashedAccountIdAsync(hashedAccountId).Returns(Task.FromResult<Account?>(account));
-        _accountRepository.DeleteAsync(account.Id).Throws(new InvalidOperationException("Delete failed"));
-
-        Result<bool, AccountManagementError> result = await _accountManagementService.DeleteAccountAsync(hashedAccountId);
-
-        result.ShouldBeOfType<Result<bool, AccountManagementError>.Error>();
-        var errorResult = result as Result<bool, AccountManagementError>.Error;
-        errorResult!.Reason.ShouldBe(AccountManagementError.UnexpectedError);
     }
 }

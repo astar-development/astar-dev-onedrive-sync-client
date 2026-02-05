@@ -62,16 +62,4 @@ public interface IAccountManagementService
     /// Failure: A Result containing an AccountManagementError.
     /// </returns>
     Task<Result<Account, AccountManagementError>> UpdateMaxBandwidthKBpsAsync(string hashedAccountId, int? maxBandwidthKBps);
-
-    /// <summary>
-    /// Deletes an account from the database.
-    /// Note: This is a simple delete. Full GDPR compliance (cascade delete + secure storage cleanup)
-    /// is implemented in Task 2.7.
-    /// </summary>
-    /// <param name="hashedAccountId">The hashed account identifier.</param>
-    /// <returns>
-    /// Success: A Result containing true if deleted successfully.
-    /// Failure: A Result containing an AccountManagementError.
-    /// </returns>
-    Task<Result<bool, AccountManagementError>> DeleteAccountAsync(string hashedAccountId);
 }
