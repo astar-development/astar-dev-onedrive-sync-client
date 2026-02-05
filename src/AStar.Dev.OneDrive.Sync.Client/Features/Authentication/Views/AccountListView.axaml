@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.Features.Authentication.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="600"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Views.AccountListView"
+             x:DataType="vm:AccountListViewModel">
+  
+  <Design.DataContext>
+    <vm:AccountListViewModel/>
+  </Design.DataContext>
+
+  <DockPanel>
+    
+    <!-- Add Account Button at Top -->
+    <Button Content="+ Add Account"
+            DockPanel.Dock="Top"
+            Margin="10"
+            HorizontalAlignment="Stretch"
+            Padding="10,8"
+            FontSize="14"/>
+    
+    <!-- Loading Indicator -->
+    <TextBlock Text="Loading accounts..."
+               DockPanel.Dock="Top"
+               Margin="10,5"
+               FontSize="12"
+               HorizontalAlignment="Center"
+               IsVisible="{Binding IsLoading}"/>
+    
+    <!-- Account List -->
+    <ListBox ItemsSource="{Binding Accounts}"
+             SelectedItem="{Binding SelectedAccount}"
+             Margin="5"
+             Background="Transparent">
+      
+      <ListBox.ItemTemplate>
+        <DataTemplate>
+          <StackPanel Margin="5" Spacing="3">
+            <TextBlock Text="{Binding HashedEmail}" 
+                       FontWeight="SemiBold"
+                       FontSize="13"/>
+            <TextBlock Text="{Binding HomeSyncDirectory, StringFormat='Sync: {0}'}" 
+                       FontSize="11"
+                       Foreground="Gray"/>
+          </StackPanel>
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+      
+    </ListBox>
+    
+  </DockPanel>
+  
+</UserControl>
