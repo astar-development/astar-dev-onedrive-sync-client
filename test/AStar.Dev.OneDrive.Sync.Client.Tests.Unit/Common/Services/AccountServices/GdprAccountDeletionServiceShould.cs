@@ -152,7 +152,7 @@ public class GdprAccountDeletionServiceShould
     [Fact]
     public async Task ThrowArgumentNullExceptionWhenAccountRepositoryIsNull()
     {
-        var exception = Should.Throw<ArgumentNullException>(() =>
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             new GdprAccountDeletionService(null!, _secureTokenStorage, _logger));
 
         exception.ParamName.ShouldBe("accountRepository");
@@ -161,7 +161,7 @@ public class GdprAccountDeletionServiceShould
     [Fact]
     public async Task ThrowArgumentNullExceptionWhenSecureTokenStorageIsNull()
     {
-        var exception = Should.Throw<ArgumentNullException>(() =>
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             new GdprAccountDeletionService(_accountRepository, null!, _logger));
 
         exception.ParamName.ShouldBe("secureTokenStorage");
@@ -170,7 +170,7 @@ public class GdprAccountDeletionServiceShould
     [Fact]
     public async Task ThrowArgumentNullExceptionWhenLoggerIsNull()
     {
-        var exception = Should.Throw<ArgumentNullException>(() =>
+        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() =>
             new GdprAccountDeletionService(_accountRepository, _secureTokenStorage, null!));
 
         exception.ParamName.ShouldBe("logger");
