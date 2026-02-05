@@ -16,7 +16,8 @@ public class OneDriveSyncDbContextShould
         using var context = new OneDriveSyncDbContext(options);
         IModel model = context.Model;
 
-        model.GetDefaultSchema().ShouldBe("onedrive");
+        // SQLite doesn't support schemas, so default schema should be null
+        model.GetDefaultSchema().ShouldBeNull();
     }
 
     [Fact]

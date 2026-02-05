@@ -5,6 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -55,7 +56,24 @@ public static class AppModule
             return factory.CreateStorage();
         });
         
-       
+        // Register logging
+        _ = services.AddLogging();
+        
+        // Register MSAL PublicClientApplication
+        _ = services.AddSingleton<IPublicClientApplication>(sp =>
+        {
+            var authOptions = sp.GetRequiredService<AuthenticationOptions>();
+            return PublicClientApplicationBuilder
+                .Create(authOptions.Microsoft.ClientId)
+                .WithAuthority(AzureCloudInstance.AzurePublic, authOptions.Microsoft.TenantId)
+                .WithRedirectUri(authOptions.Microsoft.RedirectUri)
+                .Build();
+        });
+        
+        // Register Graph API client (mock for now, Phase 3 will replace with Kiota client)
+        _ = services.AddScoped<Infrastructure.GraphApi.IGraphApiClient, Infrastructure.GraphApi.MockGraphApiClient>();
+        
+        // Build OS-specific database path in user's AppData folder
         string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         string dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
         Directory.CreateDirectory(dbDirectory); // Ensure directory exists

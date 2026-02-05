@@ -26,8 +26,8 @@ public class ConfigurationBindingShould
             configuration.ShouldNotBeNull();
             var connectionString = configuration.GetConnectionString("OneDriveSync");
             connectionString.ShouldNotBeNull();
-            connectionString.ShouldContain("Host=localhost");
-            connectionString.ShouldContain("Database=astar-dev-onedrive-sync-db");
+            connectionString.ShouldContain("Data Source=");
+            connectionString.ShouldContain("onedrive-sync.db");
         }
 
         [Fact]
@@ -252,7 +252,8 @@ public class ConfigurationBindingShould
 
             sinkNames.ShouldContain("Console");
             sinkNames.ShouldContain("File");
-            sinkNames.ShouldContain("PostgreSQL");
+            // SQLite migration: PostgreSQL sink removed
+            sinkNames.ShouldNotContain("PostgreSQL");
         }
 
         [Fact]
