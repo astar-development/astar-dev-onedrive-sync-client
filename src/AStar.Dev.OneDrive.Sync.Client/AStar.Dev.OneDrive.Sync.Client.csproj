@@ -71,4 +71,10 @@
     <ProjectReference Include="..\nuget-packages\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
