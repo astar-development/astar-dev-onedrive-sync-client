@@ -7,7 +7,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.GraphApi;
 /// Factory for creating authenticated Microsoft Graph API client instances.
 /// Handles GraphServiceClient instantiation with proper authentication provider configuration.
 /// </summary>
-public class GraphApiClientFactory
+public class GraphApiClientFactory : IGraphServiceClientFactory
 {
     /// <summary>
     /// Creates a new GraphServiceClient with token-based authentication.

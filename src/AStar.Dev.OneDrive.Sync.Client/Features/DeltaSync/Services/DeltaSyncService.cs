@@ -13,9 +13,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Features.DeltaSync.Services;
 /// <summary>
 /// Service for detecting remote changes using Microsoft Graph API delta queries.
 /// </summary>
-public class DeltaSyncService(GraphApiClientFactory graphFactory, IDeltaTokenRepository deltaTokenRepository) : IDeltaSyncService
+public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTokenRepository deltaTokenRepository) : IDeltaSyncService
 {
-    private readonly GraphApiClientFactory _graphFactory = graphFactory ?? throw new ArgumentNullException(nameof(graphFactory));
+    private readonly IGraphServiceClientFactory _graphFactory = graphFactory ?? throw new ArgumentNullException(nameof(graphFactory));
     private readonly IDeltaTokenRepository _deltaTokenRepository = deltaTokenRepository ?? throw new ArgumentNullException(nameof(deltaTokenRepository));
 
     /// <inheritdoc />
@@ -109,14 +109,12 @@ public class DeltaSyncService(GraphApiClientFactory graphFactory, IDeltaTokenRep
 
     private static async Task<DeltaItemCollectionResponse?> ExecuteDeltaQueryAsync(GraphServiceClient client, string deltaUrl, CancellationToken cancellationToken)
     {
-        // Use the RequestAdapter to execute the delta query directly
         var requestInfo = new RequestInformation
         {
             HttpMethod = Method.GET,
             UrlTemplate = deltaUrl
         };
 
-        // If the URL doesn't start with http, it's a relative path - prepend the base URL
         if (!deltaUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
         {
             string baseUrl = client.RequestAdapter.BaseUrl ?? "https://graph.microsoft.com/v1.0";
