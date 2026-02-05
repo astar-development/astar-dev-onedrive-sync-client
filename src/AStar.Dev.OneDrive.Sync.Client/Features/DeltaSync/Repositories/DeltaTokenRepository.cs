@@ -12,14 +12,14 @@ public class DeltaTokenRepository(OneDriveSyncDbContext context) : IDeltaTokenRe
     private readonly OneDriveSyncDbContext _context = context;
 
     /// <inheritdoc />
-    public async Task<DeltaToken?> GetByAccountAndDriveAsync(string hashedAccountId, string driveName) =>
-        await _context.DeltaTokens
+    public async Task<DeltaToken?> GetByAccountAndDriveAsync(string hashedAccountId, string driveName)
+        => await _context.DeltaTokens
             .AsNoTracking()
             .FirstOrDefaultAsync(dt => dt.HashedAccountId == hashedAccountId && dt.DriveName == driveName);
 
     /// <inheritdoc />
-    public async Task<IEnumerable<DeltaToken>> GetAllByAccountAsync(string hashedAccountId) =>
-        await _context.DeltaTokens
+    public async Task<IEnumerable<DeltaToken>> GetAllByAccountAsync(string hashedAccountId)
+        => await _context.DeltaTokens
             .AsNoTracking()
             .Where(dt => dt.HashedAccountId == hashedAccountId)
             .ToListAsync();

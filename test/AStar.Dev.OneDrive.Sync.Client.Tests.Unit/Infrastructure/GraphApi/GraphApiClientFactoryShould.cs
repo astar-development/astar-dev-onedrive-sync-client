@@ -12,7 +12,7 @@ public class GraphApiClientFactoryShould
     [Fact]
     public void CreateClientWithValidAccessToken()
     {
-        string accessToken = "valid-access-token";
+        var accessToken = "valid-access-token";
 
         GraphServiceClient client = _factory.CreateClient(accessToken);
 
@@ -28,7 +28,7 @@ public class GraphApiClientFactoryShould
     [Fact]
     public void CreateNewClientInstanceEachTime()
     {
-        string accessToken = "valid-access-token";
+        var accessToken = "valid-access-token";
 
         GraphServiceClient client1 = _factory.CreateClient(accessToken);
         GraphServiceClient client2 = _factory.CreateClient(accessToken);
