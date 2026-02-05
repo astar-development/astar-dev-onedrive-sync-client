@@ -29,11 +29,9 @@ public partial class MainWindow : Window
         {
             var accountListViewModel = serviceProvider.GetRequiredService<AccountListViewModel>();
             accountListView.DataContext = accountListViewModel;
-            
-            // Load accounts on startup
+
             accountListViewModel.LoadAccountsCommand.Execute(null);
             
-            // Wire up account selection to EditAccountViewModel
             accountListViewModel.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(AccountListViewModel.SelectedAccount) && 
@@ -52,7 +50,6 @@ public partial class MainWindow : Window
             var addAccountViewModel = serviceProvider.GetRequiredService<AddAccountViewModel>();
             addAccountView.DataContext = addAccountViewModel;
             
-            // Reload accounts when a new account is created
             addAccountViewModel.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(AddAccountViewModel.CreatedAccount) &&

@@ -10,7 +10,7 @@ public partial class InitialMigration_AccountsDeltaTokensFileSystemItems : Migra
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
-        // Create the onedrive schema explicitly using raw SQL
+        
         migrationBuilder.Sql("CREATE SCHEMA IF NOT EXISTS onedrive;");
 
         _ = migrationBuilder.CreateTable(

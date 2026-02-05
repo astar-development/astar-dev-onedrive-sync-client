@@ -55,7 +55,7 @@ public static class AppModule
             return factory.CreateStorage();
         });
         
-        // Build OS-specific database path in user's AppData folder
+       
         string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         string dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
         Directory.CreateDirectory(dbDirectory); // Ensure directory exists
