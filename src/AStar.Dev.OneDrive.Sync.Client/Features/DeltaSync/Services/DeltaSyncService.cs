@@ -31,26 +31,15 @@ public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTok
         var changes = new List<DeltaChangeModel>();
         string? newDeltaToken = null;
 
-        // Determine the delta query URL based on whether we have a saved token
-        string? deltaUrl = null;
-        
-        if (!string.IsNullOrWhiteSpace(savedToken?.Token))
-        {
-            // Use the saved delta token URL
-            deltaUrl = savedToken.Token;
-        }
-        else
-        {
-            // Initial sync - construct the delta endpoint
-            deltaUrl = driveName.Equals("root", StringComparison.OrdinalIgnoreCase)
+        string? deltaUrl = !string.IsNullOrWhiteSpace(savedToken?.Token)
+            ? savedToken.Token
+            : driveName.Equals("root", StringComparison.OrdinalIgnoreCase)
                 ? "/me/drive/root/delta"
                 : $"/me/drive/items/{driveName}/delta";
-        }
 
-        // Execute delta query with pagination
+
         DeltaItemCollectionResponse? deltaResponse = await ExecuteDeltaQueryAsync(client, deltaUrl, cancellationToken);
         
-        // Process first page of results
         if (deltaResponse?.Value is not null)
         {
             foreach (DriveItem? item in deltaResponse.Value)
@@ -62,7 +51,6 @@ public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTok
             }
         }
 
-        // Handle pagination using @odata.nextLink
         string? nextLink = deltaResponse?.OdataNextLink;
         while (!string.IsNullOrWhiteSpace(nextLink))
         {
@@ -82,10 +70,9 @@ public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTok
             nextLink = deltaResponse?.OdataNextLink;
         }
 
-        // Extract delta token from @odata.deltaLink (only present on the final page)
         newDeltaToken = deltaResponse?.OdataDeltaLink;
 
-        // Save the new delta token if we got one
+
         if (!string.IsNullOrWhiteSpace(newDeltaToken))
         {
             var tokenToSave = new DeltaToken
