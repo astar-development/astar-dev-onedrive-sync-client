@@ -145,7 +145,7 @@ public class DeltaTokenRepositoryShould : IDisposable
     {
         await _repository.DeleteAsync("non-existent-id");
 
-        int count = await _context.DeltaTokens.CountAsync();
+        var count = await _context.DeltaTokens.CountAsync();
         count.ShouldBe(0);
     }
 

@@ -16,12 +16,12 @@ public class DeltaSyncServiceShould
     }
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenGraphFactoryIsNull() =>
-        Should.Throw<ArgumentNullException>(() => new DeltaSyncService(null!, null!));
+    public void ThrowArgumentNullExceptionWhenGraphFactoryIsNull()
+        => Should.Throw<ArgumentNullException>(() => new DeltaSyncService(null!, null!));
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenRepositoryIsNull() =>
-        Should.Throw<ArgumentNullException>(() => new DeltaSyncService(_mockFactory, null!));
+    public void ThrowArgumentNullExceptionWhenRepositoryIsNull()
+        => Should.Throw<ArgumentNullException>(() => new DeltaSyncService(_mockFactory, null!));
 
     [Fact]
     public void ThrowArgumentExceptionWhenAccessTokenIsNull()

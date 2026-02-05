@@ -76,14 +76,14 @@ public static class AppModule
         _ = services.AddScoped<IGraphApiClient, GraphApiClient>();
         
         // Build OS-specific database path in user's AppData folder
-        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        string dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
+        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        var dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
         _ = Directory.CreateDirectory(dbDirectory); // Ensure directory exists
         
-        string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
-        string dbFileName = environment == "Development" ? "onedrive-sync-dev.db" : "onedrive-sync.db";
-        string dbPath = Path.Combine(dbDirectory, dbFileName);
-        string connectionString = $"Data Source={dbPath}";
+        var environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
+        var dbFileName = environment == "Development" ? "onedrive-sync-dev.db" : "onedrive-sync.db";
+        var dbPath = Path.Combine(dbDirectory, dbFileName);
+        var connectionString = $"Data Source={dbPath}";
         
         _ = services.AddDbContext<OneDriveSyncDbContext>(options => options.UseSqlite(connectionString));
 

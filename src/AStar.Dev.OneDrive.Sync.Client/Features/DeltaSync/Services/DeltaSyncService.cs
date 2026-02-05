@@ -31,12 +31,11 @@ public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTok
         var changes = new List<DeltaChangeModel>();
         string? newDeltaToken = null;
 
-        string? deltaUrl = !string.IsNullOrWhiteSpace(savedToken?.Token)
+        var deltaUrl = !string.IsNullOrWhiteSpace(savedToken?.Token)
             ? savedToken.Token
             : driveName.Equals("root", StringComparison.OrdinalIgnoreCase)
                 ? "/me/drive/root/delta"
                 : $"/me/drive/items/{driveName}/delta";
-
 
         DeltaItemCollectionResponse? deltaResponse = await ExecuteDeltaQueryAsync(client, deltaUrl, cancellationToken);
         
@@ -51,7 +50,7 @@ public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTok
             }
         }
 
-        string? nextLink = deltaResponse?.OdataNextLink;
+        var nextLink = deltaResponse?.OdataNextLink;
         while (!string.IsNullOrWhiteSpace(nextLink))
         {
             deltaResponse = await ExecuteDeltaQueryAsync(client, nextLink, cancellationToken);
@@ -71,7 +70,6 @@ public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTok
         }
 
         newDeltaToken = deltaResponse?.OdataDeltaLink;
-
 
         if (!string.IsNullOrWhiteSpace(newDeltaToken))
         {
@@ -104,7 +102,7 @@ public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTok
 
         if (!deltaUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
         {
-            string baseUrl = client.RequestAdapter.BaseUrl ?? "https://graph.microsoft.com/v1.0";
+            var baseUrl = client.RequestAdapter.BaseUrl ?? "https://graph.microsoft.com/v1.0";
             requestInfo.URI = new Uri(baseUrl.TrimEnd('/') + "/" + deltaUrl.TrimStart('/'));
         }
         else
