@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.Features.Authentication.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="600"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Views.EditAccountView"
+             x:DataType="vm:EditAccountViewModel">
+    
+    <Design.DataContext>
+        <vm:EditAccountViewModel />
+    </Design.DataContext>
+    
+    <StackPanel Spacing="16" Margin="20">
+        
+        <!-- Home Sync Directory -->
+        <StackPanel Spacing="8">
+            <TextBlock Text="Home Sync Directory" FontWeight="SemiBold" />
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0" 
+                         Text="{Binding HomeSyncDirectory}"
+                         Watermark="Select a directory..."
+                         IsReadOnly="True" />
+                <Button Grid.Column="1" 
+                        Content="Browse..." 
+                        Margin="8,0,0,0"
+                        Click="OnBrowseDirectoryClick" />
+            </Grid>
+        </StackPanel>
+        
+        <!-- Max Concurrent Operations -->
+        <StackPanel Spacing="8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" 
+                           Text="Max Concurrent Operations" 
+                           FontWeight="SemiBold" />
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding MaxConcurrent}" 
+                           FontWeight="Bold" />
+            </Grid>
+            <Slider Minimum="1" 
+                    Maximum="20" 
+                    Value="{Binding MaxConcurrent}"
+                    TickFrequency="1"
+                    IsSnapToTickEnabled="True" />
+            <TextBlock Text="{Binding MaxConcurrentError}"
+                       Foreground="Red"
+                       IsVisible="{Binding MaxConcurrentError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+        
+        <!-- Debug Logging -->
+        <StackPanel Spacing="8">
+            <CheckBox Content="Enable Debug Logging"
+                      IsChecked="{Binding DebugLoggingEnabled}" />
+        </StackPanel>
+        
+        <!-- Max Bandwidth (KBps) -->
+        <StackPanel Spacing="8">
+            <TextBlock Text="Max Bandwidth (KB/s)" FontWeight="SemiBold" />
+            <TextBox Text="{Binding MaxBandwidthKBps}"
+                     Watermark="Unlimited (leave empty)" />
+            <TextBlock Text="Leave empty for unlimited bandwidth" 
+                       FontSize="11" 
+                       Foreground="Gray" />
+            <TextBlock Text="{Binding MaxBandwidthError}"
+                       Foreground="Red"
+                       IsVisible="{Binding MaxBandwidthError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+        
+        <!-- Error Message -->
+        <TextBlock Text="{Binding ErrorMessage}"
+                   Foreground="Red"
+                   TextWrapping="Wrap"
+                   IsVisible="{Binding ErrorMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        
+        <!-- Success Message -->
+        <TextBlock Text="Settings saved successfully!"
+                   Foreground="Green"
+                   FontWeight="SemiBold"
+                   IsVisible="{Binding SaveSuccessful}" />
+        
+        <!-- Save Button -->
+        <Button Content="Save Settings"
+                Command="{Binding SaveCommand}"
+                IsEnabled="{Binding !IsSaving}"
+                HorizontalAlignment="Right"
+                MinWidth="120" />
+        
+        <!-- Loading Indicator -->
+        <TextBlock Text="Saving..."
+                   FontStyle="Italic"
+                   IsVisible="{Binding IsSaving}" />
+        
+    </StackPanel>
+    
+</UserControl>
