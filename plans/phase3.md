@@ -83,16 +83,52 @@
 - [x] Implement query for selected folders by AccountId
 - [x] Add unit tests mocking DbContext
 
-**Task 3.5**: Create DeltaToken domain models
+**Task 3.5**: ✅ Create DeltaToken domain models (Done)
 
-- [ ] Create `DeltaToken` entity class
-- [ ] Add validation rules
+**Implementation Notes**:
 
-**Task 3.6**: Implement DeltaTokenRepository
+- DeltaToken entity already existed with required properties
+- Added validation rules to DeltaToken:
+  - Id cannot be null, empty, or whitespace
+  - HashedAccountId cannot be null, empty, or whitespace
+  - DriveName cannot be null, empty, or whitespace
+- Token and LastSyncAt remain nullable (optional fields)
+- Created 18 comprehensive unit tests in DeltaTokenShould.cs
+- All validation tests passing
+- Build verified successful
 
-- [ ] Create `DeltaTokenRepository` class with EF Core
-- [ ] Implement save/retrieve operations per account and drive
-- [ ] Add unit tests mocking DbContext
+- [x] Create `DeltaToken` entity class
+- [x] Add validation rules
+
+**Task 3.6**: ✅ Implement DeltaTokenRepository (Done)
+
+**Implementation Notes**:
+
+- Created IDeltaTokenRepository interface with 4 methods:
+  - GetByAccountAndDriveAsync: Retrieve token for specific account and drive
+  - GetAllByAccountAsync: Get all tokens for an account
+  - SaveAsync: Create or update delta token (upsert logic)
+  - DeleteAsync: Remove delta token by Id
+- Created DeltaTokenRepository implementation using EF Core:
+  - Uses OneDriveSyncDbContext for database operations
+  - Implements AsNoTracking for read queries
+  - SaveAsync handles both insert and update scenarios
+  - Uses SaveChangesAsync for persistence
+- Created 9 comprehensive integration tests using in-memory database:
+  - SaveNewDeltaTokenAndPersistToDatabase
+  - GetByAccountAndDriveReturnsTokenWhenExists
+  - GetByAccountAndDriveReturnsNullWhenNotExists
+  - GetAllByAccountReturnsAllTokensForAccount
+  - SaveUpdatesExistingDeltaToken
+  - DeleteRemovesDeltaTokenFromDatabase
+  - DeleteDoesNothingWhenTokenNotFound
+  - SaveHandlesMultipleDrivesPerAccount
+- All 719 tests passing (27 new tests added: 18 DeltaToken + 9 repository)
+- Build verified successful
+
+- [x] Create `DeltaTokenRepository` class with EF Core
+- [x] Implement save/retrieve operations per account and drive
+- [x] Add unit tests mocking DbContext
 
 **Task 3.7**: Implement DeltaSyncService (remote change detection)
 
