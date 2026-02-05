@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.GraphApi;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Resilience;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 using Microsoft.EntityFrameworkCore;
@@ -70,8 +71,9 @@ public static class AppModule
                 .Build();
         });
         
-        // Register Graph API client (mock for now, Phase 3 will replace with Kiota client)
-        _ = services.AddScoped<Infrastructure.GraphApi.IGraphApiClient, Infrastructure.GraphApi.MockGraphApiClient>();
+        // Register Graph API client factory and real implementation
+        _ = services.AddSingleton<GraphApiClientFactory>();
+        _ = services.AddScoped<IGraphApiClient, GraphApiClient>();
         
         // Build OS-specific database path in user's AppData folder
         string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
