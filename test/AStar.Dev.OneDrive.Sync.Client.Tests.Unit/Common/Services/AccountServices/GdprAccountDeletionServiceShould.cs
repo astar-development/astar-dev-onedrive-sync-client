@@ -4,10 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Common.Services.AccountServices;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
 using NSubstitute.ExceptionExtensions;
-using Shouldly;
-using Xunit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Common.Services.AccountServices;
 

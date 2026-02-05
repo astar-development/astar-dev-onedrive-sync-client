@@ -2,7 +2,6 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.GraphApi;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 using Microsoft.EntityFrameworkCore;

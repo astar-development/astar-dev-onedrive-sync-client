@@ -1,13 +1,6 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.ViewModels;
-using NSubstitute;
-using Shouldly;
-using Xunit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.ViewModels;
 
@@ -34,17 +27,14 @@ public class AccountListViewModelShould
     }
 
     [Fact]
-    public void InitializeWithNoSelectedAccount()
-    {
-        _viewModel.SelectedAccount.ShouldBeNull();
-    }
+    public void InitializeWithNoSelectedAccount() => _viewModel.SelectedAccount.ShouldBeNull();
 
     [Fact]
     public async Task LoadAccountsPopulatesAccountsCollection()
     {
         var account1 = new Account { Id = Guid.NewGuid(), HashedEmail = "test1@example.com", HashedAccountId = "id1" };
         var account2 = new Account { Id = Guid.NewGuid(), HashedEmail = "test2@example.com", HashedAccountId = "id2" };
-        _accountRepository.GetAllAsync().Returns(new[] { account1, account2 });
+        _accountRepository.GetAllAsync().Returns([account1, account2]);
 
         _viewModel.LoadAccountsCommand.Execute(null);
         await Task.Delay(100);
@@ -61,7 +51,7 @@ public class AccountListViewModelShould
         _viewModel.Accounts.Add(existingAccount);
 
         var newAccount = new Account { Id = Guid.NewGuid(), HashedEmail = "new@example.com", HashedAccountId = "new" };
-        _accountRepository.GetAllAsync().Returns(new[] { newAccount });
+        _accountRepository.GetAllAsync().Returns([newAccount]);
 
         _viewModel.LoadAccountsCommand.Execute(null);
         await Task.Delay(100);
@@ -85,10 +75,7 @@ public class AccountListViewModelShould
     [Fact]
     public void SetIsLoadingTrueDuringLoad()
     {
-        _accountRepository.GetAllAsync().Returns(callInfo =>
-        {
-            return Task.FromResult(Enumerable.Empty<Account>());
-        });
+        _accountRepository.GetAllAsync().Returns(callInfo => Task.FromResult(Enumerable.Empty<Account>()));
 
         _viewModel.IsLoading.ShouldBeFalse();
     }

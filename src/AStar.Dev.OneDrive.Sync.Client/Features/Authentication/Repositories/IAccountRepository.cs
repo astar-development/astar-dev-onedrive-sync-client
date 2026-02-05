@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Repositories;

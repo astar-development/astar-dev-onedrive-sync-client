@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
-using AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Models;
 
