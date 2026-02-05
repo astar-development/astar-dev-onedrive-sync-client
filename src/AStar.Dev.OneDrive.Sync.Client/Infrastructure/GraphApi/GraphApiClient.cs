@@ -1,6 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 using Microsoft.Graph;
-using Microsoft.Graph.Me;
 using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.GraphApi;

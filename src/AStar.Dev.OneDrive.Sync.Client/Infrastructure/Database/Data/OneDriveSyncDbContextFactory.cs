@@ -21,7 +21,7 @@ public class OneDriveSyncDbContextFactory : IDesignTimeDbContextFactory<OneDrive
        
         string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         string dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
-        Directory.CreateDirectory(dbDirectory);
+        _ = Directory.CreateDirectory(dbDirectory);
         string dbPath = Path.Combine(dbDirectory, "onedrive-sync.db");
         
         _ = optionsBuilder.UseSqlite($"Data Source={dbPath}");

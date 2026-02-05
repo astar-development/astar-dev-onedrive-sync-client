@@ -1,5 +1,3 @@
-using System;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
@@ -54,7 +52,7 @@ public class EditAccountViewModel : ReactiveObject
         get;
         set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             ValidateMaxConcurrent();
         }
     } = 5;
@@ -76,7 +74,7 @@ public class EditAccountViewModel : ReactiveObject
         get;
         set
         {
-            this.RaiseAndSetIfChanged(ref field, value);
+            _ = this.RaiseAndSetIfChanged(ref field, value);
             ValidateMaxBandwidth();
         }
     }
@@ -186,28 +184,28 @@ public class EditAccountViewModel : ReactiveObject
 
         try
         {
-            var homeSyncResult = await _accountManagementService.UpdateHomeSyncDirectoryAsync(HashedAccountId, HomeSyncDirectory);
+            Result<Account, AccountManagementError> homeSyncResult = await _accountManagementService.UpdateHomeSyncDirectoryAsync(HashedAccountId, HomeSyncDirectory);
             if (homeSyncResult is Result<Account, AccountManagementError>.Error)
             {
                 ErrorMessage = "Failed to update sync directory.";
                 return;
             }
 
-            var maxConcurrentResult = await _accountManagementService.UpdateMaxConcurrentAsync(HashedAccountId, MaxConcurrent);
+            Result<Account, AccountManagementError> maxConcurrentResult = await _accountManagementService.UpdateMaxConcurrentAsync(HashedAccountId, MaxConcurrent);
             if (maxConcurrentResult is Result<Account, AccountManagementError>.Error)
             {
                 ErrorMessage = "Failed to update concurrent operations setting.";
                 return;
             }
 
-            var debugLoggingResult = await _accountManagementService.UpdateDebugLoggingAsync(HashedAccountId, DebugLoggingEnabled);
+            Result<Account, AccountManagementError> debugLoggingResult = await _accountManagementService.UpdateDebugLoggingAsync(HashedAccountId, DebugLoggingEnabled);
             if (debugLoggingResult is Result<Account, AccountManagementError>.Error)
             {
                 ErrorMessage = "Failed to update debug logging setting.";
                 return;
             }
 
-            var bandwidthResult = await _accountManagementService.UpdateMaxBandwidthKBpsAsync(HashedAccountId, MaxBandwidthKBps);
+            Result<Account, AccountManagementError> bandwidthResult = await _accountManagementService.UpdateMaxBandwidthKBpsAsync(HashedAccountId, MaxBandwidthKBps);
             if (bandwidthResult is Result<Account, AccountManagementError>.Error)
             {
                 ErrorMessage = "Failed to update bandwidth limit.";

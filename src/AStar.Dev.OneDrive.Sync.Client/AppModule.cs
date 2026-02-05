@@ -63,7 +63,7 @@ public static class AppModule
         // Register MSAL PublicClientApplication
         _ = services.AddSingleton<IPublicClientApplication>(sp =>
         {
-            var authOptions = sp.GetRequiredService<AuthenticationOptions>();
+            AuthenticationOptions authOptions = sp.GetRequiredService<AuthenticationOptions>();
             return PublicClientApplicationBuilder
                 .Create(authOptions.Microsoft.ClientId)
                 .WithAuthority(AzureCloudInstance.AzurePublic, authOptions.Microsoft.TenantId)
@@ -78,7 +78,7 @@ public static class AppModule
         // Build OS-specific database path in user's AppData folder
         string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         string dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
-        Directory.CreateDirectory(dbDirectory); // Ensure directory exists
+        _ = Directory.CreateDirectory(dbDirectory); // Ensure directory exists
         
         string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
         string dbFileName = environment == "Development" ? "onedrive-sync-dev.db" : "onedrive-sync.db";

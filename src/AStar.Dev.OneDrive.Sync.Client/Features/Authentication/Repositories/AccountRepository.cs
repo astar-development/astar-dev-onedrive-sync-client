@@ -18,9 +18,9 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     public async Task CreateAsync(Account account)
     {
         ArgumentNullException.ThrowIfNull(account);
-        
-        _context.Accounts.Add(account);
-        await _context.SaveChangesAsync();
+
+        _ = _context.Accounts.Add(account);
+        _ = await _context.SaveChangesAsync();
     }
 
     /// <summary>
@@ -62,8 +62,8 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
         ArgumentNullException.ThrowIfNull(account);
         
         account.UpdatedAt = DateTime.UtcNow;
-        _context.Accounts.Update(account);
-        await _context.SaveChangesAsync();
+        _ = _context.Accounts.Update(account);
+        _ = await _context.SaveChangesAsync();
     }
 
     /// <summary>
@@ -74,8 +74,8 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
         Account? account = await _context.Accounts.FindAsync(id);
         if (account != null)
         {
-            _context.Accounts.Remove(account);
-            await _context.SaveChangesAsync();
+            _ = _context.Accounts.Remove(account);
+            _ = await _context.SaveChangesAsync();
         }
     }
 

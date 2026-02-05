@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -11,7 +10,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
@@ -28,10 +27,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Accounts", x => x.Id);
+                    _ = table.PrimaryKey("PK_Accounts", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "DiagnosticSettings",
                 columns: table => new
                 {
@@ -43,10 +42,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DiagnosticSettings", x => x.Id);
+                    _ = table.PrimaryKey("PK_DiagnosticSettings", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "SyncHistory",
                 columns: table => new
                 {
@@ -63,10 +62,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_SyncHistory", x => x.Id);
+                    _ = table.PrimaryKey("PK_SyncHistory", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "ApplicationLogs",
                 columns: table => new
                 {
@@ -83,8 +82,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ApplicationLogs", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_ApplicationLogs", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_ApplicationLogs_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
@@ -92,7 +91,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "ConflictLogs",
                 columns: table => new
                 {
@@ -109,8 +108,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ConflictLogs", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_ConflictLogs", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_ConflictLogs_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
@@ -118,7 +117,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "DeltaTokens",
                 columns: table => new
                 {
@@ -131,8 +130,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_DeltaTokens", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_DeltaTokens", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_DeltaTokens_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
@@ -140,7 +139,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
+            _ = migrationBuilder.CreateTable(
                 name: "FileSystemItems",
                 columns: table => new
                 {
@@ -163,8 +162,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_FileSystemItems", x => x.Id);
-                    table.ForeignKey(
+                    _ = table.PrimaryKey("PK_FileSystemItems", x => x.Id);
+                    _ = table.ForeignKey(
                         name: "FK_FileSystemItems_Accounts_AccountId",
                         column: x => x.AccountId,
                         principalTable: "Accounts",
@@ -172,50 +171,50 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_Accounts_HashedEmail",
                 table: "Accounts",
                 column: "HashedEmail",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "idx_applicationlogs_hashedaccountid_timestamp",
                 table: "ApplicationLogs",
                 columns: new[] { "HashedAccountId", "Timestamp" },
                 descending: new[] { false, true });
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "idx_applicationlogs_loglevel",
                 table: "ApplicationLogs",
                 column: "LogLevel");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_ApplicationLogs_AccountId",
                 table: "ApplicationLogs",
                 column: "AccountId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_ConflictLogs_AccountId",
                 table: "ConflictLogs",
                 column: "AccountId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_DeltaTokens_AccountId",
                 table: "DeltaTokens",
                 column: "AccountId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_DiagnosticSettings_HashedAccountId",
                 table: "DiagnosticSettings",
                 column: "HashedAccountId",
                 unique: true);
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_FileSystemItems_AccountId",
                 table: "FileSystemItems",
                 column: "AccountId");
 
-            migrationBuilder.CreateIndex(
+            _ = migrationBuilder.CreateIndex(
                 name: "IX_FileSystemItems_HashedAccountId",
                 table: "FileSystemItems",
                 column: "HashedAccountId");
@@ -224,25 +223,25 @@ namespace AStar.Dev.OneDrive.Sync.Client.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "ApplicationLogs");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "ConflictLogs");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "DeltaTokens");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "DiagnosticSettings");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "FileSystemItems");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "SyncHistory");
 
-            migrationBuilder.DropTable(
+            _ = migrationBuilder.DropTable(
                 name: "Accounts");
         }
     }
