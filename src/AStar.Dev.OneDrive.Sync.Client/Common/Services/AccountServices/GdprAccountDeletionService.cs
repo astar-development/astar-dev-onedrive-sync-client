@@ -51,7 +51,7 @@ public class GdprAccountDeletionService(IAccountRepository accountRepository, IS
 
         Guid accountId = account.Id;
 
-        _logger.LogInformation("Account found with internal ID: {AccountId}, proceeding with deletion", accountId);
+        _logger.LogInformation("Account found, proceeding with deletion for: {HashedAccountId}", hashedAccountId);
 
         bool accountDeleted;
 
@@ -59,11 +59,11 @@ public class GdprAccountDeletionService(IAccountRepository accountRepository, IS
         {
             await _accountRepository.DeleteAsync(accountId).ConfigureAwait(false);
             accountDeleted = true;
-            _logger.LogInformation("Account deleted successfully: {AccountId}", accountId);
+            _logger.LogInformation("Account deleted successfully for: {HashedAccountId}", hashedAccountId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting account: {AccountId}", accountId);
+            _logger.LogError(ex, "Error deleting account: {HashedAccountId}", hashedAccountId);
 
             return new Result<bool, GdprAccountDeletionError>.Error(GdprAccountDeletionError.RepositoryError);
         }
@@ -80,7 +80,7 @@ public class GdprAccountDeletionService(IAccountRepository accountRepository, IS
             if (accountDeleted)
             {
                 _logger.LogWarning("Partial deletion: Account deleted but token cleanup failed for: {HashedAccountId}", hashedAccountId);
-                
+
                 return new Result<bool, GdprAccountDeletionError>.Error(GdprAccountDeletionError.PartialDeletion);
             }
 

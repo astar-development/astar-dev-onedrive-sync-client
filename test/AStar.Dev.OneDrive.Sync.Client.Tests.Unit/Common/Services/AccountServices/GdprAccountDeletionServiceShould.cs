@@ -194,8 +194,18 @@ public class GdprAccountDeletionServiceShould
 
         await _service.DeleteAccountWithGdprComplianceAsync(hashedAccountId);
 
-        _logger.Received().LogInformation(Arg.Is<string>(s => s.Contains("Beginning GDPR-compliant deletion")), hashedAccountId);
-        _logger.Received().LogInformation(Arg.Is<string>(s => s.Contains("GDPR-compliant deletion completed successfully")), hashedAccountId);
+        _logger.Received().Log(
+            LogLevel.Information,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Beginning GDPR-compliant deletion")),
+            null,
+            Arg.Any<Func<object, Exception?, string>>());
+        _logger.Received().Log(
+            LogLevel.Information,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("GDPR-compliant deletion completed successfully")),
+            null,
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -207,7 +217,12 @@ public class GdprAccountDeletionServiceShould
 
         await _service.DeleteAccountWithGdprComplianceAsync(hashedAccountId);
 
-        _logger.Received().LogWarning(Arg.Is<string>(s => s.Contains("Account not found")), hashedAccountId);
+        _logger.Received().Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Account not found")),
+            null,
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -227,7 +242,12 @@ public class GdprAccountDeletionServiceShould
 
         await _service.DeleteAccountWithGdprComplianceAsync(hashedAccountId);
 
-        _logger.Received().LogError(Arg.Any<Exception>(), Arg.Is<string>(s => s.Contains("Error deleting account")), accountId);
+        _logger.Received().Log(
+            LogLevel.Error,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Error deleting account")),
+            Arg.Any<Exception>(),
+            Arg.Any<Func<object, Exception?, string>>());
     }
 
     [Fact]
@@ -248,6 +268,11 @@ public class GdprAccountDeletionServiceShould
 
         await _service.DeleteAccountWithGdprComplianceAsync(hashedAccountId);
 
-        _logger.Received().LogWarning(Arg.Is<string>(s => s.Contains("Partial deletion")), hashedAccountId);
+        _logger.Received().Log(
+            LogLevel.Warning,
+            Arg.Any<EventId>(),
+            Arg.Is<object>(o => o.ToString()!.Contains("Partial deletion")),
+            null,
+            Arg.Any<Func<object, Exception?, string>>());
     }
 }
