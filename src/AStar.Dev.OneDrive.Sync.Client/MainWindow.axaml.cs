@@ -1,9 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
-using AStar.Dev.OneDrive.Sync.Client.Common.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -19,15 +17,14 @@ public partial class MainWindow : Window
     public MainWindow(IServiceProvider serviceProvider)
     {
         InitializeComponent();
-        
-        // Wire up ViewModels
-        var accountListView = this.FindControl<UserControl>("AccountListView");
-        var addAccountView = this.FindControl<UserControl>("AddAccountView");
-        var editAccountView = this.FindControl<UserControl>("EditAccountView");
+
+        UserControl? accountListView = this.FindControl<UserControl>("AccountListView");
+        UserControl? addAccountView = this.FindControl<UserControl>("AddAccountView");
+        UserControl? editAccountView = this.FindControl<UserControl>("EditAccountView");
         
         if (accountListView != null)
         {
-            var accountListViewModel = serviceProvider.GetRequiredService<AccountListViewModel>();
+            AccountListViewModel accountListViewModel = serviceProvider.GetRequiredService<AccountListViewModel>();
             accountListView.DataContext = accountListViewModel;
 
             accountListViewModel.LoadAccountsCommand.Execute(null);
@@ -38,7 +35,7 @@ public partial class MainWindow : Window
                     editAccountView != null &&
                     accountListViewModel.SelectedAccount != null)
                 {
-                    var editAccountViewModel = serviceProvider.GetRequiredService<EditAccountViewModel>();
+                    EditAccountViewModel editAccountViewModel = serviceProvider.GetRequiredService<EditAccountViewModel>();
                     editAccountViewModel.LoadAccount(accountListViewModel.SelectedAccount);
                     editAccountView.DataContext = editAccountViewModel;
                 }
@@ -47,7 +44,7 @@ public partial class MainWindow : Window
         
         if (addAccountView != null)
         {
-            var addAccountViewModel = serviceProvider.GetRequiredService<AddAccountViewModel>();
+            AddAccountViewModel addAccountViewModel = serviceProvider.GetRequiredService<AddAccountViewModel>();
             addAccountView.DataContext = addAccountViewModel;
             
             addAccountViewModel.PropertyChanged += (_, e) =>

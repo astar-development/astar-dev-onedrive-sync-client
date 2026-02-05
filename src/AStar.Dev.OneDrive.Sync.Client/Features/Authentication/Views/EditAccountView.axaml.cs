@@ -29,7 +29,7 @@ public partial class EditAccountView : UserControl
         if (topLevel is null)
             return;
 
-        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        IReadOnlyList<IStorageFolder> folders = await topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
             Title = "Select Home Sync Directory",
             AllowMultiple = false

@@ -59,9 +59,9 @@ public class AccountListViewModel : ReactiveObject
         try
         {
             Accounts.Clear();
-            var accounts = await _accountRepository.GetAllAsync();
+            IEnumerable<Account> accounts = await _accountRepository.GetAllAsync();
             
-            foreach (var account in accounts)
+            foreach (Account account in accounts)
             {
                 Accounts.Add(account);
             }

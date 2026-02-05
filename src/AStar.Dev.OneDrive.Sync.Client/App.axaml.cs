@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.ViewModels;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Repositories;
-using System;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -23,7 +22,6 @@ public class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // Build configuration
             IConfiguration configuration = new ConfigurationBuilder()
                 .SetBasePath(AppContext.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -32,35 +30,27 @@ public class App : Application
                 .AddEnvironmentVariables()
                 .Build();
 
-            // Setup DI container
             var services = new ServiceCollection();
-            
-            // Register configuration
-            services.AddSingleton(configuration);
-            
-            // Register AppModule services
-            services.AddAppModule(configuration);
-            
-            // Register repositories
-            services.AddScoped<IAccountRepository, AccountRepository>();
-            
-            // Register services
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
-            services.AddScoped<IAccountCreationService, AccountCreationService>();
-            services.AddScoped<IAccountManagementService, AccountManagementService>();
-            services.AddScoped<IHashingService, HashingService>();
-            
-            // Register ViewModels
-            services.AddTransient<AddAccountViewModel>();
-            services.AddTransient<AccountListViewModel>();
-            services.AddTransient<EditAccountViewModel>();
-            
-            // Register MainWindow
-            services.AddTransient<MainWindow>();
+
+            _ = services.AddSingleton(configuration);
+
+            _ = services.AddAppModule(configuration);
+
+            _ = services.AddScoped<IAccountRepository, AccountRepository>();
+
+            _ = services.AddScoped<IAuthenticationService, AuthenticationService>();
+            _ = services.AddScoped<IAccountCreationService, AccountCreationService>();
+            _ = services.AddScoped<IAccountManagementService, AccountManagementService>();
+            _ = services.AddScoped<IHashingService, HashingService>();
+
+            _ = services.AddTransient<AddAccountViewModel>();
+            _ = services.AddTransient<AccountListViewModel>();
+            _ = services.AddTransient<EditAccountViewModel>();
+
+            _ = services.AddTransient<MainWindow>();
             
             _serviceProvider = services.BuildServiceProvider();
             
-            // Create and show main window
             desktop.MainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         }
 

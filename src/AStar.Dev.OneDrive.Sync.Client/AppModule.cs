@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Configuration;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.GraphApi;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Resilience;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +63,7 @@ public static class AppModule
         // Register MSAL PublicClientApplication
         _ = services.AddSingleton<IPublicClientApplication>(sp =>
         {
-            var authOptions = sp.GetRequiredService<AuthenticationOptions>();
+            AuthenticationOptions authOptions = sp.GetRequiredService<AuthenticationOptions>();
             return PublicClientApplicationBuilder
                 .Create(authOptions.Microsoft.ClientId)
                 .WithAuthority(AzureCloudInstance.AzurePublic, authOptions.Microsoft.TenantId)
@@ -70,13 +71,14 @@ public static class AppModule
                 .Build();
         });
         
-        // Register Graph API client (mock for now, Phase 3 will replace with Kiota client)
-        _ = services.AddScoped<Infrastructure.GraphApi.IGraphApiClient, Infrastructure.GraphApi.MockGraphApiClient>();
+        // Register Graph API client factory and real implementation
+        _ = services.AddSingleton<GraphApiClientFactory>();
+        _ = services.AddScoped<IGraphApiClient, GraphApiClient>();
         
         // Build OS-specific database path in user's AppData folder
         string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         string dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
-        Directory.CreateDirectory(dbDirectory); // Ensure directory exists
+        _ = Directory.CreateDirectory(dbDirectory); // Ensure directory exists
         
         string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
         string dbFileName = environment == "Development" ? "onedrive-sync-dev.db" : "onedrive-sync.db";
