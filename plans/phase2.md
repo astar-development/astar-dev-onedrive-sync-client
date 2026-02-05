@@ -68,21 +68,21 @@
 - [x] Integration with `IAccountRepository` and `ILogger`
 - [x] **Separation of concerns**: Handles ONLY account settings updates and simple deletion; GDPR-compliant deletion in Task 2.7
 
-**Task 2.7**: Implement account deletion with GDPR compliance
+**Task 2.7**: Implement account deletion with GDPR compliance ✅
 
-- [ ] Implement cascade delete for all related data
-- [ ] Implement secure storage cleanup
-- [ ] Add unit tests verifying complete data removal
+- [x] Implement cascade delete for all related data
+- [x] Implement secure storage cleanup  
+- [x] Add unit tests verifying complete data removal
 
-**Task 2.8**: Build Add Account ViewModel
+**Task 2.8**: Build Add Account ViewModel ✅
 
-- [ ] Create `AddAccountViewModel` with ReactiveUI
-- [ ] Implement reactive properties for auth state
-- [ ] Add reactive commands for authentication flow
-- [ ] Handle `Result<AuthToken, AuthenticationError>` from `AuthenticationService`
-- [ ] Display appropriate Toast notifications based on error type (TimedOut, NetworkError, etc.)
-- [ ] Invoke `AccountCreationService` after successful authentication
-- [ ] Add unit tests for ViewModel state transitions
+- [x] Create `AddAccountViewModel` with ReactiveUI
+- [x] Implement reactive properties for auth state (StatusMessage, ErrorMessage, IsAuthenticating, IsCreatingAccount, CreatedAccount)
+- [x] Add reactive command for authentication flow (AuthenticateCommand using ReactiveCommand.CreateFromTask)
+- [x] Handle `Result<AuthToken, AuthenticationError>` from `AuthenticationService` using pattern matching
+- [x] Map error types to user-friendly messages (6 authentication errors, 6 account creation errors)
+- [x] Invoke `AccountCreationService` after successful authentication
+- [x] Add unit tests for ViewModel state transitions (5 tests covering constructor validation, initial state, successful flow, and error scenarios)
 
 **Task 2.9**: Build Add Account View (UI)
 
