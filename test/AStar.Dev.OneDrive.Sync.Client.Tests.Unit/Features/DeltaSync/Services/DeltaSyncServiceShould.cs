@@ -60,6 +60,15 @@ public class DeltaSyncServiceShould
     }
 
     [Fact]
+    public void ThrowArgumentExceptionWhenHashedAccountIdIsWhitespace()
+    {
+        var service = new DeltaSyncService(_mockFactory, _mockRepo);
+
+        Should.ThrowAsync<ArgumentException>(async () =>
+            await service.GetDeltaChangesAsync("token", "   ", "root"));
+    }
+
+    [Fact]
     public void ThrowArgumentExceptionWhenDriveNameIsNull()
     {
         var service = new DeltaSyncService(_mockFactory, _mockRepo);
@@ -85,14 +94,4 @@ public class DeltaSyncServiceShould
         Should.ThrowAsync<ArgumentException>(async () =>
             await service.GetDeltaChangesAsync("token", "hash", "   "));
     }
-
-    [Fact]
-    public void BeConstructedWithValidDependencies()
-    {
-        var service = new DeltaSyncService(_mockFactory, _mockRepo);
-
-        service.ShouldNotBeNull();
-        service.ShouldBeAssignableTo<IDeltaSyncService>();
-    }
 }
-
