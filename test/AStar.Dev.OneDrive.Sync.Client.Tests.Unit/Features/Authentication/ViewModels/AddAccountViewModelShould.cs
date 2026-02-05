@@ -23,16 +23,10 @@ public class AddAccountViewModelShould
     }
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenAuthenticationServiceIsNull()
-    {
-        Should.Throw<ArgumentNullException>(() => new AddAccountViewModel(null!, _accountCreationService));
-    }
+    public void ThrowArgumentNullExceptionWhenAuthenticationServiceIsNull() => Should.Throw<ArgumentNullException>(() => new AddAccountViewModel(null!, _accountCreationService));
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenAccountCreationServiceIsNull()
-    {
-        Should.Throw<ArgumentNullException>(() => new AddAccountViewModel(_authenticationService, null!));
-    }
+    public void ThrowArgumentNullExceptionWhenAccountCreationServiceIsNull() => Should.Throw<ArgumentNullException>(() => new AddAccountViewModel(_authenticationService, null!));
 
     [Fact]
     public void InitializeWithEmptyState()

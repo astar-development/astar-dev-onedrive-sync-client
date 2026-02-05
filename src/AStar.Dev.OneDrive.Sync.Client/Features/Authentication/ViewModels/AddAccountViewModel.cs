@@ -18,12 +18,6 @@ public class AddAccountViewModel : ReactiveObject
 {
     private readonly IAuthenticationService _authenticationService;
     private readonly IAccountCreationService _accountCreationService;
-    
-    private string _statusMessage = string.Empty;
-    private string _errorMessage = string.Empty;
-    private bool _isAuthenticating;
-    private bool _isCreatingAccount;
-    private Account? _createdAccount;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AddAccountViewModel"/> class.
@@ -43,26 +37,26 @@ public class AddAccountViewModel : ReactiveObject
     /// </summary>
     public string StatusMessage
     {
-        get => _statusMessage;
-        set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the current error message displayed to the user.
     /// </summary>
     public string ErrorMessage
     {
-        get => _errorMessage;
-        set => this.RaiseAndSetIfChanged(ref _errorMessage, value);
-    }
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets a value indicating whether authentication is in progress.
     /// </summary>
     public bool IsAuthenticating
     {
-        get => _isAuthenticating;
-        set => this.RaiseAndSetIfChanged(ref _isAuthenticating, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -70,8 +64,8 @@ public class AddAccountViewModel : ReactiveObject
     /// </summary>
     public bool IsCreatingAccount
     {
-        get => _isCreatingAccount;
-        set => this.RaiseAndSetIfChanged(ref _isCreatingAccount, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -79,8 +73,8 @@ public class AddAccountViewModel : ReactiveObject
     /// </summary>
     public Account? CreatedAccount
     {
-        get => _createdAccount;
-        set => this.RaiseAndSetIfChanged(ref _createdAccount, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -95,26 +89,21 @@ public class AddAccountViewModel : ReactiveObject
     {
         try
         {
-            // Clear previous state
             ErrorMessage = string.Empty;
             StatusMessage = "Starting authentication...";
             IsAuthenticating = true;
             CreatedAccount = null;
 
-            // Step 1: Authenticate with Microsoft OAuth
             Result<AuthToken, AuthenticationError> authResult = await _authenticationService.AuthenticateAsync();
 
-            // Handle authentication result
             if (authResult is Result<AuthToken, AuthenticationError>.Ok okAuth)
             {
                 StatusMessage = "Authentication successful! Creating account...";
                 IsAuthenticating = false;
                 IsCreatingAccount = true;
 
-                // Step 2: Create account with authenticated token
                 Result<Account, AccountCreationError> creationResult = await _accountCreationService.CreateAccountAsync(okAuth.Value);
 
-                // Handle account creation result
                 if (creationResult is Result<Account, AccountCreationError>.Ok okAccount)
                 {
                     CreatedAccount = okAccount.Value;
@@ -148,8 +137,7 @@ public class AddAccountViewModel : ReactiveObject
     /// Maps authentication errors to user-friendly messages.
     /// </summary>
     private static string MapAuthenticationError(AuthenticationError error)
-    {
-        return error switch
+        => error switch
         {
             AuthenticationError.Cancelled => "Authentication was cancelled. Please try again.",
             AuthenticationError.TimedOut => "Authentication timed out. Please check your internet connection and try again.",
@@ -159,14 +147,12 @@ public class AddAccountViewModel : ReactiveObject
             AuthenticationError.UnexpectedError => "An unexpected authentication error occurred. Please try again.",
             _ => $"Authentication failed with error: {error}"
         };
-    }
 
     /// <summary>
     /// Maps account creation errors to user-friendly messages.
     /// </summary>
     private static string MapAccountCreationError(AccountCreationError error)
-    {
-        return error switch
+        => error switch
         {
             AccountCreationError.AccountAlreadyExists => "An account with this email address already exists.",
             AccountCreationError.GraphApiError => "Unable to retrieve your profile information. Please try again.",
@@ -176,5 +162,4 @@ public class AddAccountViewModel : ReactiveObject
             AccountCreationError.UnexpectedError => "An unexpected error occurred while creating your account. Please try again.",
             _ => $"Account creation failed with error: {error}"
         };
-    }
 }

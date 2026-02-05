@@ -30,12 +30,9 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     /// <summary>
     /// Retrieves an account by its ID.
     /// </summary>
-    public async Task<Account?> GetByIdAsync(Guid id)
-    {
-        return await _context.Accounts
+    public async Task<Account?> GetByIdAsync(Guid id) => await _context.Accounts
             .AsNoTracking()
             .FirstOrDefaultAsync(a => a.Id == id);
-    }
 
     /// <summary>
     /// Retrieves an account by its hashed email address.
@@ -89,12 +86,9 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     /// <summary>
     /// Retrieves all accounts from the database.
     /// </summary>
-    public async Task<IEnumerable<Account>> GetAllAsync()
-    {
-        return await _context.Accounts
+    public async Task<IEnumerable<Account>> GetAllAsync() => await _context.Accounts
             .AsNoTracking()
             .ToListAsync();
-    }
 
     /// <summary>
     /// Checks if an email hash is unique in the database.
@@ -113,21 +107,15 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     /// <summary>
     /// Retrieves all accounts with admin privileges.
     /// </summary>
-    public async Task<IEnumerable<Account>> GetAdminAccountsAsync()
-    {
-        return await _context.Accounts
+    public async Task<IEnumerable<Account>> GetAdminAccountsAsync() => await _context.Accounts
             .AsNoTracking()
             .Where(a => a.IsAdmin)
             .ToListAsync();
-    }
 
     /// <summary>
     /// Checks if an account exists with the given ID.
     /// </summary>
-    public async Task<bool> DoesAccountExistAsync(Guid id)
-    {
-        return await _context.Accounts
+    public async Task<bool> DoesAccountExistAsync(Guid id) => await _context.Accounts
             .AsNoTracking()
             .AnyAsync(a => a.Id == id);
-    }
 }
