@@ -7,7 +7,6 @@ public class FileSystemItemShould
     [Fact]
     public void CreateFileSystemItemWithValidProperties()
     {
-        // Arrange
         const string id = "item-123";
         const string hashedAccountId = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
         const string driveItemId = "01BYE5RZ6QN3VTHOCKZFDNVD9BSSGGFJ7";
@@ -16,7 +15,6 @@ public class FileSystemItemShould
         const bool isFolder = false;
         const bool isSelected = true;
 
-        // Act
         var item = new FileSystemItem
         {
             Id = id,
@@ -28,7 +26,6 @@ public class FileSystemItemShould
             IsSelected = isSelected
         };
 
-        // Assert
         item.Id.ShouldBe(id);
         item.HashedAccountId.ShouldBe(hashedAccountId);
         item.DriveItemId.ShouldBe(driveItemId);
@@ -104,108 +101,87 @@ public class FileSystemItemShould
     [Fact]
     public void AllowNullName()
     {
-        // Act
         var item = new FileSystemItem { Name = null };
 
-        // Assert
         item.Name.ShouldBeNull();
     }
 
     [Fact]
     public void AllowNullPath()
     {
-        // Act
         var item = new FileSystemItem { Path = null };
 
-        // Assert
         item.Path.ShouldBeNull();
     }
 
     [Fact]
     public void HaveDefaultIsSelectedFalse()
     {
-        // Act
         var item = new FileSystemItem();
 
-        // Assert
         item.IsSelected.ShouldBeFalse();
     }
 
     [Fact]
     public void HaveDefaultSyncStatusNone()
     {
-        // Act
         var item = new FileSystemItem();
 
-        // Assert
         item.SyncStatus.ShouldBe(SyncStatus.None);
     }
 
     [Fact]
     public void HaveDefaultLastSyncDirectionNone()
     {
-        // Act
         var item = new FileSystemItem();
 
-        // Assert
         item.LastSyncDirection.ShouldBe(SyncDirection.None);
     }
 
     [Fact]
     public void AllowSettingSyncStatus()
     {
-        // Act
         var item = new FileSystemItem { SyncStatus = SyncStatus.Synced };
 
-        // Assert
         item.SyncStatus.ShouldBe(SyncStatus.Synced);
     }
 
     [Fact]
     public void AllowSettingLastSyncDirection()
     {
-        // Act
         var item = new FileSystemItem { LastSyncDirection = SyncDirection.Upload };
 
-        // Assert
         item.LastSyncDirection.ShouldBe(SyncDirection.Upload);
     }
 
     [Fact]
     public void AllowNullRemoteHash()
     {
-        // Act
         var item = new FileSystemItem { RemoteHash = null };
 
-        // Assert
         item.RemoteHash.ShouldBeNull();
     }
 
     [Fact]
     public void AllowNullLocalHash()
     {
-        // Act
         var item = new FileSystemItem { LocalHash = null };
 
-        // Assert
         item.LocalHash.ShouldBeNull();
     }
 
     [Fact]
     public void AllowSettingHashValues()
     {
-        // Arrange
         const string remoteHash = "abc123def456";
         const string localHash = "xyz789uvw012";
 
-        // Act
         var item = new FileSystemItem
         {
             RemoteHash = remoteHash,
             LocalHash = localHash
         };
 
-        // Assert
         item.RemoteHash.ShouldBe(remoteHash);
         item.LocalHash.ShouldBe(localHash);
     }
