@@ -15,15 +15,12 @@ public static class DeltaChangeMapper
     /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="existingItem">Optional existing FileSystemItem for hash comparison.</param>
     /// <returns>A FileSystemItem entity mapped from the delta change.</returns>
-    public static FileSystemItem ToFileSystemItem(
-        this DeltaChange change, 
-        string hashedAccountId, 
-        FileSystemItem? existingItem = null)
+    public static FileSystemItem ToFileSystemItem(this DeltaChange change, string hashedAccountId, FileSystemItem? existingItem = null)
     {
         ArgumentNullException.ThrowIfNull(change);
         ArgumentException.ThrowIfNullOrWhiteSpace(hashedAccountId);
 
-        var syncStatus = DetermineSyncStatus(change, existingItem);
+        SyncStatus syncStatus = DetermineSyncStatus(change, existingItem);
 
         return new FileSystemItem
         {
@@ -43,35 +40,23 @@ public static class DeltaChangeMapper
         };
     }
 
-    /// <summary>
-    /// Determines the sync status based on change type and hash comparison.
-    /// </summary>
-    private static SyncStatus DetermineSyncStatus(DeltaChange change, FileSystemItem? existingItem)
+    private static SyncStatus DetermineSyncStatus(DeltaChange change, FileSystemItem? existingItem) => change.ChangeType switch
     {
-        return change.ChangeType switch
-        {
-            ChangeType.Deleted => SyncStatus.PendingDownload,
-            ChangeType.Added => SyncStatus.PendingDownload,
-            ChangeType.Modified when HasRemoteChanges(change, existingItem) => SyncStatus.PendingDownload,
-            ChangeType.Modified => SyncStatus.Synced,
-            _ => SyncStatus.None
-        };
-    }
+        ChangeType.Deleted => SyncStatus.PendingDownload,
+        ChangeType.Added => SyncStatus.PendingDownload,
+        ChangeType.Modified when HasRemoteChanges(change, existingItem) => SyncStatus.PendingDownload,
+        ChangeType.Modified => SyncStatus.Synced,
+        _ => SyncStatus.None
+    };
 
-    /// <summary>
-    /// Compares hashes to detect if remote changes exist.
-    /// </summary>
     private static bool HasRemoteChanges(DeltaChange change, FileSystemItem? existingItem)
-    {
-        if (existingItem is null)
-            return true;
+        => existingItem switch
+        {
+            null => true,
+            _ => !change.IsFolder && (HasEmptyRemoteHash(change, existingItem) || RemoteHashHasChanged(change, existingItem)),
+        };
 
-        if (change.IsFolder)
-            return false;
-
-        if (string.IsNullOrEmpty(change.RemoteHash) || string.IsNullOrEmpty(existingItem.RemoteHash))
-            return true;
-
-        return !string.Equals(change.RemoteHash, existingItem.RemoteHash, StringComparison.Ordinal);
-    }
+    private static bool RemoteHashHasChanged(DeltaChange change, FileSystemItem existingItem) => !string.Equals(change.RemoteHash, existingItem.RemoteHash, StringComparison.Ordinal);
+    
+    private static bool HasEmptyRemoteHash(DeltaChange change, FileSystemItem existingItem) => string.IsNullOrEmpty(change.RemoteHash) || string.IsNullOrEmpty(existingItem.RemoteHash);
 }

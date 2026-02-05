@@ -15,21 +15,21 @@ public class DeltaChangeMapperShould
     [Fact]
     public void ThrowArgumentExceptionWhenHashedAccountIdIsNull()
     {
-        var change = CreateTestDeltaChange();
+        DeltaChange change = CreateTestDeltaChange();
         Should.Throw<ArgumentException>(() => change.ToFileSystemItem(null!));
     }
 
     [Fact]
     public void ThrowArgumentExceptionWhenHashedAccountIdIsEmpty()
     {
-        var change = CreateTestDeltaChange();
+        DeltaChange change = CreateTestDeltaChange();
         Should.Throw<ArgumentException>(() => change.ToFileSystemItem(string.Empty));
     }
 
     [Fact]
     public void ThrowArgumentExceptionWhenHashedAccountIdIsWhitespace()
     {
-        var change = CreateTestDeltaChange();
+        DeltaChange change = CreateTestDeltaChange();
         Should.Throw<ArgumentException>(() => change.ToFileSystemItem("   "));
     }
 
@@ -230,7 +230,7 @@ public class DeltaChangeMapperShould
     [Fact]
     public void GenerateNewIdWhenNoExistingItem()
     {
-        var change = CreateTestDeltaChange();
+        DeltaChange change = CreateTestDeltaChange();
 
         var result = change.ToFileSystemItem(TestHashedAccountId);
 
@@ -241,7 +241,7 @@ public class DeltaChangeMapperShould
     [Fact]
     public void MapRemoteModifiedAtFromChange()
     {
-        var modifiedTime = DateTime.UtcNow.AddHours(-2);
+        DateTime modifiedTime = DateTime.UtcNow.AddHours(-2);
         var change = new DeltaChange
         {
             DriveItemId = "item-333",
