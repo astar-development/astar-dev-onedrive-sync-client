@@ -1,0 +1,62 @@
+Using launch settings from C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Logging.Extensions.Tests.Unit\Properties\launchSettings.json...
+Running tests from C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Utilities.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Utilities.Tests.Unit.dll (net10.0|x64)
+Running tests from C:\repos\astar-development\astar-dev-onedrive-sync-client\test\AStar.Dev.OneDrive.Sync.Client.Tests.Unit\bin\Debug\net10.0\AStar.Dev.OneDrive.Sync.Client.Tests.Unit.dll (net10.0|x64)
+Running tests from C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Functional.Extensions.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Functional.Extensions.Tests.Unit.dll (net10.0|x64)
+Running tests from C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Logging.Extensions.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Logging.Extensions.Tests.Unit.dll (net10.0|x64)
+C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Functional.Extensions.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Functional.Extensions.Tests.Unit.dll (net10.0|x64) passed (1s 300ms)
+C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Utilities.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Utilities.Tests.Unit.dll (net10.0|x64) passed (1s 514ms)
+failed AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.LocalChangeDetection.Services.LocalChangeDetectionServiceShould.DetectFileRename (402ms)
+  Shouldly.ShouldAssertException : changes[0].OldFilePath
+    should be
+"/test\oldname.txt"
+    but was
+"\test\oldname.txt"
+    difference
+Difference     |  |                                                                                   
+               | \|/                                                                                  
+Index          | 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   
+Expected Value | /    t    e    s    t    \    o    l    d    n    a    m    e    .    t    x    t    
+Actual Value   | \    t    e    s    t    \    o    l    d    n    a    m    e    .    t    x    t    
+Expected Code  | 47   116  101  115  116  92   111  108  100  110  97   109  101  46   116  120  116  
+Actual Code    | 92   116  101  115  116  92   111  108  100  110  97   109  101  46   116  120  116  
+  from C:\repos\astar-development\astar-dev-onedrive-sync-client\test\AStar.Dev.OneDrive.Sync.Client.Tests.Unit\bin\Debug\net10.0\AStar.Dev.OneDrive.Sync.Client.Tests.Unit.dll (net10.0|x64)
+  Shouldly.ShouldAssertException : changes[0].OldFilePath
+      should be
+  "/test\oldname.txt"
+      but was
+  "\test\oldname.txt"
+      difference
+  Difference     |  |                                                                                   
+                 | \|/                                                                                  
+  Index          | 0    1    2    3    4    5    6    7    8    9    10   11   12   13   14   15   16   
+  Expected Value | /    t    e    s    t    \    o    l    d    n    a    m    e    .    t    x    t    
+  Actual Value   | \    t    e    s    t    \    o    l    d    n    a    m    e    .    t    x    t    
+  Expected Code  | 47   116  101  115  116  92   111  108  100  110  97   109  101  46   116  120  116  
+  Actual Code    | 92   116  101  115  116  92   111  108  100  110  97   109  101  46   116  120  116  
+    at AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.LocalChangeDetection.Services.LocalChangeDetectionServiceShould.DetectFileRename() in C:\repos\astar-development\astar-dev-onedrive-sync-client\test\AStar.Dev.OneDrive.Sync.Client.Tests.Unit\Features\LocalChangeDetection\Services\LocalChangeDetectionServiceShould.cs:143
+    at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+    at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+[+318/x1/?0] AStar.Dev.OneDrive.Sync.Client.Tests.Unit.dll (net10.0|x64)(2s)
+[+130/x0/?0] AStar.Dev.Logging.Extensions.Tests.Unit.dll (net10.0|x64)(2s)
+
+C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Logging.Extensions.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Logging.Extensions.Tests.Unit.dll (net10.0|x64) passed (2s 343ms)
+[+330/x1/?0] AStar.Dev.OneDrive.Sync.Client.Tests.Unit.dll (net10.0|x64)(5s)
+
+C:\repos\astar-development\astar-dev-onedrive-sync-client\test\AStar.Dev.OneDrive.Sync.Client.Tests.Unit\bin\Debug\net10.0\AStar.Dev.OneDrive.Sync.Client.Tests.Unit.dll (net10.0|x64) failed with 1 error(s) (7s 089ms)
+Exit code: 2
+  Standard output: xUnit.net v3 Microsoft.Testing.Platform v1 Runner v3.2.2+728c1dce01 (64-bit .NET 10.0.2)
+  
+  
+
+Test run summary: Failed!
+  C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Utilities.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Utilities.Tests.Unit.dll (net10.0|x64) passed (1s 514ms)
+  C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Logging.Extensions.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Logging.Extensions.Tests.Unit.dll (net10.0|x64) passed (2s 343ms)
+  C:\repos\astar-development\astar-dev-onedrive-sync-client\test\AStar.Dev.OneDrive.Sync.Client.Tests.Unit\bin\Debug\net10.0\AStar.Dev.OneDrive.Sync.Client.Tests.Unit.dll (net10.0|x64) failed with 1 error(s) (7s 089ms)
+  C:\repos\astar-development\astar-dev-onedrive-sync-client\test\nuget-packages\AStar.Dev.Functional.Extensions.Tests.Unit\bin\Debug\net10.0\AStar.Dev.Functional.Extensions.Tests.Unit.dll (net10.0|x64) passed (1s 300ms)
+
+  total: 756
+  failed: 1
+  succeeded: 755
+  skipped: 0
+  duration: 7s 704ms
+Test run completed with non-success exit code: 2 (see: https://aka.ms/testingplatform/exitcodes)
