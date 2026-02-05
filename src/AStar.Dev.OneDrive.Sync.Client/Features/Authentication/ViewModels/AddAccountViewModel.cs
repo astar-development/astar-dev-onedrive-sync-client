@@ -1,6 +1,3 @@
-using System;
-using System.Reactive;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;

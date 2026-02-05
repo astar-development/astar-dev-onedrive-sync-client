@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -231,8 +230,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                 name: "idx_applicationlogs_hashedaccountid_timestamp",
                 schema: "onedrive",
                 table: "ApplicationLogs",
-                columns: new[] { "HashedAccountId", "Timestamp" },
-                descending: new[] { false, true });
+                columns: ["HashedAccountId", "Timestamp"],
+                descending: [false, true]);
 
             migrationBuilder.CreateIndex(
                 name: "IX_ApplicationLogs_AccountId",
@@ -492,8 +491,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Migrations
                 name: "idx_applicationlogs_accountid_timestamp",
                 schema: "onedrive",
                 table: "ApplicationLogs",
-                columns: new[] { "AccountId", "Timestamp" },
-                descending: new[] { false, true });
+                columns: ["AccountId", "Timestamp"],
+                descending: [false, true]);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_ApplicationLogs_Accounts_AccountId",

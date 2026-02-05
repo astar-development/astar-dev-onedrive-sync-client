@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 using Microsoft.EntityFrameworkCore;

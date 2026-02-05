@@ -101,12 +101,23 @@
 - All reactive properties properly bound (StatusMessage, ErrorMessage, IsAuthenticating, IsCreatingAccount, CreatedAccount)
 - Follows Avalonia MVVM best practices with Design.DataContext for designer support
 
-**Task 2.10**: Build Account List ViewModel
+**Task 2.10**: Build Account List ViewModel ✅
 
-- [ ] Create `AccountListViewModel` with ReactiveUI
-- [ ] Implement reactive collection for accounts
-- [ ] Implement account selection logic
-- [ ] Add unit tests for list management
+- [x] Create `AccountListViewModel` with ReactiveUI
+- [x] Implement reactive collection for accounts (ObservableCollection<Account>)
+- [x] Implement account selection logic (SelectedAccount reactive property)
+- [x] Add LoadAccountsCommand for loading accounts from repository
+- [x] Add IsLoading reactive property for UI feedback
+- [x] Add unit tests for list management (7 comprehensive tests)
+
+**Implementation Notes:**
+- Used ObservableCollection<Account> with collection initializer syntax `[]`
+- All properties use expression-bodied members with `RaiseAndSetIfChanged`
+- LoadAccountsCommand clears existing accounts before loading new ones
+- IsLoading property tracks async load state with try/finally
+- Constructor validates non-null dependencies following SOLID principles
+- All 653 tests passing (7 new tests for AccountListViewModel)
+- Follows ReactiveUI best practices with ReactiveObject base class
 
 **Task 2.11**: Build Account List View (UI)
 

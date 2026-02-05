@@ -3,9 +3,6 @@ using AStar.Dev.OneDrive.Sync.Client.Common.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.ViewModels;
-using NSubstitute;
-using Shouldly;
-using Xunit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.ViewModels;
 

@@ -1,13 +1,7 @@
-
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 using Microsoft.EntityFrameworkCore;
-using Shouldly;
-using Xunit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Repositories;
 public class AccountRepositoryShould

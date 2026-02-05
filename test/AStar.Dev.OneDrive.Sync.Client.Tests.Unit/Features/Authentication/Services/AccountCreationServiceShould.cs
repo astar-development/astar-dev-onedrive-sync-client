@@ -6,8 +6,6 @@ using AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.GraphApi;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.SecureStorage;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Shouldly;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.Authentication.Services;
 
