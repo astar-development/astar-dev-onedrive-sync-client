@@ -82,9 +82,6 @@ public class AddAccountViewModel : ReactiveObject
     /// </summary>
     public ICommand AuthenticateCommand { get; }
 
-    /// <summary>
-    /// Executes the authentication and account creation workflow.
-    /// </summary>
     private async Task AuthenticateAsync()
     {
         try
@@ -133,9 +130,6 @@ public class AddAccountViewModel : ReactiveObject
         }
     }
 
-    /// <summary>
-    /// Maps authentication errors to user-friendly messages.
-    /// </summary>
     private static string MapAuthenticationError(AuthenticationError error)
         => error switch
         {
@@ -148,9 +142,6 @@ public class AddAccountViewModel : ReactiveObject
             _ => $"Authentication failed with error: {error}"
         };
 
-    /// <summary>
-    /// Maps account creation errors to user-friendly messages.
-    /// </summary>
     private static string MapAccountCreationError(AccountCreationError error)
         => error switch
         {
