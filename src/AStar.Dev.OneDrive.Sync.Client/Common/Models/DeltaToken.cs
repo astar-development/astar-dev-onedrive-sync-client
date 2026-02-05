@@ -5,25 +5,21 @@ namespace AStar.Dev.OneDrive.Sync.Client.Common.Models;
 /// </summary>
 public class DeltaToken
 {
-    private string _id = string.Empty;
-    private string _hashedAccountId = string.Empty;
-    private string _driveName = string.Empty;
-
     /// <summary>
     /// Gets or sets the unique identifier.
     /// </summary>
     public string Id
     {
-        get => _id;
+        get => field;
         set
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 throw new ArgumentException("Id cannot be null, empty, or whitespace.", nameof(Id));
             }
-            _id = value;
+            field = value;
         }
-    }
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the hashed account identifier this token belongs to.
@@ -31,32 +27,32 @@ public class DeltaToken
     /// </summary>
     public string HashedAccountId
     {
-        get => _hashedAccountId;
+        get => field;
         set
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 throw new ArgumentException("HashedAccountId cannot be null, empty, or whitespace.", nameof(HashedAccountId));
             }
-            _hashedAccountId = value;
+            field = value;
         }
-    }
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the drive name (e.g., "root", "documents", "photos").
     /// </summary>
     public string DriveName
     {
-        get => _driveName;
+        get => field;
         set
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 throw new ArgumentException("DriveName cannot be null, empty, or whitespace.", nameof(DriveName));
             }
-            _driveName = value;
+            field = value;
         }
-    }
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the opaque delta token from Graph API.
