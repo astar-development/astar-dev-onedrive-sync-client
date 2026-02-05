@@ -25,8 +25,6 @@ internal class Program
 
             IHost host = CreateHostBuilder(args, configuration).Build();
 
-            MigrateDatabase(host);
-
             host.Run();
 
             Log.Information("Application shut down successfully");
@@ -41,13 +39,6 @@ internal class Program
         {
             Log.CloseAndFlush();
         }
-    }
-
-    private static void MigrateDatabase(IHost host)
-    {
-        using IServiceScope scope = host.Services.CreateScope();
-        OneDriveSyncDbContext dbContext = scope.ServiceProvider.GetRequiredService<OneDriveSyncDbContext>();
-        dbContext.Database.Migrate();
     }
 
     private static IHostBuilder CreateHostBuilder(string[] args, IConfiguration configuration)

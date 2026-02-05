@@ -58,6 +58,10 @@ public static class AppModule
             configuration.GetConnectionString("OneDriveSync"),
             b => b.MigrationsHistoryTable("__EFMigrationsHistory", "onedrive")));
 
+        using IServiceScope scope = services.BuildServiceProvider().CreateScope();
+        OneDriveSyncDbContext dbContext = scope.ServiceProvider.GetRequiredService<OneDriveSyncDbContext>();
+        dbContext.Database.Migrate();
+
         return services;
     }
 }
