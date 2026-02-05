@@ -15,7 +15,9 @@ public class DeltaTokenRepository(OneDriveSyncDbContext context) : IDeltaTokenRe
     public async Task<DeltaToken?> GetByAccountAndDriveAsync(string hashedAccountId, string driveName)
         => await _context.DeltaTokens
             .AsNoTracking()
-            .FirstOrDefaultAsync(dt => dt.HashedAccountId == hashedAccountId && dt.DriveName == driveName);
+            .Where(dt => dt.HashedAccountId == hashedAccountId && dt.DriveName == driveName)
+            .OrderByDescending(dt => dt.LastSyncAt)
+            .FirstOrDefaultAsync();
 
     /// <inheritdoc />
     public async Task<IEnumerable<DeltaToken>> GetAllByAccountAsync(string hashedAccountId)
