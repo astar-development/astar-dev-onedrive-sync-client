@@ -11,7 +11,7 @@ public static class ConfigurationFactory
                                 ?? Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT")
                                 ?? "Production";
 
-        var resolvedBasePath = basePath ?? Directory.GetCurrentDirectory();
+        var resolvedBasePath = basePath ?? AppContext.BaseDirectory;
 
         return new ConfigurationBuilder()
             .SetBasePath(resolvedBasePath)
