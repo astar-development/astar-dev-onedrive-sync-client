@@ -1,6 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Common.Models;
-using Shouldly;
-using Xunit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Common.Models;
 
