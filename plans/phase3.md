@@ -32,18 +32,56 @@
 - [x] Add unit tests for factory (token validation, client creation)
 - [x] Replace MockGraphApiClient with real SDK implementation
 
-**Task 3.3**: Create FileSystemItem domain models
+**Task 3.3**: ✅ Create FileSystemItem domain models (Done)
 
-- [ ] Create `FileSystemItem` entity class with hash fields
-- [ ] Create related value objects (SyncStatus, LastSyncDirection)
-- [ ] Add validation rules
+**Implementation Notes**:
 
-**Task 3.4**: Implement FileSystemRepository
+- FileSystemItem entity already existed with all required properties
+- Added validation rules to FileSystemItem:
+  - Id cannot be null, empty, or whitespace
+  - HashedAccountId cannot be null, empty, or whitespace
+  - DriveItemId cannot be null, empty, or whitespace
+- SyncStatus enum already existed (None, Synced, PendingUpload, PendingDownload, Conflict, Failed)
+- SyncDirection enum already existed (None, Upload, Download, Bidirectional)
+- Created 20 comprehensive unit tests in FileSystemItemShould.cs
+- All 687 tests passing (20 new tests added for FileSystemItem validation)
+- Build verified successful
 
-- [ ] Create `FileSystemRepository` class with EF Core
-- [ ] Implement CRUD operations for FileSystemItems
-- [ ] Implement query for selected folders by AccountId
-- [ ] Add unit tests mocking DbContext
+- [x] Create `FileSystemItem` entity class with hash fields
+- [x] Create related value objects (SyncStatus, LastSyncDirection)
+- [x] Add validation rules
+
+**Task 3.4**: ✅ Implement FileSystemRepository (Done)
+
+**Implementation Notes**:
+
+- Created IFileSystemRepository interface with 6 methods:
+  - CreateAsync: Add new FileSystemItem to database
+  - GetByIdAsync: Retrieve FileSystemItem by Id
+  - GetAllByHashedAccountIdAsync: Get all items for an account
+  - GetSelectedItemsByHashedAccountIdAsync: Get only selected items for an account
+  - UpdateAsync: Update existing FileSystemItem
+  - DeleteAsync: Remove FileSystemItem by Id
+- Created FileSystemRepository implementation using EF Core:
+  - Uses OneDriveSyncDbContext for database operations
+  - Implements AsNoTracking for read queries (performance optimization)
+  - Uses SaveChangesAsync for persistence
+- Created 7 comprehensive integration tests using in-memory database:
+  - CreateFileSystemItemAndPersistToDatabase
+  - GetFileSystemItemByIdReturnsItemWhenExists
+  - GetFileSystemItemByIdReturnsNullWhenNotExists
+  - GetSelectedItemsByHashedAccountIdReturnsOnlySelectedItems
+  - UpdateFileSystemItemPersistsChangesToDatabase
+  - DeleteFileSystemItemRemovesFromDatabase
+  - GetAllItemsByHashedAccountIdReturnsAllAccountItems
+- All tests set IsFolder property explicitly (required by EF configuration)
+- All 674 tests passing (7 new repository tests added)
+- Build verified successful
+
+- [x] Create `FileSystemRepository` class with EF Core
+- [x] Implement CRUD operations for FileSystemItems
+- [x] Implement query for selected folders by AccountId
+- [x] Add unit tests mocking DbContext
 
 **Task 3.5**: Create DeltaToken domain models
 
