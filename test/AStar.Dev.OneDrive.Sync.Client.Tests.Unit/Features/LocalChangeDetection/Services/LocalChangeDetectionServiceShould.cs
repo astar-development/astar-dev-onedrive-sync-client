@@ -1,12 +1,8 @@
 using AStar.Dev.OneDrive.Sync.Client.Features.LocalChangeDetection.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.LocalChangeDetection.Services;
-using NSubstitute;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.LocalChangeDetection.Services;
 
-/// <summary>
-/// Unit tests for LocalChangeDetectionService.
-/// </summary>
 public class LocalChangeDetectionServiceShould : IDisposable
 {
     private IFileSystemChangeMonitor _monitor = null!;
@@ -96,7 +92,7 @@ public class LocalChangeDetectionServiceShould : IDisposable
         SetupTest();
         _service.StartWatching("/test/path");
         RaiseFileCreatedEvent("/test/newfile.txt");
-        System.Threading.Thread.Sleep(350);
+        Thread.Sleep(350);
 
         IReadOnlyList<LocalChange> changes = _service.GetPendingChanges();
         changes.ShouldHaveSingleItem();
@@ -109,7 +105,7 @@ public class LocalChangeDetectionServiceShould : IDisposable
         SetupTest();
         _service.StartWatching("/test/path");
         RaiseFileModifiedEvent("/test/file.txt");
-        System.Threading.Thread.Sleep(350);
+        Thread.Sleep(350);
 
         IReadOnlyList<LocalChange> changes = _service.GetPendingChanges();
         changes.ShouldHaveSingleItem();
@@ -122,7 +118,7 @@ public class LocalChangeDetectionServiceShould : IDisposable
         SetupTest();
         _service.StartWatching("/test/path");
         RaiseFileDeletedEvent("/test/file.txt");
-        System.Threading.Thread.Sleep(350);
+        Thread.Sleep(350);
 
         IReadOnlyList<LocalChange> changes = _service.GetPendingChanges();
         changes.ShouldHaveSingleItem();
@@ -138,10 +134,10 @@ public class LocalChangeDetectionServiceShould : IDisposable
         
         _service.StartWatching("/test/path");
         RaiseFileRenamedEvent(newFilePath, oldFilePath);
-        System.Threading.Thread.Sleep(350);
+        Thread.Sleep(350);
 
-        string normalizedOldPath = oldFilePath.Replace('/', Path.DirectorySeparatorChar);
-        string expectedOldFullPath = Path.Combine(Path.GetDirectoryName(normalizedOldPath)!, Path.GetFileName(normalizedOldPath));
+        var normalizedOldPath = oldFilePath.Replace('/', Path.DirectorySeparatorChar);
+        var expectedOldFullPath = Path.Combine(Path.GetDirectoryName(normalizedOldPath)!, Path.GetFileName(normalizedOldPath));
         
         IReadOnlyList<LocalChange> changes = _service.GetPendingChanges();
         changes.ShouldHaveSingleItem();
@@ -164,7 +160,7 @@ public class LocalChangeDetectionServiceShould : IDisposable
         SetupTest();
         _service.StartWatching("/test/path");
         RaiseFileCreatedEvent("/test/file.txt");
-        System.Threading.Thread.Sleep(350);
+        Thread.Sleep(350);
 
         _service.ClearPendingChanges();
 
@@ -179,7 +175,7 @@ public class LocalChangeDetectionServiceShould : IDisposable
         _service.StartWatching("/test/path");
         _service.StopWatching();
         RaiseFileCreatedEvent("/test/file.txt");
-        System.Threading.Thread.Sleep(350);
+        Thread.Sleep(350);
 
         IReadOnlyList<LocalChange> changes = _service.GetPendingChanges();
         changes.ShouldBeEmpty();

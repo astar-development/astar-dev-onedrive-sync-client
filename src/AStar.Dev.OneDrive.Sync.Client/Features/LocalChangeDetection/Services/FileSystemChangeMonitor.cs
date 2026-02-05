@@ -1,4 +1,3 @@
-using System.IO;
 using System.IO.Abstractions;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Features.LocalChangeDetection.Services;

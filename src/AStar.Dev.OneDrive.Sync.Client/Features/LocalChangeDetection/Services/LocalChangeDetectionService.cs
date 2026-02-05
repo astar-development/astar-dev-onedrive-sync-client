@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System.IO;
-using System.Timers;
 using AStar.Dev.OneDrive.Sync.Client.Features.LocalChangeDetection.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Features.LocalChangeDetection.Services;
@@ -56,15 +54,15 @@ public class LocalChangeDetectionService(IFileSystemChangeMonitor monitor) : ILo
 
     public void ClearPendingChanges() => _pendingChanges.Clear();
 
-    private void OnFileCreated(object? sender, FileSystemEventArgs e) =>
-        DebounceChange(e.FullPath, () => new LocalChange
+    private void OnFileCreated(object? sender, FileSystemEventArgs e)
+        => DebounceChange(e.FullPath, () => new LocalChange
         {
             FilePath = e.FullPath,
             ChangeType = LocalChangeType.Added
         });
 
-    private void OnFileModified(object? sender, FileSystemEventArgs e) =>
-        DebounceChange(e.FullPath, () =>
+    private void OnFileModified(object? sender, FileSystemEventArgs e)
+        => DebounceChange(e.FullPath, () =>
             _pendingChanges.TryGetValue(e.FullPath, out LocalChange? existing)
                 ? existing
                 : new LocalChange
@@ -73,8 +71,8 @@ public class LocalChangeDetectionService(IFileSystemChangeMonitor monitor) : ILo
                     ChangeType = LocalChangeType.Modified
                 });
 
-    private void OnFileDeleted(object? sender, FileSystemEventArgs e) =>
-        DebounceChange(e.FullPath, () => new LocalChange
+    private void OnFileDeleted(object? sender, FileSystemEventArgs e)
+        => DebounceChange(e.FullPath, () => new LocalChange
         {
             FilePath = e.FullPath,
             ChangeType = LocalChangeType.Deleted

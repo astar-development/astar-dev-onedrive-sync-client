@@ -9,8 +9,8 @@ public class DeltaChangeMapperShould
     private const string TestHashedAccountId = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenChangeIsNull() =>
-        Should.Throw<ArgumentNullException>(() => ((DeltaChange)null!).ToFileSystemItem(TestHashedAccountId));
+    public void ThrowArgumentNullExceptionWhenChangeIsNull()
+        => Should.Throw<ArgumentNullException>(() => ((DeltaChange)null!).ToFileSystemItem(TestHashedAccountId));
 
     [Fact]
     public void ThrowArgumentExceptionWhenHashedAccountIdIsNull()
