@@ -56,8 +56,6 @@ public class OneDriveSyncDbContext(DbContextOptions<OneDriveSyncDbContext> optio
     {
         base.OnModelCreating(modelBuilder);
 
-        _ = modelBuilder.HasDefaultSchema("onedrive");
-
         _ = modelBuilder.ApplyConfigurationsFromAssembly(typeof(OneDriveSyncDbContext).Assembly);
     }
 }

@@ -18,15 +18,14 @@ public class OneDriveSyncDbContextFactory : IDesignTimeDbContextFactory<OneDrive
     {
         var optionsBuilder = new DbContextOptionsBuilder<OneDriveSyncDbContext>();
 
-        _ = optionsBuilder.UseNpgsql(
-            CreateDesignTimeConnectionString(),
-            b => b.MigrationsHistoryTable("__EFMigrationsHistory", "onedrive"));
+       
+        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
+        Directory.CreateDirectory(dbDirectory);
+        string dbPath = Path.Combine(dbDirectory, "onedrive-sync.db");
+        
+        _ = optionsBuilder.UseSqlite($"Data Source={dbPath}");
 
         return new OneDriveSyncDbContext(optionsBuilder.Options);
-
-        static string CreateDesignTimeConnectionString()
-        {
-            return "Host=localhost;Port=5432;Database=astar-dev-onedrive-sync-db;Username=astar-admin;Password=placeholder;Schema=onedrive";
-        }
     }
 }

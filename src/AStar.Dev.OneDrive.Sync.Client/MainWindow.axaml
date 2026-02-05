@@ -1,0 +1,101 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:AStar.Dev.OneDrive.Sync.Client.Features.Authentication.Views"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="700"
+        x:Class="AStar.Dev.OneDrive.Sync.Client.MainWindow"
+        Title="AStar OneDrive Sync Client"
+        Width="1200"
+        Height="700"
+        MinWidth="800"
+        MinHeight="500">
+    
+    <Grid ColumnDefinitions="300,*">
+        
+        <!-- Left Sidebar: Account List -->
+        <Border Grid.Column="0"
+                Background="#F5F5F5"
+                BorderBrush="#E0E0E0"
+                BorderThickness="0,0,1,0">
+            <views:AccountListView x:Name="AccountListView" />
+        </Border>
+        
+        <!-- Right Panel: Main Content Area -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Header -->
+            <Border Grid.Row="0"
+                    Background="#FFFFFF"
+                    BorderBrush="#E0E0E0"
+                    BorderThickness="0,0,0,1"
+                    Padding="20,15">
+                <TextBlock Text="Welcome to AStar OneDrive Sync"
+                           FontSize="18"
+                           FontWeight="SemiBold"/>
+            </Border>
+            
+            <!-- Content Area -->
+            <ScrollViewer Grid.Row="1"
+                          Padding="20">
+                <StackPanel Spacing="20">
+                    
+                    <!-- Add Account Section -->
+                    <Border Background="#FFFFFF"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="20">
+                        <views:AddAccountView x:Name="AddAccountView" />
+                    </Border>
+                    
+                    <!-- Edit Account Section -->
+                    <Border Background="#FFFFFF"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="20"
+                            IsVisible="{Binding #AccountListView.SelectedAccount, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <StackPanel Spacing="15">
+                            <TextBlock Text="Account Settings"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"/>
+                            <views:EditAccountView x:Name="EditAccountView" />
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Placeholder for when no account selected -->
+                    <Border Background="#F9F9F9"
+                            BorderBrush="#E0E0E0"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="40"
+                            IsVisible="{Binding !#AccountListView.SelectedAccount, Converter={x:Static ObjectConverters.IsNull}}">
+                        <StackPanel Spacing="10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="No account selected"
+                                       FontSize="16"
+                                       Foreground="Gray"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Add an account above or select an existing account from the sidebar."
+                                       FontSize="12"
+                                       Foreground="Gray"
+                                       TextWrapping="Wrap"
+                                       TextAlignment="Center"
+                                       MaxWidth="400"/>
+                        </StackPanel>
+                    </Border>
+                    
+                </StackPanel>
+            </ScrollViewer>
+            
+        </Grid>
+        
+    </Grid>
+    
+</Window>

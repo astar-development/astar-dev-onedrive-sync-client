@@ -54,9 +54,18 @@ public static class AppModule
 
             return factory.CreateStorage();
         });
-        _ = services.AddDbContext<OneDriveSyncDbContext>(options => options.UseNpgsql(
-            configuration.GetConnectionString("OneDriveSync"),
-            b => b.MigrationsHistoryTable("__EFMigrationsHistory", "onedrive")));
+        
+       
+        string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        string dbDirectory = Path.Combine(appDataPath, "AStar.Dev.OneDrive.Sync.Client");
+        Directory.CreateDirectory(dbDirectory); // Ensure directory exists
+        
+        string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ?? "Production";
+        string dbFileName = environment == "Development" ? "onedrive-sync-dev.db" : "onedrive-sync.db";
+        string dbPath = Path.Combine(dbDirectory, dbFileName);
+        string connectionString = $"Data Source={dbPath}";
+        
+        _ = services.AddDbContext<OneDriveSyncDbContext>(options => options.UseSqlite(connectionString));
 
         using IServiceScope scope = services.BuildServiceProvider().CreateScope();
         OneDriveSyncDbContext dbContext = scope.ServiceProvider.GetRequiredService<OneDriveSyncDbContext>();
