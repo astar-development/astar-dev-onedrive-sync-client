@@ -7,10 +7,7 @@ public class GraphApiClientFactoryShould
 {
     private readonly GraphApiClientFactory _factory;
 
-    public GraphApiClientFactoryShould()
-    {
-        _factory = new GraphApiClientFactory();
-    }
+    public GraphApiClientFactoryShould() => _factory = new GraphApiClientFactory();
 
     [Fact]
     public void CreateClientWithValidAccessToken()
@@ -23,16 +20,10 @@ public class GraphApiClientFactoryShould
     }
 
     [Fact]
-    public void ThrowArgumentExceptionWhenAccessTokenIsNull()
-    {
-        Should.Throw<ArgumentException>(() => _factory.CreateClient(null!));
-    }
+    public void ThrowArgumentExceptionWhenAccessTokenIsNull() => Should.Throw<ArgumentException>(() => _factory.CreateClient(null!));
 
     [Fact]
-    public void ThrowArgumentExceptionWhenAccessTokenIsEmpty()
-    {
-        Should.Throw<ArgumentException>(() => _factory.CreateClient(string.Empty));
-    }
+    public void ThrowArgumentExceptionWhenAccessTokenIsEmpty() => Should.Throw<ArgumentException>(() => _factory.CreateClient(string.Empty));
 
     [Fact]
     public void CreateNewClientInstanceEachTime()

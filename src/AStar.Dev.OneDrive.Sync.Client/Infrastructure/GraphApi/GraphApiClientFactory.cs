@@ -19,35 +19,20 @@ public class GraphApiClientFactory
     {
         ArgumentException.ThrowIfNullOrEmpty(accessToken, nameof(accessToken));
 
-        // Create token credential from access token
         var tokenCredential = new StaticTokenCredential(accessToken);
         
-        // Create GraphServiceClient with the token credential
-        var graphClient = new GraphServiceClient(tokenCredential);
-        
-        return graphClient;
+        return new GraphServiceClient(tokenCredential);
     }
     
     /// <summary>
     /// Simple token credential that provides a static access token.
     /// </summary>
-    private class StaticTokenCredential : TokenCredential
+    private class StaticTokenCredential(string accessToken) : TokenCredential
     {
-        private readonly string _accessToken;
-
-        public StaticTokenCredential(string accessToken)
-        {
-            _accessToken = accessToken;
-        }
-
         public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
-        {
-            return new AccessToken(_accessToken, DateTimeOffset.UtcNow.AddHours(1));
-        }
+            => new(accessToken, DateTimeOffset.UtcNow.AddHours(1));
 
         public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
-        {
-            return new ValueTask<AccessToken>(new AccessToken(_accessToken, DateTimeOffset.UtcNow.AddHours(1)));
-        }
+            => new(new AccessToken(accessToken, DateTimeOffset.UtcNow.AddHours(1)));
     }
 }
