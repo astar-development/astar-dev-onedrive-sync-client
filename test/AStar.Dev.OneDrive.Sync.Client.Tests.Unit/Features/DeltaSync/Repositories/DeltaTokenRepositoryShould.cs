@@ -2,8 +2,6 @@ using AStar.Dev.OneDrive.Sync.Client.Common.Models;
 using AStar.Dev.OneDrive.Sync.Client.Features.DeltaSync.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Database.Data;
 using Microsoft.EntityFrameworkCore;
-using Shouldly;
-using Xunit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.DeltaSync.Repositories;
 
