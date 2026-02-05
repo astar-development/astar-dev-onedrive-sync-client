@@ -10,6 +10,7 @@
         "Npgsql",
         "onedrive",
         "Shouldly",
+        "Testably",
         "timespan",
         "USERPROFILE",
         "Xunit"

@@ -116,6 +116,7 @@
 
 **Task 3.10**: Implement LocalChangeDetectionService
 
+- [ ] Use [Testably](https://github.com/Testably/Testably.Abstractions) for actual file system integration
 - [ ] Create `LocalChangeDetectionService` class
 - [ ] Implement FileSystemWatcher for file events
 - [ ] Implement debouncing for multiple rapid events

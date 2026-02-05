@@ -8,18 +8,54 @@ public class FileSystemItem
     /// <summary>
     /// Gets or sets the unique identifier.
     /// </summary>
-    public string Id { get; set; } = string.Empty;
+    public string Id
+    {
+        get;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException("Id cannot be null or whitespace.", nameof(value));
+            }
+
+            field = value;
+        }
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the hashed account identifier this item belongs to.
     /// GDPR compliant: stores hashed ID, not actual account ID.
     /// </summary>
-    public string HashedAccountId { get; set; } = string.Empty;
+    public string HashedAccountId
+    {
+        get;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException("HashedAccountId cannot be null or whitespace.", nameof(value));
+            }
+
+            field = value;
+        }
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the OneDrive item ID from Graph API.
     /// </summary>
-    public string DriveItemId { get; set; } = string.Empty;
+    public string DriveItemId
+    {
+        get;
+        set
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                throw new ArgumentException("DriveItemId cannot be null or whitespace.", nameof(value));
+            }
+
+            field = value;
+        }
+    } = string.Empty;
 
     /// <summary>
     /// Gets or sets the item name.
