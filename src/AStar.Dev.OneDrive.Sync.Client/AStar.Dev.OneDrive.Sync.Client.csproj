@@ -67,6 +67,8 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
 
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.2" />
+
+    <PackageReference Include="TestableIO.System.IO.Abstractions" Version="21.1.7" />
   </ItemGroup>
 
   <ItemGroup>

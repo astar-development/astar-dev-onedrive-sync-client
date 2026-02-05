@@ -35,7 +35,7 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     /// </summary>
     public async Task<Account?> GetByHashedEmailAsync(string hashedEmail)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(hashedEmail);
+        ArgumentException.ThrowIfNullOrWhiteSpace(hashedEmail);
         
         return await _context.Accounts
             .AsNoTracking()
@@ -47,7 +47,7 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     /// </summary>
     public async Task<Account?> GetByHashedAccountIdAsync(string hashedAccountId)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(hashedAccountId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(hashedAccountId);
         
         return await _context.Accounts
             .AsNoTracking()
@@ -91,7 +91,7 @@ public class AccountRepository(OneDriveSyncDbContext context) : IAccountReposito
     /// </summary>
     public async Task<bool> IsEmailHashUniqueAsync(string hashedEmail)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(hashedEmail);
+        ArgumentException.ThrowIfNullOrWhiteSpace(hashedEmail);
         
         var exists = await _context.Accounts
             .AsNoTracking()
