@@ -75,7 +75,7 @@ public class DeltaSyncService(IGraphServiceClientFactory graphFactory, IDeltaTok
         {
             var tokenToSave = new DeltaToken
             {
-                Id = savedToken?.Id ?? Guid.NewGuid().ToString(),
+                Id = Guid.NewGuid().ToString(),
                 HashedAccountId = hashedAccountId,
                 DriveName = driveName,
                 Token = newDeltaToken,

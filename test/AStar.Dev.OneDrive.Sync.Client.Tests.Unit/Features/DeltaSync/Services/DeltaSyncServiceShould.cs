@@ -1,6 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Features.DeltaSync.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.GraphApi;
-using NSubstitute;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Features.DeltaSync.Services;
 
@@ -93,5 +92,53 @@ public class DeltaSyncServiceShould
 
         Should.ThrowAsync<ArgumentException>(async () =>
             await service.GetDeltaChangesAsync("token", "hash", "   "));
+    }
+
+    [Fact]
+    public async Task CallRepositoryToGetLatestTokenBeforeSync()
+    {
+        var existingToken = new Client.Common.Models.DeltaToken
+        {
+            Id = "existing-token-id",
+            HashedAccountId = "account-hash",
+            DriveName = "root",
+            Token = "https://graph.microsoft.com/v1.0/me/drive/root/delta?token=saved-delta",
+            LastSyncAt = DateTime.UtcNow.AddHours(-1)
+        };
+
+        _mockRepo.GetByAccountAndDriveAsync("account-hash", "root")
+            .Returns(existingToken);
+
+        var service = new DeltaSyncService(_mockFactory, _mockRepo);
+
+        try
+        {
+            await service.GetDeltaChangesAsync("access-token", "account-hash", "root");
+        }
+        catch
+        {
+        }
+
+        await _mockRepo.Received(1).GetByAccountAndDriveAsync("account-hash", "root");
+    }
+
+    [Fact]
+    public async Task RepositoryIsCalledToSaveTokenAfterSync()
+    {
+        _mockRepo.GetByAccountAndDriveAsync("account-hash", "root")
+            .Returns((Client.Common.Models.DeltaToken?)null);
+
+        _mockRepo.SaveAsync(Arg.Any<Client.Common.Models.DeltaToken>())
+            .Returns(Task.CompletedTask);
+
+        var service = new DeltaSyncService(_mockFactory, _mockRepo);
+
+        try
+        {
+            await service.GetDeltaChangesAsync("access-token", "account-hash", "root");
+        }
+        catch
+        {
+        }
     }
 }

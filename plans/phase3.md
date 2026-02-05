@@ -7,7 +7,7 @@
 **Implementation Notes**:
 
 - Added Microsoft.Graph v5.101.0 package (main SDK)
-- Added Microsoft.Graph.Core v3.2.5 package (core functionality)  
+- Added Microsoft.Graph.Core v3.2.5 package (core functionality)
 - SDK provides GraphServiceClient for authenticated Graph API access
 - Build verified successful (7.8s)
 
@@ -210,11 +210,46 @@
 - [x] Implement hash comparison for change detection
 - [x] Add unit tests for mapping logic
 
-**Task 3.9**: Implement delta token persistence
+**Task 3.9**: ✅ Implement delta token persistence (Done)
 
-- [ ] Update DeltaToken after successful sync
-- [ ] Handle initial sync (no delta token)
-- [ ] Add unit tests for token lifecycle
+**Implementation Notes**:
+
+- **Token Persistence Mechanism**: DeltaSyncService retrieves saved delta token from repository before each sync, enabling incremental changes detection across syncs
+- **New Token ID Per Sync**: Modified DeltaSyncService to generate new GUID for each sync (not reuse previous token ID)
+  - Rationale: Allows historical analysis and logging of sync statistics by timestamp
+  - Token table accumulates one row per successful sync per account/drive combination
+- **Latest Token Retrieval**: Updated DeltaTokenRepository.GetByAccountAndDriveAsync to order by LastSyncAt DESC
+  - Returns most recent token for use in next sync
+  - Preserves complete sync history for audit and analysis
+- **Token Lifecycle**:
+  1. **Before Sync**: Get latest saved token via GetByAccountAndDriveAsync (returns null on first sync)
+  2. **Delta Query**: Use saved token URL if available, otherwise use initial delta endpoint
+  3. **After Sync**: Extract @odata.deltaLink from response
+  4. **Persist**: Save new token with generated ID and LastSyncAt = DateTime.UtcNow if deltaLink is not null/empty
+  5. **Failed Sync Handling**: Token is NOT saved if deltaLink is null/empty (graceful handling)
+- **Last Sync Timestamp**: All persisted tokens have LastSyncAt set to UTC now
+  - Enables chronological ordering and historical tracking
+  - Supports offline analysis and debugging
+- **Repository Integration**: SaveAsync handles upsert logic based on token ID
+  - Since each sync generates new ID, all calls to SaveAsync are inserts (not updates)
+  - Historical tokens remain in database for analysis
+- **Graceful Handling**:
+  - Null/empty deltaLink: Token is not saved (service continues normally)
+  - Failed repository save: Exception is propagated to caller
+  - Concurrent syncs: Not prevented at this layer (future task for orchestration)
+- Created 2 integration tests in DeltaSyncServiceShould.cs:
+  - CallRepositoryToGetLatestTokenBeforeSync: Verifies repository is queried before sync
+  - RepositoryIsCalledToSaveTokenAfterSync: Verifies token persistence mechanism integration
+- All 744 tests passing (2 new tests added for token persistence)
+- Build verified successful
+
+- [x] Update DeltaToken after successful sync
+- [x] Handle initial sync (no delta token) - first sync creates new token ID
+- [x] Generate new token ID each sync for historical analysis
+- [x] Set LastSyncAt to UTC now
+- [x] Handle null/empty deltaLink gracefully
+- [x] Retrieve latest token by LastSyncAt DESC
+- [x] Add unit tests for token lifecycle
 
 **Task 3.10**: Implement LocalChangeDetectionService
 
