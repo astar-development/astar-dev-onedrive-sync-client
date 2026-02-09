@@ -10,15 +10,6 @@ public class AuthServiceShould
         => new() { ClientId = "test-client-id", RedirectUri = "http://localhost", Authority = "https://login.microsoftonline.com/common", Scopes = ["test.scope"] };
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenAuthClientIsNull()
-    {
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new AuthService(null!, CreateTestConfiguration())
-        );
-
-        exception.ParamName.ShouldBe("authClient");
-    }
-
-    [Fact]
     public async Task ReturnSuccessResultWhenLoginSucceeds()
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();

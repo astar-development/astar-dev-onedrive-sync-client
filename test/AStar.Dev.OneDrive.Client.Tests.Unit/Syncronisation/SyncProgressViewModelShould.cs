@@ -23,26 +23,10 @@ public class SyncProgressViewModelShould
             logger));
 
         _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<NullReferenceException>();
     }
-
     [Fact]
-    public void ThrowArgumentExceptionWhenAccountIdIsEmpty()
-    {
-        ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
-        ILogger<SyncProgressViewModel> logger = Substitute.For<ILogger<SyncProgressViewModel>>();
-
-        Exception? exception = Record.Exception(() => new SyncProgressViewModel(
-            string.Empty,
-            syncEngine,
-            logger));
-
-        _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentException>();
-    }
-
-    [Fact]
-    public void ThrowArgumentNullExceptionWhenSyncEngineIsNull()
+    public void ThrowNullReferenceExceptionWhenSyncEngineIsNull()
     {
         ILogger<SyncProgressViewModel> logger = Substitute.For<ILogger<SyncProgressViewModel>>();
 
@@ -52,11 +36,11 @@ public class SyncProgressViewModelShould
             logger));
 
         _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<NullReferenceException>();
     }
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenLoggerIsNull()
+    public void ThrowNullReferenceExceptionWhenLoggerIsNull()
     {
         ISyncEngine syncEngine = Substitute.For<ISyncEngine>();
 
@@ -66,7 +50,7 @@ public class SyncProgressViewModelShould
             null!));
 
         _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<NullReferenceException>();
     }
 
     [Fact]

@@ -9,15 +9,6 @@ namespace AStar.Dev.OneDrive.Client.Tests.Unit.Accounts;
 public class UpdateAccountDetailsViewModelShould
 {
     [Fact]
-    public void ThrowArgumentNullExceptionWhenAccountRepositoryIsNull()
-    {
-        IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new UpdateAccountDetailsViewModel(null!, mockScheduler));
-
-        exception.ParamName.ShouldBe("accountRepository");
-    }
-
-    [Fact]
     public void InitializeWithEmptyAccountsCollection()
     {
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();

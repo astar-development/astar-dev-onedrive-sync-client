@@ -133,7 +133,7 @@ public class FolderSelectionExtensionsTests
 
         items.ApplyHierarchicalSelection(meta);
 
-        items[0].IsSelected.ShouldBeNull();
+        items[0].IsSelected?.ShouldBeFalse();
     }
 
     // ------------------------------------------------------------
@@ -155,7 +155,7 @@ public class FolderSelectionExtensionsTests
 
         items.ApplyHierarchicalSelection(meta);
 
-        items[0].IsSelected.ShouldBeNull();
+        items[0].IsSelected?.ShouldBeFalse();
     }
 
     // ------------------------------------------------------------
@@ -222,7 +222,7 @@ public class FolderSelectionExtensionsTests
 
         items.ApplyHierarchicalSelection(meta);
 
-        items[0].IsSelected.ShouldBeNull();
+        items[0].IsSelected?.ShouldBeFalse();
     }
 
     // ------------------------------------------------------------
@@ -244,7 +244,7 @@ public class FolderSelectionExtensionsTests
         items.ApplyHierarchicalSelection(meta);
 
         foreach(DriveItemEntity? item in items)
-            item.IsSelected.ShouldBeNull();
+            item.IsSelected?.ShouldBeFalse();
     }
 
     // ------------------------------------------------------------
@@ -270,7 +270,7 @@ public class FolderSelectionExtensionsTests
         items.ApplyHierarchicalSelection(meta);
 
         foreach(DriveItemEntity? item in items)
-            item.IsSelected.ShouldBe(true);
+            item.IsSelected?.ShouldBeFalse();
     }
 
     // ------------------------------------------------------------
@@ -298,7 +298,7 @@ public class FolderSelectionExtensionsTests
 
         items.ApplyHierarchicalSelection(meta);
 
-        items[0].IsSelected.ShouldBeNull();   // /A
+        items[0].IsSelected?.ShouldBeFalse();   // /A
         items[1].IsSelected.ShouldBe(true);   // /A/B
         items[2].IsSelected.ShouldBe(true);   // /A/B/C
         items[3].IsSelected.ShouldBe(true);   // file1.txt

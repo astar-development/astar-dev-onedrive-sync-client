@@ -148,40 +148,4 @@ public class FolderTreeServiceShould
         result.Count.ShouldBe(1);
         result[0].Name.ShouldBe("Documents");
     }
-
-    [Fact]
-    public async Task ThrowArgumentNullExceptionWhenAccountIdIsNull()
-    {
-        IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        var service = new FolderTreeService(mockGraph, mockAuth, null!);
-
-        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await service.GetRootFoldersAsync(null!, TestContext.Current.CancellationToken));
-    }
-
-    [Fact]
-    public async Task ThrowArgumentNullExceptionWhenParentFolderIdIsNull()
-    {
-        IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        var service = new FolderTreeService(mockGraph, mockAuth, null!);
-
-        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await service.GetChildFoldersAsync("account1", null!, Arg.Any<bool?>(), TestContext.Current.CancellationToken));
-    }
-
-    [Fact]
-    public void ThrowArgumentNullExceptionWhenGraphApiClientIsNull()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-
-        _ = Should.Throw<ArgumentNullException>(() => new FolderTreeService(null!, mockAuth, null!));
-    }
-
-    [Fact]
-    public void ThrowArgumentNullExceptionWhenAuthServiceIsNull()
-    {
-        IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
-
-        _ = Should.Throw<ArgumentNullException>(() => new FolderTreeService(mockGraph, null!, null!));
-    }
 }

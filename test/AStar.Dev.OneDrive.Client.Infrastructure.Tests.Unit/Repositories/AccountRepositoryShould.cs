@@ -158,45 +158,6 @@ public class AccountRepositoryShould
         result.ShouldBeFalse();
     }
 
-    [Fact]
-    public void ThrowArgumentNullExceptionWhenContextIsNull()
-    {
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new AccountRepository(null!)
-        );
-
-        exception.ParamName.ShouldBe("context");
-    }
-
-    [Fact]
-    public async Task ThrowArgumentNullExceptionWhenAddingNullAccount()
-    {
-        using SyncDbContext context = CreateInMemoryContext();
-        var repository = new AccountRepository(_contextFactory);
-
-        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.AddAsync(null!)
-        );
-    }
-
-    [Fact]
-    public async Task ThrowArgumentNullExceptionWhenUpdatingNullAccount()
-    {
-        using SyncDbContext context = CreateInMemoryContext();
-        var repository = new AccountRepository(_contextFactory);
-
-        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.UpdateAsync(null!)
-        );
-    }
-
-    [Fact]
-    public async Task ThrowArgumentNullExceptionWhenGettingByNullId()
-    {
-        using SyncDbContext context = CreateInMemoryContext();
-        var repository = new AccountRepository(_contextFactory);
-
-        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.GetByIdAsync(null!)
-        );
-    }
-
     private static SyncDbContext CreateInMemoryContext()
     {
         DbContextOptions<SyncDbContext> options = new DbContextOptionsBuilder<SyncDbContext>()

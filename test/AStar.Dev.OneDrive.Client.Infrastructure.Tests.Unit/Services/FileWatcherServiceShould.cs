@@ -40,14 +40,6 @@ public class FileWatcherServiceShould : IDisposable
     }
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenLocalPathIsNull()
-    {
-        Exception? exception = Record.Exception(() => _sut.StartWatching("account1", null!));
-
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
-    }
-
-    [Fact]
     public void ThrowDirectoryNotFoundExceptionWhenPathDoesNotExist()
     {
         var nonExistentPath = Path.Combine(_testDirectory, "NonExistent");

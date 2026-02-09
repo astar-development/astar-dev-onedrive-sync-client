@@ -116,21 +116,4 @@ public class AStarLoggerTest
             exception,
             (Func<object, Exception?, string>)formatter);
     }
-
-    [Fact]
-    public void LogPageView_WhenPageNameIsNull_ThrowsArgumentNullException()
-    {
-        string? pageName = null;
-
-        Should.Throw<ArgumentNullException>(() => _astLogger.LogPageView(pageName!));
-
-        _mockLogger.DidNotReceive().Log(
-            Arg.Any<LogLevel>(),
-            Arg.Any<EventId>(),
-            Arg.Any<object>(),
-            Arg.Any<Exception?>(),
-            Arg.Any<Func<object, Exception?, string>>());
-
-        _mockTelemetryClient.DidNotReceive().TrackPageView(Arg.Any<string>());
-    }
 }

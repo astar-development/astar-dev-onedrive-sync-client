@@ -916,6 +916,8 @@ public class SyncEngineShould
         IAccountRepository accountRepo = Substitute.For<IAccountRepository>();
         IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         ISyncConflictRepository syncConflictRepo = Substitute.For<ISyncConflictRepository>();
+        ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
+        IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
 
         // Setup default mock return for UploadFileAsync to prevent null reference exceptions
         _ = graphApiClient.UploadFileAsync(
@@ -943,9 +945,8 @@ public class SyncEngineShould
         ISyncSessionLogRepository syncSessionLogRepo = Substitute.For<ISyncSessionLogRepository>();
         IFileOperationLogRepository fileOperationLogRepo = Substitute.For<IFileOperationLogRepository>();
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, null!,
-            null!);
-        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, syncRepo, deltaPageProcessor);
+        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncRepo, deltaPageProcessor);
 
         return (engine, mocks);
     }
@@ -957,5 +958,7 @@ public class SyncEngineShould
         ISyncConfigurationRepository SyncConfigRepo,
         IAccountRepository AccountRepo,
         IGraphApiClient GraphApiClient,
-        ISyncConflictRepository SyncConflictRepo);
+        ISyncConflictRepository SyncConflictRepo,
+        ISyncRepository SyncRepo,
+        IDeltaPageProcessor DeltaPageProcessor);
 }

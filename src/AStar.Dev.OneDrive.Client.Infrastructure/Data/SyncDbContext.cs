@@ -50,16 +50,6 @@ public sealed class SyncDbContext(DbContextOptions<SyncDbContext> options) : DbC
     /// </summary>
     public DbSet<DriveItemEntity> DriveItems { get; set; } = null!;
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if(!optionsBuilder.IsConfigured)
-            _ = optionsBuilder.UseSqlite(@"Data Source=C:\Users\jbarden\AppData\Local\AStar.Dev.OneDrive.Client\sync.db");
-
-        _ = optionsBuilder.UseLoggerFactory(new SerilogLoggerFactory());
-
-        base.OnConfiguring(optionsBuilder);
-    }
-
     /// <inheritdoc />
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

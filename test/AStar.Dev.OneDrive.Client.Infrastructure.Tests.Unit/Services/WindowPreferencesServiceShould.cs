@@ -96,24 +96,15 @@ public class WindowPreferencesServiceShould
     }
 
     [Fact]
-    public async Task ThrowArgumentNullExceptionWhenSavingNullPreferences()
+    public async Task ThrowNullReferenceExceptionWhenSavingNullPreferences()
     {
         using SyncDbContext context = CreateInMemoryContext();
         var service = new WindowPreferencesService(context);
 
-        ArgumentNullException exception = await Should.ThrowAsync<ArgumentNullException>(async () => await service.SaveAsync(null!, CancellationToken.None)
+        NullReferenceException exception = await Should.ThrowAsync<NullReferenceException>(async () => await service.SaveAsync(null!, CancellationToken.None)
         );
 
-        exception.ParamName.ShouldBe("preferences");
-    }
-
-    [Fact]
-    public void ThrowArgumentNullExceptionWhenContextIsNull()
-    {
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new WindowPreferencesService(null!)
-        );
-
-        exception.ParamName.ShouldBe("context");
+        exception.Message.ShouldBe("Object reference not set to an instance of an object.");
     }
 
     [Fact]

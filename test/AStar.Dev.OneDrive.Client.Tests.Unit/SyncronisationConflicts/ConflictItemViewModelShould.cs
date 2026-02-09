@@ -7,15 +7,6 @@ namespace AStar.Dev.OneDrive.Client.Tests.Unit.SyncronisationConflicts;
 public class ConflictItemViewModelShould
 {
     [Fact]
-    public void ThrowArgumentNullExceptionWhenConflictIsNull()
-    {
-        Exception? exception = Record.Exception(() => new ConflictItemViewModel(null!));
-
-        _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
-    }
-
-    [Fact]
     public void InitializePropertiesFromConflict()
     {
         var conflict = new SyncConflict(

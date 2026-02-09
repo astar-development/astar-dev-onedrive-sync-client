@@ -26,8 +26,8 @@ public class SyncStateShould
         Assert.Equal(0, syncState.FilesDeleted);
         Assert.Equal(0, syncState.ConflictsDetected);
         Assert.Equal(0.0, syncState.MegabytesPerSecond);
-        Assert.Null(syncState.EstimatedSecondsRemaining);
-        Assert.Null(syncState.CurrentStatusMessage);
+        syncState.EstimatedSecondsRemaining.ShouldBe(0);
+        syncState.CurrentStatusMessage.ShouldBe(string.Empty);
         Assert.Null(syncState.LastUpdateUtc);
     }
 }

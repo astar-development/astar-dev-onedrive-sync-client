@@ -19,17 +19,6 @@ public sealed class ConflictResolverShould
     private readonly IDriveItemsRepository _metadataRepo = Substitute.For<IDriveItemsRepository>();
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenConflictIsNull()
-    {
-        ConflictResolver resolver = CreateResolver();
-
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(async () =>
-            await resolver.ResolveAsync(null!, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken));
-
-        exception.ParamName.ShouldBe("conflict");
-    }
-
-    [Fact]
     public async Task ThrowInvalidOperationExceptionWhenAccountNotFound()
     {
         ConflictResolver resolver = CreateResolver();

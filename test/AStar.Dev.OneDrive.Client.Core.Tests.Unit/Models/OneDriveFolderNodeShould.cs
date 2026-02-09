@@ -27,7 +27,7 @@ public class OneDriveFolderNodeShould
         var node = new OneDriveFolderNode("id123",  "MyFolder", "/MyFolder", "parentId", true);
 
         node.DriveItemId.ShouldBe("id123");
-        node.DriveItemId.ShouldBe("Id");
+        node.DriveItemId.ShouldBe("id123");
         node.Name.ShouldBe("MyFolder");
         node.Path.ShouldBe("/MyFolder");
         node.ParentId.ShouldBe("parentId");

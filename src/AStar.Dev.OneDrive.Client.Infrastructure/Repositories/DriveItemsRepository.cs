@@ -64,8 +64,9 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         DriveItemEntity driveItem = await context.DriveItems.FindAsync([fileMetadata.DriveItemId], cancellationToken) ??
                                     throw new InvalidOperationException($"File metadata with ID '{fileMetadata.DriveItemId}' not found.");
+        DriveItemEntity updatedEntity = MapToEntity(fileMetadata);
 
-        context.Entry(driveItem).CurrentValues.SetValues(driveItem);
+        context.Entry(driveItem).CurrentValues.SetValues(updatedEntity);
         _ = await context.SaveChangesAsync(cancellationToken);
     }
 

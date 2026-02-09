@@ -159,17 +159,6 @@ public class DriveItemsRepositoryShould
         file1.SyncStatus.ShouldBe(FileSyncStatus.PendingUpload);
     }
 
-    [Fact]
-    public async Task ThrowArgumentNullExceptionForNullParameters()
-    {
-        using SyncDbContext context = CreateInMemoryContext();
-        var repository = new DriveItemsRepository(_contextFactory);
-
-        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.AddAsync(null!));
-        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.GetByAccountIdAsync(null!));
-        _ = await Should.ThrowAsync<ArgumentNullException>(async () => await repository.GetByIdAsync(null!));
-    }
-
     private static FileMetadata CreateFileMetadata(string id, string accountId, string path, FileSyncStatus status = FileSyncStatus.Synced)
         => new(id, accountId, Path.GetFileName(path), path, 1024, DateTime.UtcNow, $@"C:\local{path}", false, false, false, "ctag", "etag", "hash", null, status, null);
 

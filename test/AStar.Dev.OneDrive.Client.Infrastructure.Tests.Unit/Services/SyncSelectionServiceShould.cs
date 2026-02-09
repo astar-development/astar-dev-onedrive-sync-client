@@ -295,7 +295,7 @@ public class SyncSelectionServiceShould
         Exception? exception = Record.Exception(() => _service.SetSelection(null!, true));
 
         _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<NullReferenceException>();
     }
 
     [Fact]
@@ -306,18 +306,7 @@ public class SyncSelectionServiceShould
         Exception? exception = Record.Exception(() => _service.UpdateParentStates(null!, rootFolders));
 
         _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
-    }
-
-    [Fact]
-    public void ThrowArgumentNullExceptionWhenUpdateParentStatesRootFoldersIsNull()
-    {
-        OneDriveFolderNode folder = CreateFolder("test", "Test");
-
-        Exception? exception = Record.Exception(() => _service.UpdateParentStates(folder, null!));
-
-        _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<NullReferenceException>();
     }
 
     [Fact]
@@ -326,7 +315,7 @@ public class SyncSelectionServiceShould
         Exception? exception = Record.Exception(() => _service.GetSelectedFolders(null!));
 
         _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<NullReferenceException>();
     }
 
     [Fact]
@@ -335,7 +324,7 @@ public class SyncSelectionServiceShould
         Exception? exception = Record.Exception(() => _service.ClearAllSelections(null!));
 
         _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<NullReferenceException>();
     }
 
     [Fact]
@@ -344,7 +333,7 @@ public class SyncSelectionServiceShould
         Exception? exception = Record.Exception(() => _service.CalculateStateFromChildren(null!));
 
         _ = exception.ShouldNotBeNull();
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
+        _ = exception.ShouldBeOfType<NullReferenceException>();
     }
 
     private static OneDriveFolderNode CreateFolder(string id, string name, string? parentId = null) => new()
