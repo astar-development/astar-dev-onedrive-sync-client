@@ -8,8 +8,8 @@ on:
     branches:
       - main
 env:
-  SONAR_PROJECT: astar-dev-onedrive-client-v3
-  AZURE_WEBAPP_NAME: astar-dev-onedrive-client-v3
+  SONAR_PROJECT: astar-dev-onedrive-sync-client
+  AZURE_WEBAPP_NAME: astar-dev-onedrive-sync-client
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 10.x.x
   WORKING_DIRECTORY: src/

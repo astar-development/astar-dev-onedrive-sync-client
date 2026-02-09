@@ -1,7 +1,6 @@
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using Microsoft.EntityFrameworkCore;
-using Serilog.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Data;
 
