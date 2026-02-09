@@ -17,7 +17,6 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
         folder.SelectionState = selectionState;
         folder.IsSelected = isSelected;
 
-        // Cascade to all children
         CascadeSelectionToChildren(folder, selectionState);
     }
 
@@ -41,7 +40,6 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
             _ => null
         };
 
-        // Continue propagating upward
         UpdateParentStates(parent, rootFolders);
     }
 
@@ -86,19 +84,15 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
             }
         }
 
-        // If any child is indeterminate, parent is indeterminate
         if(indeterminateCount > 0)
             return SelectionState.Indeterminate;
 
-        // If all children are checked, parent is checked
         if(checkedCount == folder.Children.Count)
             return SelectionState.Checked;
 
-        // If all children are unchecked, parent is unchecked
         if(uncheckedCount == folder.Children.Count && folder.IsSelected == false)
             return SelectionState.Unchecked;
 
-        // Mixed state = indeterminate
         return SelectionState.Indeterminate;
     }
 
@@ -139,14 +133,12 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
                 normalizedPathToNodeMap[normalized] = kvp.Value;
         }
 
-        // Initialize ALL folders to Unchecked first
         foreach(OneDriveFolderNode folder in pathToNodeMap.Values)
         {
             folder.SelectionState = SelectionState.Unchecked;
             folder.IsSelected = false;
         }
 
-        // Then set saved selections to Checked using normalized matching
         if(savedFolderPaths.Count > 0)
         {
             for(var i = 0; i < savedFolderPaths.Count; i++)
@@ -154,28 +146,22 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
                 var normalizedPath = normalizedSavedPaths[i];
                 if(normalizedPathToNodeMap.TryGetValue(normalizedPath, out OneDriveFolderNode? folder))
                     SetSelection(folder, true);
-                // Silently ignore folders that no longer exist (deleted or renamed)
             }
 
-            // For root folders that aren't loaded: check if they have selected descendants
-            // This handles the case where only a deep subfolder is selected
             await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", "Checking root folders for selected descendants", accountId, cancellationToken);
             foreach(OneDriveFolderNode rootFolder in rootFolders)
             {
                 await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Checking root: {rootFolder.Path} (State: {rootFolder.SelectionState})", accountId, cancellationToken);
 
-                // Skip if root is already explicitly selected
                 if(rootFolder.SelectionState == SelectionState.Checked)
                 {
                     await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", "Already checked, skipping", accountId, cancellationToken);
                     continue;
                 }
 
-                // Normalize root path for comparison
                 var normalizedRootPath = NormalizePathForComparison(rootFolder.Path);
                 await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Root normalized to: {normalizedRootPath}", accountId, cancellationToken);
 
-                // Check if any saved path is a descendant of this root
                 var hasSelectedDescendants = normalizedSavedPaths.Any(path => path.StartsWith(normalizedRootPath + "/", StringComparison.OrdinalIgnoreCase) ||
                                                                               (normalizedRootPath == "/" && path.StartsWith("/", StringComparison.OrdinalIgnoreCase) && path != "/"));
 
@@ -183,7 +169,6 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
 
                 if(hasSelectedDescendants)
                 {
-                    // Set root to indeterminate since it has selected descendants
                     await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Setting {rootFolder.Path} to Indeterminate", accountId, cancellationToken);
                     rootFolder.SelectionState = SelectionState.Indeterminate;
                     rootFolder.IsSelected = null;
@@ -225,7 +210,7 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
     public void UpdateParentState(OneDriveFolderNode folder)
     {
         if(folder.Children.Count == 0)
-            return; // No children, nothing to calculate
+            return;
 
         SelectionState calculatedState = CalculateStateFromChildren(folder);
         folder.SelectionState = calculatedState;
@@ -309,16 +294,13 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
         if(string.IsNullOrEmpty(path))
             return path;
 
-        // Remove /drives/{id}/root: prefix
         var drivesPattern = @"^/drives/[^/]+/root:";
-        if(Regex.IsMatch(path, drivesPattern))
-            path = Regex.Replace(path, drivesPattern, string.Empty);
+        if(Regex.IsMatch(path, drivesPattern, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(100)))
+            path = Regex.Replace(path, drivesPattern, string.Empty, RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(100));
 
-        // Remove /drive/root: prefix
         if(path.StartsWith("/drive/root:", StringComparison.OrdinalIgnoreCase))
             path = path["/drive/root:".Length..];
 
-        // Ensure path starts with /
         if(!path.StartsWith('/'))
             path = "/" + path;
 
@@ -329,11 +311,9 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
     {
         if(folder.Children.Count > 0)
         {
-            // Recursively update children first
             foreach(OneDriveFolderNode child in folder.Children)
                 RecalculateParentStates(child);
 
-            // Then update this folder's state based on children
             SelectionState calculatedState = CalculateStateFromChildren(folder);
             folder.SelectionState = calculatedState;
             folder.IsSelected = calculatedState switch

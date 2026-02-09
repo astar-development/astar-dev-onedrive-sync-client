@@ -6,7 +6,6 @@ using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 
 using AStar.Dev.OneDrive.Client.Syncronisation;
-using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Client.Tests.Unit.Syncronisation;
 

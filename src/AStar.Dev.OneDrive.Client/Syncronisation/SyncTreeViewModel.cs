@@ -9,7 +9,6 @@ using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
-using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Client.Syncronisation;
