@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Client.Core;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 
@@ -148,10 +149,10 @@ public sealed class AuthService(IAuthenticationClient authClient, AuthConfigurat
         // Setup token cache persistence
         var cacheDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "astar-dev-onedrive-client");
+            ApplicationMetadata.ApplicationFolder);
 
         var storagePropertiesBuilder = new StorageCreationPropertiesBuilder(
-            "astar-onedrive-cache.dat",
+            "astar-onedrive-sync-cache.dat",
             cacheDirectory);
 
         // Use plaintext storage on Linux due to keyring/libsecret compatibility issues

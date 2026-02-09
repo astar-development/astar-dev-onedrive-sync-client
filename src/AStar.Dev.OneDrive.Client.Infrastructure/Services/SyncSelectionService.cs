@@ -192,11 +192,6 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
                 }
             }
         }
-
-        // NOTE: We don't call RecalculateParentStates here because:
-        // 1. Root folders don't have parents
-        // 2. Their children aren't loaded yet (just placeholder nodes)
-        // 3. We've already manually set indeterminate state for roots with selected descendants
     }
 
     /// <inheritdoc />

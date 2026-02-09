@@ -130,8 +130,9 @@
                     BorderThickness="0,1,0,0"
                     Padding="16,12">
                 <StackPanel Orientation="Horizontal" Spacing="12">
-                    <Button Content="Start Sync"
+                    <Button Content="{Binding SyncButtonText}"
                             Command="{Binding StartSyncCommand}"
+                            ToolTip.Tip="{Binding SyncTooltip}"
                             Classes="accent"
                             MinWidth="120"
                             IsEnabled="{Binding IsLoading, Converter={StaticResource BooleanNegationConverter}}" />

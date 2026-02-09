@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
+using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     private readonly ISyncSelectionService _selectionService;
     private readonly ISyncEngine _syncEngine;
     private readonly IDebugLogger _debugLogger;
-    private readonly ILogger<SyncTreeViewModel> _logger;
+    private readonly ISyncRepository _syncRepository;
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="SyncTreeViewModel" /> class.
@@ -32,13 +33,15 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     /// <param name="selectionService">Service for managing selection state.</param>
     /// <param name="syncEngine">Service for file synchronization.</param>
     /// <param name="debugLogger">Service for logging debug information.</param>
-    public SyncTreeViewModel(IFolderTreeService folderTreeService, ISyncSelectionService selectionService, ISyncEngine syncEngine, IDebugLogger debugLogger,  ILogger<SyncTreeViewModel> logger)
+    /// <param name="deltaPageProcessor">Service for processing delta pages.</param>
+    /// <param name="logger">Logger for debug and error information.</param>
+    public SyncTreeViewModel(IFolderTreeService folderTreeService, ISyncSelectionService selectionService, ISyncEngine syncEngine, IDebugLogger debugLogger, ISyncRepository syncRepository)
     {
         _folderTreeService = folderTreeService ?? throw new ArgumentNullException(nameof(folderTreeService));
         _selectionService = selectionService ?? throw new ArgumentNullException(nameof(selectionService));
         _syncEngine = syncEngine ?? throw new ArgumentNullException(nameof(syncEngine));
         _debugLogger = debugLogger ?? throw new ArgumentNullException(nameof(debugLogger));
-        _logger = logger;
+        _syncRepository = syncRepository ?? throw new ArgumentNullException(nameof(syncRepository));
 
         LoadFoldersCommand = ReactiveCommand.CreateFromTask(LoadFoldersAsync);
         LoadChildrenCommand = ReactiveCommand.CreateFromTask<OneDriveFolderNode>(LoadChildrenAsync);
@@ -72,11 +75,14 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             })
             .DisposeWith(_disposables);
 
-            var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? string.Empty); 
-                    using (Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
-                    {
-                        _logger.LogInformation("Starting sync for account");
-                    }
+        var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? string.Empty); 
+        using (Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
+        {
+            _ = _debugLogger.LogInfoAsync("SyncTreeViewModel", SelectedAccountId ?? string.Empty, "Starting sync for account");
+        }
+        
+        SyncTooltip = "This will perform the initial sync, which will retrieve details of all files and folders from OneDrive. This may take some time depending on the number of files. Subsequent syncs will be faster as only changes (and your selections) are processed.";
+        SyncButtonText = "Start Initial Sync";
     }
 
     /// <summary>
@@ -139,6 +145,18 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         private set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
+    public string? SyncTooltip
+    {
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
+    public string? SyncButtonText
+    {
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    }
+
     /// <summary>
     ///     Gets the current sync state.
     /// </summary>
@@ -178,8 +196,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         SyncStatus.Paused => "Sync paused",
         SyncStatus.Failed => "Sync failed",
         SyncStatus.Queued => throw new NotImplementedException(),
-        SyncStatus.InitialDeltaSync => $"Starting the initial Delta Sync...processing page: {SyncState.TotalFiles}",
-        SyncStatus.IncrementalDeltaSync => "Starting the incremental Delta Sync...this could take some time...",
         _ => string.Empty
     };
 
@@ -243,6 +259,18 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         {
             IsLoading = true;
             ErrorMessage = null;
+
+            DeltaToken? deltaToken = await _syncRepository.GetDeltaTokenAsync(SelectedAccountId, cancellationToken);
+            if(deltaToken is null)
+            {
+                SyncTooltip = "This will perform the initial sync, which will retrieve details of all files and folders from OneDrive. This may take some time depending on the number of files. Subsequent syncs will be faster as only changes (and your selections) are processed.";
+                SyncButtonText = "Start Initial Sync";
+            }
+            else
+            {
+                SyncTooltip = "This will perform a sync to retrieve any changes since the last sync. This is usually very fast as only changes are processed, not the entire folder structure.";
+                SyncButtonText = "Start Sync";
+            }
 
             IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, cancellationToken);
 

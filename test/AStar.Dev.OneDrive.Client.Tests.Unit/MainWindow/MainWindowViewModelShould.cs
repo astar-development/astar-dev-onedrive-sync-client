@@ -152,6 +152,6 @@ public class MainWindowViewModelShould
         var progressSubject = new Subject<SyncState>();
         _ = mockSyncEngine.Progress.Returns(progressSubject);
 
-        return new SyncTreeViewModel(mockFolderService, mockSelectionService, mockSyncEngine, Substitute.For<IDebugLogger>(), Substitute.For<Microsoft.Extensions.Logging.ILogger<SyncTreeViewModel>>());
+        return new SyncTreeViewModel(mockFolderService, mockSelectionService, mockSyncEngine, Substitute.For<IDebugLogger>(), Substitute.For<ISyncRepository>());
     }
 }
