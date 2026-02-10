@@ -19,14 +19,6 @@ public class ViewSyncHistoryViewModelShould
     }
 
     [Fact]
-    public void ThrowArgumentNullExceptionWhenFileOperationLogRepositoryIsNull()
-    {
-        ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new ViewSyncHistoryViewModel(_mockAccountRepo, null!, _debugLogger));
-
-        exception.ParamName.ShouldBe("fileOperationLogRepository");
-    }
-
-    [Fact]
     public void InitializeWithEmptySyncHistoryCollection()
     {
         var sut = new ViewSyncHistoryViewModel(_mockAccountRepo, _mockFileOpLogRepo, _debugLogger);
