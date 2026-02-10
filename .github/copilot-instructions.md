@@ -21,51 +21,15 @@
 
 ### Layered Architecture
 
-- **Components**:
-  **TDD Workflow (Enforced)**
+#### 1. **Presentation Layer** (`AStar.Dev.OneDrive.Client`)
 
-- **Write failing tests first**: For any new behavior, create one or more tests that fail before adding production code. Tests should specify expected behavior and be the driver for the minimal implementation.
-- **Local verification**: Developers must run the test suite locally and confirm the new test fails, then implement production code to make it pass. Run the test suite again and confirm no other tests regressed.
-- **Commit practice**: Include the failing-test commit in feature branches (failing-test commit either first or clearly present in PR history) so reviewers can see the TDD progression.
+- Avalonia UI with XAML views and ViewModels
+- ReactiveUI for MVVM implementation
+- View-specific converters and behaviors
 
-**Test Organization**:
+#### 2. **Infrastructure Layer** (`AStar.Dev.OneDrive.Client.Infrastructure`)
 
-- **Unit Tests**: `test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/`
-- **Core Tests**: `test/AStar.Dev.OneDrive.Client.Core.Tests.Unit/`
-- **Integration Tests**: `test/AStar.Dev.OneDrive.Client.Tests.Integration/`
-- **UI Tests**: `test/AStar.Dev.OneDrive.Client.Tests.Unit/`
-- **NuGet Package Tests**: `test/nuget-packages/`
-
-**Testing Patterns & TDD Practices**:
-
-1. **Naming Convention**: `<ComponentName>Should` or `<ComponentName>Tests`
-
-   ```csharp
-   public class WindowPreferencesServiceShould { }
-   public class PatternTests { }
-   ```
-
-2. **Fact vs Theory**:
-   - `[Fact]` - Single test case
-   - `[Theory] [InlineData(...)]` - Parameterized tests
-
-3. **In-Memory Database Testing**:
-
-   ```csharp
-   using SyncDbContext context = CreateInMemoryContext();
-   var service = new WindowPreferencesService(context);
-   ```
-
-4. **Mocking Pattern**: Create mocks via interface, use with services. Prefer behavior-driven assertions and avoid coupling tests to private implementation details.
-
-5. **Assertion Library**: Shouldly (for English-language, fluent-style assertions)
-
-   ```csharp
-   result.ShouldNotBeNull();
-   result.ShouldBe(expectedValue);
-   ```
-
-6. **CI Enforcement**: CI must run the full test suite and fail the build if any test fails. PRs must pass CI before merge. See CI guidance below.
+**Key Services**:
 
 - `AutoSyncSchedulerService` - Scheduled sync execution
 - `AuthenticationClient` - OAuth/MSAL wrapper
@@ -238,41 +202,7 @@ _progressSubject.OnNext(newState); // Emit state change
 
 ### 6. Testing Strategy
 
-**Test Organization**:
-
-- **Unit Tests**: `test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/`
-- **Core Tests**: `test/AStar.Dev.OneDrive.Client.Core.Tests.Unit/`
-- **Integration Tests**: `test/AStar.Dev.OneDrive.Client.Tests.Integration/`
-- **UI Tests**: `test/AStar.Dev.OneDrive.Client.Tests.Unit/`
-- **NuGet Package Tests**: `test/nuget-packages/`
-
-**Testing Patterns**:
-
-1. **Naming Convention**: `<ComponentName>Should` or `<ComponentName>Tests`
-
-   ```csharp
-   public class WindowPreferencesServiceShould { }
-   public class PatternTests { }
-   ```
-
-2. **Fact vs Theory**:
-   - `[Fact]` - Single test case
-   - `[Theory] [InlineData(...)]` - Parameterized tests
-
-3. **In-Memory Database Testing**:
-
-   ```csharp
-   using SyncDbContext context = CreateInMemoryContext();
-   var service = new WindowPreferencesService(context);
-   ```
-
-4. **Mocking Pattern**: Create mocks via interface, use with services
-
-5. **Assertion Library**: Shouldly (fluent assertions)
-   ```csharp
-   result.ShouldNotBeNull();
-   result.ShouldBe(expectedValue);
-   ```
+See **Test-Driven Development (TDD) Policy** section above for complete testing patterns and practices.
 
 ### 7. Database & EF Core
 
@@ -369,6 +299,43 @@ public class MyService : IMyService { }
 - Null checking with null-coalescing operators
 - Use `ArgumentNullException` in public constructors
 - Immutable when possible (records, init properties)
+- Avoid magic strings/numbers (use constants or enums)
+- Prefer expression-bodied members for simple methods
+- Use pattern matching and switch expressions for clarity
+- Avoid deep nesting (early returns, guard clauses)
+- Use `var` when the type is obvious from the right-hand side, else explicit types for clarity
+- Follow SOLID principles and clean architecture guidelines
+- Keep methods small and focused (ideally <20 lines)
+- Keep classes focused on a single responsibility
+- Keep classes and methods cohesive (related functionality grouped together)
+- Avoid large constructors (ideally <5 parameters); consider refactoring or using parameter objects if needed
+- Use dependency injection for all external dependencies (no newing up services inside classes)
+- Do not use regions or #pragma to hide code; refactor instead
+- Use `nameof()` for parameter names in exceptions and logging
+- Use `ConfigureAwait(false)` in library code to avoid deadlocks in UI contexts
+- Use `async` suffix for asynchronous methods (e.g., `GetItemAsync()`)
+- Use `CancellationToken` parameters for all async methods that support cancellation
+- Use `IAsyncDisposable` and `await using` for async cleanup when necessary
+- Use `IEnumerable<T>` for collections that do not require indexing, and `IReadOnlyList<T>` or `IReadOnlyCollection<T>` when immutability is desired
+- Use `record` types for immutable data models and DTOs, and `class` for entities with behavior or mutable state
+- Use `private` fields with `_camelCase` naming convention, and `PascalCase` for properties and methods
+- Use `const` for compile-time constants and `static readonly` for runtime constants
+- Use `StringBuilder` for concatenating multiple strings in loops or when performance is a concern, otherwise use string interpolation for readability
+- Use `Functional Programming` constructs (e.g., `Result<T>`, `Option<T>`) from the internal `AStar.Dev.Functional.Extensions` package to handle errors and optional values in a more expressive way
+- Use `Match<Async>` methods on `Result<T>` and `Option<T>` for handling success and failure cases without throwing exceptions
+- Use `Map<Async>` and `Bind<Async>` methods for transforming and chaining operations on `Result<T>` and `Option<T>` types
+- Use `Shouldly` for assertions in tests to improve readability and provide better failure messages
+- Use `PrimaryConstructor` syntax when possible to reduce boilerplate
+- Use `global using` directives for commonly used namespaces to reduce clutter at the top of files
+- Use `file-scoped namespaces` for better readability and less indentation
+- Use `top-level statements` for simple entry points (e.g., `Program.cs`) to reduce boilerplate
+- Use `target-typed new` expressions to reduce redundancy when the type can be inferred from the context
+- Use `record struct` for small, immutable value types that do not require reference semantics
+- Use `with` expressions to create modified copies of immutable objects
+- Always prefer composition over inheritance, and favor interfaces for abstraction
+- Use `async`/`await` for asynchronous programming, and avoid blocking calls (e.g., `Task.Wait()`, `Task.Result`) to prevent deadlocks and improve scalability
+- Use `Collection Initializers` and `Object Initializers` for cleaner code when creating collections and objects
+- Use `Pattern Matching` and `Switch Expressions` for clearer and more concise code when dealing with multiple conditions
 
 ---
 
@@ -683,6 +650,62 @@ Use conventional commits:
 - `test: Add/update tests`
 - `docs: Update documentation`
 - `chore: Update dependencies, build changes`
+
+### GitHub PR Creation
+
+**Important**: This repository requires all changes to go through pull requests (branch protection rules enabled).
+
+**Creating PRs via GitHub API**:
+
+```bash
+# 1. Create feature branch
+git checkout -b feature/your-feature-name
+
+# 2. Commit changes
+git add .
+git commit -m "feat: your descriptive commit message"
+
+# 3. Push branch
+git push -u origin feature/your-feature-name
+
+# 4. Create PR via GitHub Copilot tool (preferred method)
+# Use the mcp_io_github_git_create_pull_request tool with:
+```
+
+```typescript
+{
+  owner: "astar-development",
+  repo: "astar-dev-onedrive-sync-client",
+  title: "feat: descriptive title using conventional commits",
+  head: "feature/your-feature-name",
+  base: "main",
+  body: `## Summary
+
+Brief description of changes.
+
+## Changes
+
+- Change 1
+- Change 2
+
+## Testing
+
+- [ ] Unit tests added/updated
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+
+## Checklist
+
+- [ ] Code follows TDD workflow
+- [ ] No warnings or errors
+- [ ] Documentation updated
+  `
+}
+```
+
+**Why use the API instead of URL parameters?**
+
+GitHub does not support URL query parameters for pre-filling PR title/description. The `github.com/owner/repo/pull/new/branch?title=...&body=...` pattern does not work. Always use the GitHub API via the `mcp_io_github_git_create_pull_request` tool to create PRs with pre-filled content.
 
 ---
 

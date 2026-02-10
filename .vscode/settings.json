@@ -3,14 +3,19 @@
         "appsettings",
         "Avalonia",
         "avares",
+        "axaml",
         "DPAPI",
         "libsecret",
         "Msal",
+        "nameof",
+        "newing",
         "onedrive",
         "reportgenerator",
         "Shouldly",
+        "slnx",
         "Syncronisation",
-        "Testably"
+        "Testably",
+        "Unmockable"
     ],
     "editor.formatOnSave": true,
     "files.autoSave": "afterDelay"
