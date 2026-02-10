@@ -88,6 +88,7 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         var entities = fileMetadataList.Select(MapToEntity).ToList();
 
+        // Does this run during the delta sync? If so, we need to be careful to handle additions, updates, and deletions correctly. For now, we'll just upsert all items.
         foreach(DriveItemEntity? driveItem in entities)
         {
             DriveItemEntity? existing = await context.DriveItems.FindAsync([driveItem.DriveItemId], cancellationToken);

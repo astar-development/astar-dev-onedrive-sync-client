@@ -7,6 +7,8 @@
         "libsecret",
         "Msal",
         "onedrive",
+        "reportgenerator",
+        "Shouldly",
         "Syncronisation",
         "Testably"
     ],

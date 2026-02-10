@@ -13,7 +13,7 @@ public sealed class DatabaseConfiguration
         get
         {
             var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            var appFolder = Path.Combine(appDataPath, "astar-dev-onedrive-client");
+            var appFolder = Path.Combine(appDataPath, ApplicationMetadata.ApplicationFolder);
 
             _ = Directory.CreateDirectory(appFolder);
 

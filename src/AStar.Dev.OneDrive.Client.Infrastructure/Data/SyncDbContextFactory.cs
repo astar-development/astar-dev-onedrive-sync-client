@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Client.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -12,9 +13,8 @@ public sealed class SyncDbContextFactory : IDesignTimeDbContextFactory<SyncDbCon
     {
         var optionsBuilder = new DbContextOptionsBuilder<SyncDbContext>();
 
-        // Use a temporary database path for design-time operations
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var dbPath = Path.Combine(appDataPath, "astar-dev-onedrive-client", "sync.db");
+        var dbPath = Path.Combine(appDataPath, ApplicationMetadata.ApplicationFolder, "sync.db");
 
         _ = optionsBuilder.UseSqlite($"Data Source={dbPath}");
 
