@@ -20,6 +20,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 public sealed partial class SyncEngine : ISyncEngine, IDisposable
 {
     private const double AllowedTimeDifference = 60.0;
+    private const int BatchSize = 50;
     private readonly IAccountRepository _accountRepository;
     private readonly IDeltaPageProcessor _deltaPageProcessor;
     private readonly IDriveItemsRepository _driveItemsRepository;
@@ -677,6 +678,37 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     public async Task<IReadOnlyList<SyncConflict>> GetConflictsAsync(string accountId, CancellationToken cancellationToken = default)
         => await _syncConflictRepository.GetUnresolvedByAccountIdAsync(accountId, cancellationToken);
 
+    /// <summary>
+    /// Saves a batch of file metadata to the database if the batch has reached the specified size.
+    /// </summary>
+    /// <param name="batch">The batch of files to potentially save and clear.</param>
+    /// <param name="batchSize">The size threshold for saving the batch.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    private async Task SaveBatchIfNeededAsync(
+        List<FileMetadata> batch,
+        int batchSize,
+        CancellationToken cancellationToken)
+    {
+        if(batch.Count >= batchSize)
+        {
+            await _driveItemsRepository.SaveBatchAsync(batch, cancellationToken);
+            batch.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Saves any remaining files in a batch to the database.
+    /// </summary>
+    /// <param name="batch">The batch of files to save and clear.</param>
+    private void SaveRemainingBatch(List<FileMetadata> batch)
+    {
+        if(batch.Count > 0)
+        {
+            _driveItemsRepository.SaveBatchAsync(batch, CancellationToken.None).GetAwaiter().GetResult();
+            batch.Clear();
+        }
+    }
+
     private async Task DeleteDeletedFilesFromDatabase(List<DriveItemEntity> filesToDelete, CancellationToken cancellationToken)
     {
         foreach(DriveItemEntity fileToDelete in filesToDelete)
@@ -687,8 +719,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         List<FileMetadata> filesToDownload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, long downloadBytes, int completedFiles, long completedBytes,
         SemaphoreSlim downloadSemaphore, int activeDownloads, CancellationToken cancellationToken)
     {
-        var batchSize = 50;
-        var batch = new List<FileMetadata>(batchSize);
+        var batch = new List<FileMetadata>(BatchSize);
         var downloadTasks = filesToDownload.Select(async file =>
         {
             await downloadSemaphore.WaitAsync(_syncCancellation!.Token);
@@ -732,11 +763,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 FileMetadata downloadedFile = file with { SyncStatus = FileSyncStatus.Synced, LastSyncDirection = SyncDirection.Download, LocalHash = downloadedHash };
 
                 batch.Add(downloadedFile);
-                if(batch.Count >= batchSize)
-                {
-                    await _driveItemsRepository.SaveBatchAsync(batch, cancellationToken);
-                    batch.Clear();
-                }
+                await SaveBatchIfNeededAsync(batch, BatchSize, cancellationToken);
 
                 await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Successfully synced: {file.Name}", cancellationToken);
 
@@ -756,11 +783,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
                 FileMetadata failedFile = file with { SyncStatus = FileSyncStatus.Failed };
                 batch.Add(failedFile);
-                if(batch.Count >= batchSize)
-                {
-                    await _driveItemsRepository.SaveBatchAsync(batch, cancellationToken);
-                    batch.Clear();
-                }
+                await SaveBatchIfNeededAsync(batch, BatchSize, cancellationToken);
 
                 _ = Interlocked.Increment(ref completedFiles);
                 _ = Interlocked.Add(ref completedBytes, file.Size);
@@ -775,11 +798,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             }
         }).ToList();
         // Save any remaining files in the batch after all downloads complete
-        if(batch.Count > 0)
-        {
-            _driveItemsRepository.SaveBatchAsync(batch, CancellationToken.None).GetAwaiter().GetResult();
-            batch.Clear();
-        }
+        SaveRemainingBatch(batch);
 
         return (activeDownloads, completedBytes, completedFiles, downloadTasks);
     }
@@ -788,8 +807,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         List<FileMetadata> filesToUpload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, int completedFiles, long completedBytes, SemaphoreSlim uploadSemaphore,
         int activeUploads, CancellationToken cancellationToken)
     {
-        var batchSize = 50;
-        var batch = new List<FileMetadata>(batchSize);
+        var batch = new List<FileMetadata>(BatchSize);
         var uploadTasks = filesToUpload.Select(async file =>
         {
             await uploadSemaphore.WaitAsync(_syncCancellation!.Token);
@@ -863,11 +881,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Upload successful: {file.Name}, OneDrive ID={uploadedFile.DriveItemId}, CTag={uploadedFile.CTag}", cancellationToken);
 
                 batch.Add(uploadedFile);
-                if(batch.Count >= batchSize)
-                {
-                    await _driveItemsRepository.SaveBatchAsync(batch, cancellationToken);
-                    batch.Clear();
-                }
+                await SaveBatchIfNeededAsync(batch, BatchSize, cancellationToken);
 
                 _ = Interlocked.Increment(ref completedFiles);
                 _ = Interlocked.Add(ref completedBytes, file.Size);
@@ -892,11 +906,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 else
                     await _driveItemsRepository.AddAsync(failedFile, cancellationToken);
 
-                if(batch.Count >= batchSize)
-                {
-                    await _driveItemsRepository.SaveBatchAsync(batch, cancellationToken);
-                    batch.Clear();
-                }
+                await SaveBatchIfNeededAsync(batch, BatchSize, cancellationToken);
 
                 _ = Interlocked.Increment(ref completedFiles);
                 var finalCompleted = Interlocked.CompareExchange(ref completedFiles, 0, 0);
@@ -910,11 +920,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             }
         }).ToList();
         // Save any remaining files in the batch after all uploads complete
-        if(batch.Count > 0)
-        {
-            _driveItemsRepository.SaveBatchAsync(batch, CancellationToken.None).GetAwaiter().GetResult();
-            batch.Clear();
-        }
+        SaveRemainingBatch(batch);
 
         return (activeUploads, completedBytes, completedFiles, uploadTasks);
     }
