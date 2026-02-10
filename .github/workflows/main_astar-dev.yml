@@ -13,6 +13,8 @@ env:
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 10.x.x
   WORKING_DIRECTORY: src/
+permissions:
+  contents: read
 jobs:
   test:
     name: Run tests (matrix)
@@ -50,8 +52,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    env:
-      SONAR_PROJECT: ${{ env.SONAR_PROJECT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
