@@ -11,7 +11,7 @@ env:
   SONAR_PROJECT: astar-dev-onedrive-sync-client
   AZURE_WEBAPP_NAME: astar-dev-onedrive-sync-client
   CONFIGURATION: Release
-  DOTNET_CORE_VERSION: 10.x.x
+  DOTNET_CORE_VERSION: 10.0.100
   WORKING_DIRECTORY: src/
 permissions:
   contents: read
@@ -35,9 +35,12 @@ jobs:
       - name: Restore
         run: dotnet restore AStar.Dev.OneDrive.Client.slnx
 
+      - name: Build solution
+        run: dotnet build AStar.Dev.OneDrive.Client.slnx --configuration Release
+
       - name: Run unit tests and collect coverage (XPlat)
         run: |
-          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" AStar.Dev.OneDrive.Client.slnx
+          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults AStar.Dev.OneDrive.Client.slnx
 
       - name: Upload TestResults artifact (contains coverage)
         uses: actions/upload-artifact@v4
