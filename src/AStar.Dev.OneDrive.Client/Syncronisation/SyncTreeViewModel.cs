@@ -369,7 +369,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         }
     }
 
-    private bool IsRunning(SyncState syncState) => syncState.Status is SyncStatus.Running or SyncStatus.InitialDeltaSync or SyncStatus.IncrementalDeltaSync;
+    private static bool IsRunning(SyncState syncState) => syncState.Status is SyncStatus.Running or SyncStatus.InitialDeltaSync or SyncStatus.IncrementalDeltaSync;
 
     private void ClearSelections()
     {

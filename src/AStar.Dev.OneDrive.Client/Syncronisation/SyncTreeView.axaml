@@ -145,6 +145,7 @@
                             IsEnabled="{Binding IsSyncProgressOpen, Converter={StaticResource BooleanNegationConverter}}"
                             ToolTip.Tip="Show sync progress window" />
                     <Button Content="Cancel Sync"
+                            ToolTip.Tip="Cancel the ongoing sync operation"
                             Command="{Binding CancelSyncCommand}"
                             MinWidth="120" />
 

@@ -36,12 +36,26 @@ public sealed class EfSyncRepository(IDbContextFactory<SyncDbContext> dbContextF
             cancellationToken.ThrowIfCancellationRequested();
             DriveItemEntity? existing = await db.DriveItems.FindAsync([item.DriveItemId], cancellationToken);
             if(existing is null)
+            {
                 _ = db.DriveItems.Add(item);
+            }
             else
+            {
+                PreserveFolderSelection(item, existing);
+
                 db.Entry(existing).CurrentValues.SetValues(item);
+            }
         }
 
         _ = await db.SaveChangesAsync(cancellationToken);
         await tx.CommitAsync(cancellationToken);
+    }
+
+    private static void PreserveFolderSelection(DriveItemEntity item, DriveItemEntity existing)
+    {
+        if(existing.IsFolder)
+        {
+            item.IsSelected = existing.IsSelected;
+        }
     }
 }

@@ -56,6 +56,7 @@
                                     <TextBlock Text="No accounts configured. Click 'Add Account' to get started."
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
+                                               TextWrapping="Wrap"
                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                Margin="20" />
                                 </ControlTemplate>
@@ -79,6 +80,7 @@
 
             <Button Grid.Row="0" Grid.Column="0"
                     Content="Add Account"
+                    ToolTip.Tip="Add a new OneDrive account"
                     Command="{Binding AddAccountCommand}"
                     IsEnabled="{Binding !IsLoading}"
                     Margin="0,0,5,5"
@@ -86,6 +88,7 @@
 
             <Button Grid.Row="0" Grid.Column="1"
                     Content="Remove Account"
+                    ToolTip.Tip="Remove the selected account"
                     Command="{Binding RemoveAccountCommand}"
                     IsEnabled="{Binding !IsLoading}"
                     Margin="5,0,0,5"
@@ -93,6 +96,7 @@
 
             <Button Grid.Row="1" Grid.Column="0"
                     Content="Login"
+                    ToolTip.Tip="Login to the selected account"
                     Command="{Binding LoginCommand}"
                     IsEnabled="{Binding !IsLoading}"
                     Margin="0,5,5,0"
@@ -100,6 +104,7 @@
 
             <Button Grid.Row="1" Grid.Column="1"
                     Content="Logout"
+                    ToolTip.Tip="Logout from the selected account"
                     Command="{Binding LogoutCommand}"
                     IsEnabled="{Binding !IsLoading}"
                     Margin="5,5,0,0"
