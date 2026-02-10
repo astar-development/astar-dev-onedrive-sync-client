@@ -1,234 +1,164 @@
-# OneDrive Client - .NET 10 Development Instructions
+# Copilot Instructions - AStar Dev OneDrive Sync Client
 
-> **Extends**: [copilot-instructions-starter.md](./copilot-instructions-starter.md)  
-> **Project**: AStar Dev - OneDrive Client V3 
+## Project Overview
 
-## Quick Reference
+**AStar Dev OneDrive Sync Client** is a cross-platform desktop application that provides bidirectional synchronization between local file systems and Microsoft OneDrive. Built with Avalonia (cross-platform UI framework) and .NET 10, it features intelligent conflict detection, multi-account support, and efficient delta-based synchronization.
 
-| Aspect | Standard |
-|--------|----------|
-| Framework | .NET 10, C# 14 |
-| UI | Avalonia UI with ReactiveUI |
-| Testing | xUnit V3, Shouldly, NSubstitute |
-| Architecture | Folder-based (Auth, Views, ViewModels, Services) |
-| Code Style | Use var for all local variables except: |
-| |    - For test mocks, always use the explicit type. |
-| |    - When the type is not obvious from the right-hand side, use the explicit type (e.g., for async calls or methods returning interface types). |
-| |    - If IDE0008 or similar analyzer suggests explicit type, prefer explicit type to avoid warnings. |
-| |    - Warnings as errors |
-| |    - Nullable reference types enabled |
-| |    - No blank lines between method signature and expression body / implementation |
-| |    - No multiple blank lines|
-| |    - No trailing whitespace|
-| |    - No unnecessary usings|
-| |    - No regions|
-| |    - All tests must be deterministic|
-| |    - Avoid redundant tests|
-| |    - All tests must have at least one assertion|
+### Key Characteristics
+
+- **Language**: C# 14
+- **Target Framework**: .NET 10.0
+- **UI Framework**: Avalonia 11.3.11 with ReactiveUI
+- **Database**: SQLite with Entity Framework Core 10.0.2
+- **Authentication**: MSAL (Microsoft.Identity.Client 4.81.0)
+- **API Integration**: Microsoft Graph API 5.101.0
+- **Async Patterns**: System.Reactive 6.1.0
+- **Testing**: xUnit with in-memory databases and mocking
 
 ---
 
-## Project-Specific Guidelines
+## Architecture Overview
 
-### Architecture
-- Single entry point: `MainWindow.axaml`
-- Folder-based structure: Authentication, Views, ViewModels, OneDriveServices, SettingsAndPreferences
-- NuGet packages for cross-cutting concerns
-- Apply DDD/Repository/CQRS patterns where applicable
-- Cross-Platform: Windows, macOS, Linux via Avalonia
+### Layered Architecture
 
-### Coding Standards
-Inherits all standards from `copilot-instructions-starter.md`, plus:
-- **ReactiveUI patterns**: Property notifications with `this.RaiseAndSetIfChanged`
-- **Observable subscriptions**: Always dispose with `.DisposeWith(_disposables)`
+- **Components**:
+  **TDD Workflow (Enforced)**
 
-- **Complex conditions**: When an `if`, `while`, or similar statement contains multiple clauses or is hard to read, extract the logic into a clearly named private method. This improves readability, maintainability, and testability.
+- **Write failing tests first**: For any new behavior, create one or more tests that fail before adding production code. Tests should specify expected behavior and be the driver for the minimal implementation.
+- **Local verification**: Developers must run the test suite locally and confirm the new test fails, then implement production code to make it pass. Run the test suite again and confirm no other tests regressed.
+- **Commit practice**: Include the failing-test commit in feature branches (failing-test commit either first or clearly present in PR history) so reviewers can see the TDD progression.
 
-  Example:
-  ```csharp
-  // Instead of:
-  if (existingFile.SyncState != SyncState.PendingUpload ||
-      existingFile.LastWriteUtc != localFile.LastWriteUtc ||
-      existingFile.Size != localFile.Size ||
-      (localFile.Hash is not null && localFile.Hash != existingFile.Hash))
-  {
-      // ...
-  }
+**Test Organization**:
 
-  // Use:
-  if (ShouldUpdateExistingFileForUpload(existingFile, localFile))
-  {
-      // ...
-  }
+- **Unit Tests**: `test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/`
+- **Core Tests**: `test/AStar.Dev.OneDrive.Client.Core.Tests.Unit/`
+- **Integration Tests**: `test/AStar.Dev.OneDrive.Client.Tests.Integration/`
+- **UI Tests**: `test/AStar.Dev.OneDrive.Client.Tests.Unit/`
+- **NuGet Package Tests**: `test/nuget-packages/`
 
-  // With a descriptive private method:
-  private static bool ShouldUpdateExistingFileForUpload(LocalFileRecord existingFile, LocalFileInfo localFile) =>
-      existingFile.SyncState != SyncState.PendingUpload ||
-      existingFile.LastWriteUtc != localFile.LastWriteUtc ||
-      existingFile.Size != localFile.Size ||
-      (localFile.Hash is not null && localFile.Hash != existingFile.Hash);
-  ```
+**Testing Patterns & TDD Practices**:
 
----
+1. **Naming Convention**: `<ComponentName>Should` or `<ComponentName>Tests`
 
-## Testing: ReactiveUI & Avalonia Specifics
+   ```csharp
+   public class WindowPreferencesServiceShould { }
+   public class PatternTests { }
+   ```
 
-### Priority Guide
-1. **HIGH**: Business logic, services, data mappers, file I/O, ViewModels property notifications
-2. **MEDIUM**: UI coordination, configuration loading
-3. **LOW**: UI controls, `Application.Current` dependencies, complex reactive streams
+2. **Fact vs Theory**:
+   - `[Fact]` - Single test case
+   - `[Theory] [InlineData(...)]` - Parameterized tests
 
-### ReactiveUI ViewModels
+3. **In-Memory Database Testing**:
 
-**Testing Property Notifications**
-- Verify notifications fire when values change
-- Verify notifications DON'T fire when setting same value
-- Test ObservableCollections independently
+   ```csharp
+   using SyncDbContext context = CreateInMemoryContext();
+   var service = new WindowPreferencesService(context);
+   ```
 
-**Complex Constructors Pattern**
+4. **Mocking Pattern**: Create mocks via interface, use with services. Prefer behavior-driven assertions and avoid coupling tests to private implementation details.
+
+5. **Assertion Library**: Shouldly (for English-language, fluent-style assertions)
+
+   ```csharp
+   result.ShouldNotBeNull();
+   result.ShouldBe(expectedValue);
+   ```
+
+6. **CI Enforcement**: CI must run the full test suite and fail the build if any test fails. PRs must pass CI before merge. See CI guidance below.
+
+- `AutoSyncSchedulerService` - Scheduled sync execution
+- `AuthenticationClient` - OAuth/MSAL wrapper
+- `DebugLoggerService` - Application-wide logging
+- `WindowPreferencesService` - UI state persistence
+
+**Key Repositories** (using Repository pattern):
+
+- `IAccountRepository` - Account metadata and authentication tokens
+- `ISyncRepository` - Sync state and session tracking
+- `IDriveItemsRepository` - Remote file metadata caching
+- `ISyncConfigurationRepository` - User sync folder selections
+- `ISyncConflictRepository` - Conflict records and resolutions
+- `IFileOperationLogRepository` - Historical file operations
+- `IDebugLogRepository` - Application logs
+
+#### 3. **Core/Domain Layer** (`AStar.Dev.OneDrive.Client.Core`)
+
+- **Models**: Domain objects and data structures
+- **Data Entities**: EF Core entity definitions
+- **Enums**: Sync state and configuration enums
+
+**Key Models**:
+
+- `AccountInfo` - User account and authentication state
+- `FileMetadata` - File properties and sync status
+- `SyncConfiguration` - User-defined sync selections
+- `SyncState` - Current synchronization status
+- `SyncConflict` - Conflict information and resolution
+- `SyncSessionLog` - Sync operation history
+- `WindowPreferences` - UI preferences persistence
+
+### Dependency Injection
+
+The solution uses **Microsoft.Extensions.DependencyInjection** with custom source generators:
+
+- **Service Decorator**: `[Service]` attribute (custom)
+- **Lifetime Options**: Scoped (default), Singleton, Transient
+- **Generator**: `AStar.Dev.Source.Generators` auto-generates `ServiceCollectionExtensions`
+- **Configuration**: Services are automatically registered based on attributes
+- **Access**: Services accessed via `App.Host.Services` (ServiceLocator pattern)
+
 ```csharp
-private static MainWindowViewModel CreateTestViewModel()
+[Service(ServiceLifetime.Scoped, As = typeof(IMyInterface))]
+public class MyImplementation : IMyInterface { }
+```
+
+### Supporting NuGet Packages
+
+Custom internal packages (located in `src/nuget-packages/`):
+
+- **AStar.Dev.Functional.Extensions** - Result<T>, Option<T>, functional programming utilities
+- **AStar.Dev.Logging.Extensions** - Structured logging helpers
+- **AStar.Dev.Source.Generators** - Service registration and options binding code generation
+- **AStar.Dev.Utilities** - Common utilities (JSON, regex, string extensions)
+
+---
+
+## Development Approach & Patterns
+
+**Test-Driven Development (TDD) Policy**
+
+- **Mandate**: All new features, bug fixes, and refactors MUST follow Test-Driven Development (TDD). Developers must write one or more failing tests that express the desired behavior before writing production code. Only after seeing the tests fail should production code be implemented to make the tests pass, followed by a refactor step while keeping tests green.
+- **Failing-First Workflow**: The minimal TDD loop is: write a failing test -> run tests to verify failure -> implement minimal production code -> run tests until they pass -> refactor with tests green.
+- **Test Granularity**: Prefer small, focused unit tests that assert behavior rather than internal implementation. Use integration tests for cross-service flows and E2E tests sparingly for user-facing scenarios.
+- **Mocks & Test Doubles**: Use interface-based abstractions (existing repository and service interfaces) with in-memory or mocked implementations for unit tests. For EF Core, prefer in-memory providers or explicit SQLite in-memory modes where appropriate.
+- **Commit Practice**: Each feature branch should include the failing-test commit (the test authoring step) in the branch history so reviewers can verify the TDD progression. If the failing test is not present, reviewers should request clarification.
+
+### 1. Dependency Injection & Testability
+
+**Core Principle**: All external dependencies are abstracted behind interfaces.
+
+**Pattern**:
+
+- Create interface in `Infrastructure/Services/I<ServiceName>.cs`
+- Implement in `Infrastructure/Services/<ServiceName>.cs`
+- Decorate with `[Service]` attribute
+- Inject via constructor
+- Mock in tests via interface
+
+**Example**:
+
+```csharp
+// Infrastructure/Services/IGraphApiClient.cs
+public interface IGraphApiClient
 {
-    IAuthService mockAuth = Substitute.For<IAuthService>();
-    ISyncEngine mockSync = Substitute.For<ISyncEngine>();
-    ILogger<MainWindowViewModel> mockLogger = Substitute.For<ILogger<MainWindowViewModel>>();
-    
-    // CRITICAL: Stub observables to prevent NullReferenceException
-    Subject<SyncProgress> syncProgress = new();
-    mockSync.Progress.Returns(syncProgress);
-    
-    return new MainWindowViewModel(mockAuth, mockSync, mockLogger);
+    Task<DriveItem> GetItemAsync(string accountId, string itemId);
+}
+
+// Infrastructure/Services/GraphApiClient.cs
+[Service]
+public class GraphApiClient : IGraphApiClient
+{
+    public async Task<DriveItem> GetItemAsync(string accountId, string itemId) { }
 }
 ```
-
-**Key Pattern**: ViewModels subscribing to observables in constructors need all `IObservable<T>` dependencies stubbed with `Subject<T>`.
-
-### MockFileSystem Pattern
-```csharp
-var fileSystem = new MockFileSystem();
-fileSystem.AddDirectory(@"C:\Path\To\Dir");
-fileSystem.AddFile(@"C:\Path\To\File.txt", new MockFileData("content"));
-```
-?? Always create directories before adding files.
-
-### Efficient Test Editing
-For bulk changes (e.g., converting types to `var`):
-```csharp
-// Use multi_replace_string_in_file with 3-5 lines context
-[
-  {"explanation": "Convert result to var", 
-   "oldString": "string result = GetValue();\n...", 
-   "newString": "var result = GetValue();\n..."}
-]
-```
-
----
-
-## Test Execution
-
-### Standard Commands
-```bash
-# Bypass Fine Code Coverage issues
-dotnet test --settings .runsettings --no-build
-
-# Specific test class
-dotnet test --filter "FullyQualifiedName~ClassName"
-```
-
-### Common Issues & Solutions
-
-| Issue | Solution |
-|-------|----------|
-| FCC path caching | Create `.runsettings` with empty DataCollectors |
-| NullRef in ViewModel constructor | Stub all `IObservable<T>` with `Subject<T>` |
-| File duplication | Check for duplicate closing braces |
-| Build ?, tests ? | Run `dotnet build` then `dotnet test --no-build` |
-
----
-
-## SonarLint Suppressions
-
-```csharp
-#pragma warning disable S1075 // URIs should not be hardcoded - Required by MSAL for OAuth
-private const string RedirectUri = "http://localhost";
-#pragma warning restore S1075
-```
-
-Common project suppressions:
-- **S1075**: OAuth redirect URIs
-- **S6667**: Intentional exception non-logging
-
----
-
-## Documentation Requirements
-
-- **XML comments**: ALL public APIs in production code
-- **NO documentation**: Test classes/methods
-- **Interface implementation**: Use `/// <inheritdoc/>`
-
-Example:
-```csharp
-/// <summary>
-/// Manages synchronization between local storage and OneDrive.
-/// </summary>
-/// <remarks>
-/// This service coordinates file transfers, handles conflict resolution,
-/// and maintains sync state persistence.
-/// </remarks>
-public interface ISyncEngine { }
-
-// Implementation
-/// <inheritdoc/>
-public sealed class SyncEngine : ISyncEngine { }
-```
-
----
-
-## Test Examples Repository
-
-**See**: [Testing Examples](./testing-examples.md) for comprehensive patterns including:
-- ReactiveUI ViewModel patterns
-- Observable subscription testing
-- MockFileSystem usage
-- Theory/InlineData consolidation
-- Helper method patterns
-
----
-
-## Commit Standards
-
-- Semantic format: `feature:`, `fix:`, `refactor:`, `test:`
-- Ensure tests pass before pushing
-- Meaningful commit messages (not "updates" or "fixes")
-
----
-
-## Quick Troubleshooting
-
-### Test Failures
-1. Check observable stubbing in ViewModel tests
-2. Verify MockFileSystem directory creation
-3. Confirm using statements match namespaces
-4. Check for file content duplication
-
-### Build Warnings
-1. Convert explicit types to `var` (Use var for local variables (IDE0007) except for test mocks and when the type is not obvious)
-2. Add `#pragma` suppressions with justification
-3. Prefix private fields with `_`
-4. Use discard `_` for unused variables
-
-### Performance
-- Build frequently during test writing
-- Use `--no-build` for faster test iterations
-- Run specific test classes when debugging
-
-### Examples of Correct `var` Usage
-```csharp
-// Use explicit type for mocks
-IAuthService auth = Substitute.For<IAuthService>();
-
-// Use explicit type when type is not obvious (e.g., async/await)
-HealthCheckResult result = await check.CheckHealthAsync(new HealthCheckContext(), TestContext.Current.CancellationToken);
-
-// Use var when type is obvious
-var check = new GraphApiHealthCheck(auth);
