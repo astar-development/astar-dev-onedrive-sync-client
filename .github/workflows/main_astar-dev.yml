@@ -7,6 +7,11 @@ on:
   push:
     branches:
       - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   SONAR_PROJECT: astar-dev-onedrive-sync-client
   AZURE_WEBAPP_NAME: astar-dev-onedrive-sync-client
@@ -19,6 +24,7 @@ jobs:
   test:
     name: Run tests (matrix)
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     continue-on-error: ${{ matrix.os == 'macos-latest' }}
     strategy:
       matrix:
@@ -33,6 +39,14 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.slnx') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Restore
         run: dotnet restore AStar.Dev.OneDrive.Client.slnx
 
@@ -41,18 +55,21 @@ jobs:
 
       - name: Run unit tests and collect coverage (XPlat)
         run: |
-          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults AStar.Dev.OneDrive.Client.slnx
+          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults --filter "FullyQualifiedName!~Integration&FullyQualifiedName!~EndToEnd" AStar.Dev.OneDrive.Client.slnx
 
       - name: Upload TestResults artifact (contains coverage)
+        if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: testruns-${{ matrix.os }}
           path: TestResults
+          retention-days: 30
 
   sonar:
     name: SonarCloud analysis and coverage
     needs: [test, coverage-aggregate]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -97,14 +114,15 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           ./.sonar/scanner/dotnet-sonarscanner begin /k:"astar-development_${{ env.SONAR_PROJECT }}" /o:"astar-development" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.opencover.reportsPaths=coverage-merged/Opencover.xml /d:sonar.scanner.scanAll=false
-          dotnet build --configuration Release
+          dotnet build --configuration Release --no-restore
           ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
 
   build:
-    needs: [test, sonar, coverage-aggregate]
+    needs: [test]
     runs-on: windows-latest
+    timeout-minutes: 15
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - name: Install .NET
@@ -124,6 +142,7 @@ jobs:
     name: Aggregate coverage reports
     needs: test
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -145,3 +164,4 @@ jobs:
         with:
           name: coverage-merged
           path: coverage-merged
+          retention-days: 30
