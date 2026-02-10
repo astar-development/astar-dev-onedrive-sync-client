@@ -961,7 +961,7 @@ public class SyncEngineShould
 
         // Start two syncs concurrently
         Task sync1 = engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
-        await Task.Delay(10); // Small delay to ensure first sync starts
+        await Task.Delay(10, TestContext.Current.CancellationToken); // Small delay to ensure first sync starts
         Task sync2 = engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         await Task.WhenAll(sync1, sync2);
