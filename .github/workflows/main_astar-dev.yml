@@ -35,16 +35,15 @@ jobs:
       - name: Restore
         run: dotnet restore AStar.Dev.OneDrive.Client.slnx
 
-      - name: Run unit tests
+      - name: Run unit tests and collect coverage (XPlat)
         run: |
-          dotnet tool install --global dotnet-coverage || true
-          dotnet-coverage collect "dotnet test --no-build --verbosity normal AStar.Dev.OneDrive.Client.slnx" -f xml -o coverage.xml
+          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" AStar.Dev.OneDrive.Client.slnx
 
-      - name: Upload coverage artifact
+      - name: Upload TestResults artifact (contains coverage)
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-${{ matrix.os }}
-          path: coverage.xml
+          name: testruns-${{ matrix.os }}
+          path: TestResults
 
   sonar:
     name: SonarCloud analysis and coverage
@@ -135,7 +134,7 @@ jobs:
 
       - name: Merge reports and generate HTML + Cobertura + OpenCover
         run: |
-          reportgenerator -reports:"artifacts/**/coverage.xml" -targetdir:coverage-merged -reporttypes:Html;Cobertura;Opencover
+          reportgenerator -reports:"artifacts/**/coverage.cobertura.xml" -targetdir:coverage-merged -reporttypes:Html;Cobertura;Opencover
 
       - name: Upload merged coverage
         uses: actions/upload-artifact@v4
