@@ -907,6 +907,261 @@ public class SyncEngineShould
         finalState.ConflictsDetected.ShouldBe(1);
     }
 
+    [Fact]
+    public void DisposeCleanupResources()
+    {
+        (SyncEngine engine, TestMocks _) = CreateTestEngine();
+
+        // Should not throw
+        engine.Dispose();
+
+        // Disposing again should also not throw (idempotent)
+        engine.Dispose();
+    }
+
+    [Fact]
+    public void ProgressObservableEmitsInitialState()
+    {
+        (SyncEngine engine, TestMocks _) = CreateTestEngine();
+        SyncState? initialState = null;
+
+        _ = engine.Progress.Subscribe(state => initialState = state);
+
+        initialState.ShouldNotBeNull();
+        initialState.Status.ShouldBe(SyncStatus.Idle);
+        initialState.TotalFiles.ShouldBe(0);
+        initialState.CompletedFiles.ShouldBe(0);
+        initialState.TotalBytes.ShouldBe(0);
+        initialState.CompletedBytes.ShouldBe(0);
+    }
+
+    [Fact]
+    public async Task PreventMultipleConcurrentSyncsForSameAccount()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+
+        _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(["/Documents"]);
+        _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0));
+        _ = mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(callInfo =>
+            {
+                // Simulate slow scan to allow concurrent call
+                Thread.Sleep(100);
+                return Task.FromResult<IReadOnlyList<FileMetadata>>([]);
+            });
+        _ = mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns((new List<FileMetadata>().AsReadOnly(), "delta_123"));
+        _ = mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        var progressStates = new List<SyncState>();
+        _ = engine.Progress.Subscribe(progressStates.Add);
+
+        // Start two syncs concurrently
+        Task sync1 = engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+        await Task.Delay(10); // Small delay to ensure first sync starts
+        Task sync2 = engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+
+        await Task.WhenAll(sync1, sync2);
+
+        // Second sync should be ignored - verify only one actual scan happened
+        await mocks.LocalScanner.Received(1).ScanFolderAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("/drives/xyz/root:/Folder/SubFolder", "/Folder/SubFolder")]
+    [InlineData("/drive/root:", "/")]
+    [InlineData("", null)]
+    [InlineData("   ", null)]
+    [InlineData("Documents", "/Documents")]
+    [InlineData("/drives/abc/root:/", "/")]
+    public void FormatScanningFolderForDisplayHandlesEdgeCases(string? input, string? expected)
+    {
+        string? result = SyncEngine.FormatScanningFolderForDisplay(input);
+
+        result.ShouldBe(expected);
+    }
+
+    [Fact]
+    public async Task GetConflictsAsyncReturnsEmptyListWhenNoConflicts()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+
+        _ = mocks.SyncConflictRepo.GetUnresolvedByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        IReadOnlyList<SyncConflict> conflicts = await engine.GetConflictsAsync("acc1", TestContext.Current.CancellationToken);
+
+        conflicts.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task StopSyncAsyncCanBeCalledMultipleTimes()
+    {
+        (SyncEngine engine, TestMocks _) = CreateTestEngine();
+
+        // Should not throw when called before sync starts
+        await engine.StopSyncAsync();
+        await engine.StopSyncAsync();
+        await engine.StopSyncAsync();
+    }
+
+    [Fact]
+    public async Task HandleAccountWithDetailedSyncLoggingEnabled()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+
+        _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(["/Documents"]);
+        _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, true, false, 3, 50, 0)); // EnableDetailedSyncLogging = true
+        _ = mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _ = mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns((new List<FileMetadata>().AsReadOnly(), "delta_123"));
+        _ = mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+
+        // Verify sync completed without errors
+        await mocks.AccountRepo.Received(1).GetByIdAsync("acc1", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandleAccountWithDetailedSyncLoggingDisabled()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+
+        _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(["/Documents"]);
+        _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0)); // EnableDetailedSyncLogging = false
+        _ = mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _ = mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns((new List<FileMetadata>().AsReadOnly(), "delta_123"));
+        _ = mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+
+        // Verify sync completed without errors
+        await mocks.AccountRepo.Received(1).GetByIdAsync("acc1", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandleEmptyAccountIdGracefully()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+
+        _ = mocks.AccountRepo.GetByIdAsync(string.Empty, Arg.Any<CancellationToken>())
+            .Returns((AccountInfo?)null);
+
+        await engine.StartSyncAsync(string.Empty, TestContext.Current.CancellationToken);
+
+        // Verify account lookup was attempted
+        await mocks.AccountRepo.Received(1).GetByIdAsync(string.Empty, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ProgressObservableEmitsMultipleStates()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+        var progressStates = new List<SyncState>();
+
+        _ = engine.Progress.Subscribe(progressStates.Add);
+
+        _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(["/Documents"]);
+        _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0));
+        _ = mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _ = mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns((new List<FileMetadata>().AsReadOnly(), "delta_123"));
+        _ = mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+
+        // Should have at least initial state + scanning + syncing + completed
+        progressStates.Count.ShouldBeGreaterThan(1);
+        progressStates.First().Status.ShouldBe(SyncStatus.Idle);
+    }
+
+    [Fact]
+    public async Task HandleMultipleSelectedFolders()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+
+        _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(["/Documents", "/Pictures", "/Music"]);
+        _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0));
+        _ = mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([]);
+        _ = mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns((new List<FileMetadata>().AsReadOnly(), "delta_123"));
+        _ = mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+
+        // Verify each folder was scanned
+        await mocks.LocalScanner.Received(3).ScanFolderAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<CancellationToken>());
+
+        // Verify each folder was checked for remote changes
+        await mocks.RemoteDetector.Received(3).DetectChangesAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string?>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandleFileWithNullOrEmptyDriveItemId()
+    {
+        (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
+        var localFile = new FileMetadata(null, "acc1", "new.txt", "/Documents/new.txt", 50,
+            DateTime.UtcNow, @"C:\Sync\Documents\new.txt", false, false, false, null, null, "hash456", null,
+            FileSyncStatus.PendingUpload, null);
+
+        _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(["/Documents"]);
+        _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns(new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0));
+        _ = mocks.LocalScanner.ScanFolderAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns([localFile]);
+        _ = mocks.RemoteDetector.DetectChangesAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
+            .Returns((new List<FileMetadata>().AsReadOnly(), "delta_123"));
+        _ = mocks.FileMetadataRepo.GetByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+            .Returns([]);
+
+        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+            .Returns(new DriveItem { Id = "newId", CTag = "newCTag", ETag = "newETag", LastModifiedDateTime = DateTimeOffset.UtcNow });
+
+        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+
+        // File should still be uploaded
+        await mocks.GraphApiClient.Received().UploadFileAsync(
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<string>(),
+            Arg.Any<IProgress<long>?>(),
+            Arg.Any<CancellationToken>());
+    }
+
     private static (SyncEngine Engine, TestMocks Mocks) CreateTestEngine()
     {
         ILocalFileScanner localScanner = Substitute.For<ILocalFileScanner>();
