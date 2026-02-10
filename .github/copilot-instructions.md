@@ -38,11 +38,10 @@
 
 **Testing Patterns & TDD Practices**:
 
-1. **Naming Convention**: `<ComponentName>Should` or `<ComponentName>Tests`
+1. **Naming Convention**: `<ComponentName>Should`
 
    ```csharp
    public class WindowPreferencesServiceShould { }
-   public class PatternTests { }
    ```
 
 2. **Fact vs Theory**:
@@ -248,11 +247,10 @@ _progressSubject.OnNext(newState); // Emit state change
 
 **Testing Patterns**:
 
-1. **Naming Convention**: `<ComponentName>Should` or `<ComponentName>Tests`
+1. **Naming Convention**: `<ComponentName>Should`
 
    ```csharp
    public class WindowPreferencesServiceShould { }
-   public class PatternTests { }
    ```
 
 2. **Fact vs Theory**:
@@ -369,6 +367,43 @@ public class MyService : IMyService { }
 - Null checking with null-coalescing operators
 - Use `ArgumentNullException` in public constructors
 - Immutable when possible (records, init properties)
+- Avoid magic strings/numbers (use constants or enums)
+- Prefer expression-bodied members for simple methods
+- Use pattern matching and switch expressions for clarity
+- Avoid deep nesting (early returns, guard clauses)
+- Use `var` when the type is obvious from the right-hand side, else explicit types for clarity
+- Follow SOLID principles and clean architecture guidelines
+- Keep methods small and focused (ideally <20 lines)
+- Keep classes focused on a single responsibility
+- Keep classes and methods cohesive (related functionality grouped together)
+- Avoid large constructors (ideally <5 parameters); consider refactoring or using parameter objects if needed
+- Use dependency injection for all external dependencies (no newing up services inside classes)
+- Do not use regions or #pragma to hide code; refactor instead
+- Use `nameof()` for parameter names in exceptions and logging
+- Use `ConfigureAwait(false)` in library code to avoid deadlocks in UI contexts
+- Use `async` suffix for asynchronous methods (e.g., `GetItemAsync()`)
+- Use `CancellationToken` parameters for all async methods that support cancellation
+- Use `IAsyncDisposable` and `await using` for async cleanup when necessary
+- Use `IEnumerable<T>` for collections that do not require indexing, and `IReadOnlyList<T>` or `IReadOnlyCollection<T>` when immutability is desired
+- Use `record` types for immutable data models and DTOs, and `class` for entities with behavior or mutable state
+- Use `private` fields with `_camelCase` naming convention, and `PascalCase` for properties and methods
+- Use `const` for compile-time constants and `static readonly` for runtime constants
+- Use `StringBuilder` for concatenating multiple strings in loops or when performance is a concern, otherwise use string interpolation for readability
+- Use `Functional Programming` constructs (e.g., `Result<T>`, `Option<T>`) from the internal `AStar.Dev.Functional.Extensions` package to handle errors and optional values in a more expressive way
+- Use `Match<Async>` methods on `Result<T>` and `Option<T>` for handling success and failure cases without throwing exceptions
+- Use `Map<Async>` and `Bind<Async>` methods for transforming and chaining operations on `Result<T>` and `Option<T>` types
+- Use `Shouldly` for assertions in tests to improve readability and provide better failure messages
+- Use `PrimaryConstructor` syntax when possible to reduce boilerplate
+- Use `global using` directives for commonly used namespaces to reduce clutter at the top of files
+- Use `file-scoped namespaces` for better readability and less indentation
+- Use `top-level statements` for simple entry points (e.g., `Program.cs`) to reduce boilerplate
+- Use `target-typed new` expressions to reduce redundancy when the type can be inferred from the context
+- Use `record struct` for small, immutable value types that do not require reference semantics
+- Use `with` expressions to create modified copies of immutable objects
+- Always prefer composition over inheritance, and favor interfaces for abstraction
+- Use `async`/`await` for asynchronous programming, and avoid blocking calls (e.g., `Task.Wait()`, `Task.Result`) to prevent deadlocks and improve scalability
+- Use `Collection Initializers` and `Object Initializers` for cleaner code when creating collections and objects
+- Use `Pattern Matching` and `Switch Expressions` for clearer and more concise code when dealing with multiple conditions
 
 ---
 
