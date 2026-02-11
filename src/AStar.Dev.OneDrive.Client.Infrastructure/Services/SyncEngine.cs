@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
@@ -89,14 +90,30 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         {
             _syncStateCoordinator.ResetTrackingDetails();
 
-            AccountInfo? account = await ValidateAndGetAccountAsync(accountId, cancellationToken);
+            Result<AccountInfo, SyncError> accountResult = await ValidateAndGetAccountAsync(accountId, cancellationToken);
+            AccountInfo? account = accountResult.Match(
+                account => account,
+                error =>
+                {
+                    _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Failed);
+                    return (AccountInfo?)null;
+                });
+
             if(account is null)
             {
-                _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Failed);
                 return;
             }
 
-            await ProcessDeltaChangesAsync(accountId, cancellationToken);
+            Result<Unit, SyncError> deltaResult = await ProcessDeltaChangesAsync(accountId, cancellationToken);
+            deltaResult.Match(
+                _ => Unit.Value,
+                error =>
+                {
+                    // Log error but continue - delta processing errors shouldn't stop the sync
+                    DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId, 
+                        $"Delta processing failed: {error.Message}", error.Exception, cancellationToken).Wait();
+                    return Unit.Value;
+                });
 
             IReadOnlyList<DriveItemEntity> folders = await GetSelectedFoldersAsync(accountId, cancellationToken);
             if(folders.Count == 0)
@@ -186,26 +203,67 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         }
     }
 
-    private async Task<AccountInfo?> ValidateAndGetAccountAsync(string accountId, CancellationToken cancellationToken)
+    /// <summary>
+    ///     Validates and retrieves account information using Result pattern.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Result containing the account info or an error.</returns>
+    public async Task<Result<AccountInfo, SyncError>> ValidateAndGetAccountAsync(
+        string accountId, 
+        CancellationToken cancellationToken)
     {
-        AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
-        return account;
+        try
+        {
+            AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
+            
+            if (account is null)
+            {
+                return SyncError.AccountNotFound(accountId);
+            }
+
+            return account;
+        }
+        catch (Exception ex)
+        {
+            return SyncError.SyncFailed($"Failed to retrieve account: {ex.Message}", ex);
+        }
     }
 
-    private async Task ProcessDeltaChangesAsync(string accountId, CancellationToken cancellationToken)
+
+
+    /// <summary>
+    ///     Processes delta changes using Result pattern.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Result indicating success or failure.</returns>
+    public async Task<Result<Unit, SyncError>> ProcessDeltaChangesAsync(
+        string accountId, 
+        CancellationToken cancellationToken)
     {
-        DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
-        (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
-            await _deltaProcessingService.ProcessDeltaPagesAsync(
-                accountId,
-                token,
-                state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
-                    state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
-                    state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
-                cancellationToken);
-        await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
-        await DebugLog.EntryAsync("SyncEngine.StartSyncAsync", accountId, cancellationToken);
+        try
+        {
+            DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
+            (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
+                await _deltaProcessingService.ProcessDeltaPagesAsync(
+                    accountId,
+                    token,
+                    state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
+                        state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
+                        state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
+                    cancellationToken);
+            await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
+            await DebugLog.EntryAsync("SyncEngine.ProcessDeltaChangesAsync", accountId, cancellationToken);
+
+            return Unit.Value;
+        }
+        catch (Exception ex)
+        {
+            return SyncError.DeltaProcessingFailed(ex.Message, ex);
+        }
     }
+
 
     private async Task<IReadOnlyList<DriveItemEntity>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken)
     {

@@ -936,6 +936,47 @@
             <param name="result">The Result object being extended.</param>
             <returns>A success result without change if applicable, otherwise, the exception will be mapped to an ErrorResponse</returns>
         </member>
+        <member name="T:AStar.Dev.Functional.Extensions.Unit">
+            <summary>
+                Represents a void/unit type for functional programming.
+                Used to represent successful operations that don't return a value.
+            </summary>
+        </member>
+        <member name="P:AStar.Dev.Functional.Extensions.Unit.Value">
+            <summary>
+                Gets the singleton instance of Unit.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Functional.Extensions.Unit.Equals(AStar.Dev.Functional.Extensions.Unit)">
+            <summary>
+                Determines whether the specified object is equal to the current Unit.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Functional.Extensions.Unit.Equals(System.Object)">
+            <summary>
+                Determines whether the specified object is equal to the current Unit.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Functional.Extensions.Unit.GetHashCode">
+            <summary>
+                Returns the hash code for this instance.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Functional.Extensions.Unit.ToString">
+            <summary>
+                Returns a string representation of Unit.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Functional.Extensions.Unit.op_Equality(AStar.Dev.Functional.Extensions.Unit,AStar.Dev.Functional.Extensions.Unit)">
+            <summary>
+                Equality operator.
+            </summary>
+        </member>
+        <member name="M:AStar.Dev.Functional.Extensions.Unit.op_Inequality(AStar.Dev.Functional.Extensions.Unit,AStar.Dev.Functional.Extensions.Unit)">
+            <summary>
+                Inequality operator.
+            </summary>
+        </member>
         <member name="T:AStar.Dev.Functional.Extensions.UnreachableException">
             <summary>
                 An implementation of an exception that indicates that the code path should be unreachable.
