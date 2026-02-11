@@ -16,6 +16,7 @@ public interface IConflictDetectionService
     /// <param name="existingFile">Existing file metadata from database.</param>
     /// <param name="localFilesDict">Dictionary of local files keyed by relative path.</param>
     /// <param name="localSyncPath">Local sync folder path.</param>
+    /// <param name="sessionId">Current sync session identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Tuple of (HasConflict, FileToDownload). FileToDownload is null if conflict or no change detected.</returns>
     Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(
@@ -24,6 +25,7 @@ public interface IConflictDetectionService
         DriveItemEntity existingFile,
         Dictionary<string, FileMetadata> localFilesDict,
         string? localSyncPath,
+        string? sessionId,
         CancellationToken cancellationToken);
 
     /// <summary>
@@ -33,6 +35,7 @@ public interface IConflictDetectionService
     /// <param name="remoteFile">Remote file metadata from OneDrive.</param>
     /// <param name="localFilesDict">Dictionary of local files keyed by relative path.</param>
     /// <param name="localSyncPath">Local sync folder path.</param>
+    /// <param name="sessionId">Current sync session identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Tuple of (HasConflict, FileToDownload, MatchedFile). Returns matched file if files are identical.</returns>
     Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(
@@ -40,6 +43,7 @@ public interface IConflictDetectionService
         DriveItemEntity remoteFile,
         Dictionary<string, FileMetadata> localFilesDict,
         string? localSyncPath,
+        string? sessionId,
         CancellationToken cancellationToken);
 
     /// <summary>

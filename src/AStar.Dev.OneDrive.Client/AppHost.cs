@@ -131,6 +131,7 @@ public static class AppHost
         _ = services.AddScoped<ILocalFileScanner, LocalFileScanner>();
         _ = services.AddScoped<IRemoteChangeDetector, RemoteChangeDetector>();
         _ = services.AddScoped<IConflictResolver, ConflictResolver>();
+        _ = services.AddScoped<IConflictDetectionService, ConflictDetectionService>();
         _ = services.AddScoped<IDeletionSyncService, DeletionSyncService>();
         _ = services.AddScoped<ISyncEngine, SyncEngine>();
         _ = services.AddScoped<IFileTransferService, FileTransferService>();
@@ -138,6 +139,7 @@ public static class AppHost
         _ = services.AddScoped<IDeltaPageProcessor, DeltaPageProcessor>();
         _ = services.AddScoped<IDeltaProcessingService, DeltaProcessingService>();
         _ = services.AddScoped<ISyncRepository, EfSyncRepository>();
+        _ = services.AddScoped<ISyncStateCoordinator, SyncStateCoordinator>();
 
         return services;
     }

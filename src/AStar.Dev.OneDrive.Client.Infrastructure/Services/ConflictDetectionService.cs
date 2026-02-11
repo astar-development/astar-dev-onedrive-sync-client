@@ -36,6 +36,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         DriveItemEntity existingFile,
         Dictionary<string, FileMetadata> localFilesDict,
         string? localSyncPath,
+        string? sessionId,
         CancellationToken cancellationToken)
     {
         await DebugLog.InfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync", accountId, 
@@ -62,7 +63,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         if(localFileHasChanged)
         {
             FileMetadata localFile = localFilesDict[remoteFile.RelativePath ?? ""];
-            await RecordSyncConflictAsync(accountId, remoteFile, localFile, null, cancellationToken);
+            await RecordSyncConflictAsync(accountId, remoteFile, localFile, sessionId, cancellationToken);
             return (true, null);
         }
 
@@ -76,6 +77,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         DriveItemEntity remoteFile,
         Dictionary<string, FileMetadata> localFilesDict,
         string? localSyncPath,
+        string? sessionId,
         CancellationToken cancellationToken)
     {
         await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", accountId, 
@@ -116,7 +118,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", accountId,
             $"First sync CONFLICT: {remoteFile.RelativePath} - files differ (TimeDiff={timeDiff:F1}s, SizeMatch={localFile.Size == remoteFile.Size})", 
             cancellationToken);
-        await RecordSyncConflictAsync(accountId, remoteFile, localFile, null, cancellationToken);
+        await RecordSyncConflictAsync(accountId, remoteFile, localFile, sessionId, cancellationToken);
         return (true, null, null);
     }
 

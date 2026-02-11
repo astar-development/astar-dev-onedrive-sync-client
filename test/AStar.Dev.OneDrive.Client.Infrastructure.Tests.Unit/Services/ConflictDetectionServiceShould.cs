@@ -43,7 +43,7 @@ public class ConflictDetectionServiceShould
         
         // Act
         var (hasConflict, fileToDownload) = await service.CheckKnownFileConflictAsync(
-            AccountId, remoteFile, existingFile, localFilesDict, null, CancellationToken.None);
+            AccountId, remoteFile, existingFile, localFilesDict, null, null, CancellationToken.None);
         
         // Assert
         hasConflict.ShouldBeTrue();
@@ -82,7 +82,7 @@ public class ConflictDetectionServiceShould
         
         // Act
         var (hasConflict, fileToDownload) = await service.CheckKnownFileConflictAsync(
-            AccountId, remoteFile, existingFile, localFilesDict, @"C:\Sync", CancellationToken.None);
+            AccountId, remoteFile, existingFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
         
         // Assert
         hasConflict.ShouldBeFalse();
@@ -114,7 +114,7 @@ public class ConflictDetectionServiceShould
         
         // Act
         var (hasConflict, fileToDownload) = await service.CheckKnownFileConflictAsync(
-            AccountId, remoteFile, existingFile, localFilesDict, null, CancellationToken.None);
+            AccountId, remoteFile, existingFile, localFilesDict, null, null, CancellationToken.None);
         
         // Assert
         hasConflict.ShouldBeFalse();
@@ -150,7 +150,7 @@ public class ConflictDetectionServiceShould
         
         // Act
         var (hasConflict, fileToDownload, matchedFile) = await service.CheckFirstSyncFileConflictAsync(
-            AccountId, remoteFile, localFilesDict, null, CancellationToken.None);
+            AccountId, remoteFile, localFilesDict, null, null, CancellationToken.None);
         
         // Assert
         hasConflict.ShouldBeTrue();
@@ -185,7 +185,7 @@ public class ConflictDetectionServiceShould
         
         // Act
         var (hasConflict, fileToDownload, matchedFile) = await service.CheckFirstSyncFileConflictAsync(
-            AccountId, remoteFile, localFilesDict, null, CancellationToken.None);
+            AccountId, remoteFile, localFilesDict, null, null, CancellationToken.None);
         
         // Assert
         hasConflict.ShouldBeFalse();
@@ -215,7 +215,7 @@ public class ConflictDetectionServiceShould
         
         // Act
         var (hasConflict, fileToDownload, matchedFile) = await service.CheckFirstSyncFileConflictAsync(
-            AccountId, remoteFile, localFilesDict, @"C:\Sync", CancellationToken.None);
+            AccountId, remoteFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
         
         // Assert
         hasConflict.ShouldBeFalse();
