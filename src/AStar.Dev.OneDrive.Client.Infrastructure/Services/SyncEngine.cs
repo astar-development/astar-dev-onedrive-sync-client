@@ -91,33 +91,30 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         {
             _syncStateCoordinator.ResetTrackingDetails();
 
-            Result<AccountInfo, SyncError> accountResult = await ValidateAndGetAccountAsync(accountId, cancellationToken);
-            AccountInfo? account = accountResult.Match(
-                account => account,
-                error =>
-                {
-                    _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Failed);
-                    return (AccountInfo?)null;
-                });
+            AccountInfo? account = await ValidateAndGetAccountAsync(accountId, cancellationToken)
+                .MatchAsync(
+                    account => account,
+                    error =>
+                    {
+                        _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Failed);
+                        return (AccountInfo?)null;
+                    });
 
             if(account is null)
             {
                 return;
             }
 
-            Result<Unit, SyncError> deltaResult = await ProcessDeltaChangesAsync(accountId, cancellationToken);
-            await deltaResult.MatchAsync(
-                async _ =>
-                {
-                    return Unit.Value;
-                },
-                async error =>
-                {
-                    // Log error but continue - delta processing errors shouldn't stop the sync
-                    await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId, 
-                        $"Delta processing failed: {error.Message}", error.Exception, cancellationToken);
-                    return Unit.Value;
-                });
+            await ProcessDeltaChangesAsync(accountId, cancellationToken)
+                .MatchAsync(
+                    async _ => Unit.Value,
+                    async error =>
+                    {
+                        // Log error but continue - delta processing errors shouldn't stop the sync
+                        await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId, 
+                            $"Delta processing failed: {error.Message}", error.Exception, cancellationToken);
+                        return Unit.Value;
+                    });
 
             IReadOnlyList<DriveItemEntity> folders = await GetSelectedFoldersAsync(accountId, cancellationToken);
             if(folders.Count == 0)
