@@ -21,6 +21,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 {
     private const double AllowedTimeDifference = 60.0;
     private const int BatchSize = 50;
+    private const double OneHourInSeconds = 3600.0;
+    private const double OneSecondThreshold = 1.0;
     private readonly IAccountRepository _accountRepository;
     private readonly IDeltaPageProcessor _deltaPageProcessor;
     private readonly IDriveItemsRepository _driveItemsRepository;
@@ -336,7 +338,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Found file in DB: {remoteFile.RelativePath}, DB Status={existingFile.SyncStatus}", cancellationToken);
                 var timeDiff = Math.Abs((existingFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
                 var remoteHasChanged = ((!string.IsNullOrWhiteSpace(existingFile.CTag) ||
-                                            timeDiff > 3600.0 ||
+                                            timeDiff > OneHourInSeconds ||
                                             existingFile.Size != remoteFile.Size) && (existingFile.CTag != remoteFile.CTag)) || remoteFile.SyncStatus == FileSyncStatus.SyncOnly;
 
                 await DebugLog.InfoAsync("SyncEngine.StartSyncAsync",
@@ -350,7 +352,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     if(localFilesDict.TryGetValue(remoteFile.RelativePath ?? "", out FileMetadata? localFile))
                     {
                         var localTimeDiff = Math.Abs((existingFile.LastModifiedUtc - localFile.LastModifiedUtc).TotalSeconds);
-                        localFileHasChanged = localTimeDiff > 1.0 || existingFile.Size != localFile.Size;
+                        localFileHasChanged = localTimeDiff > OneSecondThreshold || existingFile.Size != localFile.Size;
                     }
 
                     if(localFileHasChanged)
