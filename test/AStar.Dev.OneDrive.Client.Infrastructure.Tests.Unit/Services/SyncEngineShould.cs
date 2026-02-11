@@ -923,12 +923,12 @@ public class SyncEngineShould
     [Fact]
     public void ProgressObservableEmitsInitialState()
     {
-        (SyncEngine engine, TestMocks _) = CreateTestEngine();
+        (SyncEngine engine, _) = CreateTestEngine();
         SyncState? initialState = null;
 
         _ = engine.Progress.Subscribe(state => initialState = state);
 
-        initialState.ShouldNotBeNull();
+        _ = initialState.ShouldNotBeNull();
         initialState.Status.ShouldBe(SyncStatus.Idle);
         initialState.TotalFiles.ShouldBe(0);
         initialState.CompletedFiles.ShouldBe(0);
@@ -968,7 +968,7 @@ public class SyncEngineShould
         await Task.WhenAll(sync1, sync2);
 
         // Second sync should be ignored - verify only one actual scan happened
-        await mocks.LocalScanner.Received(1).ScanFolderAsync(
+        _ = await mocks.LocalScanner.Received(1).ScanFolderAsync(
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
@@ -1033,7 +1033,7 @@ public class SyncEngineShould
         await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         // Verify sync completed without errors
-        await mocks.AccountRepo.Received(1).GetByIdAsync("acc1", Arg.Any<CancellationToken>());
+        _ = await mocks.AccountRepo.Received(1).GetByIdAsync("acc1", Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -1055,7 +1055,7 @@ public class SyncEngineShould
         await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         // Verify sync completed without errors
-        await mocks.AccountRepo.Received(1).GetByIdAsync("acc1", Arg.Any<CancellationToken>());
+        _ = await mocks.AccountRepo.Received(1).GetByIdAsync("acc1", Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -1069,7 +1069,7 @@ public class SyncEngineShould
         await engine.StartSyncAsync(string.Empty, TestContext.Current.CancellationToken);
 
         // Verify account lookup was attempted
-        await mocks.AccountRepo.Received(1).GetByIdAsync(string.Empty, Arg.Any<CancellationToken>());
+        _ = await mocks.AccountRepo.Received(1).GetByIdAsync(string.Empty, Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -1117,14 +1117,14 @@ public class SyncEngineShould
         await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         // Verify each folder was scanned
-        await mocks.LocalScanner.Received(3).ScanFolderAsync(
+        _ = await mocks.LocalScanner.Received(3).ScanFolderAsync(
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<CancellationToken>());
 
         // Verify each folder was checked for remote changes
-        await mocks.RemoteDetector.Received(3).DetectChangesAsync(
+        _ = await mocks.RemoteDetector.Received(3).DetectChangesAsync(
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string?>(),
@@ -1156,7 +1156,7 @@ public class SyncEngineShould
         await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
 
         // File should still be uploaded
-        await mocks.GraphApiClient.Received().UploadFileAsync(
+        _ = await mocks.GraphApiClient.Received().UploadFileAsync(
             Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<string>(),
