@@ -290,7 +290,7 @@ public class MyService : IMyService { }
 - **Warnings as Errors**: `TreatWarningsAsErrors = true`
 - **Implicit Usings**: Enabled
 - **Naming**: PascalCase (public), camelCase (private), \_prefixWithUnderscore (fields)
-- **XML Documentation**: Required on public members
+- **XML Documentation**: Required on public members, never comment private members or tests
 
 **Best Practices**:
 
@@ -336,6 +336,8 @@ public class MyService : IMyService { }
 - Use `async`/`await` for asynchronous programming, and avoid blocking calls (e.g., `Task.Wait()`, `Task.Result`) to prevent deadlocks and improve scalability
 - Use `Collection Initializers` and `Object Initializers` for cleaner code when creating collections and objects
 - Use `Pattern Matching` and `Switch Expressions` for clearer and more concise code when dealing with multiple conditions
+- Keep method / constructor parameters on one line if they fit within 200 characters, otherwise break them into multiple lines - do not use one parameter per line, simply break at logical points (e.g., after a few parameters, or before a parameter with many arguments)
+- Never comment within methods or private members; if a comment is needed, it likely indicates the method is doing too much and should be refactored into smaller, more focused methods. Instead of comments, strive for self-explanatory code through clear naming and small method sizes.
 
 ---
 

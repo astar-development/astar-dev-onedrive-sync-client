@@ -984,7 +984,7 @@ public class SyncEngineShould
     [InlineData(null, null)]
     public void FormatScanningFolderForDisplayHandlesEdgeCases(string? input, string? expected)
     {
-        string? result = SyncEngine.FormatScanningFolderForDisplay(input);
+        var result = SyncEngine.FormatScanningFolderForDisplay(input);
 
         result.ShouldBe(expected);
     }
