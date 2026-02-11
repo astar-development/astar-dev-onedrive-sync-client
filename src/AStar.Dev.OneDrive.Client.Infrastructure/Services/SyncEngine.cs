@@ -214,21 +214,21 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         string accountId, 
         CancellationToken cancellationToken)
     {
-        try
-        {
-            AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
-            
-            if (account is null)
+        return await Try.RunAsync(async () =>
             {
-                return SyncError.AccountNotFound(accountId);
-            }
+                AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
+                
+                if (account is null)
+                {
+                    throw new InvalidOperationException($"Account '{accountId}' not found");
+                }
 
-            return account;
-        }
-        catch (Exception ex)
-        {
-            return SyncError.SyncFailed($"Failed to retrieve account: {ex.Message}", ex);
-        }
+                return account;
+            })
+            .MapFailureAsync(ex => 
+                ex is InvalidOperationException 
+                    ? SyncError.AccountNotFound(accountId)
+                    : SyncError.SyncFailed($"Failed to retrieve account: {ex.Message}", ex));
     }
 
 
@@ -242,26 +242,23 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         string accountId, 
         CancellationToken cancellationToken)
     {
-        try
-        {
-            DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
-            (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
-                await _deltaProcessingService.ProcessDeltaPagesAsync(
-                    accountId,
-                    token,
-                    state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
-                        state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
-                        state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
-                    cancellationToken);
-            await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
-            await DebugLog.EntryAsync("SyncEngine.ProcessDeltaChangesAsync", accountId, cancellationToken);
+        return await Try.RunAsync(async () =>
+            {
+                DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
+                (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
+                    await _deltaProcessingService.ProcessDeltaPagesAsync(
+                        accountId,
+                        token,
+                        state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
+                            state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
+                            state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
+                        cancellationToken);
+                await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
+                await DebugLog.EntryAsync("SyncEngine.ProcessDeltaChangesAsync", accountId, cancellationToken);
 
-            return Unit.Value;
-        }
-        catch (Exception ex)
-        {
-            return SyncError.DeltaProcessingFailed(ex.Message, ex);
-        }
+                return Unit.Value;
+            })
+            .MapFailureAsync(ex => SyncError.DeltaProcessingFailed(ex.Message, ex));
     }
 
 
