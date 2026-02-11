@@ -31,15 +31,10 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     private readonly IFileTransferService _fileTransferService;
     private readonly IGraphApiClient _graphApiClient;
     private readonly ILocalFileScanner _localFileScanner;
-    private readonly BehaviorSubject<SyncState> _progressSubject;
     private readonly IRemoteChangeDetector _remoteChangeDetector;
     private readonly ISyncConfigurationRepository _syncConfigurationRepository;
     private readonly ISyncConflictRepository _syncConflictRepository;
-    private readonly ISyncSessionLogRepository _syncSessionLogRepository;
-    private readonly List<(DateTimeOffset Timestamp, long Bytes)> _transferHistory = [];
-    private string? _currentSessionId;
-    private long _lastCompletedBytes;
-    private DateTimeOffset _lastProgressUpdate = DateTime.UtcNow;
+    private readonly ISyncStateCoordinator _syncStateCoordinator;
     private CancellationTokenSource? _syncCancellation;
     private int _syncInProgress;
 
@@ -51,11 +46,11 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         IAccountRepository accountRepository,
         IGraphApiClient graphApiClient,
         ISyncConflictRepository syncConflictRepository,
-        ISyncSessionLogRepository syncSessionLogRepository,
         IFileOperationLogRepository fileOperationLogRepository,
         IDeltaProcessingService deltaProcessingService,
         IFileTransferService fileTransferService,
-        IDeletionSyncService deletionSyncService)
+        IDeletionSyncService deletionSyncService,
+        ISyncStateCoordinator syncStateCoordinator)
     {
         _localFileScanner = localFileScanner ?? throw new ArgumentNullException(nameof(localFileScanner));
         _remoteChangeDetector = remoteChangeDetector ?? throw new ArgumentNullException(nameof(remoteChangeDetector));
@@ -64,24 +59,20 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
         _graphApiClient = graphApiClient ?? throw new ArgumentNullException(nameof(graphApiClient));
         _syncConflictRepository = syncConflictRepository ?? throw new ArgumentNullException(nameof(syncConflictRepository));
-        _syncSessionLogRepository = syncSessionLogRepository ?? throw new ArgumentNullException(nameof(syncSessionLogRepository));
         _fileOperationLogRepository = fileOperationLogRepository ?? throw new ArgumentNullException(nameof(fileOperationLogRepository));
         _deltaProcessingService = deltaProcessingService ?? throw new ArgumentNullException(nameof(deltaProcessingService));
         _fileTransferService = fileTransferService ?? throw new ArgumentNullException(nameof(fileTransferService));
         _deletionSyncService = deletionSyncService ?? throw new ArgumentNullException(nameof(deletionSyncService));
-        var initialState = SyncState.CreateInitial(string.Empty);
-
-        _progressSubject = new BehaviorSubject<SyncState>(initialState);
+        _syncStateCoordinator = syncStateCoordinator ?? throw new ArgumentNullException(nameof(syncStateCoordinator));
     }
 
     public void Dispose()
     {
         _syncCancellation?.Dispose();
-        _progressSubject.Dispose();
     }
 
     /// <inheritdoc />
-    public IObservable<SyncState> Progress => _progressSubject;
+    public IObservable<SyncState> Progress => _syncStateCoordinator.Progress;
 
     /// <inheritdoc />
     public async Task StartSyncAsync(string accountId, CancellationToken cancellationToken = default)
@@ -99,12 +90,12 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
         try
         {
-            ResetTrackingDetails();
+            _syncStateCoordinator.ResetTrackingDetails();
 
             AccountInfo? account = await ValidateAndGetAccountAsync(accountId, cancellationToken);
             if(account is null)
             {
-                ReportProgress(accountId, SyncStatus.Failed);
+                _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Failed);
                 return;
             }
 
@@ -113,11 +104,11 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             IReadOnlyList<DriveItemEntity> folders = await GetSelectedFoldersAsync(accountId, cancellationToken);
             if(folders.Count == 0)
             {
-                ReportProgress(accountId, SyncStatus.Idle);
+                _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Idle);
                 return;
             }
 
-            await InitializeSyncSessionAsync(accountId, account.EnableDetailedSyncLogging, cancellationToken);
+            string? currentSessionId = await _syncStateCoordinator.InitializeSessionAsync(accountId, account.EnableDetailedSyncLogging, cancellationToken);
 
             List<FileMetadata> allLocalFiles = await ScanLocalFilesAsync(accountId, folders, account);
             var existingFilesDict = folders.ToDictionary(f => f.RelativePath ?? "", f => f);
@@ -147,7 +138,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                     accountId, filesToUpload, filesToDownload, cancellationToken);
 
             var filesDeleted = 0;
-            ReportProgress(accountId, SyncStatus.Running, totalFiles, 0, totalBytes,
+            _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Running, totalFiles, 0, totalBytes,
                 filesDeleted: filesDeleted, conflictsDetected: conflictCount);
 
             var completedFiles = 0;
@@ -155,38 +146,40 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
             (completedFiles, completedBytes) = await _fileTransferService.ExecuteUploadsAsync(
                 accountId, folders, filesToUpload, account.MaxParallelUpDownloads,
-                conflictCount, totalFiles, totalBytes, uploadBytes, completedFiles, completedBytes, _currentSessionId,
-                ReportProgress, _syncCancellation, cancellationToken);
+                conflictCount, totalFiles, totalBytes, uploadBytes, completedFiles, completedBytes, currentSessionId,
+                _syncStateCoordinator.UpdateProgress, _syncCancellation, cancellationToken);
 
-            ResetTrackingDetails(completedBytes);
+            _syncStateCoordinator.ResetTrackingDetails(completedBytes);
 
             (completedFiles, completedBytes) = await _fileTransferService.ExecuteDownloadsAsync(
                 accountId, folders, filesToDownload, account.MaxParallelUpDownloads,
-                conflictCount, totalFiles, totalBytes, uploadBytes, downloadBytes, completedFiles, completedBytes, _currentSessionId,
-                ReportProgress, _syncCancellation, cancellationToken);
+                conflictCount, totalFiles, totalBytes, uploadBytes, downloadBytes, completedFiles, completedBytes, currentSessionId,
+                _syncStateCoordinator.UpdateProgress, _syncCancellation, cancellationToken);
 
-            ReportProgress(accountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes,
+            _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes,
                 completedBytes, filesDeleted: filesDeleted, conflictsDetected: conflictCount);
 
             await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
                 $"Sync completed: {totalFiles} files, {completedBytes} bytes", cancellationToken);
             await DebugLog.ExitAsync("SyncEngine.StartSyncAsync", accountId, cancellationToken);
 
-            await FinalizeSyncSessionAsync(_currentSessionId, filesToUpload.Count,
-                filesToDownload.Count, filesDeleted, conflictCount, completedBytes, account, cancellationToken);
+            await _syncStateCoordinator.RecordCompletionAsync(filesToUpload.Count,
+                filesToDownload.Count, filesDeleted, conflictCount, completedBytes, cancellationToken);
+            
+            await UpdateLastAccountSyncAsync(account, cancellationToken);
         }
         catch(OperationCanceledException)
         {
-            await HandleSyncCancelledAsync(_currentSessionId, cancellationToken);
-            ReportProgress(accountId, SyncStatus.Paused);
+            await _syncStateCoordinator.RecordCancellationAsync(cancellationToken);
+            _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Paused);
             throw;
         }
         catch(Exception ex)
         {
             await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId,
                 $"Sync failed: {ex.Message}", ex, cancellationToken);
-            await HandleSyncFailedAsync(_currentSessionId, cancellationToken);
-            ReportProgress(accountId, SyncStatus.Failed);
+            await _syncStateCoordinator.RecordFailureAsync(cancellationToken);
+            _syncStateCoordinator.UpdateProgress(accountId, SyncStatus.Failed);
             throw;
         }
         finally
@@ -209,7 +202,9 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             await _deltaProcessingService.ProcessDeltaPagesAsync(
                 accountId,
                 token,
-                _progressSubject.OnNext,
+                state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
+                    state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
+                    state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
                 cancellationToken);
         await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
         await DebugLog.EntryAsync("SyncEngine.StartSyncAsync", accountId, cancellationToken);
@@ -225,20 +220,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             cancellationToken);
 
         return folders;
-    }
-
-    private async Task InitializeSyncSessionAsync(string accountId, bool enableDetailedSyncLogging, CancellationToken cancellationToken)
-    {
-        if(enableDetailedSyncLogging)
-        {
-            var sessionLog = SyncSessionLog.CreateInitialRunning(accountId);
-            await _syncSessionLogRepository.AddAsync(sessionLog, cancellationToken);
-            _currentSessionId = sessionLog.Id;
-        }
-        else
-        {
-            _currentSessionId = null;
-        }
     }
 
     private async Task<List<FileMetadata>> ScanLocalFilesAsync(string accountId, IReadOnlyList<DriveItemEntity> selectedFolders, AccountInfo account)
@@ -462,9 +443,10 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
         await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"CONFLICT detected for {remoteFile.RelativePath}: local and remote both changed", cancellationToken);
 
-        if(_currentSessionId is not null)
+        string? currentSessionId = _syncStateCoordinator.GetCurrentSessionId();
+        if(currentSessionId is not null)
         {
-            var operationLog = FileOperationLog.CreateSyncConflictLog(_currentSessionId, accountId, remoteFile.RelativePath ?? "", localFile.LocalPath,
+            var operationLog = FileOperationLog.CreateSyncConflictLog(currentSessionId, accountId, remoteFile.RelativePath ?? "", localFile.LocalPath,
                 remoteFile.DriveItemId, localFile.LocalHash, localFile.Size, localFile.LastModifiedUtc, remoteFile.LastModifiedUtc);
             await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
             await _driveItemsRepository.SaveBatchAsync([localFile with { SyncStatus = FileSyncStatus.PendingDownload, IsSelected = true }], cancellationToken);
@@ -579,153 +561,13 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return allLocalFiles.DistinctBy(f => f.RelativePath).ToList();
     }
 
-    private void ResetTrackingDetails(long completedBytes = 0)
-    {
-        _transferHistory.Clear();
-        _lastProgressUpdate = DateTime.UtcNow;
-        _lastCompletedBytes = completedBytes;
-    }
-
     private bool SyncIsAlreadyRunning() => Interlocked.CompareExchange(ref _syncInProgress, 1, 0) != 0;
-
-    private async Task FinalizeSyncSessionAsync(string? sessionId, int uploadCount, int downloadCount, int deleteCount, int conflictCount, long completedBytes, AccountInfo account,
-        CancellationToken cancellationToken)
-    {
-        if(sessionId is null)
-            return;
-
-        try
-        {
-            SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(sessionId, cancellationToken);
-            if(session is not null)
-            {
-                SyncSessionLog updatedSession = session with
-                {
-                    CompletedUtc = DateTime.UtcNow,
-                    Status = SyncStatus.Completed,
-                    FilesUploaded = uploadCount,
-                    FilesDownloaded = downloadCount,
-                    FilesDeleted = deleteCount,
-                    ConflictsDetected = conflictCount,
-                    TotalBytes = completedBytes
-                };
-                await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
-            }
-
-            await UpdateLastAccountSyncAsync(account, cancellationToken);
-        }
-        catch(Exception ex)
-        {
-            Debug.WriteLine($"[SyncEngine] Failed to finalize sync session log: {ex.Message}");
-        }
-        finally
-        {
-            _currentSessionId = null;
-        }
-    }
-
-    private async Task HandleSyncCancelledAsync(string? sessionId, CancellationToken cancellationToken)
-    {
-        if(sessionId is null)
-            return;
-
-        SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(sessionId, cancellationToken);
-        if(session is not null)
-        {
-            SyncSessionLog updatedSession = session with { CompletedUtc = DateTime.UtcNow, Status = SyncStatus.Paused };
-            await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
-        }
-    }
-
-    private async Task HandleSyncFailedAsync(string? sessionId, CancellationToken cancellationToken)
-    {
-        if(sessionId is null)
-            return;
-
-        SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(sessionId, cancellationToken);
-        if(session is not null)
-        {
-            SyncSessionLog updatedSession = session with { CompletedUtc = DateTime.UtcNow, Status = SyncStatus.Failed };
-            await _syncSessionLogRepository.UpdateAsync(updatedSession, cancellationToken);
-        }
-    }
 
     private async Task UpdateLastAccountSyncAsync(AccountInfo account, CancellationToken cancellationToken)
     {
         AccountInfo lastSyncUpdate = account with { LastSyncUtc = DateTime.UtcNow };
 
         await _accountRepository.UpdateAsync(lastSyncUpdate, cancellationToken);
-    }
-
-    public void ReportProgress(
-        string accountId,
-        SyncStatus status,
-        int totalFiles = 0,
-        int completedFiles = 0,
-        long totalBytes = 0,
-        long completedBytes = 0,
-        int filesDownloading = 0,
-        int filesUploading = 0,
-        int filesDeleted = 0,
-        int conflictsDetected = 0,
-        string? currentScanningFolder = null,
-        long? phaseTotalBytes = null)
-    {
-        DateTimeOffset now = DateTime.UtcNow;
-        var elapsedSeconds = (now - _lastProgressUpdate).TotalSeconds;
-
-        double megabytesPerSecond = 0;
-        if(elapsedSeconds > 0.1)
-        {
-            var bytesDelta = completedBytes - _lastCompletedBytes;
-            if(bytesDelta > 0)
-            {
-                var megabytesDelta = bytesDelta / (1024.0 * 1024.0);
-                megabytesPerSecond = megabytesDelta / elapsedSeconds;
-
-                _transferHistory.Add((now, completedBytes));
-                if(_transferHistory.Count > 10)
-                    _transferHistory.RemoveAt(0);
-
-                if(_transferHistory.Count >= 2)
-                {
-                    var totalElapsed = (now - _transferHistory[0].Timestamp).TotalSeconds;
-                    var totalTransferred = completedBytes - _transferHistory[0].Bytes;
-                    if(totalElapsed > 0)
-                        megabytesPerSecond = totalTransferred / (1024.0 * 1024.0) / totalElapsed;
-                }
-
-                _lastProgressUpdate = now;
-                _lastCompletedBytes = completedBytes;
-            }
-        }
-
-        int? estimatedSecondsRemaining = null;
-        var bytesForEta = phaseTotalBytes ?? totalBytes;
-        if(megabytesPerSecond > 0.01 && completedBytes < bytesForEta)
-        {
-            var remainingBytes = bytesForEta - completedBytes;
-            var remainingMegabytes = remainingBytes / (1024.0 * 1024.0);
-            estimatedSecondsRemaining = (int)Math.Ceiling(remainingMegabytes / megabytesPerSecond);
-        }
-
-        var progress = new SyncState(
-            accountId,
-            status,
-            totalFiles,
-            completedFiles,
-            totalBytes,
-            completedBytes,
-            filesDownloading,
-            filesUploading,
-            filesDeleted,
-            conflictsDetected,
-            megabytesPerSecond,
-            estimatedSecondsRemaining,
-            currentScanningFolder,
-            now);
-
-        _progressSubject.OnNext(progress);
     }
 
     /// <summary>
