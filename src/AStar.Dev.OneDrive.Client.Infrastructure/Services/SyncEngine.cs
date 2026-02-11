@@ -126,7 +126,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             var remotePathsSet = folders.Select(f => f.RelativePath).ToHashSet();
             var localPathsSet = allLocalFiles.Select(f => f.RelativePath).ToHashSet();
 
-            (List<FileMetadata> filesToDownload, int conflictCount, HashSet<string> conflictPaths) =
+            (List<FileMetadata> filesToDownload, var conflictCount, HashSet<string> conflictPaths) =
                 await DetectFilesToDownloadAndConflictsAsync(
                     accountId, folders, existingFilesDict, localFilesDict, account, cancellationToken);
 
@@ -139,7 +139,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             filesToUpload = FilterUploadsByDeletionsAndConflicts(
                 filesToUpload, folders, remotePathsSet, conflictPaths);
 
-            (filesToDownload, int totalFiles, long totalBytes, long uploadBytes, long downloadBytes) =
+            (filesToDownload, var totalFiles, var totalBytes, var uploadBytes, var downloadBytes) =
                 await CalculateSyncSummaryAsync(
                     accountId, filesToUpload, filesToDownload, cancellationToken);
 
@@ -255,7 +255,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return allLocalFiles.DistinctBy(f => f.RelativePath).ToList();
     }
 
-    private async Task<List<FileMetadata>> DetectFilesToUploadAsync(string accountId, List<FileMetadata> allLocalFiles, Dictionary<string, DriveItemEntity> existingFilesDict,
+    private static async Task<List<FileMetadata>> DetectFilesToUploadAsync(string accountId, List<FileMetadata> allLocalFiles, Dictionary<string, DriveItemEntity> existingFilesDict,
         IReadOnlyList<DriveItemEntity> folders, CancellationToken cancellationToken)
     {
         var filesToUpload = new List<FileMetadata>();
@@ -335,32 +335,32 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         {
             if(existingFilesDict.TryGetValue(remoteFile.RelativePath ?? "", out DriveItemEntity? existingFile))
             {
-                var result = await ProcessKnownRemoteFileAsync(accountId, remoteFile, existingFile, localFilesDict, account, cancellationToken);
-                if(result.HasConflict)
+                (var HasConflict, FileMetadata? FileToDownload) = await ProcessKnownRemoteFileAsync(accountId, remoteFile, existingFile, localFilesDict, account, cancellationToken);
+                if(HasConflict)
                 {
                     conflictCount++;
                     _ = conflictPaths.Add(remoteFile.RelativePath ?? "");
                 }
-                else if(result.FileToDownload is not null)
+                else if(FileToDownload is not null)
                 {
-                    filesToDownload.Add(result.FileToDownload);
+                    filesToDownload.Add(FileToDownload);
                 }
             }
             else
             {
-                var result = await ProcessFirstSyncFileAsync(accountId, remoteFile, localFilesDict, account, cancellationToken);
-                if(result.HasConflict)
+                (var HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile) = await ProcessFirstSyncFileAsync(accountId, remoteFile, localFilesDict, account, cancellationToken);
+                if(HasConflict)
                 {
                     conflictCount++;
                     _ = conflictPaths.Add(remoteFile.RelativePath ?? "");
                 }
-                else if(result.FileToDownload is not null)
+                else if(FileToDownload is not null)
                 {
-                    filesToDownload.Add(result.FileToDownload);
+                    filesToDownload.Add(FileToDownload);
                 }
-                else if(result.MatchedFile is not null)
+                else if(MatchedFile is not null)
                 {
-                    filesToRecordWithoutTransfer.Add(result.MatchedFile);
+                    filesToRecordWithoutTransfer.Add(MatchedFile);
                 }
             }
         }
@@ -372,7 +372,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict, AccountInfo account, CancellationToken cancellationToken)
     {
         await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Found file in DB: {remoteFile.RelativePath}, DB Status={existingFile.SyncStatus}", cancellationToken);
-        
+
         var timeDiff = Math.Abs((existingFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
         var remoteHasChanged = ((!string.IsNullOrWhiteSpace(existingFile.CTag) ||
                                     timeDiff > OneHourInSeconds ||
@@ -394,7 +394,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             return (true, null);
         }
 
-        var fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, accountId, account.LocalSyncPath);
+        FileMetadata fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, accountId, account.LocalSyncPath);
         return (false, fileToDownload);
     }
 
@@ -402,10 +402,10 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         string accountId, DriveItemEntity remoteFile, Dictionary<string, FileMetadata> localFilesDict, AccountInfo account, CancellationToken cancellationToken)
     {
         await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"File not in DB: {remoteFile.RelativePath} - first sync or new file", cancellationToken);
-        
+
         if(!localFilesDict.TryGetValue(remoteFile.RelativePath ?? "", out FileMetadata? localFile))
         {
-            var fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, accountId, account.LocalSyncPath);
+            FileMetadata fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, accountId, account.LocalSyncPath);
             await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"New remote file to download: {remoteFile.RelativePath}", cancellationToken);
             return (false, fileToDownload, null);
         }
@@ -420,7 +420,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         if(filesMatch)
         {
             await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"File exists both places and matches: {remoteFile.RelativePath} - recording in DB", cancellationToken);
-            var matchedFile = localFile with
+            FileMetadata matchedFile = localFile with
             {
                 DriveItemId = remoteFile.DriveItemId,
                 CTag = remoteFile.CTag,
@@ -437,7 +437,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return (true, null, null);
     }
 
-    private bool CheckIfLocalFileHasChanged(string relativePath, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict)
+    private static bool CheckIfLocalFileHasChanged(string relativePath, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict)
     {
         if(!localFilesDict.TryGetValue(relativePath, out FileMetadata? localFile))
             return false;
@@ -561,7 +561,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             !conflictPaths.Contains(f.RelativePath))];
     }
 
-    private async Task<(
+    private static async Task<(
         List<FileMetadata> FilesToDownload,
         int TotalFiles,
         long TotalBytes,
