@@ -218,10 +218,10 @@ public class SyncEngineResultPatternShould
                 Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromResult(new Microsoft.Graph.Models.DriveItem
             {
-                Id = $"uploaded_{Guid.CreateVersion7():N0}",
+                Id = $"uploaded_{Guid.CreateVersion7():N}",
                 Name = callInfo.ArgAt<string>(1).Split('\\', '/').Last(),
-                CTag = $"ctag_{Guid.CreateVersion7():N0}",
-                ETag = $"etag_{Guid.CreateVersion7():N0}",
+                CTag = $"ctag_{Guid.CreateVersion7():N}",
+                ETag = $"etag_{Guid.CreateVersion7():N}",
                 LastModifiedDateTime = DateTimeOffset.UtcNow
             }));
 

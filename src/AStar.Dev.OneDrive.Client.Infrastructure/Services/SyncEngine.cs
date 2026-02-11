@@ -9,6 +9,7 @@ using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 using Microsoft.Graph.Models;
+using Unit = AStar.Dev.Functional.Extensions.Unit;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
@@ -104,18 +105,18 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 return;
             }
 
-            Result<AStar.Dev.Functional.Extensions.Unit, SyncError> deltaResult = await ProcessDeltaChangesAsync(accountId, cancellationToken);
+            Result<Unit, SyncError> deltaResult = await ProcessDeltaChangesAsync(accountId, cancellationToken);
             await deltaResult.MatchAsync(
                 async _ =>
                 {
-                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                    return Unit.Value;
                 },
                 async error =>
                 {
                     // Log error but continue - delta processing errors shouldn't stop the sync
                     await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId, 
                         $"Delta processing failed: {error.Message}", error.Exception, cancellationToken);
-                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                    return Unit.Value;
                 });
 
             IReadOnlyList<DriveItemEntity> folders = await GetSelectedFoldersAsync(accountId, cancellationToken);
@@ -234,14 +235,13 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     }
 
 
-
     /// <summary>
     ///     Processes delta changes using Result pattern.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Result indicating success or failure.</returns>
-    internal async Task<Result<AStar.Dev.Functional.Extensions.Unit, SyncError>> ProcessDeltaChangesAsync(
+    internal async Task<Result<Unit, SyncError>> ProcessDeltaChangesAsync(
         string accountId, 
         CancellationToken cancellationToken)
     {
