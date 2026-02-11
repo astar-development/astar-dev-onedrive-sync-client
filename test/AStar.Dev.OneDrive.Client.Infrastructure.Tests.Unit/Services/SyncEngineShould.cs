@@ -1208,13 +1208,57 @@ public class SyncEngineShould
                 Arg.Any<CancellationToken>())
             .Returns((new DeltaToken("acc1", "", "delta-token", DateTimeOffset.UtcNow), 1, 0));
 
-        ISyncSessionLogRepository syncSessionLogRepo = Substitute.For<ISyncSessionLogRepository>();
         IFileOperationLogRepository fileOperationLogRepo = Substitute.For<IFileOperationLogRepository>();
         IFileTransferService fileTransferService = Substitute.For<IFileTransferService>();
         IDeletionSyncService deletionSyncService = Substitute.For<IDeletionSyncService>();
+        ISyncStateCoordinator syncStateCoordinator = Substitute.For<ISyncStateCoordinator>();
+        
+        // Setup default mock for SyncStateCoordinator with a BehaviorSubject for Progress
+        var progressSubject = new System.Reactive.Subjects.BehaviorSubject<SyncState>(SyncState.CreateInitial(string.Empty));
+        _ = syncStateCoordinator.Progress.Returns(progressSubject);
+        _ = syncStateCoordinator.InitializeSessionAsync(Arg.Any<string>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
+            .Returns((string?)null);
+        _ = syncStateCoordinator.GetCurrentSessionId()
+            .Returns((string?)null);
+        _ = syncStateCoordinator.GetCurrentState()
+            .Returns(callInfo => progressSubject.Value);
+        
+        // Make UpdateProgress actually update the BehaviorSubject
+        syncStateCoordinator.When(x => x.UpdateProgress(
+            Arg.Any<string>(), 
+            Arg.Any<SyncStatus>(), 
+            Arg.Any<int>(), 
+            Arg.Any<int>(), 
+            Arg.Any<long>(), 
+            Arg.Any<long>(), 
+            Arg.Any<int>(), 
+            Arg.Any<int>(), 
+            Arg.Any<int>(), 
+            Arg.Any<int>(), 
+            Arg.Any<string?>(), 
+            Arg.Any<long?>()))
+            .Do(callInfo =>
+            {
+                var newState = new SyncState(
+                    callInfo.ArgAt<string>(0),
+                    callInfo.ArgAt<SyncStatus>(1),
+                    callInfo.ArgAt<int>(2),
+                    callInfo.ArgAt<int>(3),
+                    callInfo.ArgAt<long>(4),
+                    callInfo.ArgAt<long>(5),
+                    callInfo.ArgAt<int>(6),
+                    callInfo.ArgAt<int>(7),
+                    callInfo.ArgAt<int>(8),
+                    callInfo.ArgAt<int>(9),
+                    0,
+                    null,
+                    callInfo.ArgAt<string?>(10),
+                    DateTimeOffset.UtcNow);
+                progressSubject.OnNext(newState);
+            });
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, deltaProcessingService, fileTransferService, deletionSyncService);
-        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, deltaProcessingService, fileTransferService, deletionSyncService);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, fileOperationLogRepo, deltaProcessingService, fileTransferService, deletionSyncService, syncStateCoordinator);
+        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, deltaProcessingService, fileTransferService, deletionSyncService, syncStateCoordinator);
 
         return (engine, mocks);
     }
@@ -1229,5 +1273,6 @@ public class SyncEngineShould
         ISyncConflictRepository SyncConflictRepo,
         IDeltaProcessingService DeltaProcessingService,
         IFileTransferService FileTransferService,
-        IDeletionSyncService DeletionSyncService);
+        IDeletionSyncService DeletionSyncService,
+        ISyncStateCoordinator SyncStateCoordinator);
 }
