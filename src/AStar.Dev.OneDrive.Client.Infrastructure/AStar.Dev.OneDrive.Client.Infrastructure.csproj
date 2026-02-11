@@ -7,6 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <InternalsVisibleTo Include="AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit" />
+    </ItemGroup>
+
+    <ItemGroup>
         <!-- Microsoft Identity (MSAL) -->
         <PackageReference Include="Microsoft.Identity.Client" Version="4.81.0"/>
         <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0"/>
