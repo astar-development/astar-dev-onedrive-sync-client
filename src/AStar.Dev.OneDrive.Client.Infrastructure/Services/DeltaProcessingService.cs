@@ -40,7 +40,8 @@ public sealed class DeltaProcessingService(ISyncRepository syncRepository, IDelt
     }
 
     /// <inheritdoc />
-    public async Task<(DeltaToken finalToken, int pageCount, int totalItemsProcessed)> ProcessDeltaPagesAsync(string accountId, DeltaToken? deltaToken, Action<SyncState>? progressCallback, CancellationToken cancellationToken)
+    public async Task<(DeltaToken finalToken, int pageCount, int totalItemsProcessed)> ProcessDeltaPagesAsync(string accountId, DeltaToken? deltaToken, Action<SyncState>? progressCallback,
+        CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaProcessingService.ProcessDeltaPagesAsync, accountId, cancellationToken);
         
