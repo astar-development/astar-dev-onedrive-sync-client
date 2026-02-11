@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
@@ -1212,6 +1213,26 @@ public class SyncEngineShould
         IFileTransferService fileTransferService = Substitute.For<IFileTransferService>();
         IDeletionSyncService deletionSyncService = Substitute.For<IDeletionSyncService>();
         ISyncStateCoordinator syncStateCoordinator = Substitute.For<ISyncStateCoordinator>();
+        IConflictDetectionService conflictDetectionService = Substitute.For<IConflictDetectionService>();
+        
+        // Setup default mock for ConflictDetectionService
+        _ = conflictDetectionService.CheckKnownFileConflictAsync(
+                Arg.Any<string>(),
+                Arg.Any<DriveItemEntity>(),
+                Arg.Any<DriveItemEntity>(),
+                Arg.Any<Dictionary<string, FileMetadata>>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns((false, null));
+        _ = conflictDetectionService.CheckFirstSyncFileConflictAsync(
+                Arg.Any<string>(),
+                Arg.Any<DriveItemEntity>(),
+                Arg.Any<Dictionary<string, FileMetadata>>(),
+                Arg.Any<string?>(),
+                Arg.Any<string?>(),
+                Arg.Any<CancellationToken>())
+            .Returns((false, null, null));
         
         // Setup default mock for SyncStateCoordinator with a BehaviorSubject for Progress
         var progressSubject = new System.Reactive.Subjects.BehaviorSubject<SyncState>(SyncState.CreateInitial(string.Empty));
@@ -1257,8 +1278,8 @@ public class SyncEngineShould
                 progressSubject.OnNext(newState);
             });
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, fileOperationLogRepo, deltaProcessingService, fileTransferService, deletionSyncService, syncStateCoordinator);
-        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, deltaProcessingService, fileTransferService, deletionSyncService, syncStateCoordinator);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, conflictDetectionService, deltaProcessingService, fileTransferService, deletionSyncService, syncStateCoordinator);
+        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, conflictDetectionService, deltaProcessingService, fileTransferService, deletionSyncService, syncStateCoordinator);
 
         return (engine, mocks);
     }
@@ -1271,6 +1292,7 @@ public class SyncEngineShould
         IAccountRepository AccountRepo,
         IGraphApiClient GraphApiClient,
         ISyncConflictRepository SyncConflictRepo,
+        IConflictDetectionService ConflictDetectionService,
         IDeltaProcessingService DeltaProcessingService,
         IFileTransferService FileTransferService,
         IDeletionSyncService DeletionSyncService,
