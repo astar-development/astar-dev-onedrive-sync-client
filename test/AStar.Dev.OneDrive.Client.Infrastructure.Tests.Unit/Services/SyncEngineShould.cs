@@ -2,6 +2,7 @@ using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
+using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Services;
@@ -1200,9 +1201,10 @@ public class SyncEngineShould
 
         ISyncSessionLogRepository syncSessionLogRepo = Substitute.For<ISyncSessionLogRepository>();
         IFileOperationLogRepository fileOperationLogRepo = Substitute.For<IFileOperationLogRepository>();
+        IFileTransferService fileTransferService = Substitute.For<IFileTransferService>();
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, syncRepo, deltaPageProcessor);
-        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncRepo, deltaPageProcessor);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, syncRepo, deltaPageProcessor, fileTransferService);
+        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncRepo, deltaPageProcessor, fileTransferService);
 
         return (engine, mocks);
     }
@@ -1216,5 +1218,6 @@ public class SyncEngineShould
         IGraphApiClient GraphApiClient,
         ISyncConflictRepository SyncConflictRepo,
         ISyncRepository SyncRepo,
-        IDeltaPageProcessor DeltaPageProcessor);
+        IDeltaPageProcessor DeltaPageProcessor,
+        IFileTransferService FileTransferService);
 }
