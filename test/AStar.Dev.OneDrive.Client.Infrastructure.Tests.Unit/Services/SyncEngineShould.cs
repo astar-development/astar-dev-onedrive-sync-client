@@ -1173,8 +1173,7 @@ public class SyncEngineShould
         IAccountRepository accountRepo = Substitute.For<IAccountRepository>();
         IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         ISyncConflictRepository syncConflictRepo = Substitute.For<ISyncConflictRepository>();
-        ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
+        IDeltaProcessingService deltaProcessingService = Substitute.For<IDeltaProcessingService>();
 
         // Setup default mock return for UploadFileAsync to prevent null reference exceptions
         _ = graphApiClient.UploadFileAsync(
@@ -1199,12 +1198,22 @@ public class SyncEngineShould
                 Arg.Any<CancellationToken>())
             .Returns((SyncConflict?)null);
 
+        // Setup default mock for DeltaProcessingService
+        _ = deltaProcessingService.GetDeltaTokenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns((DeltaToken?)null);
+        _ = deltaProcessingService.ProcessDeltaPagesAsync(
+                Arg.Any<string>(),
+                Arg.Any<DeltaToken?>(),
+                Arg.Any<Action<SyncState>?>(),
+                Arg.Any<CancellationToken>())
+            .Returns((new DeltaToken("acc1", "", "delta-token", DateTimeOffset.UtcNow), 1, 0));
+
         ISyncSessionLogRepository syncSessionLogRepo = Substitute.For<ISyncSessionLogRepository>();
         IFileOperationLogRepository fileOperationLogRepo = Substitute.For<IFileOperationLogRepository>();
         IFileTransferService fileTransferService = Substitute.For<IFileTransferService>();
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, syncRepo, deltaPageProcessor, fileTransferService);
-        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncRepo, deltaPageProcessor, fileTransferService);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, deltaProcessingService, fileTransferService);
+        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, deltaProcessingService, fileTransferService);
 
         return (engine, mocks);
     }
@@ -1217,7 +1226,6 @@ public class SyncEngineShould
         IAccountRepository AccountRepo,
         IGraphApiClient GraphApiClient,
         ISyncConflictRepository SyncConflictRepo,
-        ISyncRepository SyncRepo,
-        IDeltaPageProcessor DeltaPageProcessor,
+        IDeltaProcessingService DeltaProcessingService,
         IFileTransferService FileTransferService);
 }

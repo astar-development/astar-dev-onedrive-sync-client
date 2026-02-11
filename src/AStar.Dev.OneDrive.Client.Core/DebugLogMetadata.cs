@@ -1,6 +1,6 @@
 namespace AStar.Dev.OneDrive.Client.Core;
 
-public static class DebugLogMetadata
+public static partial class DebugLogMetadata
 {
     public static class UI
     {
@@ -15,7 +15,7 @@ public static class DebugLogMetadata
         }
     }
 
-    public static class Services
+    public static partial class Services
     {
         public static class SyncEngine
         {
