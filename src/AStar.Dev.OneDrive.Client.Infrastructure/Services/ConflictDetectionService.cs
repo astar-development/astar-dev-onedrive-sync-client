@@ -187,15 +187,18 @@ public sealed class ConflictDetectionService : IConflictDetectionService
 
     private static FileMetadata CreateFileMetadataWithLocalPath(DriveItemEntity remoteFile, string accountId, string? localSyncPath)
     {
-        var localFilePath = localSyncPath is not null 
-            ? Path.Combine(localSyncPath, remoteFile.RelativePath?.TrimStart('/') ?? "")
-            : string.Empty;
+        if(string.IsNullOrWhiteSpace(localSyncPath))
+        {
+            throw new ArgumentException("Local sync path cannot be null or empty when creating file metadata for download", nameof(localSyncPath));
+        }
+        
+        var localFilePath = Path.Combine(localSyncPath, remoteFile.RelativePath?.TrimStart('/') ?? string.Empty);
         
         return new FileMetadata(
             remoteFile.DriveItemId,
             accountId,
-            remoteFile.Name ?? "",
-            remoteFile.RelativePath ?? "",
+            remoteFile.Name ?? string.Empty,
+            remoteFile.RelativePath ?? string.Empty,
             remoteFile.Size,
             remoteFile.LastModifiedUtc,
             localFilePath,
