@@ -7,25 +7,14 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 /// <summary>
 ///     Service for managing delta token storage and processing delta queries from OneDrive.
 /// </summary>
-public sealed class DeltaProcessingService : IDeltaProcessingService
+public sealed class DeltaProcessingService(ISyncRepository syncRepository, IDeltaPageProcessor deltaPageProcessor) : IDeltaProcessingService
 {
-    private readonly ISyncRepository _syncRepository;
-    private readonly IDeltaPageProcessor _deltaPageProcessor;
-
-    public DeltaProcessingService(
-        ISyncRepository syncRepository,
-        IDeltaPageProcessor deltaPageProcessor)
-    {
-        _syncRepository = syncRepository ?? throw new ArgumentNullException(nameof(syncRepository));
-        _deltaPageProcessor = deltaPageProcessor ?? throw new ArgumentNullException(nameof(deltaPageProcessor));
-    }
-
     /// <inheritdoc />
     public async Task<DeltaToken?> GetDeltaTokenAsync(string accountId, CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaProcessingService.GetDeltaTokenAsync, accountId, cancellationToken);
         
-        DeltaToken? token = await _syncRepository.GetDeltaTokenAsync(accountId, cancellationToken);
+        DeltaToken? token = await syncRepository.GetDeltaTokenAsync(accountId, cancellationToken);
         
         await DebugLog.InfoAsync(
             DebugLogMetadata.Services.DeltaProcessingService.GetDeltaTokenAsync,
@@ -41,7 +30,7 @@ public sealed class DeltaProcessingService : IDeltaProcessingService
     {
         await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaProcessingService.SaveDeltaTokenAsync, token.AccountId, cancellationToken);
         
-        await _syncRepository.SaveOrUpdateDeltaTokenAsync(token, cancellationToken);
+        await syncRepository.SaveOrUpdateDeltaTokenAsync(token, cancellationToken);
         
         await DebugLog.InfoAsync(
             DebugLogMetadata.Services.DeltaProcessingService.SaveDeltaTokenAsync,
@@ -51,15 +40,10 @@ public sealed class DeltaProcessingService : IDeltaProcessingService
     }
 
     /// <inheritdoc />
-    public async Task<(DeltaToken finalToken, int pageCount, int totalItemsProcessed)> ProcessDeltaPagesAsync(
-        string accountId,
-        DeltaToken? deltaToken,
-        Action<SyncState>? progressCallback,
-        CancellationToken cancellationToken)
+    public async Task<(DeltaToken finalToken, int pageCount, int totalItemsProcessed)> ProcessDeltaPagesAsync(string accountId, DeltaToken? deltaToken, Action<SyncState>? progressCallback, CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaProcessingService.ProcessDeltaPagesAsync, accountId, cancellationToken);
         
-        // If no delta token provided, create an empty one to start from the beginning
         DeltaToken tokenToUse = deltaToken ?? new DeltaToken(accountId, string.Empty, string.Empty, DateTimeOffset.UtcNow);
         
         await DebugLog.InfoAsync(
@@ -69,7 +53,7 @@ public sealed class DeltaProcessingService : IDeltaProcessingService
             cancellationToken);
         
         (DeltaToken? finalDelta, int pageCount, int totalItemsProcessed) = 
-            await _deltaPageProcessor.ProcessAllDeltaPagesAsync(
+            await deltaPageProcessor.ProcessAllDeltaPagesAsync(
                 accountId,
                 tokenToUse,
                 progressCallback,
