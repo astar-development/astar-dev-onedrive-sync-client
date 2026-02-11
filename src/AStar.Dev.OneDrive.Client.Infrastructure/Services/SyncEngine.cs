@@ -134,9 +134,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             await ProcessLocalToRemoteDeletionsAsync(
                 accountId, allLocalFiles, remotePathsSet, localPathsSet, cancellationToken);
 
-            await ProcessOrphanedFilesCleanupAsync(
-                accountId, folders, remotePathsSet, localPathsSet, cancellationToken);
-
             filesToUpload = FilterUploadsByDeletionsAndConflicts(
                 filesToUpload, folders, remotePathsSet, conflictPaths);
 
@@ -144,12 +141,12 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 await CalculateSyncSummaryAsync(
                     accountId, filesToUpload, filesToDownload, cancellationToken);
 
-            int filesDeleted = 0; // Tracked during deletion phases
+            var filesDeleted = 0;
             ReportProgress(accountId, SyncStatus.Running, totalFiles, 0, totalBytes,
                 filesDeleted: filesDeleted, conflictsDetected: conflictCount);
 
-            int completedFiles = 0;
-            long completedBytes = 0;
+            var completedFiles = 0;
+            var completedBytes = 0L;
 
             (completedFiles, completedBytes) = await ExecuteFileUploadsAsync(
                 accountId, folders, filesToUpload, account.MaxParallelUpDownloads,
@@ -213,8 +210,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         await DebugLog.EntryAsync("SyncEngine.StartSyncAsync", accountId, cancellationToken);
     }
 
-    private async Task<IReadOnlyList<DriveItemEntity>> GetSelectedFoldersAsync(
-        string accountId, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<DriveItemEntity>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken)
     {
         IReadOnlyList<DriveItemEntity> folders = await _syncConfigurationRepository
             .GetSelectedItemsByAccountIdAsync(accountId, cancellationToken);
@@ -226,8 +222,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return folders;
     }
 
-    private async Task InitializeSyncSessionAsync(
-        string accountId, bool enableDetailedSyncLogging, CancellationToken cancellationToken)
+    private async Task InitializeSyncSessionAsync(string accountId, bool enableDetailedSyncLogging, CancellationToken cancellationToken)
     {
         if(enableDetailedSyncLogging)
         {
@@ -241,8 +236,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         }
     }
 
-    private async Task<List<FileMetadata>> ScanLocalFilesAsync(
-        string accountId, IReadOnlyList<DriveItemEntity> selectedFolders, AccountInfo account)
+    private async Task<List<FileMetadata>> ScanLocalFilesAsync(string accountId, IReadOnlyList<DriveItemEntity> selectedFolders, AccountInfo account)
     {
         var allLocalFiles = new List<FileMetadata>();
         foreach(DriveItemEntity driveItem in selectedFolders.Where(f => f.IsFolder))
@@ -259,12 +253,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return allLocalFiles.DistinctBy(f => f.RelativePath).ToList();
     }
 
-    private async Task<List<FileMetadata>> DetectFilesToUploadAsync(
-        string accountId,
-        List<FileMetadata> allLocalFiles,
-        Dictionary<string, DriveItemEntity> existingFilesDict,
-        IReadOnlyList<DriveItemEntity> folders,
-        CancellationToken cancellationToken)
+    private async Task<List<FileMetadata>> DetectFilesToUploadAsync(string accountId, List<FileMetadata> allLocalFiles, Dictionary<string, DriveItemEntity> existingFilesDict,
+        IReadOnlyList<DriveItemEntity> folders, CancellationToken cancellationToken)
     {
         var filesToUpload = new List<FileMetadata>();
 
@@ -330,14 +320,9 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return filesToUpload;
     }
 
-    private async Task<(List<FileMetadata> FilesToDownload, int ConflictCount, HashSet<string> ConflictPaths)>
-        DetectFilesToDownloadAndConflictsAsync(
-            string accountId,
-            IReadOnlyList<DriveItemEntity> folders,
-            Dictionary<string, DriveItemEntity> existingFilesDict,
-            Dictionary<string, FileMetadata> localFilesDict,
-            AccountInfo account,
-            CancellationToken cancellationToken)
+    private async Task<(List<FileMetadata> FilesToDownload, int ConflictCount, HashSet<string> ConflictPaths)> DetectFilesToDownloadAndConflictsAsync(
+        string accountId, IReadOnlyList<DriveItemEntity> folders, Dictionary<string, DriveItemEntity> existingFilesDict, Dictionary<string, FileMetadata> localFilesDict,
+        AccountInfo account, CancellationToken cancellationToken)
     {
         var filesToDownload = new List<FileMetadata>();
         var conflictCount = 0;
@@ -478,12 +463,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return (filesToDownload, conflictCount, conflictPaths);
     }
 
-    private async Task ProcessRemoteToLocalDeletionsAsync(
-        string accountId,
-        IReadOnlyList<DriveItemEntity> folders,
-        HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet,
-        CancellationToken cancellationToken)
+    private async Task ProcessRemoteToLocalDeletionsAsync(string accountId, IReadOnlyList<DriveItemEntity> folders, HashSet<string> remotePathsSet,
+        HashSet<string> localPathsSet, CancellationToken cancellationToken)
     {
         List<DriveItemEntity> deletedFromOneDrive = SelectFilesDeletedFromOneDriveButSyncedLocally(
             folders, remotePathsSet, localPathsSet);
@@ -509,12 +490,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         }
     }
 
-    private async Task ProcessLocalToRemoteDeletionsAsync(
-        string accountId,
-        List<FileMetadata> allLocalFiles,
-        HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet,
-        CancellationToken cancellationToken)
+    private async Task ProcessLocalToRemoteDeletionsAsync(string accountId, List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet,
+        HashSet<string> localPathsSet, CancellationToken cancellationToken)
     {
         List<FileMetadata> deletedLocally = GetFilesDeletedLocally(allLocalFiles, remotePathsSet, localPathsSet);
 
@@ -551,24 +528,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         }
     }
 
-    private async Task ProcessOrphanedFilesCleanupAsync(
-        string accountId,
-        IReadOnlyList<DriveItemEntity> folders,
-        HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet,
-        CancellationToken cancellationToken)
-    {
-        // Note: Currently unused but kept for potential future use
-        // Would need deletedFromOneDrive and deletedLocally from previous operations
-        // to implement alreadyProcessedDeletions properly
-        await Task.CompletedTask;
-    }
-
-    private static List<FileMetadata> FilterUploadsByDeletionsAndConflicts(
-        List<FileMetadata> filesToUpload,
-        IReadOnlyList<DriveItemEntity> folders,
-        HashSet<string> remotePathsSet,
-        HashSet<string> conflictPaths)
+    private static List<FileMetadata> FilterUploadsByDeletionsAndConflicts(List<FileMetadata> filesToUpload, IReadOnlyList<DriveItemEntity> folders,
+        HashSet<string> remotePathsSet, HashSet<string> conflictPaths)
     {
         var deletedPaths = folders
             .Where(f => !remotePathsSet.Contains(f.RelativePath))
@@ -601,27 +562,16 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             cancellationToken);
 
         (filesToDownload, totalFiles, totalBytes, downloadBytes) =
-            await RemoveDuplicatesFromDownloadList(
-                filesToUpload, filesToDownload, totalFiles, totalBytes, downloadBytes,
-                accountId, cancellationToken);
+            await RemoveDuplicatesFromDownloadList(filesToUpload, filesToDownload, totalFiles, totalBytes, downloadBytes, accountId, cancellationToken);
 
-        uploadBytes = filesToUpload.Sum(f => f.Size); // Recalculate after deduplication
+        uploadBytes = filesToUpload.Sum(f => f.Size);
 
         return (filesToDownload, totalFiles, totalBytes, uploadBytes, downloadBytes);
     }
 
-    private async Task<(int CompletedFiles, long CompletedBytes)> ExecuteFileUploadsAsync(
-        string accountId,
-        IReadOnlyList<DriveItemEntity> folders,
-        List<FileMetadata> filesToUpload,
-        int maxParallelUploads,
-        int conflictCount,
-        int totalFiles,
-        long totalBytes,
-        long uploadBytes,
-        int completedFiles,
-        long completedBytes,
-        CancellationToken cancellationToken)
+    private async Task<(int CompletedFiles, long CompletedBytes)> ExecuteFileUploadsAsync(string accountId, IReadOnlyList<DriveItemEntity> folders,
+        List<FileMetadata> filesToUpload, int maxParallelUploads, int conflictCount, int totalFiles, long totalBytes, long uploadBytes,
+        int completedFiles, long completedBytes, CancellationToken cancellationToken)
     {
         var maxParallel = Math.Max(1, maxParallelUploads);
         using var uploadSemaphore = new SemaphoreSlim(maxParallel, maxParallel);
@@ -638,19 +588,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         return (completedFiles, completedBytes);
     }
 
-    private async Task<(int CompletedFiles, long CompletedBytes)> ExecuteFileDownloadsAsync(
-        string accountId,
-        IReadOnlyList<DriveItemEntity> folders,
-        List<FileMetadata> filesToDownload,
-        int maxParallelDownloads,
-        int conflictCount,
-        int totalFiles,
-        long totalBytes,
-        long uploadBytes,
-        long downloadBytes,
-        int completedFiles,
-        long completedBytes,
-        CancellationToken cancellationToken)
+    private async Task<(int CompletedFiles, long CompletedBytes)> ExecuteFileDownloadsAsync(string accountId, IReadOnlyList<DriveItemEntity> folders, List<FileMetadata> filesToDownload,
+    int maxParallelDownloads, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, long downloadBytes, int completedFiles, long completedBytes, CancellationToken cancellationToken)
     {
         var maxParallel = Math.Max(1, maxParallelDownloads);
         using var downloadSemaphore = new SemaphoreSlim(maxParallel, maxParallel);
@@ -678,16 +617,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     public async Task<IReadOnlyList<SyncConflict>> GetConflictsAsync(string accountId, CancellationToken cancellationToken = default)
         => await _syncConflictRepository.GetUnresolvedByAccountIdAsync(accountId, cancellationToken);
 
-    /// <summary>
-    /// Saves a batch of file metadata to the database if the batch has reached the specified size.
-    /// </summary>
-    /// <param name="batch">The batch of files to potentially save and clear.</param>
-    /// <param name="batchSize">The size threshold for saving the batch.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    private async Task SaveBatchIfNeededAsync(
-        List<FileMetadata> batch,
-        int batchSize,
-        CancellationToken cancellationToken)
+    private async Task SaveBatchIfNeededAsync(List<FileMetadata> batch, int batchSize, CancellationToken cancellationToken)
     {
         if(batch.Count >= batchSize)
         {
@@ -696,10 +626,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         }
     }
 
-    /// <summary>
-    /// Saves any remaining files in a batch to the database.
-    /// </summary>
-    /// <param name="batch">The batch of files to save and clear.</param>
     private void SaveRemainingBatch(List<FileMetadata> batch)
     {
         if(batch.Count > 0)
@@ -804,8 +730,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     }
 
     private (int activeUploads, long completedBytes, int completedFiles, List<Task> uploadTasks) CreateUploadTasks(string accountId, IReadOnlyList<DriveItemEntity> existingItems,
-        List<FileMetadata> filesToUpload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, int completedFiles, long completedBytes, SemaphoreSlim uploadSemaphore,
-        int activeUploads, CancellationToken cancellationToken)
+    List<FileMetadata> filesToUpload, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, int completedFiles, long completedBytes, SemaphoreSlim uploadSemaphore,
+    int activeUploads, CancellationToken cancellationToken)
     {
         var batch = new List<FileMetadata>(BatchSize);
         var uploadTasks = filesToUpload.Select(async file =>
