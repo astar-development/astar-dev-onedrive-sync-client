@@ -16,13 +16,12 @@ public class DeltaProcessingServiceShould
         var expectedToken = new DeltaToken(accountId, "drive-id", "token-123", DateTimeOffset.UtcNow);
         
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         
         _ = syncRepo.GetDeltaTokenAsync(accountId, Arg.Any<CancellationToken>())
             .Returns(expectedToken);
         
-        var service = new DeltaProcessingService(syncRepo, graphApiClient, deltaPageProcessor);
+        var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         
         // Act
         DeltaToken? result = await service.GetDeltaTokenAsync(accountId, CancellationToken.None);
@@ -40,13 +39,12 @@ public class DeltaProcessingServiceShould
         const string accountId = "test-account-id";
         
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         
         _ = syncRepo.GetDeltaTokenAsync(accountId, Arg.Any<CancellationToken>())
             .Returns((DeltaToken?)null);
         
-        var service = new DeltaProcessingService(syncRepo, graphApiClient, deltaPageProcessor);
+        var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         
         // Act
         DeltaToken? result = await service.GetDeltaTokenAsync(accountId, CancellationToken.None);
@@ -63,10 +61,9 @@ public class DeltaProcessingServiceShould
         var tokenToSave = new DeltaToken(accountId, "drive-id", "token-123", DateTimeOffset.UtcNow);
         
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         
-        var service = new DeltaProcessingService(syncRepo, graphApiClient, deltaPageProcessor);
+        var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         
         // Act
         await service.SaveDeltaTokenAsync(tokenToSave, CancellationToken.None);
@@ -86,7 +83,6 @@ public class DeltaProcessingServiceShould
         var finalToken = new DeltaToken(accountId, "drive-id", "final-token", DateTimeOffset.UtcNow);
         
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         
         _ = deltaPageProcessor.ProcessAllDeltaPagesAsync(
@@ -96,7 +92,7 @@ public class DeltaProcessingServiceShould
                 Arg.Any<CancellationToken>())
             .Returns((finalToken, 3, 150));
         
-        var service = new DeltaProcessingService(syncRepo, graphApiClient, deltaPageProcessor);
+        var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         
         // Act
         (DeltaToken resultToken, int pageCount, int itemCount) = await service.ProcessDeltaPagesAsync(
@@ -125,7 +121,6 @@ public class DeltaProcessingServiceShould
         var finalToken = new DeltaToken(accountId, "drive-id", "final-token", DateTimeOffset.UtcNow);
         
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         
         _ = deltaPageProcessor.ProcessAllDeltaPagesAsync(
@@ -135,7 +130,7 @@ public class DeltaProcessingServiceShould
                 Arg.Any<CancellationToken>())
             .Returns((finalToken, 1, 50));
         
-        var service = new DeltaProcessingService(syncRepo, graphApiClient, deltaPageProcessor);
+        var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         
         // Act
         (DeltaToken resultToken, int pageCount, int itemCount) = await service.ProcessDeltaPagesAsync(
@@ -166,7 +161,6 @@ public class DeltaProcessingServiceShould
         var progressStates = new List<SyncState>();
         
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         
         deltaPageProcessor.ProcessAllDeltaPagesAsync(
@@ -181,7 +175,7 @@ public class DeltaProcessingServiceShould
                 return Task.FromResult((finalToken, 1, 50));
             });
         
-        var service = new DeltaProcessingService(syncRepo, graphApiClient, deltaPageProcessor);
+        var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         
         // Act
         await service.ProcessDeltaPagesAsync(
@@ -202,7 +196,6 @@ public class DeltaProcessingServiceShould
         var deltaToken = new DeltaToken(accountId, "drive-id", "initial-token", DateTimeOffset.UtcNow);
         
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         
         var cts = new CancellationTokenSource();
@@ -215,7 +208,7 @@ public class DeltaProcessingServiceShould
                 Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromException<(DeltaToken, int, int)>(new OperationCanceledException()));
         
-        var service = new DeltaProcessingService(syncRepo, graphApiClient, deltaPageProcessor);
+        var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         
         // Act & Assert
         await Should.ThrowAsync<OperationCanceledException>(async () =>
@@ -230,7 +223,6 @@ public class DeltaProcessingServiceShould
         var deltaToken = new DeltaToken(accountId, "drive-id", "initial-token", DateTimeOffset.UtcNow);
         
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
-        IGraphApiClient graphApiClient = Substitute.For<IGraphApiClient>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         
         deltaPageProcessor.ProcessAllDeltaPagesAsync(
@@ -240,7 +232,7 @@ public class DeltaProcessingServiceShould
                 Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromException<(DeltaToken, int, int)>(new IOException("Network error")));
         
-        var service = new DeltaProcessingService(syncRepo, graphApiClient, deltaPageProcessor);
+        var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         
         // Act & Assert
         await Should.ThrowAsync<IOException>(async () =>

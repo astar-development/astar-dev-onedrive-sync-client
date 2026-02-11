@@ -10,16 +10,13 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 public sealed class DeltaProcessingService : IDeltaProcessingService
 {
     private readonly ISyncRepository _syncRepository;
-    private readonly IGraphApiClient _graphApiClient;
     private readonly IDeltaPageProcessor _deltaPageProcessor;
 
     public DeltaProcessingService(
         ISyncRepository syncRepository,
-        IGraphApiClient graphApiClient,
         IDeltaPageProcessor deltaPageProcessor)
     {
         _syncRepository = syncRepository ?? throw new ArgumentNullException(nameof(syncRepository));
-        _graphApiClient = graphApiClient ?? throw new ArgumentNullException(nameof(graphApiClient));
         _deltaPageProcessor = deltaPageProcessor ?? throw new ArgumentNullException(nameof(deltaPageProcessor));
     }
 
