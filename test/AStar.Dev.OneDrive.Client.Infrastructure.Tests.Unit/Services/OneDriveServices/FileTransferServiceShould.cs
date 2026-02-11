@@ -61,8 +61,11 @@ public class FileTransferServiceShould
         _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromResult(new DriveItem
             {
-                Id = $"uploaded-{Guid.CreateVersion7():N0}", Name = callInfo.ArgAt<string>(2).Split('/').Last(),
-                CTag = "ctag", ETag = "etag", LastModifiedDateTime = DateTimeOffset.UtcNow
+                Id = $"uploaded-{Guid.CreateVersion7():N0}",
+                Name = callInfo.ArgAt<string>(2).Split('/').Last(),
+                CTag = "ctag",
+                ETag = "etag",
+                LastModifiedDateTime = DateTimeOffset.UtcNow
             }));
 
         Action<string, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _) => { };
@@ -207,7 +210,8 @@ public class FileTransferServiceShould
 
                 await Task.Delay(50, callInfo.ArgAt<CancellationToken>(4));
 
-                lock(lockObj) currentConcurrent--;
+                lock(lockObj)
+                    currentConcurrent--;
 
                 return new DriveItem { Id = Guid.CreateVersion7().ToString(), Name = "test.txt", CTag = "ctag", ETag = "etag", LastModifiedDateTime = DateTimeOffset.UtcNow };
             });
@@ -246,7 +250,8 @@ public class FileTransferServiceShould
 
                 await Task.Delay(50, callInfo.ArgAt<CancellationToken>(3));
 
-                lock(lockObj) currentConcurrent--;
+                lock(lockObj)
+                    currentConcurrent--;
             });
 
         _ = mocks.LocalFileScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
