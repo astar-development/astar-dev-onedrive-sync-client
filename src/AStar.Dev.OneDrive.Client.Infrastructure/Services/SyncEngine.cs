@@ -104,15 +104,18 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 return;
             }
 
-            Result<Unit, SyncError> deltaResult = await ProcessDeltaChangesAsync(accountId, cancellationToken);
-            deltaResult.Match(
-                _ => Unit.Value,
-                error =>
+            Result<AStar.Dev.Functional.Extensions.Unit, SyncError> deltaResult = await ProcessDeltaChangesAsync(accountId, cancellationToken);
+            await deltaResult.MatchAsync(
+                async _ =>
+                {
+                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                },
+                async error =>
                 {
                     // Log error but continue - delta processing errors shouldn't stop the sync
-                    DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId, 
-                        $"Delta processing failed: {error.Message}", error.Exception, cancellationToken).Wait();
-                    return Unit.Value;
+                    await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId, 
+                        $"Delta processing failed: {error.Message}", error.Exception, cancellationToken);
+                    return AStar.Dev.Functional.Extensions.Unit.Value;
                 });
 
             IReadOnlyList<DriveItemEntity> folders = await GetSelectedFoldersAsync(accountId, cancellationToken);
@@ -209,7 +212,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Result containing the account info or an error.</returns>
-    public async Task<Result<AccountInfo, SyncError>> ValidateAndGetAccountAsync(
+    internal async Task<Result<AccountInfo, SyncError>> ValidateAndGetAccountAsync(
         string accountId, 
         CancellationToken cancellationToken)
     {
@@ -238,7 +241,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Result indicating success or failure.</returns>
-    public async Task<Result<Unit, SyncError>> ProcessDeltaChangesAsync(
+    internal async Task<Result<AStar.Dev.Functional.Extensions.Unit, SyncError>> ProcessDeltaChangesAsync(
         string accountId, 
         CancellationToken cancellationToken)
     {
