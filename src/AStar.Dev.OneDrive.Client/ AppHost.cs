@@ -135,6 +135,7 @@ public static class AppHost
         _ = services.AddScoped<IFileTransferService, FileTransferService>();
         _ = services.AddScoped<IDebugLogger, DebugLoggerService>();
         _ = services.AddScoped<IDeltaPageProcessor, DeltaPageProcessor>();
+        _ = services.AddScoped<IDeltaProcessingService, DeltaProcessingService>();
         _ = services.AddScoped<ISyncRepository, EfSyncRepository>();
 
         return services;

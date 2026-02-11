@@ -33,5 +33,11 @@ public static class DebugLogMetadata
         {
             public const string ProcessAllDeltaPagesAsync = "DeltaPageProcessor.ProcessAllDeltaPagesAsync";
         }
+        public static class DeltaProcessingService
+        {
+            public const string GetDeltaTokenAsync = "DeltaProcessingService.GetDeltaTokenAsync";
+            public const string SaveDeltaTokenAsync = "DeltaProcessingService.SaveDeltaTokenAsync";
+            public const string ProcessDeltaPagesAsync = "DeltaProcessingService.ProcessDeltaPagesAsync";
+        }
     }
 }
