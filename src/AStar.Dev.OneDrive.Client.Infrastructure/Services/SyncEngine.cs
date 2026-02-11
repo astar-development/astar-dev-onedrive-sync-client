@@ -24,7 +24,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     private const double OneHourInSeconds = 3600.0;
     private const double OneSecondThreshold = 1.0;
     private readonly IAccountRepository _accountRepository;
-    private readonly IDeltaPageProcessor _deltaPageProcessor;
+    private readonly IDeltaProcessingService _deltaProcessingService;
     private readonly IDriveItemsRepository _driveItemsRepository;
     private readonly IFileOperationLogRepository _fileOperationLogRepository;
     private readonly IFileTransferService _fileTransferService;
@@ -34,7 +34,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     private readonly IRemoteChangeDetector _remoteChangeDetector;
     private readonly ISyncConfigurationRepository _syncConfigurationRepository;
     private readonly ISyncConflictRepository _syncConflictRepository;
-    private readonly ISyncRepository _syncRepository;
     private readonly ISyncSessionLogRepository _syncSessionLogRepository;
     private readonly List<(DateTimeOffset Timestamp, long Bytes)> _transferHistory = [];
     private string? _currentSessionId;
@@ -53,8 +52,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         ISyncConflictRepository syncConflictRepository,
         ISyncSessionLogRepository syncSessionLogRepository,
         IFileOperationLogRepository fileOperationLogRepository,
-        ISyncRepository syncRepository,
-        IDeltaPageProcessor deltaPageProcessor,
+        IDeltaProcessingService deltaProcessingService,
         IFileTransferService fileTransferService)
     {
         _localFileScanner = localFileScanner ?? throw new ArgumentNullException(nameof(localFileScanner));
@@ -66,8 +64,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         _syncConflictRepository = syncConflictRepository ?? throw new ArgumentNullException(nameof(syncConflictRepository));
         _syncSessionLogRepository = syncSessionLogRepository ?? throw new ArgumentNullException(nameof(syncSessionLogRepository));
         _fileOperationLogRepository = fileOperationLogRepository ?? throw new ArgumentNullException(nameof(fileOperationLogRepository));
-        _syncRepository = syncRepository;
-        _deltaPageProcessor = deltaPageProcessor;
+        _deltaProcessingService = deltaProcessingService ?? throw new ArgumentNullException(nameof(deltaProcessingService));
         _fileTransferService = fileTransferService ?? throw new ArgumentNullException(nameof(fileTransferService));
         var initialState = SyncState.CreateInitial(string.Empty);
 
@@ -204,14 +201,14 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
     private async Task ProcessDeltaChangesAsync(string accountId, CancellationToken cancellationToken)
     {
-        DeltaToken? token = await _syncRepository.GetDeltaTokenAsync(accountId, cancellationToken);
+        DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
         (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
-            await _deltaPageProcessor.ProcessAllDeltaPagesAsync(
+            await _deltaProcessingService.ProcessDeltaPagesAsync(
                 accountId,
-                token ?? new(accountId, "", "", DateTimeOffset.UtcNow),
+                token,
                 _progressSubject.OnNext,
                 cancellationToken);
-        await _syncRepository.SaveOrUpdateDeltaTokenAsync(finalDelta, cancellationToken);
+        await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
         await DebugLog.EntryAsync("SyncEngine.StartSyncAsync", accountId, cancellationToken);
     }
 
