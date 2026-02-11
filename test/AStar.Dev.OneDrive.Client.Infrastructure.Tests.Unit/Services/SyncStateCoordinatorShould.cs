@@ -234,6 +234,7 @@ public class SyncStateCoordinatorShould
             stateCount++;
             if(stateCount == 1)
                 firstState = state;
+            // State 2 is emitted during ResetTrackingDetails, which doesn't publish a state
             else if(stateCount == 3)
                 secondState = state;
         });
@@ -244,8 +245,10 @@ public class SyncStateCoordinatorShould
         Thread.Sleep(200);
         coordinator.UpdateProgress("test-account", SyncStatus.Running, completedBytes: 20_971_520);
 
+        // Verify the first and third states were captured (reset doesn't publish)
         firstState.ShouldNotBeNull();
         secondState.ShouldNotBeNull();
+        stateCount.ShouldBe(3); // Initial state + 2 UpdateProgress calls
     }
 
     [Fact]

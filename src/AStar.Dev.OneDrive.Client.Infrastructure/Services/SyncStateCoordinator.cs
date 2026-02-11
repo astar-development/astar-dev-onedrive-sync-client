@@ -15,7 +15,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     private readonly List<(DateTimeOffset Timestamp, long Bytes)> _transferHistory = [];
     private string? _currentSessionId;
     private long _lastCompletedBytes;
-    private DateTimeOffset _lastProgressUpdate = DateTime.UtcNow;
+    private DateTimeOffset _lastProgressUpdate = DateTimeOffset.UtcNow;
 
     public SyncStateCoordinator(ISyncSessionLogRepository syncSessionLogRepository)
     {
@@ -186,7 +186,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     public void ResetTrackingDetails(long completedBytes = 0)
     {
         _transferHistory.Clear();
-        _lastProgressUpdate = DateTime.UtcNow;
+        _lastProgressUpdate = DateTimeOffset.UtcNow;
         _lastCompletedBytes = completedBytes;
     }
 }
