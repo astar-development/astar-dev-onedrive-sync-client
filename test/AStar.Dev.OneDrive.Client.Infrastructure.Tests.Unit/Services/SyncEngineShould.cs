@@ -1211,9 +1211,10 @@ public class SyncEngineShould
         ISyncSessionLogRepository syncSessionLogRepo = Substitute.For<ISyncSessionLogRepository>();
         IFileOperationLogRepository fileOperationLogRepo = Substitute.For<IFileOperationLogRepository>();
         IFileTransferService fileTransferService = Substitute.For<IFileTransferService>();
+        IDeletionSyncService deletionSyncService = Substitute.For<IDeletionSyncService>();
 
-        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, deltaProcessingService, fileTransferService);
-        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, deltaProcessingService, fileTransferService);
+        var engine = new SyncEngine(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, syncSessionLogRepo, fileOperationLogRepo, deltaProcessingService, fileTransferService, deletionSyncService);
+        var mocks = new TestMocks(localScanner, remoteDetector, fileMetadataRepo, syncConfigRepo, accountRepo, graphApiClient, syncConflictRepo, deltaProcessingService, fileTransferService, deletionSyncService);
 
         return (engine, mocks);
     }
@@ -1227,5 +1228,6 @@ public class SyncEngineShould
         IGraphApiClient GraphApiClient,
         ISyncConflictRepository SyncConflictRepo,
         IDeltaProcessingService DeltaProcessingService,
-        IFileTransferService FileTransferService);
+        IFileTransferService FileTransferService,
+        IDeletionSyncService DeletionSyncService);
 }

@@ -131,6 +131,7 @@ public static class AppHost
         _ = services.AddScoped<ILocalFileScanner, LocalFileScanner>();
         _ = services.AddScoped<IRemoteChangeDetector, RemoteChangeDetector>();
         _ = services.AddScoped<IConflictResolver, ConflictResolver>();
+        _ = services.AddScoped<IDeletionSyncService, DeletionSyncService>();
         _ = services.AddScoped<ISyncEngine, SyncEngine>();
         _ = services.AddScoped<IFileTransferService, FileTransferService>();
         _ = services.AddScoped<IDebugLogger, DebugLoggerService>();

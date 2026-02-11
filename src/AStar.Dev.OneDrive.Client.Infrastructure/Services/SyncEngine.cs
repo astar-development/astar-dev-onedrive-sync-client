@@ -24,6 +24,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     private const double OneHourInSeconds = 3600.0;
     private const double OneSecondThreshold = 1.0;
     private readonly IAccountRepository _accountRepository;
+    private readonly IDeletionSyncService _deletionSyncService;
     private readonly IDeltaProcessingService _deltaProcessingService;
     private readonly IDriveItemsRepository _driveItemsRepository;
     private readonly IFileOperationLogRepository _fileOperationLogRepository;
@@ -53,7 +54,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         ISyncSessionLogRepository syncSessionLogRepository,
         IFileOperationLogRepository fileOperationLogRepository,
         IDeltaProcessingService deltaProcessingService,
-        IFileTransferService fileTransferService)
+        IFileTransferService fileTransferService,
+        IDeletionSyncService deletionSyncService)
     {
         _localFileScanner = localFileScanner ?? throw new ArgumentNullException(nameof(localFileScanner));
         _remoteChangeDetector = remoteChangeDetector ?? throw new ArgumentNullException(nameof(remoteChangeDetector));
@@ -66,6 +68,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         _fileOperationLogRepository = fileOperationLogRepository ?? throw new ArgumentNullException(nameof(fileOperationLogRepository));
         _deltaProcessingService = deltaProcessingService ?? throw new ArgumentNullException(nameof(deltaProcessingService));
         _fileTransferService = fileTransferService ?? throw new ArgumentNullException(nameof(fileTransferService));
+        _deletionSyncService = deletionSyncService ?? throw new ArgumentNullException(nameof(deletionSyncService));
         var initialState = SyncState.CreateInitial(string.Empty);
 
         _progressSubject = new BehaviorSubject<SyncState>(initialState);
@@ -130,10 +133,10 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 await DetectFilesToDownloadAndConflictsAsync(
                     accountId, folders, existingFilesDict, localFilesDict, account, cancellationToken);
 
-            await ProcessRemoteToLocalDeletionsAsync(
+            await _deletionSyncService.ProcessRemoteToLocalDeletionsAsync(
                 accountId, folders, remotePathsSet, localPathsSet, cancellationToken);
 
-            await ProcessLocalToRemoteDeletionsAsync(
+            await _deletionSyncService.ProcessLocalToRemoteDeletionsAsync(
                 accountId, allLocalFiles, remotePathsSet, localPathsSet, cancellationToken);
 
             filesToUpload = FilterUploadsByDeletionsAndConflicts(
@@ -483,71 +486,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             IsDeleted: false);
     }
 
-    private async Task ProcessRemoteToLocalDeletionsAsync(string accountId, IReadOnlyList<DriveItemEntity> folders, HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet, CancellationToken cancellationToken)
-    {
-        List<DriveItemEntity> deletedFromOneDrive = SelectFilesDeletedFromOneDriveButSyncedLocally(
-            folders, remotePathsSet, localPathsSet);
-
-        foreach(DriveItemEntity file in deletedFromOneDrive)
-        {
-            try
-            {
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
-                    $"File deleted from OneDrive: {file.RelativePath} - deleting local copy at {file.LocalPath}",
-                    cancellationToken);
-                if(System.IO.File.Exists(file.LocalPath))
-                    System.IO.File.Delete(file.LocalPath);
-
-                await _driveItemsRepository.DeleteAsync(file.DriveItemId, cancellationToken);
-            }
-            catch(Exception ex)
-            {
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
-                    $"Failed to delete local file {file.RelativePath}: {ex.Message}. Continuing with other deletions.",
-                    cancellationToken);
-            }
-        }
-    }
-
-    private async Task ProcessLocalToRemoteDeletionsAsync(string accountId, List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet, CancellationToken cancellationToken)
-    {
-        List<FileMetadata> deletedLocally = GetFilesDeletedLocally(allLocalFiles, remotePathsSet, localPathsSet);
-
-        await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
-            $"Local deletion detection: {deletedLocally.Count} files to delete from OneDrive.",
-            cancellationToken);
-
-        foreach(FileMetadata file in deletedLocally)
-        {
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
-                $"Candidate for remote deletion: Path={file.RelativePath}, Id={file.DriveItemId}, SyncStatus={file.SyncStatus}, ExistsLocally={System.IO.File.Exists(file.LocalPath)}, ExistsRemotely={remotePathsSet.Contains(file.RelativePath)}",
-                cancellationToken);
-        }
-
-        foreach(FileMetadata file in deletedLocally)
-        {
-            try
-            {
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
-                    $"Deleting from OneDrive: Path={file.RelativePath}, Id={file.DriveItemId}, SyncStatus={file.SyncStatus}",
-                    cancellationToken);
-                await _graphApiClient.DeleteFileAsync(accountId, file.DriveItemId, cancellationToken);
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
-                    $"Deleted from OneDrive: Path={file.RelativePath}, Id={file.DriveItemId}",
-                    cancellationToken);
-                await _driveItemsRepository.DeleteAsync(file.DriveItemId, cancellationToken);
-            }
-            catch(Exception ex)
-            {
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
-                    $"Failed to delete from OneDrive {file.RelativePath}: {ex.Message}, continuing the sync...",
-                    cancellationToken);
-            }
-        }
-    }
-
     private static List<FileMetadata> FilterUploadsByDeletionsAndConflicts(List<FileMetadata> filesToUpload, IReadOnlyList<DriveItemEntity> folders,
         HashSet<string> remotePathsSet, HashSet<string> conflictPaths)
     {
@@ -602,12 +540,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     public async Task<IReadOnlyList<SyncConflict>> GetConflictsAsync(string accountId, CancellationToken cancellationToken = default)
         => await _syncConflictRepository.GetUnresolvedByAccountIdAsync(accountId, cancellationToken);
 
-    private async Task DeleteDeletedFilesFromDatabase(List<DriveItemEntity> filesToDelete, CancellationToken cancellationToken)
-    {
-        foreach(DriveItemEntity fileToDelete in filesToDelete)
-            await _driveItemsRepository.DeleteAsync(fileToDelete.DriveItemId, cancellationToken);
-    }
-
     private static async Task<(List<FileMetadata> filesToDownload, int totalFiles, long totalBytes, long downloadBytes)> RemoveDuplicatesFromDownloadList(List<FileMetadata> filesToUpload,
         List<FileMetadata> filesToDownload, int totalFiles, long totalBytes, long downloadBytes, string accountId, CancellationToken cancellationToken)
     {
@@ -628,34 +560,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
         return (filesToDownload, totalFiles, totalBytes, downloadBytes);
     }
-
-    private static List<DriveItemEntity> GetFilesToDelete(IReadOnlyList<DriveItemEntity> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet, HashSet<string> alreadyProcessedDeletions)
-        => localPathsSet.Count == 0
-            ? []
-            : [
-                .. existingFiles
-                .Where(f => !remotePathsSet.Contains(f.RelativePath) &&
-                            !localPathsSet.Contains(f.RelativePath) &&
-                            !string.IsNullOrWhiteSpace(f.DriveItemId) &&
-                            !alreadyProcessedDeletions.Contains(f.DriveItemId))
-                .Where(f => f.DriveItemId is not null)
-            ];
-
-    private static List<FileMetadata> GetFilesDeletedLocally(List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet)
-        => [
-            .. allLocalFiles
-                .Where(f => !localPathsSet.Contains(f.RelativePath) &&
-                            (remotePathsSet.Contains(f.RelativePath) || f.SyncStatus == FileSyncStatus.Synced) &&
-                            !string.IsNullOrEmpty(f.DriveItemId))
-        ];
-
-    private static List<DriveItemEntity> SelectFilesDeletedFromOneDriveButSyncedLocally(IReadOnlyList<DriveItemEntity> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet)
-        => [
-            .. existingFiles
-                .Where(f => !remotePathsSet.Contains(f.RelativePath) &&
-                            localPathsSet.Contains(f.RelativePath) &&
-                            f.SyncStatus == FileSyncStatus.Synced)
-        ];
 
     private async Task<List<FileMetadata>> GetAllLocalFiles(string accountId, IReadOnlyList<DriveItemEntity> selectedFolders, AccountInfo account)
     {
