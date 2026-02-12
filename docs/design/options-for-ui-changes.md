@@ -1,4 +1,5 @@
 User: Using the current MainWindow, SyncTreeView, ConflictResolutionView and AccountManagementViews, please offfer 3 different designs that contain the same functionality but offer:
+
 - different, modern, professional design
 - a modern, informal, colourful design
 - a random design - anything goes
@@ -1001,6 +1002,7 @@ Each design maintains all the functionality of your current application while of
 3. **Terminal**: For power users who appreciate retro/hacker aesthetics
 
 Would you like me to:
+
 - Complete the remaining views (SyncTreeView, ConflictResolutionView, SyncProgressView) for all three themes?
 - Provide the necessary value converters for each design?
 - Create the complete resource dictionaries with all color definitions?

@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
+using AStar.Dev.OneDrive.Client.MainWindow;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
@@ -14,7 +15,7 @@ namespace AStar.Dev.OneDrive.Client;
 public sealed class App : Application
 {
     public static IHost Host { get; private set; } = null!;
-    
+
     /// <inheritdoc />
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
@@ -33,7 +34,7 @@ public sealed class App : Application
 
         if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow.MainWindowColorful();
+            desktop.MainWindow = new MainWindowProfessional();
 
             desktop.Startup += async (_, _) => await DebugLog.InfoAsync("App Startup", "Application has started", AdminAccountMetadata.AccountId, CancellationToken.None);
 

@@ -1,0 +1,146 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AStar.Dev.OneDrive.Client.SyncronisationConflicts"
+             xmlns:enums="clr-namespace:AStar.Dev.OneDrive.Client.Core.Models.Enums;assembly=AStar.Dev.OneDrive.Client.Core"
+             x:Class="AStar.Dev.OneDrive.Client.SyncronisationConflicts.ConflictResolutionViewProfessional"
+             x:DataType="vm:ConflictResolutionViewModel">
+
+    <Design.DataContext>
+        <vm:ConflictResolutionViewModel />
+    </Design.DataContext>
+
+    <UserControl.Styles>
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="MinWidth" Value="120"/>
+        </Style>
+
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#106EBE"/>
+        </Style>
+
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#0078D4"/>
+            <Setter Property="BorderBrush" Value="#0078D4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="MinWidth" Value="120"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Border Background="White" CornerRadius="8" Padding="32">
+        <Grid RowDefinitions="Auto,*,Auto">
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,24">
+                <TextBlock Text="Resolve Conflicts" FontSize="24" FontWeight="SemiBold" Foreground="#1A1A1A"/>
+                <TextBlock Text="Files modified in multiple locations require your attention"
+                           FontSize="13" Foreground="#666666" TextWrapping="Wrap"/>
+                <TextBlock Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold"
+                           Foreground="#0078D4" Margin="0,8,0,0"/>
+            </StackPanel>
+
+            <!-- Conflicts List -->
+            <ScrollViewer Grid.Row="1" IsVisible="{Binding HasConflicts}">
+                <ItemsControl ItemsSource="{Binding Conflicts}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:ConflictItemViewModel">
+                            <Border Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1"
+                                    CornerRadius="6" Padding="20" Margin="0,0,0,16">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="{Binding FilePath}" FontWeight="SemiBold"
+                                               FontSize="14" Foreground="#1A1A1A"/>
+
+                                    <Grid ColumnDefinitions="*,*">
+                                        <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                CornerRadius="4" Padding="12" Margin="0,0,8,0">
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="Local Version" FontSize="11" Foreground="#666666" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding LocalDetailsDisplay}" FontSize="12" Foreground="#1A1A1A"/>
+                                            </StackPanel>
+                                        </Border>
+                                        <Border Grid.Column="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
+                                                CornerRadius="4" Padding="12" Margin="8,0,0,0">
+                                            <StackPanel Spacing="4">
+                                                <TextBlock Text="Remote Version" FontSize="11" Foreground="#666666" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding RemoteDetailsDisplay}" FontSize="12" Foreground="#1A1A1A"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <TextBlock Text="Resolution Strategy" FontSize="12"
+                                               FontWeight="SemiBold" Foreground="#1A1A1A"/>
+
+                                    <StackPanel Spacing="8">
+                                        <RadioButton Content="Keep Local (upload local version)"
+                                                     GroupName="{Binding Id}"
+                                                     IsChecked="{Binding SelectedStrategy, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static enums:ConflictResolutionStrategy.KeepLocal}}" />
+                                        <RadioButton Content="Keep Remote (download remote version)"
+                                                     GroupName="{Binding Id}"
+                                                     IsChecked="{Binding SelectedStrategy, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static enums:ConflictResolutionStrategy.KeepRemote}}" />
+                                        <RadioButton Content="Keep Both (rename local, download remote)"
+                                                     GroupName="{Binding Id}"
+                                                     IsChecked="{Binding SelectedStrategy, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static enums:ConflictResolutionStrategy.KeepBoth}}" />
+                                        <RadioButton Content="Skip (don't resolve now)"
+                                                     GroupName="{Binding Id}"
+                                                     IsChecked="{Binding SelectedStrategy, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter={x:Static enums:ConflictResolutionStrategy.None}}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- No Conflicts Message -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12"
+                        IsVisible="{Binding !HasConflicts}">
+                <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                          Width="64" Height="64" Foreground="#4CAF50"/>
+                <TextBlock Text="No conflicts to display" FontSize="18" Foreground="#666666"/>
+            </StackPanel>
+
+            <!-- Actions -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12"
+                        HorizontalAlignment="Right" Margin="0,24,0,0">
+                <Button Content="Resolve All" Command="{Binding ResolveAllCommand}"
+                        Classes="primary" IsEnabled="{Binding !IsResolving}"/>
+                <Button Content="Cancel" Command="{Binding CancelCommand}"
+                        Classes="secondary" IsEnabled="{Binding !IsResolving}"/>
+            </StackPanel>
+
+            <!-- Loading Overlay -->
+            <Border Grid.Row="0" Grid.RowSpan="3"
+                    Background="#F0FFFFFF"
+                    IsVisible="{Binding IsLoading}"
+                    CornerRadius="8">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="200"
+                                 Foreground="#0078D4" />
+                    <TextBlock Text="Loading conflicts..." Foreground="#666666" FontSize="13"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Resolving Overlay -->
+            <Border Grid.Row="0" Grid.RowSpan="3"
+                    Background="#F0FFFFFF"
+                    IsVisible="{Binding IsResolving}"
+                    CornerRadius="8">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                    <ProgressBar IsIndeterminate="True"
+                                 Width="200"
+                                 Foreground="#0078D4" />
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#666666" FontSize="13"
+                               HorizontalAlignment="Center" TextWrapping="Wrap" MaxWidth="300"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>
