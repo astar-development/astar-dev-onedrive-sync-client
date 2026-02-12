@@ -37,3 +37,5 @@ nuget locals all -clear
 ```
 
 Both commands work the same way on Windows and Linux. Use the `dotnet` CLI if you have .NET SDK installed, or `nuget` CLI if you have the standalone NuGet tool.
+
+git branch | Where-Object { $_ -ne "* $(git rev-parse --abbrev-ref HEAD)" } | ForEach-Object { git branch -D ($_ -replace '^[* ]+','') }
