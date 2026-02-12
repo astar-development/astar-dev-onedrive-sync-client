@@ -50,22 +50,24 @@
                             <TextBlock Text="{Binding FilesProgressText}" HorizontalAlignment="Center"
                                        FontSize="20" FontWeight="Bold" Foreground="#333333"/>
 
-                            <Border Background="#F0F0F0" CornerRadius="20" Height="40" ClipToBounds="True">
-                                <Border CornerRadius="20"
-                                        Width="{Binding ProgressPercentage, Converter={StaticResource PercentageToWidthConverter}}"
-                                        HorizontalAlignment="Left">
-                                    <Border.Background>
+                            <Grid>
+                                <ProgressBar Value="{Binding ProgressPercentage}"
+                                             Minimum="0" Maximum="100"
+                                             Height="40" CornerRadius="20"
+                                             IsIndeterminate="{Binding IsProgressIndeterminate}">
+                                    <ProgressBar.Foreground>
                                         <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
                                             <GradientStop Color="#4FACFE" Offset="0"/>
                                             <GradientStop Color="#00F2FE" Offset="0.5"/>
                                             <GradientStop Color="#4FACFE" Offset="1"/>
                                         </LinearGradientBrush>
-                                    </Border.Background>
-                                    <TextBlock Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}"
-                                               FontSize="16" FontWeight="Bold" Foreground="White"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                            </Border>
+                                    </ProgressBar.Foreground>
+                                </ProgressBar>
+                                <TextBlock Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}"
+                                           FontSize="16" FontWeight="Bold" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           IsVisible="{Binding !IsProgressIndeterminate}"/>
+                            </Grid>
 
                             <Grid ColumnDefinitions="*" IsVisible="{Binding CurrentProgress, Converter={x:Static ObjectConverters.IsNotNull}}">
                                 <TextBlock Grid.Column="0" HorizontalAlignment="Center"
