@@ -1,0 +1,101 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Colourful Theme - Playful gradients, glass morphism, vibrant colors -->
+    
+    <!-- Window Style with Gradient Background -->
+    <Style Selector="Window">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#667eea" Offset="0"/>
+                <GradientStop Color="#764ba2" Offset="1"/>
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+    
+    <!-- Gradient Background Style -->
+    <Style Selector="Border.gradient-bg">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#667eea" Offset="0"/>
+                <GradientStop Color="#764ba2" Offset="1"/>
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+    
+    <!-- Glass Morphism Card Style -->
+    <Style Selector="Border.glass-card, Border.card">
+        <Setter Property="Background" Value="#E0FFFFFF"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="BoxShadow" Value="0 8 32 0 #40000000"/>
+        <Setter Property="Padding" Value="24"/>
+    </Style>
+    
+    <!-- Fun Primary Button - Red-Yellow Gradient -->
+    <Style Selector="Button.fun-primary, Button.primary">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#FF6B6B" Offset="0"/>
+                <GradientStop Color="#FFE66D" Offset="1"/>
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="20,12"/>
+        <Setter Property="CornerRadius" Value="25"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="14"/>
+    </Style>
+    
+    <!-- Fun Secondary Button - Semi-transparent White -->
+    <Style Selector="Button.fun-secondary, Button.secondary">
+        <Setter Property="Background" Value="#40FFFFFF"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="White"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Padding" Value="18,10"/>
+        <Setter Property="CornerRadius" Value="25"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    
+    <!-- Heading Text Styles -->
+    <Style Selector="TextBlock.heading">
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+    
+    <Style Selector="TextBlock.subheading">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="#DDFFFFFF"/>
+    </Style>
+    
+    <!-- Playful Header Background -->
+    <Style Selector="Border.playful-header">
+        <Setter Property="Background" Value="#20FFFFFF"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="BoxShadow" Value="0 4 16 0 #30000000"/>
+        <Setter Property="Padding" Value="20,0"/>
+    </Style>
+    
+    <!-- Cyan Gradient for Icons -->
+    <Style Selector="Ellipse.icon-gradient">
+        <Setter Property="Fill">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#4FACFE" Offset="0"/>
+                <GradientStop Color="#00F2FE" Offset="1"/>
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+    
+    <!-- ListBox Styles -->
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0,0,0,16"/>
+    </Style>
+    
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    
+</Styles>
