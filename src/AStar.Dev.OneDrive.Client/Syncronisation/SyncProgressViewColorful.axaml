@@ -1,0 +1,148 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AStar.Dev.OneDrive.Client.Syncronisation"
+             x:Class="AStar.Dev.OneDrive.Client.Syncronisation.SyncProgressViewColorful"
+             x:DataType="vm:SyncProgressViewModel">
+
+    <Design.DataContext>
+        <vm:SyncProgressViewModel />
+    </Design.DataContext>
+
+    <Border Background="#E0FFFFFF" CornerRadius="20">
+        <Border CornerRadius="20" Padding="32">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Color="#FFFFFF" Offset="0"/>
+                    <GradientStop Color="#F0F4FF" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+
+            <Grid RowDefinitions="Auto,*,Auto">
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Spacing="12" Margin="0,0,0,32">
+                    <TextBlock Text="🚀 Sync in Progress!" FontSize="28" FontWeight="Black">
+                        <TextBlock.Foreground>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                <GradientStop Color="#4FACFE" Offset="0"/>
+                                <GradientStop Color="#00F2FE" Offset="1"/>
+                            </LinearGradientBrush>
+                        </TextBlock.Foreground>
+                    </TextBlock>
+                    <Border Background="#E0F7FF" BorderBrush="#4FACFE" BorderThickness="2"
+                            CornerRadius="12" Padding="12,8">
+                        <TextBlock Text="{Binding StatusMessage}" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="#0288D1"/>
+                    </Border>
+                </StackPanel>
+
+                <!-- Progress Section -->
+                <StackPanel Grid.Row="1" Spacing="24" VerticalAlignment="Center">
+                    <!-- Main Progress -->
+                    <Border CornerRadius="16" Padding="24" BoxShadow="0 4 12 0 #20000000">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Color="#FFFFFF" Offset="0"/>
+                                <GradientStop Color="#F0F9FF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="{Binding FilesProgressText}" HorizontalAlignment="Center"
+                                       FontSize="20" FontWeight="Bold" Foreground="#333333"/>
+
+                            <Border Background="#F0F0F0" CornerRadius="20" Height="40" ClipToBounds="True">
+                                <Border CornerRadius="20"
+                                        Width="{Binding ProgressPercentage, Converter={StaticResource PercentageToWidthConverter}}"
+                                        HorizontalAlignment="Left">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+                                            <GradientStop Color="#4FACFE" Offset="0"/>
+                                            <GradientStop Color="#00F2FE" Offset="0.5"/>
+                                            <GradientStop Color="#4FACFE" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <TextBlock Text="{Binding ProgressPercentage, StringFormat='{}{0:F0}%'}"
+                                               FontSize="16" FontWeight="Bold" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Border>
+
+                            <Grid ColumnDefinitions="*" IsVisible="{Binding CurrentProgress, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <TextBlock Grid.Column="0" HorizontalAlignment="Center"
+                                           Text="Syncing your files..."
+                                           FontSize="14" FontWeight="SemiBold" Foreground="#666666"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Transfer Details -->
+                    <Border CornerRadius="12" Padding="16" Background="#40FFFFFF"
+                            IsVisible="{Binding CurrentProgress, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <TextBlock Text="{Binding TransferDetailsText}" HorizontalAlignment="Center"
+                                   FontSize="14" Foreground="#666666" TextWrapping="Wrap"/>
+                    </Border>
+
+                    <!-- Conflicts Warning -->
+                    <Border CornerRadius="16" Padding="20" BoxShadow="0 4 12 0 #40FF6B6B"
+                            IsVisible="{Binding HasConflicts}">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Color="#FFE66D" Offset="0"/>
+                                <GradientStop Color="#FF6B6B" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="{Binding ConflictsText}" FontWeight="Bold" FontSize="16"
+                                       Foreground="White" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Some files need your attention! Click 'View Conflicts' below."
+                                       HorizontalAlignment="Center" TextWrapping="Wrap" Foreground="#FFFFFFDD" FontSize="13"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- No Progress Message -->
+                    <Border Background="#F0F4FF" CornerRadius="16" Padding="32"
+                            IsVisible="{Binding CurrentProgress, Converter={x:Static ObjectConverters.IsNull}}">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="😴" FontSize="48" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Ready to sync!" FontSize="18" FontWeight="Bold"
+                                       Foreground="#667eea" HorizontalAlignment="Center"/>
+                            <TextBlock Text="Click 'Start Sync' to begin" FontSize="14"
+                                       Foreground="#999999" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Control Buttons -->
+                <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center"
+                            Spacing="16" Margin="0,32,0,0">
+                    <Button Content="▶️ Start Sync" Command="{Binding StartSyncCommand}"
+                            IsVisible="{Binding !IsSyncing}" Width="140" Height="50"
+                            CornerRadius="25" FontWeight="Bold" FontSize="15"
+                            Foreground="White" BorderThickness="0">
+                        <Button.Background>
+                            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                                <GradientStop Color="#4ECDC4" Offset="0"/>
+                                <GradientStop Color="#95E1D3" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Button.Background>
+                    </Button>
+
+                    <Button Content="⏸️ Pause" Command="{Binding PauseSyncCommand}"
+                            IsVisible="{Binding IsSyncing}" Width="120" Height="50"
+                            Background="#FFE66D" Foreground="White" CornerRadius="25"
+                            FontWeight="Bold" FontSize="15" BorderThickness="0"/>
+
+                    <Button Content="⚠️ View Conflicts" Command="{Binding ViewConflictsCommand}"
+                            IsVisible="{Binding HasConflicts}" Width="160" Height="50"
+                            Background="#FF6B6B" Foreground="White" CornerRadius="25"
+                            FontWeight="Bold" FontSize="15" BorderThickness="0"/>
+
+                    <Button Content="✕ Close" Command="{Binding CloseCommand}"
+                            Width="120" Height="50" Background="#E0E0E0" Foreground="#666666"
+                            CornerRadius="25" FontWeight="Bold" FontSize="15" BorderThickness="0"
+                            ToolTip.Tip="Close this window - sync continues in background"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Border>
+</UserControl>

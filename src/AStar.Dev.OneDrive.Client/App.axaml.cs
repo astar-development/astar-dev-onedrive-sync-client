@@ -33,7 +33,7 @@ public sealed class App : Application
 
         if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow.MainWindow();
+            desktop.MainWindow = new MainWindow.MainWindowColorful();
 
             desktop.Startup += async (_, _) => await DebugLog.InfoAsync("App Startup", "Application has started", AdminAccountMetadata.AccountId, CancellationToken.None);
 
