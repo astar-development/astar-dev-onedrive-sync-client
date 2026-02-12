@@ -1,17 +1,6 @@
 ---
 description: "Tester Agent"
-tools:
-  [
-    "codebase",
-    "search",
-    "editFiles",
-    "usages",
-    "problems",
-    "changes",
-    "terminalSelection",
-    "terminalLastCommand",
-    "runCommands",
-  ]
+tools: [ "codebase", "testFailure", "runCommands", "editFiles", "problems", "changes", ]
 ---
 
 # Tester Agent Instructions

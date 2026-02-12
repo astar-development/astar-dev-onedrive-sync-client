@@ -2,13 +2,12 @@
 description: "Developer Agent"
 tools:
   [
-    "search/codebase",
+    "codebase",
     "usages",
     "problems",
     "changes",
     "testFailure",
-    "runCommands/terminalSelection",
-    "runCommands/terminalLastCommand",
+    "runCommands",
     "openSimpleBrowser",
     "fetch",
     "findTestFiles",
@@ -16,9 +15,7 @@ tools:
     "githubRepo",
     "todos",
     "edit/editFiles",
-    "runNotebooks",
     "new",
-    "runCommands",
     "runTasks",
   ]
 ---
