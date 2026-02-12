@@ -1,0 +1,81 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Professional Theme - Corporate minimalist with blue accents -->
+    
+    <Styles.Resources>
+        <!-- Color Resources -->
+        <SolidColorBrush x:Key="PrimaryBrush">#0078D4</SolidColorBrush>
+        <SolidColorBrush x:Key="PrimaryHoverBrush">#106EBE</SolidColorBrush>
+        <SolidColorBrush x:Key="SecondaryBrush">#F8F9FA</SolidColorBrush>
+        <SolidColorBrush x:Key="WindowBackgroundBrush">#F5F7FA</SolidColorBrush>
+        <SolidColorBrush x:Key="TextPrimaryBrush">#1A1A1A</SolidColorBrush>
+        <SolidColorBrush x:Key="TextSecondaryBrush">#666666</SolidColorBrush>
+        <SolidColorBrush x:Key="BorderBrush">#E0E0E0</SolidColorBrush>
+    </Styles.Resources>
+    
+    <!-- Window Style -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}"/>
+    </Style>
+    
+    <!-- Card Style - White cards with shadow -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="24"/>
+        <Setter Property="BoxShadow" Value="0 2 8 0 #10000000"/>
+    </Style>
+    
+    <!-- Primary Button Style -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    
+    <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource PrimaryHoverBrush}"/>
+    </Style>
+    
+    <!-- Secondary Button Style -->
+    <Style Selector="Button.secondary">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+    
+    <!-- Heading Text Style -->
+    <Style Selector="TextBlock.heading">
+        <Setter Property="FontSize" Value="22"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+    
+    <Style Selector="TextBlock.subheading">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+    </Style>
+    
+    <!-- Icon Style -->
+    <Style Selector="PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+    </Style>
+    
+    <!-- ListBox Styles -->
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+    
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    
+</Styles>

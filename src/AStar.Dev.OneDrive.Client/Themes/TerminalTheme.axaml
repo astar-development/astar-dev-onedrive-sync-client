@@ -1,0 +1,117 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Terminal Theme - Retro hacker aesthetic, green-on-black, monospace fonts -->
+    
+    <Styles.Resources>
+        <!-- Color Resources -->
+        <SolidColorBrush x:Key="TerminalGreenBrush">#00FF41</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalDarkGreenBrush">#00AA33</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalBackgroundBrush">#0A0E0F</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalPanelBrush">#111111</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalDarkBrush">#000000</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalButtonBgBrush">#001100</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalButtonHoverBrush">#003300</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalRedBrush">#FF0000</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalRedBgBrush">#110000</SolidColorBrush>
+        <SolidColorBrush x:Key="TerminalRedHoverBrush">#330000</SolidColorBrush>
+    </Styles.Resources>
+    
+    <!-- Window Style -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{StaticResource TerminalBackgroundBrush}"/>
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+    </Style>
+    
+    <!-- Terminal Border Style -->
+    <Style Selector="Border.terminal, Border.card">
+        <Setter Property="Background" Value="{StaticResource TerminalPanelBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource TerminalGreenBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="Padding" Value="16"/>
+    </Style>
+    
+    <!-- Terminal Text Style -->
+    <Style Selector="TextBlock.terminal-text, TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TerminalGreenBrush}"/>
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+    </Style>
+    
+    <!-- Neon Green Button Style -->
+    <Style Selector="Button.neon, Button.primary, Button.secondary">
+        <Setter Property="Background" Value="{StaticResource TerminalButtonBgBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TerminalGreenBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource TerminalGreenBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    
+    <Style Selector="Button.neon:pointerover, Button.primary:pointerover, Button.secondary:pointerover">
+        <Setter Property="Background" Value="{StaticResource TerminalButtonHoverBrush}"/>
+    </Style>
+    
+    <!-- Neon Red Button Style (Danger) -->
+    <Style Selector="Button.neon-red">
+        <Setter Property="Background" Value="{StaticResource TerminalRedBgBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TerminalRedBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource TerminalRedBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="CornerRadius" Value="0"/>
+    </Style>
+    
+    <Style Selector="Button.neon-red:pointerover">
+        <Setter Property="Background" Value="{StaticResource TerminalRedHoverBrush}"/>
+    </Style>
+    
+    <!-- Heading Text Styles -->
+    <Style Selector="TextBlock.heading">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{StaticResource TerminalGreenBrush}"/>
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+    </Style>
+    
+    <Style Selector="TextBlock.subheading">
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="Foreground" Value="{StaticResource TerminalDarkGreenBrush}"/>
+        <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+    </Style>
+    
+    <!-- Terminal Header Style -->
+    <Style Selector="Border.terminal-header">
+        <Setter Property="Background" Value="{StaticResource TerminalButtonBgBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource TerminalGreenBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+    
+    <!-- Status Bar Style -->
+    <Style Selector="Border.status-bar">
+        <Setter Property="Background" Value="{StaticResource TerminalDarkBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource TerminalGreenBrush}"/>
+        <Setter Property="BorderThickness" Value="2,0,2,2"/>
+        <Setter Property="Padding" Value="12,6"/>
+    </Style>
+    
+    <!-- PathIcon Style -->
+    <Style Selector="PathIcon">
+        <Setter Property="Foreground" Value="{StaticResource TerminalGreenBrush}"/>
+    </Style>
+    
+    <!-- ListBox Styles -->
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+    </Style>
+    
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+        <Setter Property="Background" Value="{StaticResource TerminalButtonBgBrush}"/>
+    </Style>
+    
+</Styles>
