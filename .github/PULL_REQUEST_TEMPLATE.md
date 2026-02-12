@@ -20,7 +20,7 @@ If the TDD checklist is not applicable for this PR (e.g., documentation-only or 
 
 ```bash
 # Restore and run tests
-dotnet restore AStar.Dev.OneDrive.Client.slnx
+dotnet restore AStar.Dev.OneDrive.Sync.Client.slnx
 dotnet test --verbosity normal
 ```
 
