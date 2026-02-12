@@ -6,36 +6,36 @@
 
 ## Steps
 
-### Phase 1: Data Model & Database
+### Phase 1: Data Model & Database ✅
 
-1. **Create ThemePreference enum**
+1. **Create ThemePreference enum** ✅
    - Created [src/AStar.Dev.OneDrive.Client.Core/Models/Enums/ThemePreference.cs](src/AStar.Dev.OneDrive.Client.Core/Models/Enums/ThemePreference.cs)
    - Values: `OriginalAuto`, `OriginalLight`, `OriginalDark`, `Professional`, `Colourful`, `Terminal`
 
-2. **Update data model**
+2. **Update data model** ✅
    - Updated [WindowPreferences.cs](src/AStar.Dev.OneDrive.Client.Core/Models/WindowPreferences.cs) with `Theme` property (default: `OriginalAuto`)
    - Updated [WindowPreferencesEntity.cs](src/AStar.Dev.OneDrive.Client.Core/Data/Entities/WindowPreferencesEntity.cs) with `string? Theme` column
 
-3. **Create database migration**
+3. **Create database migration** ✅
    - Migration `AddThemePreference` created successfully
    - Adds nullable `Theme` column to `WindowPreferences` table
 
-4. **Update WindowPreferencesService**
+4. **Update WindowPreferencesService** ✅
    - Modified [WindowPreferencesService.cs](src/AStar.Dev.OneDrive.Client.Infrastructure/Services/WindowPreferencesService.cs)
    - `LoadAsync()` maps string to enum with fallback to `OriginalAuto`
    - `SaveAsync()` converts enum to string for persistence
 
-5. **Create unit tests**
+5. **Create unit tests** ✅
    - Created [WindowPreferencesServiceShould_ThemePreference.cs](test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/WindowPreferencesServiceShould_ThemePreference.cs)
    - Tests for all 6 theme values, null handling, invalid value handling
 
-### Phase 2: Extract Styles into ResourceDictionaries
+### Phase 2: Extract Styles into ResourceDictionaries ✅
 
-6. **Create Themes folder structure**
+6. **Create Themes folder structure** ✅
    - Create [src/AStar.Dev.OneDrive.Client/Themes/](src/AStar.Dev.OneDrive.Client/Themes/) directory
    - This will contain all theme ResourceDictionary files
 
-7. **Extract Professional theme styles**
+7. **Extract Professional theme styles** ✅
    - Create [src/AStar.Dev.OneDrive.Client/Themes/ProfessionalTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/ProfessionalTheme.axaml)
    - Extract and consolidate styles from:
      - [MainWindow-Professional.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Professional.axaml)
@@ -52,7 +52,7 @@
      - `PathIcon` styles with blue foreground
    - Blue accent color (#0078D4), light gray backgrounds, subtle shadows (0 2 8 0 #10000000)
 
-8. **Extract Colourful theme styles**
+8. **Extract Colourful theme styles** ✅
    - Create [src/AStar.Dev.OneDrive.Client/Themes/ColourfulTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/ColourfulTheme.axaml)
    - Extract and consolidate styles from:
      - [MainWindow-Colorful.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Colorful.axaml)
@@ -66,7 +66,7 @@
    - Include emoji-based icons as TextBlock content (☁️, 👥, 📁, 💃)
    - Vibrant gradient buttons (red-yellow, pink-orange, cyan)
 
-9. **Extract Terminal theme styles**
+9. **Extract Terminal theme styles** ✅
    - Create [src/AStar.Dev.OneDrive.Client/Themes/TerminalTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/TerminalTheme.axaml)
    - Extract and consolidate styles from:
      - [MainWindow-Terminal.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Terminal.axaml)
@@ -81,13 +81,13 @@
    - Bracket-wrapped button text ([HISTORY], [LOGS])
    - Sharp corners (0px border radius)
 
-10. **Create Original theme ResourceDictionaries (optional)**
+10. **Create Original theme ResourceDictionaries (optional)** ✅
     - Create [src/AStar.Dev.OneDrive.Client/Themes/OriginalLightTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/OriginalLightTheme.axaml)
     - Create [src/AStar.Dev.OneDrive.Client/Themes/OriginalDarkTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/OriginalDarkTheme.axaml)
     - Extract any custom styles from current [MainWindow.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow.axaml) if present
     - For `OriginalAuto`, rely on Avalonia's built-in `FluentTheme` without custom ResourceDictionary
 
-11. **Delete obsolete themed MainWindow files**
+11. **Delete obsolete themed MainWindow files** ✅
     - Delete ALL Professional themed files:
       - [MainWindow-Professional.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Professional.axaml) and [.axaml.cs](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Professional.axaml.cs)
       - [AccountManagementViewProfessional.axaml](src/AStar.Dev.OneDrive.Client/Accounts/AccountManagementViewProfessional.axaml) and [.axaml.cs](src/AStar.Dev.OneDrive.Client/Accounts/AccountManagementViewProfessional.axaml.cs)
