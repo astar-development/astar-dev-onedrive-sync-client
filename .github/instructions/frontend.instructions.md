@@ -39,10 +39,10 @@ PROMPTING: Specify contract (props/state), error modes, and data flow norms.
 
 ## Component Development
 
-1. **Props**: Define with TypeScript; document optional vs required. Provide sensible defaults.
-2. **State Management**: Prefer local state; lift to Context/Redux only when shared or cross-cutting.
-3. **API Calls**: Use the shared API client; centralize endpoints and schemas; handle errors explicitly.
-4. **Error Boundaries**: Add boundaries around risky trees; fail gracefully.
+1. **Properties**: Define with C# properties; use nullable reference types (`string?`) for optional properties. Provide sensible defaults via property initializers or constructors. Use descriptive XML documentation comments on public properties.
+2. **State Management**: Use ReactiveUI patterns - inherit ViewModels from `ReactiveObject`, expose observable state via `IObservable<T>` or reactive properties, and use `WhenAnyValue()` for reactive bindings. Prefer local ViewModel state; elevate to shared services (dependency-injected) only when cross-cutting.
+3. **API Calls**: Use the shared API client; centralize endpoints and schemas; handle errors explicitly with `Result<T>` patterns from `AStar.Dev.Functional.Extensions`.
+4. **Error Handling**: Implement error handling in ViewModels; expose error states via observable properties (e.g., `IObservable<string?> ErrorMessage`); provide user-friendly error messages bound to UI elements.
 
 <!--
 SECTION PURPOSE: Make testing guidance explicit and link to SSOTs (Tester chat mode and BDD instructions).
@@ -89,7 +89,7 @@ PROMPTING: XML block for machine-checkable rules.
 
 - Run lints and tests locally before PR.
 - Include accessibility checks (labels, keyboard nav, focus order) in reviews.
-- Avoid `any`; if unavoidable, annotate with a TODO and reason.
+- Avoid `dynamic` or `object` types; use proper types with nullable reference types (`?`) or explicit type parameters. If unavoidable, annotate with a TODO and reason.
   </PROCESS_REQUIREMENTS>
 
 <!-- © Capgemini 2026 -->

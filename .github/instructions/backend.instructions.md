@@ -19,6 +19,8 @@ Follow idiomatic practices for the chosen programming language and framework. Pr
 
 ## Language-Specific Guidelines
 
+**Note**: This file contains generic guidelines for multiple backend languages. **This project uses C#/.NET exclusively.** Non-C# sections are provided as reference for multi-language teams and may be useful for understanding cross-language patterns.
+
 ### Java
 
 - **Build Tools**: Use Maven or Gradle for dependency management.

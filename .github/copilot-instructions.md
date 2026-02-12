@@ -233,6 +233,20 @@ _progressSubject.OnNext(newState); // Emit state change
 4. User resolves via UI: Keep local, keep remote, or view both
 5. Resolution applied and sync continues
 
+```mermaid
+flowchart TD
+    A[Change Detected] --> B{Both changed?}
+    B -->|No| C[Apply change]
+    B -->|Yes| D{Within threshold?}
+    D -->|Yes| C
+    D -->|No| E[Record conflict]
+    E --> F[Prompt user]
+    F --> G{Resolution}
+    G -->|Keep Local| H[Upload local]
+    G -->|Keep Remote| I[Download remote]
+    G -->|View Both| J[Show diff UI]
+```
+
 ### 5. Sync Algorithm
 
 **Two-Phase Sync Process**:
@@ -251,6 +265,24 @@ _progressSubject.OnNext(newState); // Emit state change
    - Update local metadata with remote cTag
    - Mark as synced
 
+```mermaid
+sequenceDiagram
+    participant Local
+    participant SyncEngine
+    participant GraphAPI
+    participant OneDrive
+    
+    SyncEngine->>GraphAPI: Fetch delta changes
+    GraphAPI->>OneDrive: /delta endpoint
+    OneDrive-->>GraphAPI: Changed items + deltaToken
+    GraphAPI-->>SyncEngine: Remote changes
+    SyncEngine->>SyncEngine: Detect conflicts
+    alt No Conflict
+        SyncEngine->>Local: Download/Upload
+    else Conflict
+        SyncEngine->>UI: Prompt user
+    end
+```
 **For Details**: See `docs/sync-algorithm-overview.md`
 
 ### 6. Testing Strategy
@@ -712,7 +744,7 @@ git push -u origin feature/your-feature-name
 # Use the mcp_io_github_git_create_pull_request tool with:
 ```
 
-```typescript
+```text
 {
   owner: "astar-development",
   repo: "astar-dev-onedrive-sync-client",
