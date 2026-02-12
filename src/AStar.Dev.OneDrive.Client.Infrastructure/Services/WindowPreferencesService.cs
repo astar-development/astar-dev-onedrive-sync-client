@@ -55,12 +55,12 @@ public sealed class WindowPreferencesService(SyncDbContext context) : IWindowPre
     {
         // Parse theme with fallback to OriginalAuto for null, empty, or invalid values
         ThemePreference theme = ThemePreference.OriginalAuto;
-        if (!string.IsNullOrWhiteSpace(entity.Theme) 
+        if(!string.IsNullOrWhiteSpace(entity.Theme)
             && Enum.TryParse(entity.Theme, out ThemePreference parsedTheme))
         {
             theme = parsedTheme;
         }
-        
+
         return new WindowPreferences(
             entity.Id,
             entity.X,

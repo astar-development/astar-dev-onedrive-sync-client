@@ -11,7 +11,7 @@ public sealed class WindowPreferencesEntity
     public double Width { get; set; }
     public double Height { get; set; }
     public bool IsMaximized { get; set; }
-    
+
     /// <summary>
     ///     The user's preferred theme stored as a string. Maps to ThemePreference enum.
     /// </summary>
