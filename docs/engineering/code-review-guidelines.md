@@ -84,4 +84,4 @@ How to use:
 - Coverage targets and hot/error/security path requirements: see `.github/copilot-instructions.md#quality-policy`.
 - Pull request author checklist: see `docs/engineering/pull-request-guidelines.md`.
 
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->

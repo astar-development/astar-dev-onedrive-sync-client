@@ -3,7 +3,7 @@ name: Policy Lint
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   validate-policy:
@@ -15,10 +15,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Run policy validator
         run: |
           node scripts/validate-policy.js
 
-# © Capgemini 2025
+# © Capgemini 2026

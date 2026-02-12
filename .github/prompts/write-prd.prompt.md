@@ -1,10 +1,22 @@
 ---
-mode: 'agent'
-description: 'Create a Product Requirements Document (PRD) using the repository PRD template and structured guidance for both humans and automation.'
-tools: ['search/codebase', 'usages', 'changes', 'edit/editFiles', 'fetch', 'search', 'search/searchResults', 'runCommands', 'todos']
+mode: "agent"
+description: "Create a Product Requirements Document (PRD) using the repository PRD template and structured guidance for both humans and automation."
+tools:
+  [
+    "search/codebase",
+    "usages",
+    "changes",
+    "edit/editFiles",
+    "fetch",
+    "search",
+    "search/searchResults",
+    "runCommands",
+    "todos",
+  ]
 ---
 
 <!-- Top-level purpose: Define the PRD creation task and guardrails. Techniques: clear title, imperative voice, and branch/filename conventions to guide edits. -->
+
 # Create a Product Requirements Document (PRD)
 
 Create a PRD for `${input:FeatureTitle}` using the company PRD template and the guidance below. If you do not have enough information to author a useful PRD, ask the user for the missing inputs (see "Inputs" section).
@@ -12,6 +24,7 @@ Create a PRD for `${input:FeatureTitle}` using the company PRD template and the 
 If you are working in a git workflow, create a branch named `prd/[brief-title-slug]` when making file changes.
 
 <!-- Inputs section: Declare required parameters to collect and map into the PRD template. Techniques: bold labels and ${input:...} placeholders for parameterization. -->
+
 ## Inputs
 
 - **FeatureTitle**: `${input:FeatureTitle}`
@@ -30,6 +43,7 @@ If you are working in a git workflow, create a branch named `prd/[brief-title-sl
 - **References / Related Docs**: `${input:References}`
 
 <!-- Validation: Ensure critical inputs are present and measurable. Techniques: checklist and targeted questioning rules. -->
+
 ## Input validation
 
 If any required input (FeatureTitle, Problem, Goals, Stakeholders, Specifications, Functional Requirements, Acceptance Criteria) is missing or ambiguous, prompt the user with a concise, specific question to obtain it before generating the PRD. Validate that:
@@ -39,6 +53,7 @@ If any required input (FeatureTitle, Problem, Goals, Stakeholders, Specification
 - Acceptance criteria map back to measurable success metrics
 
 <!-- Output requirements: Style, structure, and content expectations to produce review-ready docs. -->
+
 ## Requirements for the generated PRD
 
 - Use clear, unambiguous language suitable for product, design, and engineering readers
@@ -50,11 +65,13 @@ If any required input (FeatureTitle, Problem, Goals, Stakeholders, Specification
 - Keep the document scannable: short paragraphs, bullet lists, and tables where helpful
 
 <!-- Persistence: Where to save and how to name files for consistency and discoverability. -->
+
 ## File naming & location
 
 Save the PRD to `/docs/PRDs/` using a filename that is a short slug of the feature title, e.g.: `prd-[brief-title-slug].md`. If there is an existing convention in the repo, follow it; otherwise use the filename pattern above.
 
 <!-- Canonical structure: Must mirror the repo PRD template. -->
+
 ## Output structure
 
 The generated PRD must follow the PRD template in `docs/PRDs/prd-template.md` and include these sections (at minimum):
@@ -77,6 +94,7 @@ The generated PRD must follow the PRD template in `docs/PRDs/prd-template.md` an
 Where helpful, add short implementation notes and suggested acceptance tests that engineering and QA can run.
 
 <!-- Behavioral constraints: Interaction and scoping expectations for the assistant. -->
+
 ## Behavioural expectations for the agent
 
 - If asked to create a PRD without sufficient inputs, ask only targeted clarifying questions (no more than 3 at a time).
@@ -84,6 +102,7 @@ Where helpful, add short implementation notes and suggested acceptance tests tha
 - When appropriate, suggest a minimal MVP scope and optional future enhancements.
 
 <!-- Example flow: A concise runbook for how to operate this prompt effectively. -->
+
 ## Example minimal prompt flow
 
 1. Validate inputs; ask for any missing critical details
@@ -92,20 +111,23 @@ Where helpful, add short implementation notes and suggested acceptance tests tha
 4. Add a short checklist of next steps (research, design, engineering spikes, stakeholders to consult)
 
 <!-- Notes: Implementation and git workflow guidance. -->
+
 ## Notes
 
 - Use the `docs/PRDs/prd-template.md` as the canonical template. Ensure front matter or filename conventions used in this repo are followed.
 - If you save a file, prefer creating a branch and committing the file; if you cannot push, notify the user and provide exact git commands they can run locally.
 
 <PROCESS_REQUIREMENTS type="MANDATORY">
+
 - If essential inputs are missing or ambiguous, ask targeted questions (≤3 at a time) before drafting.
 - Follow the PRD template strictly; do not omit required sections.
 - Keep success metrics measurable; map acceptance criteria to goals.
-</PROCESS_REQUIREMENTS>
+  </PROCESS_REQUIREMENTS>
 
 <CRITICAL_REQUIREMENT type="MANDATORY">
+
 - Save under `docs/PRDs/` using `prd-[brief-title-slug].md` unless an existing convention overrides it.
 - Do not publish without confirming with the requester or PRD owner.
-</CRITICAL_REQUIREMENT>
+  </CRITICAL_REQUIREMENT>
 
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->

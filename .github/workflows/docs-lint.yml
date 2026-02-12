@@ -3,7 +3,7 @@ name: Docs Lint & Links
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   markdownlint:
@@ -32,4 +32,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-# © Capgemini 2025
+# © Capgemini 2026

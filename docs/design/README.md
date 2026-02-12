@@ -18,4 +18,4 @@ Design docs that affect this repository's code should live here. If your organiz
 
 - (Add links to external design docs or diagrams hosted outside the repo)
 
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->

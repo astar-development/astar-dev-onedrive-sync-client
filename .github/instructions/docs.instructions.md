@@ -6,6 +6,7 @@ applyTo: "**/*.md"
 Purpose: Repository-wide instructions for authoring documentation. Sets expectations, rules, and workflows that AI assistants and humans must follow.
 Prompting techniques: Uses clear headings, imperative rules, templates, and enforcement blocks to drive consistent outputs.
 -->
+
 # Documentation Instructions
 
 This document provides mandatory guidelines for creating and maintaining project documentation across the repository. It applies to all Markdown files and specializes rules for ADRs, PRDs, and Design docs.
@@ -14,6 +15,7 @@ This document provides mandatory guidelines for creating and maintaining project
 Purpose: Define the objectives and boundaries of these instructions.
 Prompting techniques: Scope framing to align behavior and outcomes before execution.
 -->
+
 ## Scope and Purpose
 
 - Ensure all docs are clear, consistent, and easy to maintain.
@@ -24,6 +26,7 @@ Prompting techniques: Scope framing to align behavior and outcomes before execut
 Purpose: Establish universal style and clarity rules to apply across all docs.
 Prompting techniques: Prescriptive bullet points with imperative tone for easy compliance.
 -->
+
 ## General Guidelines
 
 1. **Structure**: Organize documentation into clear sections with headings and subheadings.
@@ -35,6 +38,7 @@ Prompting techniques: Prescriptive bullet points with imperative tone for easy c
 Purpose: Ensure the assistant gathers critical inputs before drafting.
 Prompting techniques: Input collection checklist with mandatory enforcement gate.
 -->
+
 ## Inputs to Collect (before drafting)
 
 - Purpose and scope of the document
@@ -43,14 +47,16 @@ Prompting techniques: Input collection checklist with mandatory enforcement gate
 - Existing related documentation or references
 
 <PROCESS_REQUIREMENTS type="MANDATORY">
+
 - If any inputs are missing or ambiguous, ask targeted questions and pause drafting until clarified.
 - Confirm inferred inputs with the requester before proceeding.
-</PROCESS_REQUIREMENTS>
+  </PROCESS_REQUIREMENTS>
 
 <!--
 Purpose: Define the review and approval lifecycle to ensure quality and accountability.
 Prompting techniques: Stage-gated workflow steps; mandatory approval via enforcement block.
 -->
+
 ## Document Review & Approval Process
 
 1. **Initial Draft**: Create the first version following the general guidelines.
@@ -60,15 +66,17 @@ Prompting techniques: Stage-gated workflow steps; mandatory approval via enforce
 5. **Archiving**: Establish a process for archiving outdated documents while ensuring they remain accessible for reference.
 
 <CRITICAL_REQUIREMENT type="MANDATORY">
+
 - Do not publish without owner approval.
 - Save documents in their canonical locations with appropriate filenames.
 - Update indices or README links when adding new documents.
-</CRITICAL_REQUIREMENT>
+  </CRITICAL_REQUIREMENT>
 
 <!--
 Purpose: Provide a reusable scaffold for docs when the author does not specify a structure.
 Prompting techniques: Template-driven prompting to ensure completeness and logical flow.
 -->
+
 ## Documentation Structure Template
 
 - Title
@@ -86,6 +94,7 @@ Prompting techniques: Template-driven prompting to ensure completeness and logic
 Purpose: Standardize formatting to maximize readability and toolability.
 Prompting techniques: Prescriptive style guide with concrete conventions (headings, lists, fenced code, links, images).
 -->
+
 ## Formatting Guidelines
 
 - Use Markdown with clear headings and subheadings.
@@ -100,47 +109,55 @@ Prompting techniques: Prescriptive style guide with concrete conventions (headin
 Purpose: Provide specialized content requirements for common document types.
 Prompting techniques: Pattern-based checklists per doc type for consistent outputs.
 -->
+
 ## Document Types and Guidance
 
 <!--
 Purpose: ADR-specific required sections and storage conventions.
 Prompting techniques: Checklist of mandatory sections and canonical location/naming.
 -->
+
 ### Architectural Decision Records (ADRs)
+
 1. **Purpose**: State the decision and the problem it addresses.
 2. **Context**: Provide background and constraints.
 3. **Options Considered**: List alternatives and why they were rejected or accepted.
 4. **Decision**: Clearly state the chosen approach and rationale.
 5. **Consequences**: Note implications, migration steps, and follow-ups.
- 6. **Location & Naming**: Save under `docs/ADRs/` using the repository ADR naming convention and template (`docs/ADRs/adr-template.md`).
+6. **Location & Naming**: Save under `docs/ADRs/` using the repository ADR naming convention and template (`docs/ADRs/adr-template.md`).
 
 <!--
 Purpose: PRD-specific structure to align product documentation with measurable outcomes.
 Prompting techniques: Outcome-focused sections and canonical storage.
 -->
+
 ### Product Requirements Documents (PRDs)
+
 1. **Overview**: Summarize the product, purpose, and target audience.
 2. **Goals & Objectives**: Define measurable goals.
 3. **Stakeholders**: List stakeholders and roles.
 4. **Success Criteria**: Define how success will be measured.
- 5. **Location & Naming**: Save under `docs/PRDs/` using the repository PRD template (`docs/PRDs/prd-template.md`).
+5. **Location & Naming**: Save under `docs/PRDs/` using the repository PRD template (`docs/PRDs/prd-template.md`).
 
 <!--
 Purpose: Design doc structure to capture system architecture and concerns.
 Prompting techniques: Sectioned guidance for architecture, data, APIs, UI, and security; canonical storage.
 -->
+
 ### Design Documents
+
 1. **Architecture**: Provide diagrams and component descriptions.
 2. **Data Models**: Describe schemas and relationships.
 3. **APIs**: Document endpoints, contracts, and authentication.
 4. **User Interface**: Include wireframes, mockups, and accessibility notes.
 5. **Security**: Outline security considerations and mitigations.
- 6. **Location & Naming**: Save under `docs/design/` with a concise, descriptive filename.
+6. **Location & Naming**: Save under `docs/design/` with a concise, descriptive filename.
 
 <!--
 Purpose: Define default file formats and locations to reduce ambiguity.
 Prompting techniques: Defaults and canonical paths that tools and assistants can rely on.
 -->
+
 ## Saving and Location
 
 - Default format: Markdown (`.md`).
@@ -151,6 +168,7 @@ Prompting techniques: Defaults and canonical paths that tools and assistants can
 Purpose: Establish acceptance criteria any doc must meet before publication.
 Prompting techniques: Concise quality checklist that is easy to verify automatically.
 -->
+
 ## Quality Gates
 
 - All new or updated docs must pass a self-review for accuracy, completeness, and clarity.
@@ -161,7 +179,9 @@ Prompting techniques: Concise quality checklist that is easy to verify automatic
 Purpose: Visualize the documentation workflow and decision points.
 Prompting techniques: Mermaid diagram with loopbacks and explicit approval gate to reinforce process.
 -->
+
 <a name="documentation-process-flow"></a>
+
 ## Documentation Process (Flow)
 
 ```mermaid
@@ -177,5 +197,4 @@ flowchart TD
 	H --> I[Plan maintenance cadence]
 ```
 
-
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->

@@ -1,8 +1,10 @@
 ---
 applyTo: "**/*.java, **/*.py, **/*.cs"
 ---
+
 <!-- The above section is called 'frontmatter' and is used to define metadata for the document -->
 <!-- The main content of the markdown file starts here -->
+
 # Backend Development Guidelines
 
 ## General Guidelines
@@ -81,14 +83,17 @@ Follow idiomatic practices for the chosen programming language and framework. Pr
 3. **Asynchronous Processing**: Use asynchronous processing for long-running tasks to improve API responsiveness.
 
 <a name="backend-architecture"></a>
+
 ## Architecture & Structure
 
 Adopt a simple, layered architecture to keep boundaries clear and testable:
+
 - Entry (HTTP/CLI/Queue) → Controller/Handler → Service (business logic) → Repository (data access) → External systems.
 - Keep DTOs separate from domain models; map at edges.
 - Inject dependencies through constructors. Avoid singletons and global state.
 
 Framework-specific notes:
+
 - Spring Boot: Controllers (`@RestController`) → Services (`@Service`) → Repos (`@Repository`). Use packages by feature when helpful.
 - Django: Views/ViewSets → Services (plain modules) → ORM Models/Managers. Keep fat models thin services as needed; avoid business logic in views.
 - ASP.NET Core: Controllers → Services (DI) → Repositories (EF Core). Prefer interfaces for services/repositories for testability.
@@ -100,6 +105,7 @@ Testing guidance: unit-test services with fakes; integration-test controllers an
 ## Error Handling
 
 ##### Example: Global Exception Handler (Spring)
+
 ```java
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -125,6 +131,7 @@ public class GlobalExceptionHandler {
 - **Security**: Use Django's built-in security features (e.g., CSRF protection, XSS protection).
 
 ##### Example: Logging Errors via Middleware (Django)
+
 ```python
 # core/middleware.py
 class ErrorLoggingMiddleware:
@@ -150,6 +157,7 @@ Add to `MIDDLEWARE` in settings to enable.
 - **Configuration**: Use instance folders for configuration.
 
 ##### Example: Error Handler (Flask)
+
 ```python
 from flask import Flask, jsonify
 
@@ -176,6 +184,7 @@ def handle_value_error(err):
 5.  **Security**: Use ASP.NET Core Identity for authentication and authorization.
 
 ##### Example: Centralized Exception Handling (ASP.NET Core)
+
 ```csharp
 // In Program.cs
 app.UseExceptionHandler(appError =>
@@ -189,6 +198,7 @@ app.UseExceptionHandler(appError =>
 ```
 
 <a name="backend-error-handling"></a>
+
 ## Error Handling
 
 - Fail fast on invalid inputs; validate at boundaries (controllers) and in domain invariants.
@@ -198,18 +208,20 @@ app.UseExceptionHandler(appError =>
 - Tests must cover error and exception paths (see `.github/copilot-instructions.md#quality-policy`).
 
 <a name="backend-observability"></a>
+
 ## Observability
 
 - Logging: structured, leveled logs; include correlation/trace IDs.
-	- Spring: use SLF4J + MDC; Micrometer for metrics (`@Timed`).
-	- Python: stdlib `logging` with structured formatter; expose health endpoints.
-	- .NET: `ILogger<T>` with scopes; OpenTelemetry exporters for traces/metrics.
+  - Spring: use SLF4J + MDC; Micrometer for metrics (`@Timed`).
+  - Python: stdlib `logging` with structured formatter; expose health endpoints.
+  - .NET: `ILogger<T>` with scopes; OpenTelemetry exporters for traces/metrics.
 - Metrics: instrument hot paths, DB calls, external requests; standard RED/USE metrics.
 - Tracing: propagate trace headers (W3C TraceContext). Use OpenTelemetry SDKs where available.
 
 Return consistent error shapes (code, message, correlationId) and map exceptions to appropriate status codes. Do not leak stack traces to clients.
 
 Examples:
+
 ```java
 // Spring: add correlation ID to MDC
 try (MDC.MDCCloseable c = MDC.putCloseable("correlationId", cid)) {
@@ -226,6 +238,7 @@ using (logger.BeginScope(new Dictionary<string, object>{{"correlationId", cid}})
 ```
 
 <a name="backend-security"></a>
+
 ## Security Essentials
 
 - Authentication & Authorization: enforce least privilege; guard all sensitive endpoints.
@@ -237,7 +250,8 @@ using (logger.BeginScope(new Dictionary<string, object>{{"correlationId", cid}})
 - Data protection: avoid logging PII/secrets; encrypt at rest/in transit where applicable.
 
 References:
+
 - Branch/PR workflow and conventions: `.github/copilot-instructions.md`.
 - Coverage and critical-path rules: `.github/copilot-instructions.md#quality-policy`.
 
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->

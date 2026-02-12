@@ -4,4 +4,4 @@ This directory contains requirements written using the EARS (Easy Approach to Re
 
 Organize specs by product or component. Include traceability links to PRDs and tests where possible.
 
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->

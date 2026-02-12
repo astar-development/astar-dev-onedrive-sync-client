@@ -10,4 +10,4 @@ PRDs define product goals, scope, stakeholders, and success criteria. Use this d
 
 Completed PRDs are moved from this directory into the `docs/PRDs/archive` directory.
 
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->

@@ -12,4 +12,4 @@ Add links to ADRs in sequential order using the naming convention `adr-NNNN-titl
 
 - [ADR 0001 Brief Title Slug](adr-0001-brief-title-slug.md)
 
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->

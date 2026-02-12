@@ -38,4 +38,4 @@ Example metrics:
    - Owner: SRE
    - Guardrails: Mean Time to Recovery ≤ 15m; No P0 incidents from this change
 
-<!-- © Capgemini 2025 -->
+<!-- © Capgemini 2026 -->
