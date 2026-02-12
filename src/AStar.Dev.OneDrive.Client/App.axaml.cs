@@ -34,7 +34,7 @@ public sealed class App : Application
 
         if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindowTerminal();
+            desktop.MainWindow = new MainWindow.MainWindow();
 
             desktop.Startup += async (_, _) => await DebugLog.InfoAsync("App Startup", "Application has started", AdminAccountMetadata.AccountId, CancellationToken.None);
 
