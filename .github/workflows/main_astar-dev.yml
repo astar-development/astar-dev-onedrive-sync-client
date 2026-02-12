@@ -15,6 +15,7 @@ concurrency:
 env:
   SONAR_PROJECT: astar-dev-onedrive-sync-client
   AZURE_WEBAPP_NAME: astar-dev-onedrive-sync-client
+  SOLUTION_FILE: AStar.Dev.OneDrive.Client.slnx
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 10.0.100
   WORKING_DIRECTORY: src/
@@ -48,14 +49,14 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restore
-        run: dotnet restore AStar.Dev.OneDrive.Client.slnx
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
 
       - name: Build solution
-        run: dotnet build AStar.Dev.OneDrive.Client.slnx --configuration Release
+        run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release
 
       - name: Run unit tests and collect coverage (XPlat)
         run: |
-          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults --filter "FullyQualifiedName!~Integration&FullyQualifiedName!~EndToEnd" AStar.Dev.OneDrive.Client.slnx
+          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults --filter "FullyQualifiedName!~Integration&FullyQualifiedName!~EndToEnd" ${{ env.SOLUTION_FILE }}
 
       - name: Upload TestResults artifact (contains coverage)
         if: success() || failure()

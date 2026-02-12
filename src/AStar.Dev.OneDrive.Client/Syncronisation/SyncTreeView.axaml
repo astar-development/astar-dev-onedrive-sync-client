@@ -50,12 +50,12 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0">
                         <TextBlock Text="Select Folders to Sync"
-                                FontSize="18"
-                                FontWeight="SemiBold"
-                                Margin="0,0,0,4" />
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,0,4" />
                         <TextBlock Text="Choose which folders should be synced to your local drive"
-                                FontSize="12"
-                                Opacity="0.7" />
+                                   FontSize="12"
+                                   Opacity="0.7" />
                     </StackPanel>
 
                     <Button Grid.Column="1"
@@ -69,8 +69,8 @@
             <!-- Tree View -->
             <ScrollViewer Grid.Row="1">
                 <TreeView ItemsSource="{Binding Folders}"
-                        SelectionMode="Single"
-                        Margin="8">
+                          SelectionMode="Single"
+                          Margin="8">
                     <TreeView.Styles>
                         <!-- Bind IsExpanded and handle expansion -->
                         <Style Selector="TreeViewItem" x:DataType="models1:OneDriveFolderNode">
@@ -83,40 +83,40 @@
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <!-- Tri-state CheckBox -->
                                 <CheckBox IsChecked="{Binding IsSelected}"
-                                        IsThreeState="True"
-                                        Command="{Binding $parent[UserControl].((vmSync:SyncTreeViewModel)DataContext).ToggleSelectionCommand}"
-                                        CommandParameter="{Binding}"
-                                        VerticalAlignment="Center" />
+                                          IsThreeState="True"
+                                          Command="{Binding $parent[UserControl].((vmSync:SyncTreeViewModel)DataContext).ToggleSelectionCommand}"
+                                          CommandParameter="{Binding}"
+                                          VerticalAlignment="Center" />
 
                                 <!-- Folder Icon -->
                                 <PathIcon Data="M4 4h6l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"
-                                        Width="16"
-                                        Height="16"
-                                        Foreground="{DynamicResource SystemAccentColor}"
-                                        VerticalAlignment="Center"
-                                        IsVisible="{Binding !IsLoading}" />
+                                          Width="16"
+                                          Height="16"
+                                          Foreground="{DynamicResource SystemAccentColor}"
+                                          VerticalAlignment="Center"
+                                          IsVisible="{Binding !IsLoading}" />
 
                                 <!-- Loading Spinner -->
                                 <Viewbox Width="16" Height="16" VerticalAlignment="Center"
-                                        IsVisible="{Binding IsLoading}">
+                                         IsVisible="{Binding IsLoading}">
                                     <Path Data="M 8,2 A 6,6 0 1 1 2,8"
-                                        Stroke="#00E5FF"
-                                        StrokeThickness="1.5"
-                                        StrokeLineCap="Round"
-                                        Classes="spinner" />
+                                          Stroke="#00E5FF"
+                                          StrokeThickness="1.5"
+                                          StrokeLineCap="Round"
+                                          Classes="spinner" />
                                 </Viewbox>
 
                                 <!-- Folder Name -->
                                 <TextBlock Text="{Binding Name}"
-                                        VerticalAlignment="Center"
-                                        FontSize="14" />
+                                           VerticalAlignment="Center"
+                                           FontSize="14" />
 
                                 <!-- Path (subtle) -->
                                 <TextBlock Text="{Binding Path}"
-                                        VerticalAlignment="Center"
-                                        FontSize="11"
-                                        Opacity="0.6"
-                                        Margin="8,0,0,0" />
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           Opacity="0.6"
+                                           Margin="8,0,0,0" />
                             </StackPanel>
                         </TreeDataTemplate>
                     </TreeView.ItemTemplate>
@@ -166,46 +166,46 @@
                                 Margin="24,0,0,0"
                                 IsVisible="{Binding IsSyncing}">
                         <TextBlock Text="{Binding ProgressText}"
-                                FontSize="12"
-                                FontWeight="SemiBold" />
+                                   FontSize="12"
+                                   FontWeight="SemiBold" />
                         <ProgressBar Value="{Binding ProgressPercentage}"
-                                    Minimum="0"
-                                    Maximum="100"
-                                    Width="200"
-                                    Height="4" />
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Width="200"
+                                     Height="4" />
                         <StackPanel Orientation="Horizontal" Spacing="16" Margin="0,4,0,0">
                             <TextBlock Text="{Binding EstimatedSecondsRemaining, StringFormat='ETA: {0:N0} sec'}"
-                                    FontSize="11"
-                                    Foreground="#666"
-                                    IsVisible="{Binding EstimatedSecondsRemaining, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                       FontSize="11"
+                                       Foreground="#666"
+                                       IsVisible="{Binding EstimatedSecondsRemaining, Converter={x:Static ObjectConverters.IsNotNull}}" />
                             <TextBlock Text="{Binding MegabytesPerSecond, StringFormat='Speed: {0:N2} MB/sec'}"
-                                    FontSize="11"
-                                    Foreground="#666"
-                                    Margin="16,0,0,0" />
+                                       FontSize="11"
+                                       Foreground="#666"
+                                       Margin="16,0,0,0" />
                         </StackPanel>
                     </StackPanel>
 
                     <!-- Last Sync Result -->
                     <TextBlock Text="{Binding LastSyncResult}"
-                            FontSize="12"
-                            FontWeight="SemiBold"
-                            Foreground="{DynamicResource SystemAccentColor}"
-                            Margin="24,0,0,0"
-                            VerticalAlignment="Center"
-                            IsVisible="{Binding LastSyncResult, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource SystemAccentColor}"
+                               Margin="24,0,0,0"
+                               VerticalAlignment="Center"
+                               IsVisible="{Binding LastSyncResult, Converter={x:Static ObjectConverters.IsNotNull}}" />
                     <!-- Loading -->
                     <StackPanel Orientation="Horizontal"
                                 Spacing="8"
                                 IsVisible="{Binding IsLoading}">
                         <ProgressBar IsIndeterminate="True"
-                                    Width="200"
-                                    Height="4"
-                                    VerticalAlignment="Center"
-                                    Foreground="#00E5FF" />
+                                     Width="200"
+                                     Height="4"
+                                     VerticalAlignment="Center"
+                                     Foreground="#00E5FF" />
                         <TextBlock Text="Loading folders..."
-                                VerticalAlignment="Center"
-                                FontSize="12"
-                                Opacity="0.7" />
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   Opacity="0.7" />
                     </StackPanel>
 
                     <!-- Error -->
@@ -217,13 +217,13 @@
                             IsVisible="{Binding ErrorMessage, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <PathIcon Data="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                                    Width="16"
-                                    Height="16"
-                                    Foreground="#C62828" />
+                                      Width="16"
+                                      Height="16"
+                                      Foreground="#C62828" />
                             <TextBlock Text="{Binding ErrorMessage}"
-                                    TextWrapping="Wrap"
-                                    Foreground="#C62828"
-                                    FontSize="12" />
+                                       TextWrapping="Wrap"
+                                       Foreground="#C62828"
+                                       FontSize="12" />
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -235,35 +235,35 @@
                         Margin="16,8" />
         </Grid>
 
-    <!-- Loading Overlay -->
-    <Border Background="#00000000"
-            IsVisible="{Binding IsLoading}"
-            ZIndex="100">
-        <Grid>
-            <Border Background="#FFFFFFFF"
-                    CornerRadius="8"
-                    Padding="24"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Opacity="0.95">
+        <!-- Loading Overlay -->
+        <Border Background="#00000000"
+                IsVisible="{Binding IsLoading}"
+                ZIndex="100">
+            <Grid>
+                <Border Background="#FFFFFFFF"
+                        CornerRadius="8"
+                        Padding="24"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Opacity="0.95">
 
-                <StackPanel Spacing="12" HorizontalAlignment="Center">
-                    <Viewbox Width="32" Height="32">
-                        <Path Data="M 8,2 A 6,6 0 1 1 2,8"
-                              Stroke="#00E5FF"
-                              StrokeThickness="2"
-                              StrokeLineCap="Round"
-                              Classes="spinner" />
-                    </Viewbox>
+                    <StackPanel Spacing="12" HorizontalAlignment="Center">
+                        <Viewbox Width="32" Height="32">
+                            <Path Data="M 8,2 A 6,6 0 1 1 2,8"
+                                  Stroke="#00E5FF"
+                                  StrokeThickness="2"
+                                  StrokeLineCap="Round"
+                                  Classes="spinner" />
+                        </Viewbox>
 
-                    <TextBlock Text="Loading folders..." Foreground="#333"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               HorizontalAlignment="Center" />
-                </StackPanel>
-            </Border>
-        </Grid>
-    </Border>
+                        <TextBlock Text="Loading folders..." Foreground="#333"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 
 </UserControl>

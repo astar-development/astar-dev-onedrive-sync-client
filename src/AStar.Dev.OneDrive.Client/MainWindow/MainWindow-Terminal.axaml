@@ -1,0 +1,139 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:accounts="using:AStar.Dev.OneDrive.Client.Accounts"
+        xmlns:syncronisation="using:AStar.Dev.OneDrive.Client.Syncronisation"
+        xmlns:syncronisationConflicts="using:AStar.Dev.OneDrive.Client.SyncronisationConflicts"
+        xmlns:vm="using:AStar.Dev.OneDrive.Client.MainWindow"
+        Icon="avares://AStar.Dev.OneDrive.Client/Assets/astar.png"
+        x:Class="AStar.Dev.OneDrive.Client.MainWindow.MainWindowTerminal"
+        x:DataType="vm:MainWindowViewModel"
+        Title="[ASTAR_SYNC_v2.1] - TERMINAL ACCESS"
+        Width="1400"
+        Height="900"
+        MinWidth="1000"
+        MinHeight="700"
+        Background="#0A0E0F"
+        FontFamily="Consolas, monospace">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
+
+    <Window.Styles>
+        <!-- Terminal window style -->
+        <Style Selector="Border.terminal">
+            <Setter Property="Background" Value="#111111"/>
+            <Setter Property="BorderBrush" Value="#00FF41"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Padding" Value="16"/>
+        </Style>
+
+        <!-- Green terminal text -->
+        <Style Selector="TextBlock.terminal-text">
+            <Setter Property="Foreground" Value="#00FF41"/>
+            <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
+        </Style>
+
+        <!-- Neon button -->
+        <Style Selector="Button.neon">
+            <Setter Property="Background" Value="#001100"/>
+            <Setter Property="Foreground" Value="#00FF41"/>
+            <Setter Property="BorderBrush" Value="#00FF41"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontFamily" Value="Consolas, monospace"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <Style Selector="Button.neon:pointerover">
+            <Setter Property="Background" Value="#003300"/>
+        </Style>
+
+        <!-- Danger button -->
+        <Style Selector="Button.neon-red">
+            <Setter Property="Background" Value="#110000"/>
+            <Setter Property="Foreground" Value="#FF0000"/>
+            <Setter Property="BorderBrush" Value="#FF0000"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="FontFamily" Value="Consolas, monospace"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <Style Selector="Button.neon-red:pointerover">
+            <Setter Property="Background" Value="#330000"/>
+        </Style>
+    </Window.Styles>
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="F2" Command="{Binding OpenUpdateAccountDetailsCommand}" />
+        <KeyBinding Gesture="Alt+F4" Command="{Binding CloseApplicationCommand}" />
+    </Window.KeyBindings>
+
+    <Grid RowDefinitions="50,Auto,*" Margin="8">
+        <!-- Terminal Header -->
+        <Border Grid.Row="0" Background="#001100" BorderBrush="#00FF41" BorderThickness="2">
+            <Grid ColumnDefinitions="Auto,*,Auto" Margin="12,0">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="█▓▒░" FontSize="16" Foreground="#00FF41" FontWeight="Bold"/>
+                    <TextBlock Text="ASTAR_SYNC_CLIENT" FontSize="14" Classes="terminal-text" FontWeight="Bold"/>
+                    <TextBlock Text="[v2.1.0_STABLE]" FontSize="11" Foreground="#00AA33"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Button Content="[HISTORY]" Command="{Binding OpenViewSyncHistoryCommand}" Classes="neon" Height="32"/>
+                    <Button Content="[LOGS]" Command="{Binding OpenDebugLogViewerCommand}" Classes="neon" Height="32"/>
+                    <Button Content="[CONFIG]" Command="{Binding OpenUpdateAccountDetailsCommand}" Classes="neon" Height="32"/>
+                    <Button Content="[X]" Command="{Binding CloseApplicationCommand}" Classes="neon-red" Height="32" Width="50"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="1" Background="#000000" BorderBrush="#00FF41" BorderThickness="2,0,2,2" Padding="12,6">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <TextBlock Grid.Column="0" Text="[STATUS: ONLINE]" Foreground="#00FF41" FontSize="11"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
+                    <TextBlock Text="◢" Foreground="#00FF41" FontSize="14"/>
+                    <TextBlock Text="SECURE CONNECTION ESTABLISHED" Foreground="#00AA33" FontSize="10"/>
+                    <TextBlock Text="◣" Foreground="#00FF41" FontSize="14"/>
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text="[SYSTEM: CONNECTED]"
+                           Foreground="#00AA33" FontSize="11"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Terminal Area -->
+        <Grid Grid.Row="2" ColumnDefinitions="420,8,*" Margin="0,8,0,0">
+
+            <!-- Left Terminal -->
+            <Border Grid.Column="0" Classes="terminal">
+                <Grid RowDefinitions="Auto,4,*">
+                    <TextBlock Grid.Row="0" Text="┌──[ ACCOUNTS_MODULE ]" Classes="terminal-text" FontWeight="Bold"/>
+                    <Border Grid.Row="1" Background="#00FF41" Height="2"/>
+                    <ScrollViewer Grid.Row="2" Margin="0,8,0,0">
+                        <accounts:AccountManagementViewTerminal DataContext="{Binding AccountManagement}" />
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+
+            <!-- Right Terminal -->
+            <Border Grid.Column="2" Classes="terminal">
+                <Grid RowDefinitions="Auto,4,*">
+                    <TextBlock Grid.Row="0" Text="┌──[ SYNC_CONTROL_MODULE ]" Classes="terminal-text" FontWeight="Bold"/>
+                    <Border Grid.Row="1" Background="#00FF41" Height="2"/>
+                    <Panel Grid.Row="2" Margin="0,8,0,0">
+                        <syncronisation:SyncTreeViewTerminal DataContext="{Binding SyncTree}" />
+                        <syncronisation:SyncProgressViewTerminal DataContext="{Binding SyncProgress}"
+                                                                 IsVisible="{Binding #SyncProgressView.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                 x:Name="SyncProgressView" />
+                        <syncronisationConflicts:ConflictResolutionViewTerminal DataContext="{Binding ConflictResolution}"
+                                                                                IsVisible="{Binding #ConflictResolutionView.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                                x:Name="ConflictResolutionView" />
+                    </Panel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:AStar.Dev.OneDrive.Client.MainWindow"
+             xmlns:syncronisation="using:AStar.Dev.OneDrive.Client.Syncronisation"
+             xmlns:converters="using:AStar.Dev.OneDrive.Client.Converters"
+             xmlns:models1="clr-namespace:AStar.Dev.OneDrive.Client.Core.Models;assembly=AStar.Dev.OneDrive.Client.Core"
+             x:Class="AStar.Dev.OneDrive.Client.Syncronisation.SyncTreeViewTerminal"
+             x:DataType="syncronisation:SyncTreeViewModel"
+             FontFamily="Consolas, monospace">
+
+    <UserControl.Resources>
+        <converters:BooleanNegationConverter x:Key="BooleanNegationConverter" />
+    </UserControl.Resources>
+
+    <Design.DataContext>
+        <vm:SyncTreeViewModel />
+    </Design.DataContext>
+
+    <UserControl.Styles>
+        <!-- Spinning animation -->
+        <Style Selector="Path.spinner">
+            <Style.Animations>
+                <Animation Duration="0:0:0.8" IterationCount="Infinite">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="(RotateTransform.Angle)" Value="0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="(RotateTransform.Angle)" Value="360" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+            <Setter Property="RenderTransform">
+                <RotateTransform />
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
+        </Style>
+
+        <!-- Neon button style -->
+        <Style Selector="Button.neon">
+            <Setter Property="Background" Value="#001100"/>
+            <Setter Property="Foreground" Value="#00FF41"/>
+            <Setter Property="BorderBrush" Value="#00FF41"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontFamily" Value="Consolas, monospace"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <Style Selector="Button.neon:pointerover">
+            <Setter Property="Background" Value="#003300"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto,Auto">
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Spacing="6" Margin="0,0,0,16">
+            <TextBlock Text=">> FOLDER_SYNC_SELECTION" FontSize="13" Foreground="#00FF41" FontWeight="Bold"/>
+            <TextBlock Text="   [Mark directories for bidirectional sync]" FontSize="10" Foreground="#00AA33"/>
+        </StackPanel>
+
+        <!-- Tree View -->
+        <ScrollViewer Grid.Row="1">
+            <TreeView ItemsSource="{Binding Folders}"
+                      SelectionMode="Single"
+                      Background="Transparent"
+                      Margin="0">
+                <TreeView.Styles>
+                    <Style Selector="TreeViewItem" x:DataType="models1:OneDriveFolderNode">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    </Style>
+                    <Style Selector="TreeViewItem">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Padding" Value="4"/>
+                    </Style>
+                    <Style Selector="TreeViewItem:selected /template/ ContentPresenter">
+                        <Setter Property="Background" Value="#002200"/>
+                    </Style>
+                </TreeView.Styles>
+
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models1:OneDriveFolderNode">
+                        <Border Padding="4,6" Background="Transparent">
+                            <Grid ColumnDefinitions="Auto,8,Auto,8,*">
+                                <!-- Checkbox -->
+                                <CheckBox Grid.Column="0"
+                                          IsChecked="{Binding IsSelected}"
+                                          IsEnabled="{Binding !IsLoading}"
+                                          BorderBrush="#00FF41"
+                                          Foreground="#00FF41"
+                                          VerticalAlignment="Center"/>
+
+                                <!-- Loading Spinner -->
+                                <Viewbox Grid.Column="2" Width="14" Height="14" IsVisible="{Binding IsLoading}">
+                                    <Path Data="M 8,2 A 6,6 0 1 1 2,8"
+                                          Stroke="#00FF41"
+                                          StrokeThickness="1.5"
+                                          StrokeLineCap="Round"
+                                          Classes="spinner" />
+                                </Viewbox>
+
+                                <!-- Folder Name -->
+                                <TextBlock Grid.Column="4"
+                                           Text="{Binding Name}"
+                                           Foreground="#00FF41"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+        </ScrollViewer>
+
+        <!-- Sync Info -->
+        <Border Grid.Row="2"
+                Background="#001100"
+                BorderBrush="#00FF41"
+                BorderThickness="1"
+                Padding="12,8"
+                Margin="0,12,0,12">
+            <TextBlock Text="{Binding LastSyncResult}"
+                       FontSize="10"
+                       Foreground="#00FF41"
+                       FontWeight="SemiBold"
+                       IsVisible="{Binding LastSyncResult, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+        </Border>
+
+        <!-- Action Buttons -->
+        <Grid Grid.Row="3" ColumnDefinitions="*,8,*">
+            <Button Grid.Column="0"
+                    Content="[CLEAR]"
+                    Command="{Binding ClearSelectionsCommand}"
+                    Classes="neon"
+                    HorizontalAlignment="Stretch"
+                    Height="36"/>
+            <Button Grid.Column="2"
+                    Content="[SYNC_NOW]"
+                    Command="{Binding StartSyncCommand}"
+                    IsEnabled="{Binding IsLoading, Converter={StaticResource BooleanNegationConverter}}"
+                    Classes="neon"
+                    HorizontalAlignment="Stretch"
+                    Height="36"/>
+        </Grid>
+
+        <!-- Loading Overlay -->
+        <Border Grid.Row="0" Grid.RowSpan="4"
+                Background="#E0000000"
+                IsVisible="{Binding IsLoading}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                <TextBlock Text="████████" Foreground="#00FF41" FontSize="20" HorizontalAlignment="Center"/>
+                <TextBlock Text="[LOADING FOLDER STRUCTURE...]" Foreground="#00FF41" FontSize="12" FontWeight="Bold"/>
+                <ProgressBar IsIndeterminate="True" Width="200" Height="4" Foreground="#00FF41"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>
