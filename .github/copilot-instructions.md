@@ -92,16 +92,69 @@ Custom internal packages (located in `src/nuget-packages/`):
 
 **Test-Driven Development (TDD) Policy**
 
-- **Mandate**: All new features, bug fixes, and refactors MUST follow Test-Driven Development (TDD). Developers must write one or more failing tests that express the desired behavior before writing production code. Only after seeing the tests fail should production code be implemented to make the tests pass, followed by a refactor step while keeping tests green.
-- **Failing-First Workflow**: The minimal TDD loop is: write a failing test -> run tests to verify failure -> implement minimal production code -> run tests until they pass -> refactor with tests green.
-- **Test Granularity**: Prefer small, focused unit tests that assert behavior rather than internal implementation. Use integration tests for cross-service flows and E2E tests sparingly for user-facing scenarios.
+<CRITICAL_REQUIREMENT type="MANDATORY">
+All changes must follow Red → Green → Refactor cycle. Failing tests must be committed to the branch history to demonstrate TDD progression. If a failing test is not present, reviewers should request clarification. Tests should be small, focused, and behavior-driven. Use mocks and test doubles for external dependencies. Integration tests should be used for cross-service flows, and E2E tests should be reserved for critical user-facing scenarios.
+</CRITICAL_REQUIREMENT>
+
+```mermaid
+flowchart LR
+    A[Write failing test] --> B[Run test → RED]
+    B --> C[Write minimal code]
+    C --> D[Run tests → GREEN]
+    D --> E{All tests pass?}
+    E -->|No| B
+    E -->|Yes| F[Refactor]
+    F --> G[Run tests]
+    G --> H{Still green?}
+    H -->|No| F
+    H -->|Yes| I[Commit]
+```
+
 - **Mocks & Test Doubles**: Use interface-based abstractions (existing repository and service interfaces) with in-memory or mocked implementations for unit tests. For EF Core, prefer in-memory providers or explicit SQLite in-memory modes where appropriate.
 - **Commit Practice**: Each feature branch should include the failing-test commit (the test authoring step) in the branch history so reviewers can verify the TDD progression. If the failing test is not present, reviewers should request clarification.
+
+<a name="quality-policy"></a>
+## Quality & Coverage Policy
+
+### Code Coverage Requirements
+- **Minimum**: 80% branch coverage for new code
+- **Critical paths**: 100% coverage (authentication, sync engine, conflict resolution)
+- **Hot paths**: 100% coverage with error path testing
+- **Test pyramid guidelines**: 70% unit, 20% integration, 10% E2E
+
+### Branching Strategy
+- **Main**: Protected, deployable, always green
+- **Feature branches**: `feature/`, `fix/`, `refactor/`, `docs/`
+- **Merge**: Squash and merge
+- **Naming**: `<type>/<brief-description>` (e.g., `feature/add-conflict-ui`)
+
+### Branch Protection Rules
+- Require PR approval
+- Require CI tests pass
+- Require up-to-date with main
+- No force push to main
+
+**Pull Request (PR) Policy**
+
+- **Mandate**: PR size should be manageable for code review (ideally < 300 lines of code changed / < 20 files). If a feature requires a large number of changes, consider breaking it down into smaller, incremental PRs that can be reviewed and merged independently. Each PR should represent a cohesive unit of work that can be understood and reviewed in isolation.
+- **Mandate**: For development tasks that require larger changes (e.g., architectural refactors, multi-feature work), the work should be protected behind a feature flag that is disabled by default. This allows the code to be merged into main without impacting existing functionality, while still enabling incremental development and testing of the new code paths. The feature flag should be removed once the work is complete and stable. If the new feature / code changes replace existing functionality, the old code should be left in place and protected behind a feature flag until the new code is fully implemented and tested, at which point the old code can be removed in a subsequent PR. This approach allows for safer refactoring and reduces the risk of breaking existing functionality while still enabling progress on new features.
+- **Mandate**: All PRs must include a descriptive title and a detailed description of the changes made, the rationale behind them, and any relevant context for reviewers. The description should also include information about testing performed (unit tests, integration tests, manual testing) and any areas that require special attention during review. If the PR addresses a specific issue or feature request, it should reference the corresponding issue number in the description.
+- **Mandate**: All PRs must pass automated checks (build, tests, linting) before they can be merged. If any checks fail, the author must address the issues and ensure all checks pass before the PR can be approved and merged.
+- **Mandate**: All PRs must be reviewed and approved by at least one other team member before they can be merged. Reviewers should provide constructive feedback and request changes if necessary to ensure code quality and maintainability. The author should respond to feedback in a timely manner and make necessary changes to address reviewer comments.
+- **Mandate**: All PRs must be merged using the "Squash and Merge" strategy to maintain a clean commit history. The commit message for the merged PR should follow conventional commit format (e.g., `feat: add new feature`, `fix: resolve bug`, `refactor: improve code structure`) to provide clear context in the commit history.
+- **Mandate**: Whenever possible, PRs should be reviewed and merged within 24 hours of creation to maintain development momentum and ensure timely feedback. If a PR requires more time for review or additional context, the author should communicate this in the PR description or comments to set expectations for reviewers. Likewise, reviewers should strive to provide feedback within 12 hours of being assigned to a PR to keep the development process efficient and responsive.
+- **CI gates**: All tests pass, no warnings, linter clean
+
+**Branching Strategy**
+
+- **Mandate**: The repository should follow a trunk-based development strategy, where all development work is done on short-lived feature branches that are merged back to the main branch frequently (ideally within a day or two). Long-lived branches that diverge significantly from main should be avoided to prevent merge conflicts and ensure continuous integration. Each feature branch should be created from the latest main branch to minimize divergence and reduce the likelihood of conflicts during merging.
+- **Mandate**: All new features, bug fixes etc., must be created on a feature branch and follow TDD practices. Unless explicitly stated, the development workflow should use trunk-based development with short-lived feature branches that are merged back to main frequently (ideally within a day or two). Long-lived branches that diverge significantly from main should be avoided to prevent merge conflicts and ensure continuous integration. Each feature branch should be created from the latest main branch to minimize divergence and reduce the likelihood of conflicts during merging.
+- **Mandate**: The main branch should always be in a deployable state, with all tests passing and no known critical bugs. Feature branches should be tested and reviewed thoroughly before being merged to main to maintain this standard. If a feature branch introduces breaking changes or significant new functionality, it should be protected behind a feature flag until it is fully implemented and tested, allowing it to be merged into main without impacting existing functionality.
+- **Mandate**: The naming convention for feature branches should be `feature/<descriptive-name>` (e.g., `feature/add-file-watcher-service`, `feature/implement-sync-algorithm`). This naming convention provides clear context about the purpose of the branch and helps maintain an organized repository structure. For bug fixes, the convention should be `fix/<descriptive-name>` (e.g., `fix/resolve-sync-conflict`, `fix/handle-authentication-error`). For refactors, the convention should be `refactor/<descriptive-name>` (e.g., `refactor/extract-repository-interfaces`, `refactor/improve-error-handling`). This consistent naming strategy helps developers quickly understand the intent of each branch and facilitates easier navigation and management of branches in the repository.
 
 ### 1. Dependency Injection & Testability
 
 **Core Principle**: All external dependencies are abstracted behind interfaces.
-
 **Pattern**:
 
 - Create interface in `Infrastructure/Services/I<ServiceName>.cs`
@@ -180,6 +233,20 @@ _progressSubject.OnNext(newState); // Emit state change
 4. User resolves via UI: Keep local, keep remote, or view both
 5. Resolution applied and sync continues
 
+```mermaid
+flowchart TD
+    A[Change Detected] --> B{Both changed?}
+    B -->|No| C[Apply change]
+    B -->|Yes| D{Within threshold?}
+    D -->|Yes| C
+    D -->|No| E[Record conflict]
+    E --> F[Prompt user]
+    F --> G{Resolution}
+    G -->|Keep Local| H[Upload local]
+    G -->|Keep Remote| I[Download remote]
+    G -->|View Both| J[Show diff UI]
+```
+
 ### 5. Sync Algorithm
 
 **Two-Phase Sync Process**:
@@ -198,6 +265,24 @@ _progressSubject.OnNext(newState); // Emit state change
    - Update local metadata with remote cTag
    - Mark as synced
 
+```mermaid
+sequenceDiagram
+    participant Local
+    participant SyncEngine
+    participant GraphAPI
+    participant OneDrive
+    
+    SyncEngine->>GraphAPI: Fetch delta changes
+    GraphAPI->>OneDrive: /delta endpoint
+    OneDrive-->>GraphAPI: Changed items + deltaToken
+    GraphAPI-->>SyncEngine: Remote changes
+    SyncEngine->>SyncEngine: Detect conflicts
+    alt No Conflict
+        SyncEngine->>Local: Download/Upload
+    else Conflict
+        SyncEngine->>UI: Prompt user
+    end
+```
 **For Details**: See `docs/sync-algorithm-overview.md`
 
 ### 6. Testing Strategy
@@ -284,60 +369,45 @@ public class MyService : IMyService { }
 
 ### 11. Code Style & Quality
 
-**Code Standards**:
+**Core Style Guidelines**: See [.github/instructions/style-guidelines.instructions.md](.github/instructions/style-guidelines.instructions.md) for comprehensive coding standards including:
+
+- Naming conventions (PascalCase, camelCase, etc.)
+- Class and method design principles (SOLID, cohesion, coupling)
+- Immutability and record design patterns
+- Test class conventions and patterns
+- General best practices
+
+**Project-Specific Compiler Settings**:
 
 - **Language Version**: C# 14 with nullable reference types enabled
 - **Warnings as Errors**: `TreatWarningsAsErrors = true`
 - **Implicit Usings**: Enabled
-- **Naming**: PascalCase (public), camelCase (private), \_prefixWithUnderscore (fields)
-- **XML Documentation**: Required on public members, never comment private members or tests
+- **XML Documentation**: Required on public members; never comment private members or tests
 
-**Best Practices**:
+**Modern C# Features** (Leverage C# 9-14 capabilities):
 
-- Use `using` statements and leveraging IDisposable
-- Async/await throughout (no sync-over-async)
-- Null checking with null-coalescing operators
-- Use `ArgumentNullException` in public constructors
-- Immutable when possible (records, init properties)
-- Avoid magic strings/numbers (use constants or enums)
-- Prefer expression-bodied members for simple methods
-- Use pattern matching and switch expressions for clarity
-- Avoid deep nesting (early returns, guard clauses)
-- Use `var` when the type is obvious from the right-hand side, else explicit types for clarity
-- Follow SOLID principles and clean architecture guidelines
-- Keep methods small and focused (ideally <20 lines)
-- Keep classes focused on a single responsibility
-- Keep classes and methods cohesive (related functionality grouped together)
-- Avoid large constructors (ideally <5 parameters); consider refactoring or using parameter objects if needed
-- Use dependency injection for all external dependencies (no newing up services inside classes)
-- Do not use regions or #pragma to hide code; refactor instead
-- Use `nameof()` for parameter names in exceptions and logging
+- Use `PrimaryConstructor` syntax when possible to reduce boilerplate
+- Use `global using` directives for commonly used namespaces
+- Use `file-scoped namespaces` for better readability and less indentation
+- Use `top-level statements` for simple entry points (e.g., `Program.cs`)
+- Use `target-typed new` expressions to reduce redundancy when the type can be inferred
+- Use `record struct` for small, immutable value types that do not require reference semantics
+
+**Asynchronous Programming**:
+
+- Use `using` statements and leverage IDisposable/IAsyncDisposable
+- Use async/await throughout; never do sync-over-async (e.g., `Task.Wait()`, `Task.Result`)
 - Use `ConfigureAwait(false)` in library code to avoid deadlocks in UI contexts
 - Use `async` suffix for asynchronous methods (e.g., `GetItemAsync()`)
 - Use `CancellationToken` parameters for all async methods that support cancellation
 - Use `IAsyncDisposable` and `await using` for async cleanup when necessary
-- Use `IEnumerable<T>` for collections that do not require indexing, and `IReadOnlyList<T>` or `IReadOnlyCollection<T>` when immutability is desired
-- Use `record` types for immutable data models and DTOs, and `class` for entities with behavior or mutable state
-- Use `private` fields with `_camelCase` naming convention, and `PascalCase` for properties and methods
-- Use `const` for compile-time constants and `static readonly` for runtime constants
-- Use `StringBuilder` for concatenating multiple strings in loops or when performance is a concern, otherwise use string interpolation for readability
-- Use `Functional Programming` constructs (e.g., `Result<T>`, `Option<T>`) from the internal `AStar.Dev.Functional.Extensions` package to handle errors and optional values in a more expressive way
-- Use `Match<Async>` methods on `Result<T>` and `Option<T>` for handling success and failure cases without throwing exceptions
-- Use `Map<Async>` and `Bind<Async>` methods for transforming and chaining operations on `Result<T>` and `Option<T>` types
-- Use `Shouldly` for assertions in tests to improve readability and provide better failure messages
-- Use `PrimaryConstructor` syntax when possible to reduce boilerplate
-- Use `global using` directives for commonly used namespaces to reduce clutter at the top of files
-- Use `file-scoped namespaces` for better readability and less indentation
-- Use `top-level statements` for simple entry points (e.g., `Program.cs`) to reduce boilerplate
-- Use `target-typed new` expressions to reduce redundancy when the type can be inferred from the context
-- Use `record struct` for small, immutable value types that do not require reference semantics
-- Use `with` expressions to create modified copies of immutable objects
-- Always prefer composition over inheritance, and favor interfaces for abstraction
-- Use `async`/`await` for asynchronous programming, and avoid blocking calls (e.g., `Task.Wait()`, `Task.Result`) to prevent deadlocks and improve scalability
-- Use `Collection Initializers` and `Object Initializers` for cleaner code when creating collections and objects
-- Use `Pattern Matching` and `Switch Expressions` for clearer and more concise code when dealing with multiple conditions
-- Keep method / constructor parameters on one line if they fit within 200 characters, otherwise break them into multiple lines - do not use one parameter per line, simply break at logical points (e.g., after a few parameters, or before a parameter with many arguments)
-- Never comment within methods or private members; if a comment is needed, it likely indicates the method is doing too much and should be refactored into smaller, more focused methods. Instead of comments, strive for self-explanatory code through clear naming and small method sizes.
+
+**Functional Programming** (Project-Specific Utilities):
+
+- Use `Result<T>` and `Option<T>` from `AStar.Dev.Functional.Extensions` package for error handling and optional values
+- Use `Match`/`MatchAsync` methods on `Result<T>` and `Option<T>` for handling success and failure cases without exceptions
+- Use `Map`/`MapAsync` and `Bind`/`BindAsync` methods for transforming and chaining operations on `Result<T>` and `Option<T>` types
+- Prefer functional constructs over traditional exception-based error handling in business logic
 
 ---
 
@@ -674,7 +744,7 @@ git push -u origin feature/your-feature-name
 # Use the mcp_io_github_git_create_pull_request tool with:
 ```
 
-```typescript
+```text
 {
   owner: "astar-development",
   repo: "astar-dev-onedrive-sync-client",
