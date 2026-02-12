@@ -114,21 +114,25 @@ flowchart LR
 - **Commit Practice**: Each feature branch should include the failing-test commit (the test authoring step) in the branch history so reviewers can verify the TDD progression. If the failing test is not present, reviewers should request clarification.
 
 <a name="quality-policy"></a>
+
 ## Quality & Coverage Policy
 
 ### Code Coverage Requirements
+
 - **Minimum**: 80% branch coverage for new code
 - **Critical paths**: 100% coverage (authentication, sync engine, conflict resolution)
 - **Hot paths**: 100% coverage with error path testing
 - **Test pyramid guidelines**: 70% unit, 20% integration, 10% E2E
 
 ### Branching Strategy
+
 - **Main**: Protected, deployable, always green
 - **Feature branches**: `feature/`, `fix/`, `refactor/`, `docs/`
 - **Merge**: Squash and merge
 - **Naming**: `<type>/<brief-description>` (e.g., `feature/add-conflict-ui`)
 
 ### Branch Protection Rules
+
 - Require PR approval
 - Require CI tests pass
 - Require up-to-date with main
@@ -271,7 +275,7 @@ sequenceDiagram
     participant SyncEngine
     participant GraphAPI
     participant OneDrive
-    
+
     SyncEngine->>GraphAPI: Fetch delta changes
     GraphAPI->>OneDrive: /delta endpoint
     OneDrive-->>GraphAPI: Changed items + deltaToken
@@ -283,6 +287,7 @@ sequenceDiagram
         SyncEngine->>UI: Prompt user
     end
 ```
+
 **For Details**: See `docs/sync-algorithm-overview.md`
 
 ### 6. Testing Strategy
@@ -477,7 +482,7 @@ test/
 ```bash
 dotnet build
 # Or via task:
-dotnet build {{ workspace_folder }}/AStar.Dev.OneDrive.Client.slnx
+dotnet build {{ workspace_folder }}/AStar.Dev.OneDrive.Sync.Client.slnx
 ```
 
 ### Run/Debug
@@ -490,7 +495,7 @@ dotnet watch run --project src/AStar.Dev.OneDrive.Client/
 ### Publish (Release Build)
 
 ```bash
-dotnet publish {{ workspace_folder }}/AStar.Dev.OneDrive.Client.slnx
+dotnet publish {{ workspace_folder }}/AStar.Dev.OneDrive.Sync.Client.slnx
 ```
 
 ### Run Tests

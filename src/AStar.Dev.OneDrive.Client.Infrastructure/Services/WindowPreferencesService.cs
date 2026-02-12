@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
+using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,8 @@ public sealed class WindowPreferencesService(SyncDbContext context) : IWindowPre
                 Y = preferences.Y,
                 Width = preferences.Width,
                 Height = preferences.Height,
-                IsMaximized = preferences.IsMaximized
+                IsMaximized = preferences.IsMaximized,
+                Theme = preferences.Theme.ToString()
             };
             _ = context.WindowPreferences.Add(entity);
         }
@@ -43,18 +45,30 @@ public sealed class WindowPreferencesService(SyncDbContext context) : IWindowPre
             entity.Width = preferences.Width;
             entity.Height = preferences.Height;
             entity.IsMaximized = preferences.IsMaximized;
+            entity.Theme = preferences.Theme.ToString();
         }
 
         _ = await context.SaveChangesAsync(cancellationToken);
     }
 
     private static WindowPreferences MapToModel(WindowPreferencesEntity entity)
-        => new(
+    {
+        // Parse theme with fallback to OriginalAuto for null, empty, or invalid values
+        ThemePreference theme = ThemePreference.OriginalAuto;
+        if(!string.IsNullOrWhiteSpace(entity.Theme)
+            && Enum.TryParse(entity.Theme, out ThemePreference parsedTheme))
+        {
+            theme = parsedTheme;
+        }
+
+        return new WindowPreferences(
             entity.Id,
             entity.X,
             entity.Y,
             entity.Width,
             entity.Height,
-            entity.IsMaximized
+            entity.IsMaximized,
+            theme
         );
+    }
 }

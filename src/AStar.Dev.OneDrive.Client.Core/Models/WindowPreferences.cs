@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Client.Core.Models.Enums;
+
 namespace AStar.Dev.OneDrive.Client.Core.Models;
 
 /// <summary>
@@ -9,4 +11,12 @@ namespace AStar.Dev.OneDrive.Client.Core.Models;
 /// <param name="Width">Window width in pixels.</param>
 /// <param name="Height">Window height in pixels.</param>
 /// <param name="IsMaximized">Indicates whether the window is maximized.</param>
-public sealed record WindowPreferences(int Id, double? X, double? Y, double Width, double Height, bool IsMaximized);
+/// <param name="Theme">The user's preferred application theme (defaults to OriginalAuto).</param>
+public sealed record WindowPreferences(
+    int Id,
+    double? X,
+    double? Y,
+    double Width,
+    double Height,
+    bool IsMaximized,
+    ThemePreference Theme = ThemePreference.OriginalAuto);

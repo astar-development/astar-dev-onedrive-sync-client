@@ -10,6 +10,12 @@ tools:
     "runCommands",
     "fetch",
     "findTestFiles",
+    "read_file",
+    "write_file",
+    "replace_string_in_file",
+    "write_file",
+    "apply_diff",
+    "multi_replace_string_in_file",
     "search/searchResults",
     "edit/editFiles",
   ]

@@ -200,7 +200,7 @@ For the AStar Dev OneDrive Sync Client:
 ### Repository Structure
 
 ```
-AStar.Dev.OneDrive.Client.slnx        # Solution file
+AStar.Dev.OneDrive.Sync.Client.slnx        # Solution file
 src/
   ├── AStar.Dev.OneDrive.Client/      # Main Avalonia UI application (csproj)
   ├── AStar.Dev.OneDrive.Client.Core/ # Domain/core library
@@ -242,16 +242,16 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Restore dependencies
-        run: dotnet restore AStar.Dev.OneDrive.Client.slnx
+        run: dotnet restore AStar.Dev.OneDrive.Sync.Client.slnx
 
       - name: Build
-        run: dotnet build AStar.Dev.OneDrive.Client.slnx --no-restore --configuration Release
+        run: dotnet build AStar.Dev.OneDrive.Sync.Client.slnx --no-restore --configuration Release
 
       - name: Test
-        run: dotnet test AStar.Dev.OneDrive.Client.slnx --no-build --configuration Release --logger "trx;LogFileName=results.trx"
+        run: dotnet test AStar.Dev.OneDrive.Sync.Client.slnx --no-build --configuration Release --logger "trx;LogFileName=results.trx"
 
       - name: Code Coverage
-        run: dotnet test AStar.Dev.OneDrive.Client.slnx --no-build --configuration Release --collect:"XPlat Code Coverage"
+        run: dotnet test AStar.Dev.OneDrive.Sync.Client.slnx --no-build --configuration Release --collect:"XPlat Code Coverage"
 
       - name: Upload Coverage
         uses: codecov/codecov-action@v4
@@ -383,7 +383,7 @@ jobs:
 
 ```yaml
 - name: Restore Dependencies
-  run: dotnet restore AStar.Dev.OneDrive.Client.slnx
+  run: dotnet restore AStar.Dev.OneDrive.Sync.Client.slnx
 
 - name: Scan for Vulnerabilities
   run: |
@@ -395,7 +395,7 @@ jobs:
 
 - name: SAST Scanning (Roslyn Analyzers)
   run: |
-    dotnet build AStar.Dev.OneDrive.Client.slnx `
+    dotnet build AStar.Dev.OneDrive.Sync.Client.slnx `
       --configuration Release `
       /p:TreatWarningsAsErrors=true `
       /p:EnforceCodeStyleInBuild=true `
@@ -845,18 +845,18 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 # Copy solution and project files
-COPY AStar.Dev.OneDrive.Client.slnx ./
+COPY AStar.Dev.OneDrive.Sync.Client.slnx ./
 COPY src/ ./src/
 COPY test/ ./test/
 
 # Restore dependencies
-RUN dotnet restore AStar.Dev.OneDrive.Client.slnx
+RUN dotnet restore AStar.Dev.OneDrive.Sync.Client.slnx
 
 # Build
-RUN dotnet build AStar.Dev.OneDrive.Client.slnx --configuration Release --no-restore
+RUN dotnet build AStar.Dev.OneDrive.Sync.Client.slnx --configuration Release --no-restore
 
 # Test
-RUN dotnet test AStar.Dev.OneDrive.Client.slnx --configuration Release --no-build --verbosity normal
+RUN dotnet test AStar.Dev.OneDrive.Sync.Client.slnx --configuration Release --no-build --verbosity normal
 
 # Publish
 RUN dotnet publish src/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj \
