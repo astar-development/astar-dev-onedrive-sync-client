@@ -9,6 +9,7 @@ using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.DebugLogs;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
+using AStar.Dev.OneDrive.Client.Settings;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using AStar.Dev.OneDrive.Client.SyncronisationConflicts;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -229,8 +230,8 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     }
     private void OpenSettings()
     {
-        var settingsViewModel = _serviceProvider.GetRequiredService<Settings.SettingsViewModel>();
-        var window = new Settings.SettingsWindow
+        var settingsViewModel = _serviceProvider.GetRequiredService<SettingsViewModel>();
+        var window = new SettingsWindow
         {
             DataContext = settingsViewModel
         };
