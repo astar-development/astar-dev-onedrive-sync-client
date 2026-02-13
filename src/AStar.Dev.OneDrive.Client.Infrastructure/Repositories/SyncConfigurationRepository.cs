@@ -180,36 +180,34 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
         return localFolderPath;
     }
 
-    private static FileMetadata MapToModel(DriveItemEntity driveItemEntity)
-        => new(
-            driveItemEntity.DriveItemId,
-            driveItemEntity.AccountId,
-            driveItemEntity.Name ?? string.Empty,
-             driveItemEntity.RelativePath,
-            driveItemEntity.Size,
-            driveItemEntity.LastModifiedUtc,
-             driveItemEntity.LocalPath ?? string.Empty,
-            driveItemEntity.IsFolder,
-            driveItemEntity.IsDeleted,
-            driveItemEntity.IsSelected ?? false,
-             driveItemEntity.RelativePath ?? string.Empty,
-            driveItemEntity.ETag,
-            driveItemEntity.CTag
-        );
+    private static FileMetadata MapToModel(DriveItemEntity driveItemEntity) => new(
+                driveItemEntity.DriveItemId,
+                driveItemEntity.AccountId,
+                driveItemEntity.Name ?? string.Empty,
+                 driveItemEntity.RelativePath,
+                driveItemEntity.Size,
+                driveItemEntity.LastModifiedUtc,
+                 driveItemEntity.LocalPath ?? string.Empty,
+                driveItemEntity.IsFolder,
+                driveItemEntity.IsDeleted,
+                driveItemEntity.IsSelected ?? false,
+                 driveItemEntity.RelativePath ?? string.Empty,
+                driveItemEntity.ETag,
+                driveItemEntity.CTag
+            );
 
-    private static DriveItemEntity MapToEntity(FileMetadata model)
-        => new(
-            model.AccountId,
-            model.DriveItemId,
-            model.RelativePath,
-            model.ETag,
-            model.CTag,
-            model.Size,
-            model.LastModifiedUtc,
-            model.IsFolder,
-            model.IsDeleted,
-            model.IsSelected
-        );
+    private static DriveItemEntity MapToEntity(FileMetadata model) => new(
+                model.AccountId,
+                model.DriveItemId,
+                model.RelativePath,
+                model.ETag,
+                model.CTag,
+                model.Size,
+                model.LastModifiedUtc,
+                model.IsFolder,
+                model.IsDeleted,
+                model.IsSelected
+            );
 
     private static string Normalize(string path)
     {

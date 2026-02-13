@@ -18,8 +18,8 @@ public sealed class DebugLoggerService(IDbContextFactory<SyncDbContext> contextF
     public async Task LogInfoAsync(string source, string accountId, string message, CancellationToken cancellationToken = default) => await LogAsync("Info", source, message, null, accountId, cancellationToken);
 
     /// <inheritdoc />
-    public async Task LogErrorAsync(string source, string accountId, string message, Exception? exception = null, CancellationToken cancellationToken = default)
-        => await LogAsync("Error", source, message, exception, accountId, cancellationToken);
+    public async Task LogErrorAsync(string source, string accountId, string message, Exception? exception = null, CancellationToken cancellationToken = default) => await LogAsync("Error", source, message, exception, accountId, cancellationToken);
+
     /// <inheritdoc />
     public async Task LogEntryAsync(string source, string accountId, CancellationToken cancellationToken = default) => await LogAsync("Entry", source, "Method entry", null, accountId, cancellationToken);
 

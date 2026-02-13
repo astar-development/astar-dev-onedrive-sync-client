@@ -35,13 +35,12 @@ public abstract class Result<TSuccess, TError>
     /// <returns>The result of applying the appropriate function.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the result is neither a success nor a failure.</exception>
 #pragma warning disable S3060 // "is-pattern" should not be used for type-checking
-    public TResult Match<TResult>(Func<TSuccess, TResult> onSuccess, Func<TError, TResult> onFailure)
-        => this switch
-        {
-            Ok ok => onSuccess(ok.Value),
-            Error err => onFailure(err.Reason),
-            _ => throw new InvalidOperationException($"Unrecognized result type: {GetType().Name}")
-        };
+    public TResult Match<TResult>(Func<TSuccess, TResult> onSuccess, Func<TError, TResult> onFailure) => this switch
+    {
+        Ok ok => onSuccess(ok.Value),
+        Error err => onFailure(err.Reason),
+        _ => throw new InvalidOperationException($"Unrecognized result type: {GetType().Name}")
+    };
 #pragma warning restore S3060
 
     /// <summary>
@@ -52,13 +51,12 @@ public abstract class Result<TSuccess, TError>
     /// <param name="onFailure">Function to apply if the result is a failure.</param>
     /// <returns>A task representing the result of applying the appropriate function.</returns>
 #pragma warning disable S3060 // "is-pattern" should not be used for type-checking
-    public async Task<TResult> MatchAsync<TResult>(Func<TSuccess, Task<TResult>> onSuccess, Func<TError, TResult> onFailure)
-        => this switch
-        {
-            Ok ok => await onSuccess(ok.Value),
-            Error err => onFailure(err.Reason),
-            _ => throw new InvalidOperationException($"Unrecognized result type: {GetType().Name}")
-        };
+    public async Task<TResult> MatchAsync<TResult>(Func<TSuccess, Task<TResult>> onSuccess, Func<TError, TResult> onFailure) => this switch
+    {
+        Ok ok => await onSuccess(ok.Value),
+        Error err => onFailure(err.Reason),
+        _ => throw new InvalidOperationException($"Unrecognized result type: {GetType().Name}")
+    };
 #pragma warning restore S3060
 
     /// <summary>
@@ -69,13 +67,12 @@ public abstract class Result<TSuccess, TError>
     /// <param name="onFailure">Asynchronous function to apply if the result is a failure.</param>
     /// <returns>A task representing the result of applying the appropriate function.</returns>
 #pragma warning disable S3060 // "is-pattern" should not be used for type-checking
-    public async Task<TResult> MatchAsync<TResult>(Func<TSuccess, TResult> onSuccess, Func<TError, Task<TResult>> onFailure)
-        => this switch
-        {
-            Ok ok => onSuccess(ok.Value),
-            Error err => await onFailure(err.Reason),
-            _ => throw new InvalidOperationException($"Unrecognized result type: {GetType().Name}")
-        };
+    public async Task<TResult> MatchAsync<TResult>(Func<TSuccess, TResult> onSuccess, Func<TError, Task<TResult>> onFailure) => this switch
+    {
+        Ok ok => onSuccess(ok.Value),
+        Error err => await onFailure(err.Reason),
+        _ => throw new InvalidOperationException($"Unrecognized result type: {GetType().Name}")
+    };
 #pragma warning restore S3060
 
     /// <summary>
@@ -86,13 +83,12 @@ public abstract class Result<TSuccess, TError>
     /// <param name="onFailure">Asynchronous function to apply if the result is a failure.</param>
     /// <returns>A task representing the result of applying the appropriate function.</returns>
 #pragma warning disable S3060 // "is-pattern" should not be used for type-checking
-    public async Task<TResult> MatchAsync<TResult>(Func<TSuccess, Task<TResult>> onSuccess, Func<TError, Task<TResult>> onFailure)
-        => this switch
-        {
-            Ok ok => await onSuccess(ok.Value),
-            Error err => await onFailure(err.Reason),
-            _ => throw new InvalidOperationException($"Unrecognized result type: {GetType().Name}")
-        };
+    public async Task<TResult> MatchAsync<TResult>(Func<TSuccess, Task<TResult>> onSuccess, Func<TError, Task<TResult>> onFailure) => this switch
+    {
+        Ok ok => await onSuccess(ok.Value),
+        Error err => await onFailure(err.Reason),
+        _ => throw new InvalidOperationException($"Unrecognized result type: {GetType().Name}")
+    };
 
 #pragma warning restore S3060
 

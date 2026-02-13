@@ -63,36 +63,33 @@ public sealed class SyncSessionLogRepository(IDbContextFactory<SyncDbContext> co
     }
 
     /// <inheritdoc />
-    public async Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default)
-    => _ = await _contextFactory.CreateDbContext().SyncSessionLogs
-        .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
-        .ExecuteDeleteAsync(cancellationToken);
+    public async Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default) => _ = await _contextFactory.CreateDbContext().SyncSessionLogs
+            .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
+            .ExecuteDeleteAsync(cancellationToken);
 
-    private static SyncSessionLog MapToModel(SyncSessionLogEntity syncSessionLog)
-        => new(
-            syncSessionLog.Id,
-            syncSessionLog.AccountId,
-            syncSessionLog.StartedUtc,
-            syncSessionLog.CompletedUtc,
-            (SyncStatus)syncSessionLog.Status,
-            syncSessionLog.FilesUploaded,
-            syncSessionLog.FilesDownloaded,
-            syncSessionLog.FilesDeleted,
-            syncSessionLog.ConflictsDetected,
-            syncSessionLog.TotalBytes);
+    private static SyncSessionLog MapToModel(SyncSessionLogEntity syncSessionLog) => new(
+                syncSessionLog.Id,
+                syncSessionLog.AccountId,
+                syncSessionLog.StartedUtc,
+                syncSessionLog.CompletedUtc,
+                (SyncStatus)syncSessionLog.Status,
+                syncSessionLog.FilesUploaded,
+                syncSessionLog.FilesDownloaded,
+                syncSessionLog.FilesDeleted,
+                syncSessionLog.ConflictsDetected,
+                syncSessionLog.TotalBytes);
 
-    private static SyncSessionLogEntity MapToEntity(SyncSessionLog model)
-        => new()
-        {
-            Id = model.Id,
-            AccountId = model.AccountId,
-            StartedUtc = model.StartedUtc,
-            CompletedUtc = model.CompletedUtc,
-            Status = (int)model.Status,
-            FilesUploaded = model.FilesUploaded,
-            FilesDownloaded = model.FilesDownloaded,
-            FilesDeleted = model.FilesDeleted,
-            ConflictsDetected = model.ConflictsDetected,
-            TotalBytes = model.TotalBytes
-        };
+    private static SyncSessionLogEntity MapToEntity(SyncSessionLog model) => new()
+    {
+        Id = model.Id,
+        AccountId = model.AccountId,
+        StartedUtc = model.StartedUtc,
+        CompletedUtc = model.CompletedUtc,
+        Status = (int)model.Status,
+        FilesUploaded = model.FilesUploaded,
+        FilesDownloaded = model.FilesDownloaded,
+        FilesDeleted = model.FilesDeleted,
+        ConflictsDetected = model.ConflictsDetected,
+        TotalBytes = model.TotalBytes
+    };
 }

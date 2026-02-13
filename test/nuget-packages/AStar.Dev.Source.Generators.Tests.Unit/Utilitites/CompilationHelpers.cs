@@ -34,17 +34,16 @@ public class AutoRegisterOptionsAttribute : Attribute
 }
 ";
 
-    public static CSharpCompilation CreateCompilation(string input)
-        => CSharpCompilation.Create("TestAssembly",
-            [
-                CSharpSyntaxTree.ParseText(StrongIdAttributeSource),
+    public static CSharpCompilation CreateCompilation(string input) => CSharpCompilation.Create("TestAssembly",
+                [
+                    CSharpSyntaxTree.ParseText(StrongIdAttributeSource),
                 CSharpSyntaxTree.ParseText(AutoRegisterOptionsAttributeSource),
                 CSharpSyntaxTree.ParseText(input)
-            ],
-            [
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                ],
+                [
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(Attribute).Assembly.Location),
                 MetadataReference.CreateFromFile(typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly.Location)
-            ],
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+                ],
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 }

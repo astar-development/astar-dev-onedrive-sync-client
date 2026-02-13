@@ -72,37 +72,35 @@ public sealed class FileOperationLogRepository(IDbContextFactory<SyncDbContext> 
                 .ExecuteDeleteAsync(cancellationToken);
     }
 
-    private static FileOperationLog MapToModel(FileOperationLogEntity fileOperationLog)
-        => new(
-            fileOperationLog.Id,
-            fileOperationLog.SyncSessionId,
-            fileOperationLog.AccountId,
-            fileOperationLog.Timestamp,
-            (FileOperation)fileOperationLog.Operation,
-            fileOperationLog.FilePath,
-            fileOperationLog.LocalPath,
-            fileOperationLog.OneDriveId,
-            fileOperationLog.FileSize,
-            fileOperationLog.LocalHash,
-            fileOperationLog.RemoteHash,
-            fileOperationLog.LastModifiedUtc,
-            fileOperationLog.Reason);
+    private static FileOperationLog MapToModel(FileOperationLogEntity fileOperationLog) => new(
+                fileOperationLog.Id,
+                fileOperationLog.SyncSessionId,
+                fileOperationLog.AccountId,
+                fileOperationLog.Timestamp,
+                (FileOperation)fileOperationLog.Operation,
+                fileOperationLog.FilePath,
+                fileOperationLog.LocalPath,
+                fileOperationLog.OneDriveId,
+                fileOperationLog.FileSize,
+                fileOperationLog.LocalHash,
+                fileOperationLog.RemoteHash,
+                fileOperationLog.LastModifiedUtc,
+                fileOperationLog.Reason);
 
-    private static FileOperationLogEntity MapToEntity(FileOperationLog model)
-        => new()
-        {
-            Id = model.Id,
-            SyncSessionId = model.SyncSessionId,
-            AccountId = model.AccountId,
-            Timestamp = model.Timestamp,
-            Operation = (int)model.Operation,
-            FilePath = model.FilePath,
-            LocalPath = model.LocalPath,
-            OneDriveId = model.OneDriveId,
-            FileSize = model.FileSize,
-            LocalHash = model.LocalHash,
-            RemoteHash = model.RemoteHash,
-            LastModifiedUtc = model.LastModifiedUtc,
-            Reason = model.Reason
-        };
+    private static FileOperationLogEntity MapToEntity(FileOperationLog model) => new()
+    {
+        Id = model.Id,
+        SyncSessionId = model.SyncSessionId,
+        AccountId = model.AccountId,
+        Timestamp = model.Timestamp,
+        Operation = (int)model.Operation,
+        FilePath = model.FilePath,
+        LocalPath = model.LocalPath,
+        OneDriveId = model.OneDriveId,
+        FileSize = model.FileSize,
+        LocalHash = model.LocalHash,
+        RemoteHash = model.RemoteHash,
+        LastModifiedUtc = model.LastModifiedUtc,
+        Reason = model.Reason
+    };
 }

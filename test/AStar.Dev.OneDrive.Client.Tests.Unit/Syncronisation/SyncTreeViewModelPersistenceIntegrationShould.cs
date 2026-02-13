@@ -204,22 +204,19 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         loadedParent.SelectionState.ShouldBe(SelectionState.Indeterminate);
     }
 
-    private static List<OneDriveFolderNode> CreateTestFolders()
-
-        => [
-            CreateFolder("1", "Folder1", "/Folder1"),
+    private static List<OneDriveFolderNode> CreateTestFolders() => [
+                CreateFolder("1", "Folder1", "/Folder1"),
             CreateFolder("2", "Folder2", "/Folder2"),
             CreateFolder("3", "Folder3", "/Folder3")
-        ];
+            ];
 
-    private static OneDriveFolderNode CreateFolder(string id, string name, string path)
-        => new()
-        {
-            DriveItemId = id,
-            Name = name,
-            Path = path,
-            IsFolder = true,
-            SelectionState = SelectionState.Unchecked,
-            IsSelected = false
-        };
+    private static OneDriveFolderNode CreateFolder(string id, string name, string path) => new()
+    {
+        DriveItemId = id,
+        Name = name,
+        Path = path,
+        IsFolder = true,
+        SelectionState = SelectionState.Unchecked,
+        IsSelected = false
+    };
 }

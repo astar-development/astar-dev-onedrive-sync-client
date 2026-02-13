@@ -446,6 +446,5 @@ public class AccountManagementViewModelShould
         Should.NotThrow(viewModel.Dispose);
     }
 
-    private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false)
-        => new(id, displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, 0);
+    private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false) => new(id, displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, 0);
 }

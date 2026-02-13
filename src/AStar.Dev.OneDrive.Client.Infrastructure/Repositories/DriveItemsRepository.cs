@@ -101,26 +101,24 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
         _ = await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static FileMetadata MapToModel(DriveItemEntity driveItem)
-        => new(
-            driveItem.DriveItemId,
-            driveItem.AccountId,
-            driveItem.Name ?? string.Empty,
-            driveItem.RelativePath,
-            driveItem.Size,
-            driveItem.LastModifiedUtc,
-            driveItem.LocalPath ?? string.Empty,
-            driveItem.IsFolder,
-            driveItem.IsDeleted,
-            driveItem.IsSelected ?? false,
-            driveItem.RemoteHash,
-            driveItem.CTag,
-            driveItem.ETag,
-            driveItem.LocalHash,
-            (FileSyncStatus)driveItem.SyncStatus,
-            driveItem.LastSyncDirection
-        );
+    private static FileMetadata MapToModel(DriveItemEntity driveItem) => new(
+                driveItem.DriveItemId,
+                driveItem.AccountId,
+                driveItem.Name ?? string.Empty,
+                driveItem.RelativePath,
+                driveItem.Size,
+                driveItem.LastModifiedUtc,
+                driveItem.LocalPath ?? string.Empty,
+                driveItem.IsFolder,
+                driveItem.IsDeleted,
+                driveItem.IsSelected ?? false,
+                driveItem.RemoteHash,
+                driveItem.CTag,
+                driveItem.ETag,
+                driveItem.LocalHash,
+                (FileSyncStatus)driveItem.SyncStatus,
+                driveItem.LastSyncDirection
+            );
 
-    private static DriveItemEntity MapToEntity(FileMetadata fileMetadata)
-        => new(fileMetadata.AccountId, fileMetadata.DriveItemId, fileMetadata.RelativePath, fileMetadata.ETag, fileMetadata.CTag, fileMetadata.Size, fileMetadata.LastModifiedUtc, fileMetadata.IsFolder, fileMetadata.IsDeleted, fileMetadata.IsSelected, fileMetadata.RemoteHash, fileMetadata.Name, fileMetadata.LocalPath, fileMetadata.LocalHash, fileMetadata.SyncStatus, fileMetadata.LastSyncDirection ?? SyncDirection.None);
+    private static DriveItemEntity MapToEntity(FileMetadata fileMetadata) => new(fileMetadata.AccountId, fileMetadata.DriveItemId, fileMetadata.RelativePath, fileMetadata.ETag, fileMetadata.CTag, fileMetadata.Size, fileMetadata.LastModifiedUtc, fileMetadata.IsFolder, fileMetadata.IsDeleted, fileMetadata.IsSelected, fileMetadata.RemoteHash, fileMetadata.Name, fileMetadata.LocalPath, fileMetadata.LocalHash, fileMetadata.SyncStatus, fileMetadata.LastSyncDirection ?? SyncDirection.None);
 }

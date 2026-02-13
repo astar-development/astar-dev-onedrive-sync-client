@@ -16,16 +16,14 @@ public static class StringExtensions
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is null, False otherwise</returns>
-    public static bool IsNull(this string? value)
-        => value is null;
+    public static bool IsNull(this string? value) => value is null;
 
     /// <summary>
     ///     The IsNotNull method, as you might expect, checks whether the string is not null
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is not null, False otherwise</returns>
-    public static bool IsNotNull(this string? value)
-        => !value.IsNull();
+    public static bool IsNotNull(this string? value) => !value.IsNull();
 
     /// <summary>
     ///     The IsNullOrWhiteSpace method, as you might expect, checks whether the string is, in fact, null, empty or
@@ -33,16 +31,14 @@ public static class StringExtensions
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is null, empty or whitespace, False otherwise</returns>
-    public static bool IsNullOrWhiteSpace(this string? value)
-        => string.IsNullOrWhiteSpace(value);
+    public static bool IsNullOrWhiteSpace(this string? value) => string.IsNullOrWhiteSpace(value);
 
     /// <summary>
     ///     The IsNotNullOrWhiteSpace method, as you might expect, checks whether the string is not null, empty or whitespace
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is not null, empty or whitespace, False otherwise</returns>
-    public static bool IsNotNullOrWhiteSpace(this string? value)
-        => !value.IsNullOrWhiteSpace();
+    public static bool IsNotNullOrWhiteSpace(this string? value) => !value.IsNullOrWhiteSpace();
 
     /// <summary>
     ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object - using the web default settings
@@ -50,8 +46,7 @@ public static class StringExtensions
     /// <param name="json">The JSON representation of the object</param>
     /// <typeparam name="T">The required type of the object to deserialise to</typeparam>
     /// <returns>A deserialised object based on the original JSON</returns>
-    public static T FromJson<T>(this string json)
-        => JsonSerializer.Deserialize<T>(json, Constants.WebDeserialisationSettings)!;
+    public static T FromJson<T>(this string json) => JsonSerializer.Deserialize<T>(json, Constants.WebDeserialisationSettings)!;
 
     /// <summary>
     ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object
@@ -63,26 +58,23 @@ public static class StringExtensions
     /// </param>
     /// <param name="json">The JSON representation of the object</param>
     /// <returns>A deserialised object based on the original JSON</returns>
-    public static T FromJson<T>(this string json, JsonSerializerOptions options)
-        => JsonSerializer.Deserialize<T>(json, options)!;
+    public static T FromJson<T>(this string json, JsonSerializerOptions options) => JsonSerializer.Deserialize<T>(json, options)!;
 
     /// <summary>
     /// </summary>
     /// <param name="json">The JSON representation of the object</param>
     /// <returns></returns>
-    public static bool IsImage(this string json)
-        => json.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
-           || json.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
-           || json.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-           || json.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)
-           || json.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+    public static bool IsImage(this string json) => json.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+               || json.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
+               || json.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+               || json.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)
+               || json.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// </summary>
     /// <param name="json">The JSON representation of the object</param>
     /// <returns></returns>
-    public static bool IsNumberOnly(this string json)
-        => json.All(c => char.IsDigit(c) || c == '_' || c == '.');
+    public static bool IsNumberOnly(this string json) => json.All(c => char.IsDigit(c) || c == '_' || c == '.');
 
     /// <summary>
     ///     The TruncateIfRequired method will, as the name suggests, truncate the string if the length exceeds the specified length
@@ -90,8 +82,7 @@ public static class StringExtensions
     /// <param name="truncateLength">The maximum length the string should be truncated to if required</param>
     /// <param name="target">The string to truncate if required</param>
     /// <returns>The specified string or the truncated version</returns>
-    public static string TruncateIfRequired(this string target, int truncateLength)
-        => target.Length > truncateLength ? target[..truncateLength] : target;
+    public static string TruncateIfRequired(this string target, int truncateLength) => target.Length > truncateLength ? target[..truncateLength] : target;
 
     /// <summary>
     ///     The RemoveTrailing method will, as the name suggests, remove the specified character from the end if it exists
@@ -99,10 +90,9 @@ public static class StringExtensions
     /// <param name="removeTrailing">The character to remove from the end if it exists</param>
     /// <param name="json">The JSON representation of the object</param>
     /// <returns>The original or updated string</returns>
-    public static string RemoveTrailing(this string json, string removeTrailing)
-        => json.EndsWith(removeTrailing, StringComparison.OrdinalIgnoreCase)
-            ? json[..^removeTrailing.Length]
-            : json;
+    public static string RemoveTrailing(this string json, string removeTrailing) => json.EndsWith(removeTrailing, StringComparison.OrdinalIgnoreCase)
+                ? json[..^removeTrailing.Length]
+                : json;
 
     /// <summary>
     ///     The SanitizeFilePath method replaces invalid or undesirable characters in a file path
@@ -116,9 +106,8 @@ public static class StringExtensions
     ///     string sanitizedPath = originalPath.SanitizeFilePath();
     ///     // sanitizedPath will be: "path to some file.txt"
     /// </example>
-    public static string SanitizeFilePath(this string json)
-        => json.Replace(Path.DirectorySeparatorChar, ' ')
-            .Replace(Path.AltDirectorySeparatorChar, ' ')
-            .Replace('-', ' ')
-            .Replace('_', ' ');
+    public static string SanitizeFilePath(this string json) => json.Replace(Path.DirectorySeparatorChar, ' ')
+                .Replace(Path.AltDirectorySeparatorChar, ' ')
+                .Replace('-', ' ')
+                .Replace('_', ' ');
 }

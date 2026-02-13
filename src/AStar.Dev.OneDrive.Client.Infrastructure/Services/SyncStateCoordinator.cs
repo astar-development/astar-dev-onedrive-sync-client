@@ -24,10 +24,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
         _progressSubject = new BehaviorSubject<SyncState>(initialState);
     }
 
-    public void Dispose()
-    {
-        _progressSubject.Dispose();
-    }
+    public void Dispose() => _progressSubject.Dispose();
 
     /// <inheritdoc />
     public IObservable<SyncState> Progress => _progressSubject;
@@ -171,16 +168,10 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     }
 
     /// <inheritdoc />
-    public SyncState GetCurrentState()
-    {
-        return _progressSubject.Value;
-    }
+    public SyncState GetCurrentState() => _progressSubject.Value;
 
     /// <inheritdoc />
-    public string? GetCurrentSessionId()
-    {
-        return _currentSessionId;
-    }
+    public string? GetCurrentSessionId() => _currentSessionId;
 
     /// <inheritdoc />
     public void ResetTrackingDetails(long completedBytes = 0)

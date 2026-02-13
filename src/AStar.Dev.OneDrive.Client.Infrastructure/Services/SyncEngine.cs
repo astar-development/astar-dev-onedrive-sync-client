@@ -65,10 +65,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         _syncStateCoordinator = syncStateCoordinator ?? throw new ArgumentNullException(nameof(syncStateCoordinator));
     }
 
-    public void Dispose()
-    {
-        _syncCancellation?.Dispose();
-    }
+    public void Dispose() => _syncCancellation?.Dispose();
 
     /// <inheritdoc />
     public IObservable<SyncState> Progress => _syncStateCoordinator.Progress;
@@ -211,25 +208,22 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Result containing the account info or an error.</returns>
     internal async Task<Result<AccountInfo, SyncError>> ValidateAndGetAccountAsync(
-        string accountId, 
-        CancellationToken cancellationToken)
-    {
-        return await Try.RunAsync(async () =>
-            {
-                AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
-                
-                if (account is null)
-                {
-                    throw new InvalidOperationException($"Account '{accountId}' not found");
-                }
+        string accountId,
+        CancellationToken cancellationToken) => await Try.RunAsync(async () =>
+                                                         {
+                                                             AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
 
-                return account;
-            })
-            .MapFailureAsync(ex => 
-                ex is InvalidOperationException 
+                                                             if(account is null)
+                                                             {
+                                                                 throw new InvalidOperationException($"Account '{accountId}' not found");
+                                                             }
+
+                                                             return account;
+                                                         })
+            .MapFailureAsync(ex =>
+                ex is InvalidOperationException
                     ? SyncError.AccountNotFound(accountId)
                     : SyncError.SyncFailed($"Failed to retrieve account: {ex.Message}", ex));
-    }
 
 
     /// <summary>
@@ -239,27 +233,24 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Result indicating success or failure.</returns>
     internal async Task<Result<Unit, SyncError>> ProcessDeltaChangesAsync(
-        string accountId, 
-        CancellationToken cancellationToken)
-    {
-        return await Try.RunAsync(async () =>
-            {
-                DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
-                (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
-                    await _deltaProcessingService.ProcessDeltaPagesAsync(
-                        accountId,
-                        token,
-                        state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
-                            state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
-                            state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
-                        cancellationToken);
-                await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
-                await DebugLog.EntryAsync("SyncEngine.ProcessDeltaChangesAsync", accountId, cancellationToken);
+        string accountId,
+        CancellationToken cancellationToken) => await Try.RunAsync(async () =>
+                                                         {
+                                                             DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
+                                                             (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
+                                                                 await _deltaProcessingService.ProcessDeltaPagesAsync(
+                                                                     accountId,
+                                                                     token,
+                                                                     state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
+                                                                         state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
+                                                                         state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
+                                                                     cancellationToken);
+                                                             await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
+                                                             await DebugLog.EntryAsync("SyncEngine.ProcessDeltaChangesAsync", accountId, cancellationToken);
 
-                return Unit.Value;
-            })
+                                                             return Unit.Value;
+                                                         })
             .MapFailureAsync(ex => SyncError.DeltaProcessingFailed(ex.Message, ex));
-    }
 
 
     private async Task<IReadOnlyList<DriveItemEntity>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken)
@@ -458,8 +449,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SyncConflict>> GetConflictsAsync(string accountId, CancellationToken cancellationToken = default)
-        => await _syncConflictRepository.GetUnresolvedByAccountIdAsync(accountId, cancellationToken);
+    public async Task<IReadOnlyList<SyncConflict>> GetConflictsAsync(string accountId, CancellationToken cancellationToken = default) => await _syncConflictRepository.GetUnresolvedByAccountIdAsync(accountId, cancellationToken);
 
     private static async Task<(List<FileMetadata> filesToDownload, int totalFiles, long totalBytes, long downloadBytes)> RemoveDuplicatesFromDownloadList(List<FileMetadata> filesToUpload,
         List<FileMetadata> filesToDownload, int totalFiles, long totalBytes, long downloadBytes, string accountId, CancellationToken cancellationToken)

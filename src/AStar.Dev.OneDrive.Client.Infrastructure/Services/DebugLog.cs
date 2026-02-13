@@ -29,8 +29,7 @@ public static class DebugLog
     /// <param name="message">The log message.</param>
     /// <param name="exception">Optional exception details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task ErrorAsync(string source, string accountId, string message, Exception? exception = null, CancellationToken cancellationToken = default)
-        => _instance?.LogErrorAsync(source, accountId, message, exception, cancellationToken) ?? Task.CompletedTask;
+    public static Task ErrorAsync(string source, string accountId, string message, Exception? exception = null, CancellationToken cancellationToken = default) => _instance?.LogErrorAsync(source, accountId, message, exception, cancellationToken) ?? Task.CompletedTask;
 
     /// <summary>
     ///     Logs a method entry.

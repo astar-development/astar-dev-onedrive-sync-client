@@ -78,6 +78,5 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
         return SyncState.Create(accountId, syncType, syncMessage);
     }
 
-    private static SyncState CreateErrorSyncProgress(string accountId, int totalItemsProcessed, string errorMessage)
-        => SyncState.CreateFailed(accountId, totalItemsProcessed, $"Delta sync failed: {errorMessage}");
+    private static SyncState CreateErrorSyncProgress(string accountId, int totalItemsProcessed, string errorMessage) => SyncState.CreateFailed(accountId, totalItemsProcessed, $"Delta sync failed: {errorMessage}");
 }

@@ -5,6 +5,5 @@ namespace AStar.Dev.Functional.Extensions.Tests.Unit;
 public class ErrorResponseShould
 {
     [Fact]
-    public void ContainTheExpectedProperties()
-        => new ErrorResponse("Test Message").ToJson().ShouldMatchApproved();
+    public void ContainTheExpectedProperties() => new ErrorResponse("Test Message").ToJson().ShouldMatchApproved();
 }

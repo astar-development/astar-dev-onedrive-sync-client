@@ -114,19 +114,17 @@ public sealed class DeletionSyncService(
         await DebugLog.ExitAsync("DeletionSyncService.CleanupDatabaseRecordsAsync", accountId, cancellationToken);
     }
 
-    private static List<FileMetadata> GetFilesDeletedLocally(List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet)
-        => [
-            .. allLocalFiles
+    private static List<FileMetadata> GetFilesDeletedLocally(List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet) => [
+                .. allLocalFiles
                 .Where(f => !localPathsSet.Contains(f.RelativePath) &&
                             (remotePathsSet.Contains(f.RelativePath) || f.SyncStatus == FileSyncStatus.Synced) &&
                             !string.IsNullOrEmpty(f.DriveItemId))
-        ];
+            ];
 
-    private static List<DriveItemEntity> SelectFilesDeletedFromOneDriveButSyncedLocally(IReadOnlyList<DriveItemEntity> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet)
-        => [
-            .. existingFiles
+    private static List<DriveItemEntity> SelectFilesDeletedFromOneDriveButSyncedLocally(IReadOnlyList<DriveItemEntity> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet) => [
+                .. existingFiles
                 .Where(f => !remotePathsSet.Contains(f.RelativePath) &&
                             localPathsSet.Contains(f.RelativePath) &&
                             f.SyncStatus == FileSyncStatus.Synced)
-        ];
+            ];
 }

@@ -6,6 +6,5 @@ namespace AStar.Dev.Logging.Extensions.Tests.Unit;
 public sealed class SerilogConfigShould
 {
     [Fact]
-    public void ContainTheExpectedProperties()
-        => new SerilogConfig().ToJson().ShouldMatchApproved();
+    public void ContainTheExpectedProperties() => new SerilogConfig().ToJson().ShouldMatchApproved();
 }

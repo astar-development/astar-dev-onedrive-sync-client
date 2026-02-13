@@ -17,19 +17,18 @@ public sealed class AccountEntity
     public int MaxItemsInBatch { get; set; }
     public int AutoSyncIntervalMinutes { get; set; }
 
-    public static AccountEntity CreateSystemAccount()
-        => new()
-        {
-            AccountId = AdminAccountMetadata.AccountId,
-            DisplayName = "System Admin",
-            LocalSyncPath = ".",
-            AutoSyncIntervalMinutes = 0,
-            DeltaToken = null,
-            EnableDebugLogging = true,
-            EnableDetailedSyncLogging = true,
-            IsAuthenticated = true,
-            LastSyncUtc = null,
-            MaxItemsInBatch = 1,
-            MaxParallelUpDownloads = 1
-        };
+    public static AccountEntity CreateSystemAccount() => new()
+    {
+        AccountId = AdminAccountMetadata.AccountId,
+        DisplayName = "System Admin",
+        LocalSyncPath = ".",
+        AutoSyncIntervalMinutes = 0,
+        DeltaToken = null,
+        EnableDebugLogging = true,
+        EnableDetailedSyncLogging = true,
+        IsAuthenticated = true,
+        LastSyncUtc = null,
+        MaxItemsInBatch = 1,
+        MaxParallelUpDownloads = 1
+    };
 }

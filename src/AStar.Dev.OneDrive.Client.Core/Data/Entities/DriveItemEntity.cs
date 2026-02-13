@@ -37,43 +37,41 @@ public sealed class DriveItemEntity(
     public FileSyncStatus SyncStatus { get; set; } = syncStatus;
     public SyncDirection LastSyncDirection { get; set; } = lastSyncDirection;
 
-    public DriveItemEntity WithUpdatedSelection(bool isSelected)
-        => new(
-            AccountId,
-            DriveItemId,
-            RelativePath,
-            ETag,
-            CTag,
-            Size,
-            LastModifiedUtc,
-            IsFolder,
-            IsDeleted,
-            isSelected,
-            RemoteHash,
-            Name,
-            LocalPath,
-            LocalHash,
-            SyncStatus,
-            LastSyncDirection
-        );
+    public DriveItemEntity WithUpdatedSelection(bool isSelected) => new(
+                AccountId,
+                DriveItemId,
+                RelativePath,
+                ETag,
+                CTag,
+                Size,
+                LastModifiedUtc,
+                IsFolder,
+                IsDeleted,
+                isSelected,
+                RemoteHash,
+                Name,
+                LocalPath,
+                LocalHash,
+                SyncStatus,
+                LastSyncDirection
+            );
 
-    public DriveItemEntity WithUpdatedDetails(bool isSelected, string relativePath, DateTimeOffset lastModifiedUtc)
-        => new(
-            AccountId,
-            DriveItemId,
-            relativePath,
-            ETag,
-            CTag,
-            Size,
-            lastModifiedUtc,
-            IsFolder,
-            IsDeleted,
-            isSelected,
-            RemoteHash,
-            Name,
-            LocalPath,
-            LocalHash,
-            SyncStatus,
-            LastSyncDirection
-        );
+    public DriveItemEntity WithUpdatedDetails(bool isSelected, string relativePath, DateTimeOffset lastModifiedUtc) => new(
+                AccountId,
+                DriveItemId,
+                relativePath,
+                ETag,
+                CTag,
+                Size,
+                lastModifiedUtc,
+                IsFolder,
+                IsDeleted,
+                isSelected,
+                RemoteHash,
+                Name,
+                LocalPath,
+                LocalHash,
+                SyncStatus,
+                LastSyncDirection
+            );
 }

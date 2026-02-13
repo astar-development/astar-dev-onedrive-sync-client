@@ -10,29 +10,25 @@ public static partial class RegexExtensions
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static bool ContainsAtLeastOneLowercaseLetter(this string value)
-        => LowercaseLettersRegex().IsMatch(value);
+    public static bool ContainsAtLeastOneLowercaseLetter(this string value) => LowercaseLettersRegex().IsMatch(value);
 
     /// <summary>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static bool ContainsAtLeastOneUppercaseLetter(this string value)
-        => UppercaseLettersRegex().IsMatch(value);
+    public static bool ContainsAtLeastOneUppercaseLetter(this string value) => UppercaseLettersRegex().IsMatch(value);
 
     /// <summary>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static bool ContainsAtLeastOneDigit(this string value)
-        => DigitRegex().IsMatch(value);
+    public static bool ContainsAtLeastOneDigit(this string value) => DigitRegex().IsMatch(value);
 
     /// <summary>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static bool ContainsAtLeastOneSpecialCharacter(this string value)
-        => SpecialCharacterRegex().IsMatch(value);
+    public static bool ContainsAtLeastOneSpecialCharacter(this string value) => SpecialCharacterRegex().IsMatch(value);
 
     [GeneratedRegex("[a-z]", RegexOptions.CultureInvariant, 1_000)]
     private static partial Regex LowercaseLettersRegex();

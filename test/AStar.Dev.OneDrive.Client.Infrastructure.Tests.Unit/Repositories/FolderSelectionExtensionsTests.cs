@@ -11,39 +11,37 @@ public class FolderSelectionExtensionsTests
     // Helpers
     // ------------------------------------------------------------
 
-    private static DriveItemEntity Item(string path, bool isFolder = true)
-        => new(
-            accountId: "acc",
-            driveItemId: Guid.NewGuid().ToString(),
-            relativePath: path,
-            eTag: null,
-            cTag: null,
-            size: 0,
-            lastModifiedUtc: DateTimeOffset.UtcNow,
-            isFolder: isFolder,
-            isDeleted: false,
-            isSelected: false,
-            remoteHash: null,
-            name: System.IO.Path.GetFileName(path),
-            localPath: null,
-            localHash: null,
-            syncStatus: FileSyncStatus.SyncOnly,
-            lastSyncDirection: SyncDirection.None
-        );
+    private static DriveItemEntity Item(string path, bool isFolder = true) => new(
+                accountId: "acc",
+                driveItemId: Guid.NewGuid().ToString(),
+                relativePath: path,
+                eTag: null,
+                cTag: null,
+                size: 0,
+                lastModifiedUtc: DateTimeOffset.UtcNow,
+                isFolder: isFolder,
+                isDeleted: false,
+                isSelected: false,
+                remoteHash: null,
+                name: System.IO.Path.GetFileName(path),
+                localPath: null,
+                localHash: null,
+                syncStatus: FileSyncStatus.SyncOnly,
+                lastSyncDirection: SyncDirection.None
+            );
 
-    private static FileMetadata Meta(string path, bool? selected)
-        => new(
-            DriveItemId: Guid.NewGuid().ToString(),
-            AccountId: "acc",
-            Name: System.IO.Path.GetFileName(path),
-            RelativePath: path,
-            Size: 0,
-            LastModifiedUtc: DateTimeOffset.UtcNow,
-            LocalPath: "",
-            IsFolder: true,
-            IsDeleted: false,
-            IsSelected: selected ?? false
-        );
+    private static FileMetadata Meta(string path, bool? selected) => new(
+                DriveItemId: Guid.NewGuid().ToString(),
+                AccountId: "acc",
+                Name: System.IO.Path.GetFileName(path),
+                RelativePath: path,
+                Size: 0,
+                LastModifiedUtc: DateTimeOffset.UtcNow,
+                LocalPath: "",
+                IsFolder: true,
+                IsDeleted: false,
+                IsSelected: selected ?? false
+            );
 
     // ------------------------------------------------------------
     // 1. Normalization

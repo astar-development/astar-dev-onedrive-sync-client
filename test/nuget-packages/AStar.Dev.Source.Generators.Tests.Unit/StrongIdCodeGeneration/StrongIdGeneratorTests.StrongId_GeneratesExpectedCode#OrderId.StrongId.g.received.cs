@@ -9,12 +9,30 @@ public readonly partial struct OrderId : System.IEquatable<OrderId>
     public static implicit operator System.Guid(OrderId id) => id._value;
     public static explicit operator OrderId(System.Guid value) => new(value);
 
-    public bool Equals(OrderId other) => System.Collections.Generic.EqualityComparer<System.Guid>.Default.Equals(_value, other._value);
-    public override bool Equals(object? obj) => obj is OrderId other && Equals(other);
-    public override int GetHashCode() => System.Collections.Generic.EqualityComparer<System.Guid>.Default.GetHashCode(_value);
-    public override string ToString() => _value.ToString();
+    public bool Equals(OrderId other)
+    {
+        return System.Collections.Generic.EqualityComparer<System.Guid>.Default.Equals(_value, other._value);
+    }
 
-    public static OrderId New() => new(System.Guid.NewGuid());
+    public override bool Equals(object? obj)
+    {
+        return obj is OrderId other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return System.Collections.Generic.EqualityComparer<System.Guid>.Default.GetHashCode(_value);
+    }
+
+    public override string ToString()
+    {
+        return _value.ToString();
+    }
+
+    public static OrderId New()
+    {
+        return new(System.Guid.NewGuid());
+    }
 
     public static bool TryParse(string? s, out OrderId value)
     {

@@ -16,8 +16,7 @@ public static class OptionLinqExtensions
     /// <summary>
     ///     Projects and flattens nested <see cref="Option{T}" /> structures using a LINQ-style binding function.
     /// </summary>
-    public static Option<TResult> SelectMany<T, TIntermediate, TResult>(this Option<T> option, Func<T, Option<TIntermediate>> bind, Func<T, TIntermediate, TResult> project)
-        => option.Bind(x => bind(x).Map(y => project(x, y)));
+    public static Option<TResult> SelectMany<T, TIntermediate, TResult>(this Option<T> option, Func<T, Option<TIntermediate>> bind, Func<T, TIntermediate, TResult> project) => option.Bind(x => bind(x).Map(y => project(x, y)));
 
     /// <summary>
     ///     Asynchronously projects the value of a <see cref="Task" /> using the specified function.

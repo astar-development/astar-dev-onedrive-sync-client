@@ -79,12 +79,11 @@ public static class AppHost
         context.Database.Migrate();
     }
 
-    private static void AddHttpClient(IServiceCollection services)
-        => _ = services.AddHttpClient<IGraphApiClient, GraphApiClient>()
-                       .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = true, MaxConnectionsPerServer = 10 })
-                       .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromMinutes(5))
-                       .AddPolicyHandler(GetRetryPolicy())
-                       .AddPolicyHandler(GetCircuitBreakerPolicy());
+    private static void AddHttpClient(IServiceCollection services) => _ = services.AddHttpClient<IGraphApiClient, GraphApiClient>()
+                           .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = true, MaxConnectionsPerServer = 10 })
+                           .ConfigureHttpClient(client => client.Timeout = TimeSpan.FromMinutes(5))
+                           .AddPolicyHandler(GetRetryPolicy())
+                           .AddPolicyHandler(GetCircuitBreakerPolicy());
 
     private static IServiceCollection AddAuthentication(IServiceCollection services, IConfiguration configuration)
     {
@@ -177,30 +176,28 @@ public static class AppHost
     ///     Creates a retry policy with exponential backoff for transient HTTP failures.
     ///     Retries on network failures, 5xx server errors, 429 rate limiting, and IOException.
     /// </summary>
-    private static AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy()
-        => Policy<HttpResponseMessage>
-            .Handle<HttpRequestException>()
-            .Or<IOException>(ex => ex.Message.Contains("forcibly closed") || ex.Message.Contains("transport connection"))
-            .OrResult(msg => (int)msg.StatusCode >= 500 || msg.StatusCode == HttpStatusCode.TooManyRequests || msg.StatusCode == HttpStatusCode.RequestTimeout)
-            .WaitAndRetryAsync(
-                3,
-                retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
-                (outcome, timespan, retryCount, context) =>
-                {
-                    var error = outcome.Exception?.Message ?? outcome.Result?.StatusCode.ToString() ?? "Unknown";
-                    Console.WriteLine($"[Graph API] Retry {retryCount}/3 after {timespan.TotalSeconds:F1}s. Reason: {error}");
-                });
+    private static AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy() => Policy<HttpResponseMessage>
+                .Handle<HttpRequestException>()
+                .Or<IOException>(ex => ex.Message.Contains("forcibly closed") || ex.Message.Contains("transport connection"))
+                .OrResult(msg => (int)msg.StatusCode >= 500 || msg.StatusCode == HttpStatusCode.TooManyRequests || msg.StatusCode == HttpStatusCode.RequestTimeout)
+                .WaitAndRetryAsync(
+                    3,
+                    retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    (outcome, timespan, retryCount, context) =>
+                    {
+                        var error = outcome.Exception?.Message ?? outcome.Result?.StatusCode.ToString() ?? "Unknown";
+                        Console.WriteLine($"[Graph API] Retry {retryCount}/3 after {timespan.TotalSeconds:F1}s. Reason: {error}");
+                    });
 
     /// <summary>
     ///     Creates a circuit breaker policy to prevent cascading failures.
     ///     Opens circuit after 5 consecutive failures, stays open for 30 seconds.
     /// </summary>
-    private static AsyncCircuitBreakerPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
-        => HttpPolicyExtensions
-            .HandleTransientHttpError()
-            .CircuitBreakerAsync(
-                5,
-                TimeSpan.FromSeconds(30),
-                (outcome, duration) => Console.WriteLine($"Circuit breaker opened for {duration.TotalSeconds}s due to {outcome.Result?.StatusCode}"),
-                () => Console.WriteLine("Circuit breaker reset"));
+    private static AsyncCircuitBreakerPolicy<HttpResponseMessage> GetCircuitBreakerPolicy() => HttpPolicyExtensions
+                .HandleTransientHttpError()
+                .CircuitBreakerAsync(
+                    5,
+                    TimeSpan.FromSeconds(30),
+                    (outcome, duration) => Console.WriteLine($"Circuit breaker opened for {duration.TotalSeconds}s due to {outcome.Result?.StatusCode}"),
+                    () => Console.WriteLine("Circuit breaker reset"));
 }

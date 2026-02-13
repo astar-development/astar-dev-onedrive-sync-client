@@ -24,6 +24,7 @@ public sealed class OptionsTypeInfo : IEquatable<OptionsTypeInfo>
             && string.Equals(FullTypeName, other.FullTypeName, System.StringComparison.Ordinal)
             && string.Equals(SectionName, other.SectionName, System.StringComparison.Ordinal)
             && Equals(Location, other.Location));
+
     public override int GetHashCode()
     {
         unchecked
