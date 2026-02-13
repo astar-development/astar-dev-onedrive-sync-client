@@ -81,15 +81,14 @@ public class FolderTreeServiceIntegrationShould
         var graphApiClient = new GraphApiClient(authService, null!, null!);
         var service = new FolderTreeService(graphApiClient, authService, null!);
 
-        // First get root folders to find one with children
         IReadOnlyList<OneDriveFolderNode> rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
         rootFolders.ShouldNotBeEmpty();
 
         OneDriveFolderNode parentFolder = rootFolders[0];
 
         IReadOnlyList<OneDriveFolderNode> childFolders = await service.GetChildFoldersAsync(loginResult.AccountId, parentFolder.DriveItemId, Arg.Any<bool?>(), TestContext.Current.CancellationToken);
-        -may be empty if folder has no subfolders, but should succeed
-               _ = childFolders.ShouldNotBeNull();
+
+        _ = childFolders.ShouldNotBeNull();
         if(childFolders.Count > 0)
         {
             childFolders.All(f => f.IsFolder).ShouldBeTrue();
@@ -111,18 +110,16 @@ public class FolderTreeServiceIntegrationShould
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
         var service = new FolderTreeService(graphApiClient, authService, null!);
-        -limit to depth of 2 to avoid long load times
+        
         IReadOnlyList<OneDriveFolderNode> hierarchy = await service.GetFolderHierarchyAsync(loginResult.AccountId, 2, TestContext.Current.CancellationToken);
 
         hierarchy.ShouldNotBeEmpty();
         hierarchy.All(f => f.IsFolder).ShouldBeTrue();
 
-        // Check that ChildrenLoaded flag is set on folders that were loaded
         foreach(OneDriveFolderNode folder in hierarchy)
         {
             folder.ChildrenLoaded.ShouldBeTrue();
 
-            // If there are children, verify they're also properly loaded
             if(folder.Children.Count > 0)
             {
                 folder.Children.All(c => c.IsFolder).ShouldBeTrue();
@@ -149,14 +146,13 @@ public class FolderTreeServiceIntegrationShould
         // Get root folders
         IReadOnlyList<OneDriveFolderNode> rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, TestContext.Current.CancellationToken);
         rootFolders.ShouldNotBeEmpty();
-        - try to get children from each root folder
-               foreach(OneDriveFolderNode folder in rootFolders)
+        
+        foreach(OneDriveFolderNode folder in rootFolders)
         {
             IReadOnlyList<OneDriveFolderNode> children = await service.GetChildFoldersAsync(loginResult.AccountId, folder.DriveItemId, Arg.Any<bool?>(), TestContext.Current.CancellationToken);
-            -should not throw, even if empty
-                       _ = children.ShouldNotBeNull();
+            _ = children.ShouldNotBeNull();
         }
-        }
+    }
 
     [Fact(Skip = "Integration test - requires real OneDrive account authentication")]
         public async Task GraphApiClientCanAccessDrive()
