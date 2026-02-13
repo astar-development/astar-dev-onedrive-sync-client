@@ -18,11 +18,6 @@
     <Style Selector="Window">
         <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}"/>
     </Style>
-
-    <!-- Default TextBlock Style - Ensure dark text on light background -->
-    <Style Selector="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-    </Style>
     
     <!-- Card Style - White cards with shadow -->
     <Style Selector="Border.card">
