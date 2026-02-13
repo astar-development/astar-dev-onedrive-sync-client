@@ -374,7 +374,7 @@ public class MyService : IMyService { }
 
 ### 11. Code Style & Quality
 
-**Core Style Guidelines**: See [.github/instructions/style-guidelines.instructions.md](.github/instructions/style-guidelines.instructions.md) for comprehensive coding standards including:
+**Core Style Guidelines**: See [style-guidelines.instructions.md](./instructions/style-guidelines.instructions.md) for comprehensive coding standards including:
 
 - Naming conventions (PascalCase, camelCase, etc.)
 - Class and method design principles (SOLID, cohesion, coupling)

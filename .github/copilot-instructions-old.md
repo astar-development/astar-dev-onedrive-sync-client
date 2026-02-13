@@ -6,25 +6,25 @@
 ## Quick Reference
 
 | Aspect | Standard |
-|--------|----------|
+| -------- | ---------- |
 | Framework | .NET 10, C# 14 |
 | UI | Avalonia UI with ReactiveUI |
 | Testing | xUnit V3, Shouldly, NSubstitute |
 | Architecture | Folder-based (Auth, Views, ViewModels, Services) |
 | Code Style | Use var for all local variables except: |
-| |    - For test mocks, always use the explicit type. |
-| |    - When the type is not obvious from the right-hand side, use the explicit type (e.g., for async calls or methods returning interface types). |
-| |    - If IDE0008 or similar analyzer suggests explicit type, prefer explicit type to avoid warnings. |
-| |    - Warnings as errors |
-| |    - Nullable reference types enabled |
-| |    - No blank lines between method signature and expression body / implementation |
-| |    - No multiple blank lines|
-| |    - No trailing whitespace|
-| |    - No unnecessary usings|
-| |    - No regions|
-| |    - All tests must be deterministic|
-| |    - Avoid redundant tests|
-| |    - All tests must have at least one assertion|
+| | - For test mocks, always use the explicit type. |
+| | - When the type is not obvious from the right-hand side, use the explicit type (e.g., for async calls or methods returning interface types). |
+| | - If IDE0008 or similar analyzer suggests explicit type, prefer explicit type to avoid warnings. |
+| | - Warnings as errors |
+| | - Nullable reference types enabled |
+| | - No blank lines between method signature and expression body / implementation |
+| | - No multiple blank lines|
+| | - No trailing whitespace|
+| | - No unnecessary usings|
+| | - No regions|
+| | - All tests must be deterministic|
+| | - Avoid redundant tests|
+| | - All tests must have at least one assertion|
 
 ---
 
@@ -85,13 +85,13 @@ Inherits all standards from `copilot-instructions-starter.md`, plus:
 
 ### ReactiveUI ViewModels
 
-**Testing Property Notifications**
+#### Testing Property Notifications
 
 - Verify notifications fire when values change
 - Verify notifications DON'T fire when setting same value
 - Test ObservableCollections independently
 
-**Complex Constructors Pattern**
+#### Complex Constructors Pattern
 
 ```csharp
 private static MainWindowViewModel CreateTestViewModel()

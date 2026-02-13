@@ -1,5 +1,24 @@
 # Quick Start: Testing the Colorful Design
 
+> **DEPRECATION NOTICE**
+>
+> **This manual approach is deprecated as of February 2026.**
+>
+> The application now includes a Settings UI for runtime theme switching. Manual
+> editing of `App.axaml.cs` is no longer necessary.
+>
+> **New Approach:**
+> 1. Launch the application
+> 2. Click **File** -> **Settings...**
+> 3. Select desired theme from dropdown
+> 4. Theme changes immediately (no restart required)
+>
+> **Available Themes:** Original (Auto/Light/Dark), Professional, Colourful, Terminal
+>
+> See [User Manual - Changing Themes](../user-manual.md#changing-themes) for detailed instructions.
+>
+> ---
+
 ## Fastest Way to See the Colorful Design
 
 1. Open [App.axaml.cs](../../src/AStar.Dev.OneDrive.Client/App.axaml.cs)
@@ -46,3 +65,4 @@ All colorful theme files are named with "Colorful" suffix:
 - `SyncProgressViewColorful.axaml`
 
 Plus 3 new converters in the `Converters/` folder.
+
