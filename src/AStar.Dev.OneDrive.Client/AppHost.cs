@@ -140,6 +140,8 @@ public static class AppHost
         _ = services.AddScoped<IDeltaProcessingService, DeltaProcessingService>();
         _ = services.AddScoped<ISyncRepository, EfSyncRepository>();
         _ = services.AddScoped<ISyncStateCoordinator, SyncStateCoordinator>();
+        _ = services.AddScoped<IThemeService, ThemeService>();
+        _ = services.AddScoped<IThemeStartupCoordinator, ThemeStartupCoordinator>();
 
         return services;
     }

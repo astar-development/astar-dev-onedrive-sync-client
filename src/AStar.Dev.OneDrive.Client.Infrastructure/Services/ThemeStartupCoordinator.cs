@@ -7,10 +7,10 @@ using AStar.Dev.Source.Generators.Attributes;
 /// Coordinates theme initialization on application startup.
 /// Loads saved theme preferences and applies the appropriate theme at startup.
 /// </summary>
-[AutoRegisterService(ServiceLifetime.Singleton)]
+[AutoRegisterService(ServiceLifetime.Singleton, As = typeof(IThemeStartupCoordinator))]
 public class ThemeStartupCoordinator(
     IThemeService themeService,
-    IWindowPreferencesService windowPreferencesService)
+    IWindowPreferencesService windowPreferencesService) : IThemeStartupCoordinator
 {
     /// <summary>
     /// Initializes the application theme on startup.

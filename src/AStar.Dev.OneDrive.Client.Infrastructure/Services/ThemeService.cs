@@ -14,11 +14,10 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 [AutoRegisterService(ServiceLifetime.Singleton, As = typeof(IThemeService))]
 public class ThemeService(IWindowPreferencesService windowPreferencesService) : IThemeService
 {
-    private ThemePreference _currentTheme = ThemePreference.OriginalAuto;
-    private readonly List<ResourceDictionary> _loadedThemeDictionaries = new();
+    private readonly List<ResourceDictionary> _loadedThemeDictionaries = [];
 
     /// <inheritdoc />
-    public ThemePreference CurrentTheme => _currentTheme;
+    public ThemePreference CurrentTheme { get; private set; } = ThemePreference.OriginalAuto;
 
     /// <inheritdoc />
     public event EventHandler<ThemePreference>? ThemeChanged;
@@ -33,7 +32,7 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
         }
 
         // Update current theme
-        _currentTheme = theme;
+        CurrentTheme = theme;
 
         // Persist to window preferences
         await PersistThemePreferenceAsync(theme, cancellationToken);
