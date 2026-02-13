@@ -31,11 +31,11 @@
 
 ### Phase 2: Extract Styles into ResourceDictionaries ✅
 
-6. **Create Themes folder structure** ✅
+1. **Create Themes folder structure** ✅
    - Create [src/AStar.Dev.OneDrive.Client/Themes/](src/AStar.Dev.OneDrive.Client/Themes/) directory
    - This will contain all theme ResourceDictionary files
 
-7. **Extract Professional theme styles** ✅
+2. **Extract Professional theme styles** ✅
    - Create [src/AStar.Dev.OneDrive.Client/Themes/ProfessionalTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/ProfessionalTheme.axaml)
    - Extract and consolidate styles from:
      - [MainWindow-Professional.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Professional.axaml)
@@ -52,7 +52,7 @@
      - `PathIcon` styles with blue foreground
    - Blue accent color (#0078D4), light gray backgrounds, subtle shadows (0 2 8 0 #10000000)
 
-8. **Extract Colourful theme styles** ✅
+3. **Extract Colourful theme styles** ✅
    - Create [src/AStar.Dev.OneDrive.Client/Themes/ColourfulTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/ColourfulTheme.axaml)
    - Extract and consolidate styles from:
      - [MainWindow-Colorful.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Colorful.axaml)
@@ -66,7 +66,7 @@
    - Include emoji-based icons as TextBlock content (☁️, 👥, 📁, 💃)
    - Vibrant gradient buttons (red-yellow, pink-orange, cyan)
 
-9. **Extract Terminal theme styles** ✅
+4. **Extract Terminal theme styles** ✅
    - Create [src/AStar.Dev.OneDrive.Client/Themes/TerminalTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/TerminalTheme.axaml)
    - Extract and consolidate styles from:
      - [MainWindow-Terminal.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Terminal.axaml)
@@ -81,13 +81,13 @@
    - Bracket-wrapped button text ([HISTORY], [LOGS])
    - Sharp corners (0px border radius)
 
-10. **Create Original theme ResourceDictionaries (optional)** ✅
+5. **Create Original theme ResourceDictionaries (optional)** ✅
     - Create [src/AStar.Dev.OneDrive.Client/Themes/OriginalLightTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/OriginalLightTheme.axaml)
     - Create [src/AStar.Dev.OneDrive.Client/Themes/OriginalDarkTheme.axaml](src/AStar.Dev.OneDrive.Client/Themes/OriginalDarkTheme.axaml)
     - Extract any custom styles from current [MainWindow.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow.axaml) if present
     - For `OriginalAuto`, rely on Avalonia's built-in `FluentTheme` without custom ResourceDictionary
 
-11. **Delete obsolete themed MainWindow files** ✅
+6. **Delete obsolete themed MainWindow files** ✅
     - Delete ALL Professional themed files:
       - [MainWindow-Professional.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Professional.axaml) and [.axaml.cs](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow-Professional.axaml.cs)
       - [AccountManagementViewProfessional.axaml](src/AStar.Dev.OneDrive.Client/Accounts/AccountManagementViewProfessional.axaml) and [.axaml.cs](src/AStar.Dev.OneDrive.Client/Accounts/AccountManagementViewProfessional.axaml.cs)
@@ -110,13 +110,13 @@
 
 ### Phase 3: Theme Service for Runtime Switching
 
-12. **Create IThemeService interface**
+1. **Create IThemeService interface**
     - Create [src/AStar.Dev.OneDrive.Client.Infrastructure/Services/IThemeService.cs](src/AStar.Dev.OneDrive.Client.Infrastructure/Services/IThemeService.cs)
     - Method: `Task ApplyThemeAsync(ThemePreference theme, CancellationToken cancellationToken = default)`
     - Property: `ThemePreference CurrentTheme { get; }`
     - Event: `event EventHandler<ThemePreference>? ThemeChanged` - raised when theme changes
 
-13. **Implement ThemeService**
+2. **Implement ThemeService**
     - Create [src/AStar.Dev.OneDrive.Client.Infrastructure/Services/ThemeService.cs](src/AStar.Dev.OneDrive.Client.Infrastructure/Services/ThemeService.cs)
     - Add `[Service(ServiceLifetime.Singleton)]` attribute
     - Inject `IWindowPreferencesService` via constructor
@@ -134,7 +134,7 @@
       5. Raise `ThemeChanged` event
     - Handle ResourceDictionary loading from embedded resources using `AvaloniaXamlLoader`
 
-14. **Update App.axaml.cs for initial theme loading**
+3. **Update App.axaml.cs for initial theme loading**
     - Modify [App.axaml.cs](src/AStar.Dev.OneDrive.Client/App.axaml.cs) `OnFrameworkInitializationCompleted()`
     - Before creating `MainWindow`:
       1. Get `IThemeService` from DI container
@@ -146,7 +146,7 @@
 
 ### Phase 4: Settings UI
 
-15. **Create ThemePreferenceToDisplayNameConverter**
+1. **Create ThemePreferenceToDisplayNameConverter**
     - Create [src/AStar.Dev.OneDrive.Client/Converters/ThemePreferenceToDisplayNameConverter.cs](src/AStar.Dev.OneDrive.Client/Converters/ThemePreferenceToDisplayNameConverter.cs)
     - Implement `IValueConverter`
     - Map enum values to user-friendly display names:
@@ -157,7 +157,7 @@
       - `Colourful` → "Colourful"
       - `Terminal` → "Terminal / Hacker"
 
-16. **Create SettingsWindow XAML**
+2. **Create SettingsWindow XAML**
     - Create [src/AStar.Dev.OneDrive.Client/Settings/SettingsWindow.axaml](src/AStar.Dev.OneDrive.Client/Settings/SettingsWindow.axaml) and [.axaml.cs](src/AStar.Dev.OneDrive.Client/Settings/SettingsWindow.axaml.cs)
     - Window properties: Width="600" Height="400", `SizeToContent="Manual"`, `CanResize="false"`, `WindowStartupLocation="CenterOwner"`
     - Add `ComboBox` for theme selection:
@@ -171,7 +171,7 @@
     - **Remove** "Theme changes will take effect after restarting" message (no longer needed)
     - Add "Theme applied successfully" status message (shown after Apply)
 
-17. **Create SettingsViewModel**
+3. **Create SettingsViewModel**
     - Create [src/AStar.Dev.OneDrive.Client/Settings/SettingsViewModel.cs](src/AStar.Dev.OneDrive.Client/Settings/SettingsViewModel.cs)
     - Inherit from `ReactiveObject`
     - Inject `IThemeService` via constructor
@@ -188,12 +188,12 @@
         - Implementation: Close the window (cast `DataContext` owner or use window reference)
     - Subscribe to `_themeService.ThemeChanged` event to update `SelectedTheme` if theme changes externally
 
-18. **Update MainWindow menu**
+4. **Update MainWindow menu**
     - Modify [MainWindow.axaml](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindow.axaml) File menu
     - Add `<MenuItem Header="_Settings..." Command="{Binding OpenSettingsCommand}">` between "View Debug Logs" and the `<Separator/>`
     - Use underscore for keyboard shortcut (Alt+S)
 
-19. **Update MainWindowViewModel**
+5. **Update MainWindowViewModel**
     - Modify [MainWindowViewModel.cs](src/AStar.Dev.OneDrive.Client/MainWindow/MainWindowViewModel.cs)
     - Add `ICommand OpenSettingsCommand` property
     - Command implementation:
@@ -205,12 +205,12 @@
 
 ### Phase 5: Testing
 
-20. **Fix existing WindowPreferencesService tests**
+1. **Fix existing WindowPreferencesService tests**
     - Debug and fix failing tests in [WindowPreferencesServiceShould_ThemePreference.cs](test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/WindowPreferencesServiceShould_ThemePreference.cs)
     - Currently 5 tests failing, 4 passing
     - Ensure all 9 tests pass for theme persistence across all 6 enum values
 
-21. **Create ThemeService unit tests**
+2. **Create ThemeService unit tests**
     - Create [test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/ThemeServiceShould.cs](test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/ThemeServiceShould.cs)
     - Tests:
       - `ApplyTheme_UpdatesCurrentThemeProperty()`
@@ -225,7 +225,7 @@
     - Mock `IWindowPreferencesService` using NSubstitute or test double
     - Mock `Application.Current` for testing (may need to use integration test or skip this verification)
 
-22. **Create SettingsViewModel tests**
+3. **Create SettingsViewModel tests**
     - Create [test/AStar.Dev.OneDrive.Client.Tests.Unit/Settings/SettingsViewModelShould.cs](test/AStar.Dev.OneDrive.Client.Tests.Unit/Settings/SettingsViewModelShould.cs)
     - Tests:
       - `ApplyThemeCommand_CallsThemeServiceApplyThemeAsync()`
@@ -235,12 +235,12 @@
       - `AvailableThemes_ContainsAllSixThemePreferences()`
     - Mock `IThemeService` using interface and verify method calls
 
-23. **Create integration tests for theme switching**
+4. **Create integration tests for theme switching**
     - Create [test/AStar.Dev.OneDrive.Client.Tests.Integration/ThemeSwitchingShould.cs](test/AStar.Dev.OneDrive.Client.Tests.Integration/ThemeSwitchingShould.cs)
     - Test full workflow: Load preferences → Apply theme → Verify UI updated → Save preferences → Reload app → Verify persistence
     - May require Avalonia headless testing or manual verification
 
-24. **Manual testing checklist**
+5. **Manual testing checklist**
     - Launch app → Verify default theme (OriginalAuto) applies automatically
     - File → Settings → Select "Professional" → Click Apply → **Verify immediate theme change** (no restart)
     - Verify window background, button styles, colors update instantly
@@ -254,7 +254,7 @@
 
 ### Phase 6: Documentation
 
-25. **Update user documentation**
+1. **Update user documentation**
     - Update [docs/user-manual.md](docs/user-manual.md) - add "Changing Themes" section
     - Document step-by-step:
       1. File menu → Settings...
@@ -269,7 +269,7 @@
       - **Colourful**: Playful gradients, glass morphism, vibrant colors, emoji icons
       - **Terminal**: Retro hacker aesthetic, green-on-black, monospace fonts, ASCII art
 
-26. **Update design documentation**
+2. **Update design documentation**
     - Update [docs/design/options-for-ui-changes.md](docs/design/options-for-ui-changes.md)
     - Add "Implementation Status" section noting ResourceDictionary approach chosen
     - Document architecture: Single MainWindow + swappable ResourceDictionaries
@@ -277,7 +277,7 @@
     - Add deprecation notice: Manual `App.axaml.cs` switching replaced by Settings UI
     - Document new approach: File → Settings → Theme selection
 
-27. **Create ADR for theme system architecture**
+3. **Create ADR for theme system architecture**
     - Create [docs/ADRs/006-theme-system-architecture.md](docs/ADRs/006-theme-system-architecture.md) (or next available number)
     - Document decision context: User request for runtime theme switching without restart
     - Decision: ResourceDictionary merging over separate Window classes
