@@ -108,15 +108,15 @@
       - [ConflictResolutionViewTerminal.axaml](src/AStar.Dev.OneDrive.Client/SyncronisationConflicts/ConflictResolutionViewTerminal.axaml) and [.axaml.cs](src/AStar.Dev.OneDrive.Client/SyncronisationConflicts/ConflictResolutionViewTerminal.axaml.cs)
     - **Total files to delete: ~30 files** (10 per theme × 3 themes)
 
-### Phase 3: Theme Service for Runtime Switching
+### Phase 3: Theme Service for Runtime Switching ✅
 
-1. **Create IThemeService interface**
+1. **Create IThemeService interface** ✅
     - Create [src/AStar.Dev.OneDrive.Client.Infrastructure/Services/IThemeService.cs](src/AStar.Dev.OneDrive.Client.Infrastructure/Services/IThemeService.cs)
     - Method: `Task ApplyThemeAsync(ThemePreference theme, CancellationToken cancellationToken = default)`
     - Property: `ThemePreference CurrentTheme { get; }`
     - Event: `event EventHandler<ThemePreference>? ThemeChanged` - raised when theme changes
 
-2. **Implement ThemeService**
+2. **Implement ThemeService** ✅
     - Create [src/AStar.Dev.OneDrive.Client.Infrastructure/Services/ThemeService.cs](src/AStar.Dev.OneDrive.Client.Infrastructure/Services/ThemeService.cs)
     - Add `[Service(ServiceLifetime.Singleton)]` attribute
     - Inject `IWindowPreferencesService` via constructor
@@ -134,7 +134,7 @@
       5. Raise `ThemeChanged` event
     - Handle ResourceDictionary loading from embedded resources using `AvaloniaXamlLoader`
 
-3. **Update App.axaml.cs for initial theme loading**
+3. **Update App.axaml.cs for initial theme loading** ✅
     - Modify [App.axaml.cs](src/AStar.Dev.OneDrive.Client/App.axaml.cs) `OnFrameworkInitializationCompleted()`
     - Before creating `MainWindow`:
       1. Get `IThemeService` from DI container
