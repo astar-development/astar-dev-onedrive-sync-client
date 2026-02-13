@@ -91,7 +91,7 @@ public class ThemeStartupCoordinatorShould
         _mockWindowPreferencesService.LoadAsync(CancellationToken)
             .Returns(Task.FromResult((WindowPreferences?)savedPreferences));
         _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>())
-            .ThrowsAsync(new InvalidOperationException("Theme load failed"));
+            .Returns(Task.FromException(new InvalidOperationException("Theme load failed")));
 
         // Act & Assert
         var exception = await Record.ExceptionAsync(() =>
