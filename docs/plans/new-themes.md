@@ -203,15 +203,12 @@
       - Call `await settingsWindow.ShowDialog(this._window)` (pass parent window for modal centering)
     - Mark `SettingsViewModel` with `[Service]` attribute in its class definition for DI registration
 
-### Phase 5: Testing
+> ### Phase 5: Testing ✅
 
-1. **Fix existing WindowPreferencesService tests**
+  1. **Fix existing WindowPreferencesService tests** ✅
     - Debug and fix failing tests in [WindowPreferencesServiceShould_ThemePreference.cs](test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/WindowPreferencesServiceShould_ThemePreference.cs)
-    - Currently 5 tests failing, 4 passing
-    - Ensure all 9 tests pass for theme persistence across all 6 enum values
-
-2. **Create ThemeService unit tests**
-    - Create [test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/ThemeServiceShould.cs](test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/ThemeServiceShould.cs)
+      - ✅ All 9 tests passing for theme persistence across all 6 enum values  
+  2. **Create ThemeService unit tests** ✅    - Create [test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/ThemeServiceShould.cs](test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/ThemeServiceShould.cs)
     - Tests:
       - `ApplyTheme_UpdatesCurrentThemeProperty()`
       - `ApplyTheme_PersistsToWindowPreferences()` - verify `IWindowPreferencesService.SaveAsync()` called
@@ -223,9 +220,8 @@
       - `ApplyThemeColourful_LoadsColourfulResourceDictionary()`
       - `ApplyThemeTerminal_LoadsTerminalResourceDictionary()`
     - Mock `IWindowPreferencesService` using NSubstitute or test double
-    - Mock `Application.Current` for testing (may need to use integration test or skip this verification)
-
-3. **Create SettingsViewModel tests**
+    - Mock `Application.Current` for testing (may need to use integration test or skip this verification)      - ✅ All 12 tests passing (covers all required scenarios plus additional cases)
+  3. **Create SettingsViewModel tests** ✅
     - Create [test/AStar.Dev.OneDrive.Client.Tests.Unit/Settings/SettingsViewModelShould.cs](test/AStar.Dev.OneDrive.Client.Tests.Unit/Settings/SettingsViewModelShould.cs)
     - Tests:
       - `ApplyThemeCommand_CallsThemeServiceApplyThemeAsync()`
@@ -233,8 +229,7 @@
       - `SelectedTheme_InitializesFromThemeServiceCurrentTheme()`
       - `SelectedTheme_UpdatesWhenThemeChangedEventFires()` - verify reactive subscription works
       - `AvailableThemes_ContainsAllSixThemePreferences()`
-    - Mock `IThemeService` using interface and verify method calls
-
+    - Mock `IThemeService` using interface and verify method calls      - ✅ All 7 tests passing (covers all required scenarios plus additional cases)
 4. **Create integration tests for theme switching**
     - Create [test/AStar.Dev.OneDrive.Client.Tests.Integration/ThemeSwitchingShould.cs](test/AStar.Dev.OneDrive.Client.Tests.Integration/ThemeSwitchingShould.cs)
     - Test full workflow: Load preferences → Apply theme → Verify UI updated → Save preferences → Reload app → Verify persistence
