@@ -48,7 +48,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         _conflictRepository = conflictRepository;
 
         WireUpTheSyncTreeViewModel(syncTreeViewModel);
-        WireUpTheAccountManagentViewModel(accountManagementViewModel, syncTreeViewModel);
+        WireUpTheAccountManagementViewModel(accountManagementViewModel, syncTreeViewModel);
 
         OpenUpdateAccountDetailsCommand = ReactiveCommand.Create(OpenUpdateAccountDetails);
         OpenViewSyncHistoryCommand = ReactiveCommand.Create(OpenViewSyncHistory);
@@ -243,7 +243,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             _ = window.ShowDialog(desktop.MainWindow);
         }
     }
-    private void WireUpTheAccountManagentViewModel(AccountManagementViewModel accountManagementViewModel, SyncTreeViewModel syncTreeViewModel)
+    private void WireUpTheAccountManagementViewModel(AccountManagementViewModel accountManagementViewModel, SyncTreeViewModel syncTreeViewModel)
     {
         _ = accountManagementViewModel
             .WhenAnyValue(x => x.SelectedAccount)
