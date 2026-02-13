@@ -1,6 +1,6 @@
 ---
 description: "Architect Agent"
-tools: ["search/codebase", "search", "search/usages", "web/fetch", "web/githubRepo"]
+tools: ['read/readFile', 'edit/createFile', 'edit/editFiles', 'search/changes', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/searchResults', 'search/textSearch', 'search/usages', 'web/fetch', 'web/githubRepo']
 ---
 
 <!--
