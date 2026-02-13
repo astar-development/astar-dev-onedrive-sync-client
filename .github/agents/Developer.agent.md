@@ -2,20 +2,13 @@
 description: "Developer Agent"
 tools:
   [
-    "codebase",
-    "usages",
-    "problems",
-    "changes",
-    "testFailure",
-    "runCommands",
-    "fetch",
-    "findTestFiles",
-    "read_file",
-    "write_file",
-    "replace_string_in_file",
-    "write_file",
-    "apply_diff",
-    "multi_replace_string_in_file",
+    "search/codebase",
+    "search/usages",
+    "read/problems",
+    "search/changes",
+    "execute/testFailure",
+    "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection",
+    "web/fetch",
     "search/searchResults",
     "edit/editFiles",
   ]

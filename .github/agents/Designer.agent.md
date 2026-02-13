@@ -1,6 +1,6 @@
 ---
 description: "Designer Agent"
-tools: ["codebase", "search", "usages"]
+tools: ["search/codebase", "search", "search/usages"]
 ---
 
 <!--

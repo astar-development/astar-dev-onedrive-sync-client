@@ -2,15 +2,14 @@
 description: "Security Agent"
 tools:
   [
-    "codebase",
+    "search/codebase",
     "search",
-    "usages",
-    "problems",
-    "changes",
-    "testFailure",
-    "runCommands",
-    "fetch",
-    "findTestFiles",
+    "search/usages",
+    "read/problems",
+    "search/changes",
+    "execute/testFailure",
+    "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection",
+    "web/fetch",
     "search/searchResults",
     "edit/editFiles",
   ]

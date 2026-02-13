@@ -1,7 +1,7 @@
 ---
 description: "Tester Agent"
 tools:
-  ["codebase", "testFailure", "runCommands", "editFiles", "problems", "changes"]
+  ["search/codebase", "execute/testFailure", "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection", "edit/editFiles", "read/problems", "search/changes"]
 ---
 
 # Tester Agent Instructions

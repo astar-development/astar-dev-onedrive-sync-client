@@ -1,6 +1,6 @@
 ---
 description: "DevOps Agent"
-tools: ["codebase", "runCommands", "search", "fetch", "githubRepo"]
+tools: ["search/codebase", "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection", "search", "web/fetch", "web/githubRepo"]
 ---
 
 <!-- This is an example Agent, rather than a canonical one -->
