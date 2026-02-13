@@ -38,11 +38,10 @@ public static class CollectionAndStatusExtensions
     ///     Maps a Result to a human-friendly status string. If the result is a success, calls
     ///     successFormatter; if error, returns the error message (or uses errorFormatter if provided).
     /// </summary>
-    public static string ToStatus<T>(this Result<T, Exception> result, Func<T, string> successFormatter, Func<Exception, string> errorFormatter = null)
-        => result switch
-        {
-            Result<T, Exception>.Ok ok => successFormatter(ok.Value),
-            Result<T, Exception>.Error err => (errorFormatter ?? (e => e.Message))(err.Reason),
-            _ => string.Empty
-        };
+    public static string ToStatus<T>(this Result<T, Exception> result, Func<T, string> successFormatter, Func<Exception, string> errorFormatter = null) => result switch
+    {
+        Result<T, Exception>.Ok ok => successFormatter(ok.Value),
+        Result<T, Exception>.Error err => (errorFormatter ?? (e => e.Message))(err.Reason),
+        _ => string.Empty
+    };
 }

@@ -159,8 +159,7 @@ public class DriveItemsRepositoryShould
         file1.SyncStatus.ShouldBe(FileSyncStatus.PendingUpload);
     }
 
-    private static FileMetadata CreateFileMetadata(string id, string accountId, string path, FileSyncStatus status = FileSyncStatus.Synced)
-        => new(id, accountId, Path.GetFileName(path), path, 1024, DateTime.UtcNow, $@"C:\local{path}", false, false, false, "ctag", "etag", "hash", null, status, null);
+    private static FileMetadata CreateFileMetadata(string id, string accountId, string path, FileSyncStatus status = FileSyncStatus.Synced) => new(id, accountId, Path.GetFileName(path), path, 1024, DateTime.UtcNow, $@"C:\local{path}", false, false, false, "ctag", "etag", "hash", null, status, null);
 
     private static SyncDbContext CreateInMemoryContext()
     {

@@ -52,7 +52,7 @@ PROMPTING: Reference, don't duplicate. Keep actions concrete for frontend.
 ## Testing
 
 1. **SSOT References**
-   - Tester chat mode: `.github/chatmodes/Tester.chatmode.md`
+   - Tester chat mode: `.github/agents/Tester.agent.md`
    - BDD tests instructions: `.github/instructions/bdd-tests.instructions.md`
 
 2. **Unit/UI Tests (default stack: XUnit.V3 + Shouldly Library unless overridden)**

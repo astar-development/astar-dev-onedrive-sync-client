@@ -5,8 +5,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 
 public static class FolderSelectionExtensions
 {
-    public static void ApplyHierarchicalSelection(this IEnumerable<DriveItemEntity> items, IEnumerable<FileMetadata> fileMetadatas)
-        => items.ApplyHierarchicalSelectionCore(fileMetadatas);
+    public static void ApplyHierarchicalSelection(this IEnumerable<DriveItemEntity> items, IEnumerable<FileMetadata> fileMetadatas) => items.ApplyHierarchicalSelectionCore(fileMetadatas);
 
     private static void ApplyHierarchicalSelectionCore(this IEnumerable<DriveItemEntity> items, IEnumerable<FileMetadata> fileMetadatas)
     {

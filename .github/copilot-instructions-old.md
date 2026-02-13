@@ -1,7 +1,7 @@
 # OneDrive Client - .NET 10 Development Instructions
 
-> **Extends**: [copilot-instructions-starter.md](./copilot-instructions-starter.md)  
-> **Project**: AStar Dev - OneDrive Client V3 
+> **Extends**: [copilot-instructions-starter.md](./copilot-instructions-starter.md)
+> **Project**: AStar Dev - OneDrive Client V3
 
 ## Quick Reference
 
@@ -31,6 +31,7 @@
 ## Project-Specific Guidelines
 
 ### Architecture
+
 - Single entry point: `MainWindow.axaml`
 - Folder-based structure: Authentication, Views, ViewModels, OneDriveServices, SettingsAndPreferences
 - NuGet packages for cross-cutting concerns
@@ -38,13 +39,16 @@
 - Cross-Platform: Windows, macOS, Linux via Avalonia
 
 ### Coding Standards
+
 Inherits all standards from `copilot-instructions-starter.md`, plus:
+
 - **ReactiveUI patterns**: Property notifications with `this.RaiseAndSetIfChanged`
 - **Observable subscriptions**: Always dispose with `.DisposeWith(_disposables)`
 
 - **Complex conditions**: When an `if`, `while`, or similar statement contains multiple clauses or is hard to read, extract the logic into a clearly named private method. This improves readability, maintainability, and testability.
 
   Example:
+
   ```csharp
   // Instead of:
   if (existingFile.SyncState != SyncState.PendingUpload ||
@@ -74,6 +78,7 @@ Inherits all standards from `copilot-instructions-starter.md`, plus:
 ## Testing: ReactiveUI & Avalonia Specifics
 
 ### Priority Guide
+
 1. **HIGH**: Business logic, services, data mappers, file I/O, ViewModels property notifications
 2. **MEDIUM**: UI coordination, configuration loading
 3. **LOW**: UI controls, `Application.Current` dependencies, complex reactive streams
@@ -81,11 +86,13 @@ Inherits all standards from `copilot-instructions-starter.md`, plus:
 ### ReactiveUI ViewModels
 
 **Testing Property Notifications**
+
 - Verify notifications fire when values change
 - Verify notifications DON'T fire when setting same value
 - Test ObservableCollections independently
 
 **Complex Constructors Pattern**
+
 ```csharp
 private static MainWindowViewModel CreateTestViewModel()
 {
@@ -104,15 +111,19 @@ private static MainWindowViewModel CreateTestViewModel()
 **Key Pattern**: ViewModels subscribing to observables in constructors need all `IObservable<T>` dependencies stubbed with `Subject<T>`.
 
 ### MockFileSystem Pattern
+
 ```csharp
 var fileSystem = new MockFileSystem();
 fileSystem.AddDirectory(@"C:\Path\To\Dir");
 fileSystem.AddFile(@"C:\Path\To\File.txt", new MockFileData("content"));
 ```
+
 ?? Always create directories before adding files.
 
 ### Efficient Test Editing
+
 For bulk changes (e.g., converting types to `var`):
+
 ```csharp
 // Use multi_replace_string_in_file with 3-5 lines context
 [
@@ -127,6 +138,7 @@ For bulk changes (e.g., converting types to `var`):
 ## Test Execution
 
 ### Standard Commands
+
 ```bash
 # Bypass Fine Code Coverage issues
 dotnet test --settings .runsettings --no-build
@@ -155,6 +167,7 @@ private const string RedirectUri = "http://localhost";
 ```
 
 Common project suppressions:
+
 - **S1075**: OAuth redirect URIs
 - **S6667**: Intentional exception non-logging
 
@@ -167,6 +180,7 @@ Common project suppressions:
 - **Interface implementation**: Use `/// <inheritdoc/>`
 
 Example:
+
 ```csharp
 /// <summary>
 /// Manages synchronization between local storage and OneDrive.
@@ -187,6 +201,7 @@ public sealed class SyncEngine : ISyncEngine { }
 ## Test Examples Repository
 
 **See**: [Testing Examples](./testing-examples.md) for comprehensive patterns including:
+
 - ReactiveUI ViewModel patterns
 - Observable subscription testing
 - MockFileSystem usage
@@ -206,23 +221,27 @@ public sealed class SyncEngine : ISyncEngine { }
 ## Quick Troubleshooting
 
 ### Test Failures
+
 1. Check observable stubbing in ViewModel tests
 2. Verify MockFileSystem directory creation
 3. Confirm using statements match namespaces
 4. Check for file content duplication
 
 ### Build Warnings
+
 1. Convert explicit types to `var` (Use var for local variables (IDE0007) except for test mocks and when the type is not obvious)
 2. Add `#pragma` suppressions with justification
 3. Prefix private fields with `_`
 4. Use discard `_` for unused variables
 
 ### Performance
+
 - Build frequently during test writing
 - Use `--no-build` for faster test iterations
 - Run specific test classes when debugging
 
 ### Examples of Correct `var` Usage
+
 ```csharp
 // Use explicit type for mocks
 IAuthService auth = Substitute.For<IAuthService>();

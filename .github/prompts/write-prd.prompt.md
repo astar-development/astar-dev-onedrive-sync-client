@@ -1,17 +1,17 @@
 ---
-mode: "agent"
+agent: "agent"
 description: "Create a Product Requirements Document (PRD) using the repository PRD template and structured guidance for both humans and automation."
 tools:
   [
     "search/codebase",
-    "usages",
-    "changes",
+    "search/usages",
+    "search/changes",
     "edit/editFiles",
-    "fetch",
+    "web/fetch",
     "search",
     "search/searchResults",
-    "runCommands",
-    "todos",
+    "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection",
+    "todo",
   ]
 ---
 

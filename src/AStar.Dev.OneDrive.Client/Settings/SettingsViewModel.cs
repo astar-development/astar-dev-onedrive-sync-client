@@ -50,8 +50,8 @@ public class SettingsViewModel : ReactiveObject
     /// <summary>
     /// Gets all available theme options.
     /// </summary>
-    public IEnumerable<ThemePreference> AvailableThemes =>
-        Enum.GetValues(typeof(ThemePreference)).Cast<ThemePreference>();
+    public IEnumerable<ThemePreference> AvailableThemes
+        => Enum.GetValues(typeof(ThemePreference)).Cast<ThemePreference>();
 
     /// <summary>
     /// Command to apply the selected theme.

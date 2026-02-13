@@ -17,7 +17,5 @@ public static class ObjectExtensions
     /// <param name="object">The object to convert to JSON</param>
     /// <returns>The JSON string of the object supplied</returns>
 #pragma warning disable CA1720
-    public static string ToJson<T>(this T @object)
-#pragma warning restore CA1720
-        => JsonSerializer.Serialize(@object, Options);
+    public static string ToJson<T>(this T @object) => JsonSerializer.Serialize(@object, Options);
 }

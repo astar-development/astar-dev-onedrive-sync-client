@@ -50,6 +50,5 @@ public static class AppPathHelper
     ///     Gets the user's OS-specific home folder path.
     /// </summary>
     /// <returns>The full path to the user's home directory.</returns>
-    public static string GetUserHomeFolder()
-        => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    public static string GetUserHomeFolder() => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 }

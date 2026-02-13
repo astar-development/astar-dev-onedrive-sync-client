@@ -6,8 +6,7 @@ namespace AStar.Dev.OneDrive.Client.Tests.Unit.Authentication;
 
 public class AuthServiceShould
 {
-    private static AuthConfiguration CreateTestConfiguration()
-        => new() { ClientId = "test-client-id", RedirectUri = "http://localhost", Authority = "https://login.microsoftonline.com/common", Scopes = ["test.scope"] };
+    private static AuthConfiguration CreateTestConfiguration() => new() { ClientId = "test-client-id", RedirectUri = "http://localhost", Authority = "https://login.microsoftonline.com/common", Scopes = ["test.scope"] };
 
     [Fact]
     public async Task ReturnSuccessResultWhenLoginSucceeds()

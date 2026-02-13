@@ -42,9 +42,8 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
         _ = await context.SaveChangesAsync(cancellationToken);
     }
 
-    private static bool IsOneOfMyAccounts(AccountInfo account)
-    => (account.DisplayName.StartsWith("jason.", StringComparison.OrdinalIgnoreCase) && account.DisplayName.EndsWith("@outlook.com", StringComparison.OrdinalIgnoreCase))
-        || account.DisplayName.Equals("astar-development@outlook.com", StringComparison.OrdinalIgnoreCase);
+    private static bool IsOneOfMyAccounts(AccountInfo account) => (account.DisplayName.StartsWith("jason.", StringComparison.OrdinalIgnoreCase) && account.DisplayName.EndsWith("@outlook.com", StringComparison.OrdinalIgnoreCase))
+            || account.DisplayName.Equals("astar-development@outlook.com", StringComparison.OrdinalIgnoreCase);
 
     /// <inheritdoc />
     public async Task UpdateAsync(AccountInfo account, CancellationToken cancellationToken = default)
@@ -86,34 +85,32 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
         return await context.Accounts.AnyAsync(a => a.AccountId == accountId, cancellationToken);
     }
 
-    private static AccountInfo MapToModel(AccountEntity account)
-        => new(
-            account.AccountId,
-            account.DisplayName,
-            account.LocalSyncPath,
-            account.IsAuthenticated,
-            account.LastSyncUtc,
-            account.DeltaToken,
-            account.EnableDetailedSyncLogging,
-            account.EnableDebugLogging,
-            account.MaxParallelUpDownloads,
-            account.MaxItemsInBatch,
-            account.AutoSyncIntervalMinutes
-        );
+    private static AccountInfo MapToModel(AccountEntity account) => new(
+                account.AccountId,
+                account.DisplayName,
+                account.LocalSyncPath,
+                account.IsAuthenticated,
+                account.LastSyncUtc,
+                account.DeltaToken,
+                account.EnableDetailedSyncLogging,
+                account.EnableDebugLogging,
+                account.MaxParallelUpDownloads,
+                account.MaxItemsInBatch,
+                account.AutoSyncIntervalMinutes
+            );
 
-    private static AccountEntity MapToEntity(AccountInfo model)
-        => new()
-        {
-            AccountId = model.AccountId,
-            DisplayName = model.DisplayName,
-            LocalSyncPath = model.LocalSyncPath,
-            IsAuthenticated = model.IsAuthenticated,
-            LastSyncUtc = model.LastSyncUtc,
-            DeltaToken = model.DeltaToken,
-            EnableDetailedSyncLogging = model.EnableDetailedSyncLogging,
-            EnableDebugLogging = model.EnableDebugLogging,
-            MaxParallelUpDownloads = model.MaxParallelUpDownloads,
-            MaxItemsInBatch = model.MaxItemsInBatch,
-            AutoSyncIntervalMinutes = model.AutoSyncIntervalMinutes
-        };
+    private static AccountEntity MapToEntity(AccountInfo model) => new()
+    {
+        AccountId = model.AccountId,
+        DisplayName = model.DisplayName,
+        LocalSyncPath = model.LocalSyncPath,
+        IsAuthenticated = model.IsAuthenticated,
+        LastSyncUtc = model.LastSyncUtc,
+        DeltaToken = model.DeltaToken,
+        EnableDetailedSyncLogging = model.EnableDetailedSyncLogging,
+        EnableDebugLogging = model.EnableDebugLogging,
+        MaxParallelUpDownloads = model.MaxParallelUpDownloads,
+        MaxItemsInBatch = model.MaxItemsInBatch,
+        AutoSyncIntervalMinutes = model.AutoSyncIntervalMinutes
+    };
 }

@@ -103,31 +103,29 @@ public sealed class SyncConflictRepository(IDbContextFactory<SyncDbContext> cont
         .ExecuteDeleteAsync(cancellationToken);
     }
 
-    private static SyncConflict MapToDomain(SyncConflictEntity syncConflict)
-        => new(
-            syncConflict.Id,
-            syncConflict.AccountId,
-            syncConflict.FilePath,
-            syncConflict.LocalModifiedUtc,
-            syncConflict.RemoteModifiedUtc,
-            syncConflict.LocalSize,
-            syncConflict.RemoteSize,
-            syncConflict.DetectedUtc,
-            syncConflict.ResolutionStrategy,
-            syncConflict.IsResolved);
+    private static SyncConflict MapToDomain(SyncConflictEntity syncConflict) => new(
+                syncConflict.Id,
+                syncConflict.AccountId,
+                syncConflict.FilePath,
+                syncConflict.LocalModifiedUtc,
+                syncConflict.RemoteModifiedUtc,
+                syncConflict.LocalSize,
+                syncConflict.RemoteSize,
+                syncConflict.DetectedUtc,
+                syncConflict.ResolutionStrategy,
+                syncConflict.IsResolved);
 
-    private static SyncConflictEntity MapToEntity(SyncConflict conflict)
-        => new()
-        {
-            Id = conflict.Id,
-            AccountId = conflict.AccountId,
-            FilePath = conflict.FilePath,
-            LocalModifiedUtc = conflict.LocalModifiedUtc,
-            RemoteModifiedUtc = conflict.RemoteModifiedUtc,
-            LocalSize = conflict.LocalSize,
-            RemoteSize = conflict.RemoteSize,
-            DetectedUtc = conflict.DetectedUtc,
-            ResolutionStrategy = conflict.ResolutionStrategy,
-            IsResolved = conflict.IsResolved
-        };
+    private static SyncConflictEntity MapToEntity(SyncConflict conflict) => new()
+    {
+        Id = conflict.Id,
+        AccountId = conflict.AccountId,
+        FilePath = conflict.FilePath,
+        LocalModifiedUtc = conflict.LocalModifiedUtc,
+        RemoteModifiedUtc = conflict.RemoteModifiedUtc,
+        LocalSize = conflict.LocalSize,
+        RemoteSize = conflict.RemoteSize,
+        DetectedUtc = conflict.DetectedUtc,
+        ResolutionStrategy = conflict.ResolutionStrategy,
+        IsResolved = conflict.IsResolved
+    };
 }

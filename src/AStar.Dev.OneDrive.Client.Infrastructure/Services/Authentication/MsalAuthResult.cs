@@ -22,6 +22,5 @@ public sealed class MsalAuthResult(IAccount account, string accessToken)
     /// </summary>
     /// <param name="msalResult">The MSAL authentication result.</param>
     /// <returns>Wrapped result.</returns>
-    public static MsalAuthResult FromMsal(Microsoft.Identity.Client.AuthenticationResult msalResult)
-        => new(msalResult.Account, msalResult.AccessToken);
+    public static MsalAuthResult FromMsal(Microsoft.Identity.Client.AuthenticationResult msalResult) => new(msalResult.Account, msalResult.AccessToken);
 }

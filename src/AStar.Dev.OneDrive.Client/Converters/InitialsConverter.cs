@@ -22,8 +22,5 @@ public class InitialsConverter : IValueConverter
         return $"{parts[0][0]}{parts[^1][0]}".ToUpper();
     }
 
-    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        throw new NotSupportedException();
-    }
+    public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotSupportedException();
 }

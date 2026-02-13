@@ -1,6 +1,6 @@
 ---
 description: "Code Reviewer Agent"
-tools: ["search/codebase", "changes", "usages", "problems"]
+tools: ["search/codebase", "search/changes", "search/usages", "read/problems"]
 ---
 
 <!-- This is an example Agent, rather than a canonical one -->

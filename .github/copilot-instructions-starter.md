@@ -5,6 +5,7 @@
 ## Quick Reference
 
 ### Code Style
+
 - ? Use `var` for local variables (IDE0007)
 - ? Nullable reference types enabled
 - ? Warnings as errors
@@ -12,6 +13,7 @@
 - ? Primary constructors where appropriate
 
 ### Testing
+
 - Framework: xUnit V3
 - Assertions: Shouldly
 - Mocking: NSubstitute
@@ -22,18 +24,21 @@
 ## Coding Guidelines
 
 ### Type System & Nullability
+
 - Enable nullable reference types and strict null checks
 - Use `var` for local variable declarations (IDE0007)
   - **Exception**: Use explicit types for mock declarations in tests
 - Treat warnings as errors - ensure clean builds
 
 ### Async Programming
+
 - Only use async for truly awaitable operations (I/O-bound, parallelizable CPU-bound)
 - Production async methods end with "Async" suffix (e.g., `GetUserAsync()`)
 - Always accept and pass `CancellationToken` to awaitable operations
 - Use `ConfigureAwait(false)` in library code
 
 ### Clean Code Principles
+
 - Follow SOLID principles
 - Meaningful names, small methods, single responsibility
 - Methods: generally ?30 lines
@@ -42,18 +47,24 @@
 - Constructor parameters: ?3 preferred (may indicate class doing too much)
 
 ### Modern C# Features
+
 - **Primary constructors**: Use for concise class definitions
+
   ```csharp
   public class Person(string Name, int Age) { }
   ```
+
 - **Collection expressions**: Cleaner initialization
+
   ```csharp
   var numbers = [1, 2, 3];
   ```
+
 - **Pattern matching**: Use for cleaner control flow
 - **Record types**: Use for immutable data models
 
 ### Dependency Injection
+
 - Use appropriate service lifetimes (`AddScoped`, `AddSingleton`, `AddTransient`)
 - Prefer constructor injection
 - Keep constructors focused on dependency assignment
@@ -63,21 +74,25 @@
 ## Testing Standards
 
 ### Test Organization
+
 - Mirror production code structure exactly
 - One test class per production class
 - Place in same relative path within test project
 - Example:
+
   ```
   src/MyApp/Services/Calculator.cs
   test/MyApp.Tests.Unit/Services/CalculatorShould.cs
   ```
 
 ### Test Naming
+
 - **Class**: `<ClassName>Should`
 - **Method**: `<Action><ExpectedBehavior>`
 - Creates grammatically correct sentence
 
 Examples:
+
 ```csharp
 public class CalculatorShould
 {
@@ -103,6 +118,7 @@ public class CalculatorShould
 ```
 
 ### Test Guidelines
+
 - **AAA Pattern**: Arrange, Act, Assert (separate with blank lines, not comments)
 - **Test async methods**: Do NOT use "Async" suffix (affects test runner output)
 - **Deterministic**: No external state or timing dependencies
@@ -110,6 +126,7 @@ public class CalculatorShould
 - **Target coverage**: ?80% for new features
 
 ### Variable Declaration in Tests
+
 ```csharp
 // Use explicit types for mocks (avoids warnings-as-errors issues)
 IMyService mockService = Substitute.For<IMyService>();
@@ -119,7 +136,9 @@ Exception? exception = Record.Exception(() => sut.DoSomething());
 ```
 
 ### Consolidating Similar Tests
+
 Use `[Theory]` with `[InlineData]` to reduce duplication:
+
 ```csharp
 [Theory]
 [InlineData("Light", 1)]
@@ -136,7 +155,9 @@ public void MapThemeToCorrectIndex(string theme, int expectedIndex)
 ## Code Quality & Static Analysis
 
 ### Warning Suppression
+
 When warnings must be suppressed (rare), use `#pragma` with clear justification:
+
 ```csharp
 #pragma warning disable S1075 // URIs should not be hardcoded - Required by OAuth library
 private const string RedirectUri = "http://localhost";
@@ -144,6 +165,7 @@ private const string RedirectUri = "http://localhost";
 ```
 
 Common suppressible warnings:
+
 - **S1075**: Hardcoded URIs (OAuth redirects, required API endpoints)
 - **S6667**: Logging in catch (when exception intentionally not logged)
 
@@ -152,6 +174,7 @@ Common suppressible warnings:
 ## Test Execution
 
 ### Running Tests
+
 ```bash
 # Full test suite
 dotnet test
@@ -167,6 +190,7 @@ dotnet test --logger "console;verbosity=detailed"
 ```
 
 ### Common Issues
+
 - **Build passes, tests fail**: Run `dotnet build` first, then `dotnet test --no-build`
 - **CS0246 type not found**: Check using statements and namespaces
 
@@ -175,15 +199,18 @@ dotnet test --logger "console;verbosity=detailed"
 ## Interface Design for Testability
 
 ### When to Create Interfaces
+
 - Classes that are dependencies of other classes
 - Sealed classes used as dependencies MUST have interfaces
 
 ### Interface Conventions
+
 - **Naming**: `I` + class name (e.g., `ThemeService` ? `IThemeService`)
 - **Placement**: Same namespace as implementation
 - **Documentation**: Document interface, use `/// <inheritdoc/>` in implementation
 
 ### Refactoring Steps
+
 1. Create interface
 2. Update class to implement interface
 3. Update consumers to use interface
@@ -195,11 +222,13 @@ dotnet test --logger "console;verbosity=detailed"
 ## Documentation
 
 ### XML Comments
+
 - Document ALL public APIs (methods, properties, classes)
 - Do NOT document tests or test projects
 - Use `/// <inheritdoc/>` when implementing interfaces
 
 Example:
+
 ```csharp
 /// <summary>
 /// Gets or sets the logging configuration for the application.

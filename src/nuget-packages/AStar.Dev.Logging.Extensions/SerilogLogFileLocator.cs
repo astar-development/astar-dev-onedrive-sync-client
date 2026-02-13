@@ -26,7 +26,7 @@ public class SerilogLogFileLocator
     /// </summary>
     /// <param name="logDir"></param>
     /// <returns></returns>
-    public static IEnumerable<string> GetAllLogFiles(string logDir)
-        => Directory.GetFiles(logDir, "sync*.log")
-            .OrderByDescending(File.GetLastWriteTimeUtc);
+    public static IEnumerable<string> GetAllLogFiles(string logDir) => Directory.GetFiles(logDir, "sync*.log")
+                .OrderByDescending(File.GetLastWriteTimeUtc);
+
 }

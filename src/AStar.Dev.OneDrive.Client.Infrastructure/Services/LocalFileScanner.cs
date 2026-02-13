@@ -136,10 +136,9 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
         return Uri.UnescapeDataString(relativeUri.ToString());
     }
 
-    private static string EnsureTrailingSlash(string path)
-        => !path.EndsWith(Path.DirectorySeparatorChar) && !path.EndsWith(Path.AltDirectorySeparatorChar)
-            ? path + Path.DirectorySeparatorChar
-            : path;
+    private static string EnsureTrailingSlash(string path) => !path.EndsWith(Path.DirectorySeparatorChar) && !path.EndsWith(Path.AltDirectorySeparatorChar)
+                ? path + Path.DirectorySeparatorChar
+                : path;
 
     private static string CombinePaths(string basePath, string relativePath)
     {

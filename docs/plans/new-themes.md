@@ -146,7 +146,7 @@
 
 ### Phase 4: Settings UI
 
-1. **Create ThemePreferenceToDisplayNameConverter**
+1. **Create ThemePreferenceToDisplayNameConverter** ✅
     - Create [src/AStar.Dev.OneDrive.Client/Converters/ThemePreferenceToDisplayNameConverter.cs](src/AStar.Dev.OneDrive.Client/Converters/ThemePreferenceToDisplayNameConverter.cs)
     - Implement `IValueConverter`
     - Map enum values to user-friendly display names:
@@ -157,7 +157,7 @@
       - `Colourful` → "Colourful"
       - `Terminal` → "Terminal / Hacker"
 
-2. **Create SettingsWindow XAML**
+2. **Create SettingsWindow XAML** ✅
     - Create [src/AStar.Dev.OneDrive.Client/Settings/SettingsWindow.axaml](src/AStar.Dev.OneDrive.Client/Settings/SettingsWindow.axaml) and [.axaml.cs](src/AStar.Dev.OneDrive.Client/Settings/SettingsWindow.axaml.cs)
     - Window properties: Width="600" Height="400", `SizeToContent="Manual"`, `CanResize="false"`, `WindowStartupLocation="CenterOwner"`
     - Add `ComboBox` for theme selection:

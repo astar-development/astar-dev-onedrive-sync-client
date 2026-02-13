@@ -14,6 +14,5 @@ public static class EnumExtensions
     /// <returns>The parsed value as the matching enum value</returns>
     /// <exception cref="ArgumentException">Thrown when the string is not a valid enum value</exception>
     public static T ParseEnum<T>(this string value)
-        where T : struct, Enum
-        => Enum.Parse<T>(value, true);
+        where T : struct, Enum => Enum.Parse<T>(value, true);
 }

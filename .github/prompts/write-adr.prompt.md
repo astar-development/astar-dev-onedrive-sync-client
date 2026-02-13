@@ -1,19 +1,19 @@
 ---
-mode: "agent"
+agent: "agent"
 description: "Create an Architectural Decision Record (ADR) document for AI-optimized decision documentation."
 tools:
   [
     "search/codebase",
-    "usages",
-    "problems",
-    "changes",
-    "runCommands/terminalSelection",
-    "runCommands/terminalLastCommand",
-    "fetch",
+    "search/usages",
+    "read/problems",
+    "search/changes",
+    "read/terminalSelection",
+    "read/terminalLastCommand",
+    "web/fetch",
     "search/searchResults",
     "edit/editFiles",
     "search",
-    "runCommands",
+    "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection",
   ]
 ---
 

@@ -312,48 +312,44 @@ public sealed class ConflictResolverShould
             Arg.Any<CancellationToken>());
     }
 
-    private ConflictResolver CreateResolver()
-        => new(_graphApiClient, _metadataRepo, _accountRepo, _conflictRepo, _localFileScanner, _logger);
+    private ConflictResolver CreateResolver() => new(_graphApiClient, _metadataRepo, _accountRepo, _conflictRepo, _localFileScanner, _logger);
 
-    private static SyncConflict CreateTestConflict()
-        => new(
-            "conflict-123",
-            "account-456",
-            "Documents/test.txt",
-            DateTime.UtcNow.AddHours(-1),
-            DateTime.UtcNow,
-            100,
-            200,
-            DateTime.UtcNow,
-            ConflictResolutionStrategy.None,
-            false);
+    private static SyncConflict CreateTestConflict() => new(
+                "conflict-123",
+                "account-456",
+                "Documents/test.txt",
+                DateTime.UtcNow.AddHours(-1),
+                DateTime.UtcNow,
+                100,
+                200,
+                DateTime.UtcNow,
+                ConflictResolutionStrategy.None,
+                false);
 
-    private static AccountInfo CreateTestAccount()
-        => new(
-            "account-456",
-            "Test User",
-            Path.Combine(Path.GetTempPath(), Guid.CreateVersion7().ToString()),
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
+    private static AccountInfo CreateTestAccount() => new(
+                "account-456",
+                "Test User",
+                Path.Combine(Path.GetTempPath(), Guid.CreateVersion7().ToString()),
+                true,
+                DateTime.UtcNow,
+                null,
+                false,
+                false,
+                3,
+                50,
+                0);
 
-    private static FileMetadata CreateTestMetadata(string accountId, string filePath)
-        => new(
-            "file-789",
-            accountId,
-            Path.GetFileName(filePath),
-            filePath,
-            100,
-            DateTime.UtcNow,
-            filePath, false, false, false,
-            "ctag-123",
-            "etag-456",
-            "hash-789", null,
-            FileSyncStatus.Synced,
-            SyncDirection.Download);
+    private static FileMetadata CreateTestMetadata(string accountId, string filePath) => new(
+                "file-789",
+                accountId,
+                Path.GetFileName(filePath),
+                filePath,
+                100,
+                DateTime.UtcNow,
+                filePath, false, false, false,
+                "ctag-123",
+                "etag-456",
+                "hash-789", null,
+                FileSyncStatus.Synced,
+                SyncDirection.Download);
 }

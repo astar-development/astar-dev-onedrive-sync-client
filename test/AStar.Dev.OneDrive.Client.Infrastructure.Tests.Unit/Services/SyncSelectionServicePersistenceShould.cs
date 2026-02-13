@@ -183,14 +183,13 @@ public class SyncSelectionServicePersistenceShould
         parent.SelectionState.ShouldBe(SelectionState.Indeterminate);
     }
 
-    private static OneDriveFolderNode CreateFolder(string id, string name, string path)
-        => new()
-        {
-            DriveItemId = id,
-            Name = name,
-            Path = path,
-            IsFolder = true,
-            SelectionState = SelectionState.Unchecked,
-            IsSelected = false
-        };
+    private static OneDriveFolderNode CreateFolder(string id, string name, string path) => new()
+    {
+        DriveItemId = id,
+        Name = name,
+        Path = path,
+        IsFolder = true,
+        SelectionState = SelectionState.Unchecked,
+        IsSelected = false
+    };
 }

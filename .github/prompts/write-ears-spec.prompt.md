@@ -1,21 +1,21 @@
 ---
-mode: "agent"
+agent: "agent"
 description: "Create a specification using the EARS format"
 tools:
   [
     "search/codebase",
-    "usages",
-    "changes",
-    "runCommands/terminalSelection",
-    "runCommands/terminalLastCommand",
-    "fetch",
+    "search/usages",
+    "search/changes",
+    "read/terminalSelection",
+    "read/terminalLastCommand",
+    "web/fetch",
     "search/searchResults",
-    "githubRepo",
-    "todos",
+    "web/githubRepo",
+    "todo",
     "edit/editFiles",
     "search",
-    "runCommands",
-    "runTasks",
+    "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection",
+    "execute/createAndRunTask", "execute/runTask", "read/getTaskOutput",
   ]
 ---
 

@@ -12,28 +12,22 @@ public sealed class StringExtensionsShould
 #pragma warning restore CA1805
 
     [Fact]
-    public void ContainTheIsNullMethodWhichReturnsTheResult()
-        => _nullString.IsNull().ShouldBeTrue();
+    public void ContainTheIsNullMethodWhichReturnsTheResult() => _nullString.IsNull().ShouldBeTrue();
 
     [Fact]
-    public void ContainTheIsNotNullMethodWhichReturnsTheResult()
-        => NotNullString.IsNotNull().ShouldBeTrue();
+    public void ContainTheIsNotNullMethodWhichReturnsTheResult() => NotNullString.IsNotNull().ShouldBeTrue();
 
     [Fact]
-    public void ContainTheIsNullOrWhiteSpaceMethodWhichReturnsTheResult()
-        => WhitespaceString.IsNullOrWhiteSpace().ShouldBeTrue();
+    public void ContainTheIsNullOrWhiteSpaceMethodWhichReturnsTheResult() => WhitespaceString.IsNullOrWhiteSpace().ShouldBeTrue();
 
     [Fact]
-    public void ContainTheIsNotNullOrWhiteSpaceMethodWhichReturnsTheResult()
-        => NotNullString.IsNotNullOrWhiteSpace().ShouldBeTrue();
+    public void ContainTheIsNotNullOrWhiteSpaceMethodWhichReturnsTheResult() => NotNullString.IsNotNullOrWhiteSpace().ShouldBeTrue();
 
     [Fact]
-    public void ContainTheFromJsonMethodWhichReturnsTheResult()
-        => AnyJson.FromJson<AnyClass>().ShouldBeEquivalentTo(new AnyClass());
+    public void ContainTheFromJsonMethodWhichReturnsTheResult() => AnyJson.FromJson<AnyClass>().ShouldBeEquivalentTo(new AnyClass());
 
     [Fact]
-    public void ContainTheFromJsonTakingJsonSerializerOptionsMethodWhichReturnsTheResult()
-        => AnyJson.FromJson<AnyClass>(new JsonSerializerOptions()).ShouldBeEquivalentTo(new AnyClass());
+    public void ContainTheFromJsonTakingJsonSerializerOptionsMethodWhichReturnsTheResult() => AnyJson.FromJson<AnyClass>(new JsonSerializerOptions()).ShouldBeEquivalentTo(new AnyClass());
 
     [Theory]
     [InlineData("no-Extension", false)]
@@ -45,8 +39,7 @@ public sealed class StringExtensionsShould
     [InlineData("Correct-Extension.bmp", true)]
     [InlineData("Write-Extension.png", true)]
     [InlineData("Correct-Extension.gif", true)]
-    public void ContainTheIsImageExtensionReturningTheExpectedResults(string fileName, bool expectedResponse)
-        => fileName.IsImage().ShouldBe(expectedResponse);
+    public void ContainTheIsImageExtensionReturningTheExpectedResults(string fileName, bool expectedResponse) => fileName.IsImage().ShouldBe(expectedResponse);
 
     [Theory]
     [InlineData("no-Truncation", 20, "no-Truncation")]
@@ -62,8 +55,7 @@ public sealed class StringExtensionsShould
     [InlineData("Write-Truncation.png", 10, "Write-Trun")]
     [InlineData("Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String--Truncation.gif", 160,
         "Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String-Large-String--Tru")]
-    public void ContainTheTruncateIfRequiredReturningTheExpectedResults(string fileName, int truncateLength, string expectedResponse)
-        => fileName.TruncateIfRequired(truncateLength).ShouldBe(expectedResponse);
+    public void ContainTheTruncateIfRequiredReturningTheExpectedResults(string fileName, int truncateLength, string expectedResponse) => fileName.TruncateIfRequired(truncateLength).ShouldBe(expectedResponse);
 
     [Theory]
     [InlineData("no-number", false)]
@@ -73,16 +65,14 @@ public sealed class StringExtensionsShould
     [InlineData("1", true)]
     [InlineData("12", true)]
     [InlineData("123456", true)]
-    public void ContainTheIsNumberOnlyExtensionReturningTheExpectedResults(string fileName, bool expectedResponse)
-        => fileName.IsNumberOnly().ShouldBe(expectedResponse);
+    public void ContainTheIsNumberOnlyExtensionReturningTheExpectedResults(string fileName, bool expectedResponse) => fileName.IsNumberOnly().ShouldBe(expectedResponse);
 
     [Theory]
     [InlineData("path/to-some_file.txt", "path to some file.txt")]
     [InlineData("folder/sub-folder/file_name.txt", "folder sub folder file name.txt")]
     [InlineData("already clean.txt", "already clean.txt")]
     [InlineData("-_-", "   ")]
-    public void ContainTheSanitizeFilePathMethodWhichReturnsTheExpectedResult(string input, string expected)
-        => input.SanitizeFilePath().ShouldBe(expected);
+    public void ContainTheSanitizeFilePathMethodWhichReturnsTheExpectedResult(string input, string expected) => input.SanitizeFilePath().ShouldBe(expected);
 
     [Theory]
     [InlineData("hello/", "/", "hello")]
@@ -91,6 +81,5 @@ public sealed class StringExtensionsShould
     [InlineData("file.TXT", ".txt", "file")] // case-insensitive removal
     [InlineData("no-trailing", ".ext", "no-trailing")] // no change when not ending with token
     [InlineData("value", "", "value")] // empty token -> no change
-    public void ContainTheRemoveTrailingMethodWhichReturnsTheExpectedResult(string input, string token, string expected)
-        => input.RemoveTrailing(token).ShouldBe(expected);
+    public void ContainTheRemoveTrailingMethodWhichReturnsTheExpectedResult(string input, string token, string expected) => input.RemoveTrailing(token).ShouldBe(expected);
 }

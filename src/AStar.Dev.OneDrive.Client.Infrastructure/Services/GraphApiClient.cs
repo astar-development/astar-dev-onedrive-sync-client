@@ -45,8 +45,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         return new DeltaPage(items, next, delta);
     }
 
-    public async Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, CancellationToken cancellationToken = default)
-        => await GetDriveItemChildrenAsync(accountId, itemId, 200, cancellationToken);
+    public async Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, CancellationToken cancellationToken = default) => await GetDriveItemChildrenAsync(accountId, itemId, 200, cancellationToken);
 
     /// <inheritdoc />
     public async Task<IEnumerable<DriveItem>> GetDriveItemChildrenAsync(string accountId, string itemId, int maxItemsInBatch = 200, CancellationToken cancellationToken = default)
@@ -291,10 +290,9 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         return new GraphServiceClient(authProvider);
     }
 
-    private string GetDeltaOrNextUrl(string? deltaOrNextLink)
-        => string.IsNullOrEmpty(deltaOrNextLink)
-            ? $"{msalConfigurationSettings.GraphUri}/root/delta"
-            : deltaOrNextLink;
+    private string GetDeltaOrNextUrl(string? deltaOrNextLink) => string.IsNullOrEmpty(deltaOrNextLink)
+                ? $"{msalConfigurationSettings.GraphUri}/root/delta"
+                : deltaOrNextLink;
 
     private sealed class GraphTokenProvider(IAuthService authService, string accountId) : IAccessTokenProvider
     {
@@ -343,9 +341,8 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     private static DateTimeOffset GetLastModifiedUtc(JsonElement jsonElement) => jsonElement.TryGetProperty("lastModifiedDateTime", out JsonElement lm)
                 ? DateTimeOffset.Parse(lm.GetString()!, CultureInfo.InvariantCulture)
                 : DateTimeOffset.UtcNow;
-    private static string SetParentPath(JsonElement jsonElement)
-        => jsonElement.TryGetProperty("parentReference", out JsonElement pr) && pr.TryGetProperty("path", out JsonElement p) ? p.GetString() ?? string.Empty : string.Empty;
 
-    private static string? TryGetODataProperty(JsonDocument doc, string propertyName)
-        => doc.RootElement.TryGetProperty(propertyName, out JsonElement prop) ? prop.GetString() : null;
+    private static string SetParentPath(JsonElement jsonElement) => jsonElement.TryGetProperty("parentReference", out JsonElement pr) && pr.TryGetProperty("path", out JsonElement p) ? p.GetString() ?? string.Empty : string.Empty;
+
+    private static string? TryGetODataProperty(JsonDocument doc, string propertyName) => doc.RootElement.TryGetProperty(propertyName, out JsonElement prop) ? prop.GetString() : null;
 }
