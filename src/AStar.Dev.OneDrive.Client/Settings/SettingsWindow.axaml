@@ -48,15 +48,13 @@
         <TextBlock Grid.Row="2"
                    Text="{Binding StatusMessage}"
                    IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
-                   Foreground="Green"
+                   Foreground="#666"
+                   FontStyle="Italic"
                    Margin="0,0,0,10"
                    HorizontalAlignment="Center"/>
 
         <!-- Action Buttons -->
         <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
-            <Button Content="Apply"
-                    Command="{Binding ApplyThemeCommand}"
-                    MinWidth="100"/>
             <Button Content="Close"
                     Click="CloseButton_Click"
                     MinWidth="100"/>

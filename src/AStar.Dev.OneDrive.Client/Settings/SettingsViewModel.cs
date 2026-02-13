@@ -2,6 +2,7 @@ using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.Source.Generators.Attributes;
 using ReactiveUI;
+using System.Reactive.Linq;
 using System.Windows.Input;
 
 namespace AStar.Dev.OneDrive.Client.Settings;
@@ -26,6 +27,12 @@ public class SettingsViewModel : ReactiveObject
         {
             SelectedTheme = _themeService.CurrentTheme;
         };
+
+        // Auto-apply theme when selection changes
+        this.WhenAnyValue(x => x.SelectedTheme)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Skip(1) // Skip initial value
+            .Subscribe(async theme => await ApplyThemeAsync(theme));
 
         // Create ApplyThemeCommand
         ApplyThemeCommand = ReactiveCommand.CreateFromTask(ExecuteApplyThemeAsync);
@@ -65,10 +72,18 @@ public class SettingsViewModel : ReactiveObject
     /// </summary>
     private async Task ExecuteApplyThemeAsync()
     {
+        await ApplyThemeAsync(SelectedTheme);
+    }
+
+    /// <summary>
+    /// Applies the specified theme.
+    /// </summary>
+    private async Task ApplyThemeAsync(ThemePreference theme)
+    {
         try
         {
-            await _themeService.ApplyThemeAsync(SelectedTheme, CancellationToken.None);
-            StatusMessage = "Theme applied successfully";
+            await _themeService.ApplyThemeAsync(theme, CancellationToken.None);
+            StatusMessage = $"Theme changed to {theme}";
         }
         catch
         {

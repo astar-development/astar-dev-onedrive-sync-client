@@ -13,12 +13,22 @@
         <SolidColorBrush x:Key="TextSecondaryBrush">#666666</SolidColorBrush>
         <SolidColorBrush x:Key="BorderBrush">#E0E0E0</SolidColorBrush>
     </Styles.Resources>
-    
+
     <!-- Window Style -->
     <Style Selector="Window">
         <Setter Property="Background" Value="{StaticResource WindowBackgroundBrush}"/>
     </Style>
-    
+
+    <!-- Ensure all text is dark on light backgrounds -->
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+    </Style>
+
+    <!-- ListBox items in sidebar should use default theme (light text on dark background) -->
+    <Style Selector="ListBox ListBoxItem TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource ThemeForegroundBrush}"/>
+    </Style>
+
     <!-- Card Style - White cards with shadow -->
     <Style Selector="Border.card">
         <Setter Property="Background" Value="White"/>
@@ -26,7 +36,7 @@
         <Setter Property="Padding" Value="24"/>
         <Setter Property="BoxShadow" Value="0 2 8 0 #10000000"/>
     </Style>
-    
+
     <!-- Primary Button Style -->
     <Style Selector="Button.primary">
         <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
