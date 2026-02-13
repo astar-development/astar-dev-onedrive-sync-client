@@ -146,7 +146,7 @@ public class MainWindowViewModelShould
 
         var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
 
-        sut.OpenSettingsCommand.ShouldNotBeNull();
+        _ = sut.OpenSettingsCommand.ShouldNotBeNull();
     }
 
     private static AccountManagementViewModel CreateAccountManagementViewModel()

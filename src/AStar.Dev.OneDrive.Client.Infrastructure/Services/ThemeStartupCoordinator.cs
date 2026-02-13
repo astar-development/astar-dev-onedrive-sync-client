@@ -1,8 +1,9 @@
-namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 
+using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.Source.Generators.Attributes;
 
+namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 /// <summary>
 /// Coordinates theme initialization on application startup.
 /// Loads saved theme preferences and applies the appropriate theme at startup.
@@ -25,8 +26,8 @@ public class ThemeStartupCoordinator(
     {
         try
         {
-            var preferences = await windowPreferencesService.LoadAsync(cancellationToken);
-            var themeToApply = preferences?.Theme ?? ThemePreference.OriginalAuto;
+            WindowPreferences? preferences = await windowPreferencesService.LoadAsync(cancellationToken);
+            ThemePreference themeToApply = preferences?.Theme ?? ThemePreference.OriginalAuto;
             await themeService.ApplyThemeAsync(themeToApply, cancellationToken);
         }
         catch(Exception)

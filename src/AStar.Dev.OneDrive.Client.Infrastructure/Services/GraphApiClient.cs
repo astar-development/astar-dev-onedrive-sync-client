@@ -70,7 +70,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         {
             DriveItemCollectionResponse? response = nextLink is null
                 ? await graphClient.Drives[drive.Id].Items[itemId].Children.GetAsync(q => q.QueryParameters.Top = maxItemsInBatch, cancellationToken)
-                : await graphClient.RequestAdapter.SendAsync<DriveItemCollectionResponse>(
+                : await graphClient.RequestAdapter.SendAsync(
                     new RequestInformation { HttpMethod = Method.GET, URI = new Uri(nextLink) },
                     DriveItemCollectionResponse.CreateFromDiscriminatorValue,
                     null,
@@ -137,16 +137,13 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         if(drive?.Id is null)
             throw new InvalidOperationException("Unable to access user's drive");
 
-        // Download file content stream from OneDrive
         Stream contentStream = await graphClient.Drives[drive.Id].Items[itemId].Content.GetAsync(cancellationToken: cancellationToken) ??
                                throw new InvalidOperationException($"Failed to download file content for item {itemId}");
 
-        // Ensure the directory exists
         var directory = Path.GetDirectoryName(localFilePath);
         if(!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             _ = Directory.CreateDirectory(directory);
 
-        // Write the stream to local file
         using var fileStream = new FileStream(localFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
         await contentStream.CopyToAsync(fileStream, cancellationToken);
     }
@@ -154,7 +151,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     /// <inheritdoc />
     public async Task<DriveItem> UploadFileAsync(string accountId, string localFilePath, string remotePath, IProgress<long>? progress = null, CancellationToken cancellationToken = default)
     {
-        if(!System.IO.File.Exists(localFilePath))
+        if(!File.Exists(localFilePath))
             throw new FileNotFoundException($"Local file not found: {localFilePath}", localFilePath);
 
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
@@ -165,28 +162,23 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         var fileInfo = new FileInfo(localFilePath);
         const long smallFileThresholdMb = 4 * 1024 * 1024; // 4MB - Graph API threshold for simple upload
 
-        // Normalize the remote path (remove leading slash, Graph API uses root:/{path} format)
         var normalizedPath = remotePath.TrimStart('/');
 
         if(fileInfo.Length < smallFileThresholdMb)
         {
-            // Simple upload for small files - use path-based addressing
             using var fileStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            // PUT to /drives/{driveId}/root:/{path}:/content
             DriveItem uploadedItem = await graphClient.Drives[drive.Id]
                 .Items[$"root:/{normalizedPath}:"]
                 .Content
                 .PutAsync(fileStream, cancellationToken: cancellationToken) ?? throw new InvalidOperationException($"Upload failed for file: {localFilePath}");
 
-            // Report full file size as uploaded for small files
             progress?.Report(fileInfo.Length);
 
             return uploadedItem;
         }
         else
         {
-            // Resumable upload session for large files
             var requestBody = new CreateUploadSessionPostRequestBody
             {
                 Item = new DriveItemUploadableProperties { AdditionalData = new Dictionary<string, object> { { "@microsoft.graph.conflictBehavior", "replace" } } }
@@ -200,7 +192,6 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
             if(uploadSession?.UploadUrl is null)
                 throw new InvalidOperationException($"Failed to create upload session for file: {localFilePath}");
 
-            // Upload in chunks (recommended 5-10MB per chunk for optimal performance)
             const int ChunkSize = 5 * 1024 * 1024; // 5MB chunks
             using var fileStream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
@@ -233,10 +224,8 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
 
                 position += chunkSize;
 
-                // Report progress after each chunk
                 progress?.Report(position);
 
-                // If this is the last chunk, parse the response to get the DriveItem
                 if(position >= totalLength && response.IsSuccessStatusCode)
                 {
                     var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -264,7 +253,6 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
             throw new InvalidOperationException("Unable to access user's drive");
         }
 
-        // DELETE /drives/{driveId}/items/{itemId}
         try
         {
             await graphClient.Drives[drive.Id].Items[itemId].DeleteAsync(cancellationToken: cancellationToken);
@@ -283,9 +271,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
 
     private GraphServiceClient CreateGraphClientAsync(string accountId)
     {
-        // Create a token provider that uses the auth service
-        var authProvider = new BaseBearerTokenAuthenticationProvider(
-            new GraphTokenProvider(authService, accountId));
+        var authProvider = new BaseBearerTokenAuthenticationProvider(new GraphTokenProvider(authService, accountId));
 
         return new GraphServiceClient(authProvider);
     }
@@ -298,10 +284,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     {
         public AllowedHostsValidator AllowedHostsValidator => new();
 
-        public async Task<string> GetAuthorizationTokenAsync(
-            Uri uri,
-            Dictionary<string, object>? additionalAuthenticationContext = null,
-            CancellationToken cancellationToken = default)
+        public async Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
         {
             var token = await authService.GetAccessTokenAsync(accountId, cancellationToken) ?? throw new InvalidOperationException($"Failed to acquire access token for account: {accountId}");
             return token;

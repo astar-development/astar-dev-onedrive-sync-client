@@ -2,11 +2,12 @@ using System.Text.Json;
 using AStar.Dev.OneDrive.Client.Core.Models;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
+
 public static class SerilogLogParser
 {
     public static DebugLogEntry? Parse(string jsonLine, int id)
     {
-        if (string.IsNullOrWhiteSpace(jsonLine) || !jsonLine.TrimStart().StartsWith('{'))
+        if(string.IsNullOrWhiteSpace(jsonLine) || !jsonLine.TrimStart().StartsWith('{'))
             return null;
 
         try

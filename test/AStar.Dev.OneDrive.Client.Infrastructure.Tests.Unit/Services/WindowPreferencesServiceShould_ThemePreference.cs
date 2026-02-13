@@ -25,7 +25,6 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
     [Fact]
     public async Task SaveAndLoadThemePreference_PersistsOriginalAutoCorrectly()
     {
-        // Arrange
         WindowPreferences preferences = new(
             Id: 1,
             X: 100,
@@ -36,19 +35,16 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             Theme: ThemePreference.OriginalAuto
         );
 
-        // Act
-        await _sut.SaveAsync(preferences);
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        await _sut.SaveAsync(preferences, TestContext.Current.CancellationToken);
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.OriginalAuto);
     }
 
     [Fact]
     public async Task SaveAndLoadThemePreference_PersistsOriginalLightCorrectly()
     {
-        // Arrange
         WindowPreferences preferences = new(
             Id: 1,
             X: 100,
@@ -59,19 +55,16 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             Theme: ThemePreference.OriginalLight
         );
 
-        // Act
-        await _sut.SaveAsync(preferences);
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        await _sut.SaveAsync(preferences, TestContext.Current.CancellationToken);
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.OriginalLight);
     }
 
     [Fact]
     public async Task SaveAndLoadThemePreference_PersistsOriginalDarkCorrectly()
     {
-        // Arrange
         WindowPreferences preferences = new(
             Id: 1,
             X: 100,
@@ -82,19 +75,16 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             Theme: ThemePreference.OriginalDark
         );
 
-        // Act
-        await _sut.SaveAsync(preferences);
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        await _sut.SaveAsync(preferences, TestContext.Current.CancellationToken);
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.OriginalDark);
     }
 
     [Fact]
     public async Task SaveAndLoadThemePreference_PersistsProfessionalCorrectly()
     {
-        // Arrange
         WindowPreferences preferences = new(
             Id: 1,
             X: 100,
@@ -105,19 +95,16 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             Theme: ThemePreference.Professional
         );
 
-        // Act
-        await _sut.SaveAsync(preferences);
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        await _sut.SaveAsync(preferences, TestContext.Current.CancellationToken);
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.Professional);
     }
 
     [Fact]
     public async Task SaveAndLoadThemePreference_PersistsColourfulCorrectly()
     {
-        // Arrange
         WindowPreferences preferences = new(
             Id: 1,
             X: 100,
@@ -128,19 +115,16 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             Theme: ThemePreference.Colourful
         );
 
-        // Act
-        await _sut.SaveAsync(preferences);
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        await _sut.SaveAsync(preferences, TestContext.Current.CancellationToken);
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.Colourful);
     }
 
     [Fact]
     public async Task SaveAndLoadThemePreference_PersistsTerminalCorrectly()
     {
-        // Arrange
         WindowPreferences preferences = new(
             Id: 1,
             X: 100,
@@ -151,19 +135,16 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             Theme: ThemePreference.Terminal
         );
 
-        // Act
-        await _sut.SaveAsync(preferences);
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        await _sut.SaveAsync(preferences, TestContext.Current.CancellationToken);
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.Terminal);
     }
 
     [Fact]
     public async Task LoadThemePreference_DefaultsToOriginalAuto_WhenNull()
     {
-        // Arrange - manually create entity with null theme
         WindowPreferencesEntity entity = new()
         {
             Id = 1,
@@ -174,21 +155,18 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             IsMaximized = false,
             Theme = null
         };
-        _context.WindowPreferences.Add(entity);
-        await _context.SaveChangesAsync();
+        _ = _context.WindowPreferences.Add(entity);
+        _ = await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        // Act
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.OriginalAuto);
     }
 
     [Fact]
     public async Task LoadThemePreference_DefaultsToOriginalAuto_WhenEmpty()
     {
-        // Arrange - manually create entity with empty theme
         WindowPreferencesEntity entity = new()
         {
             Id = 1,
@@ -199,21 +177,18 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             IsMaximized = false,
             Theme = string.Empty
         };
-        _context.WindowPreferences.Add(entity);
-        await _context.SaveChangesAsync();
+        _ = _context.WindowPreferences.Add(entity);
+        _ = await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        // Act
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.OriginalAuto);
     }
 
     [Fact]
     public async Task LoadThemePreference_DefaultsToOriginalAuto_WhenInvalid()
     {
-        // Arrange - manually create entity with invalid theme value
         WindowPreferencesEntity entity = new()
         {
             Id = 1,
@@ -224,14 +199,12 @@ public sealed class WindowPreferencesServiceShould_ThemePreference : IDisposable
             IsMaximized = false,
             Theme = "InvalidThemeValue"
         };
-        _context.WindowPreferences.Add(entity);
-        await _context.SaveChangesAsync();
+        _ = _context.WindowPreferences.Add(entity);
+        _ = await _context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        // Act
-        WindowPreferences? loaded = await _sut.LoadAsync();
+        WindowPreferences? loaded = await _sut.LoadAsync(TestContext.Current.CancellationToken);
 
-        // Assert
-        loaded.ShouldNotBeNull();
+        _ = loaded.ShouldNotBeNull();
         loaded!.Theme.ShouldBe(ThemePreference.OriginalAuto);
     }
 

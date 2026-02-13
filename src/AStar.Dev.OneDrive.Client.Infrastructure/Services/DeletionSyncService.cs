@@ -1,4 +1,3 @@
-using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
@@ -22,7 +21,7 @@ public sealed class DeletionSyncService(
         CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync("DeletionSyncService.ProcessRemoteToLocalDeletionsAsync", accountId, cancellationToken);
-        
+
         List<DriveItemEntity> deletedFromOneDrive = SelectFilesDeletedFromOneDriveButSyncedLocally(
             existingFiles, remotePathsSet, localPathsSet);
 
@@ -37,8 +36,8 @@ public sealed class DeletionSyncService(
                 await DebugLog.InfoAsync("DeletionSyncService.ProcessRemoteToLocalDeletionsAsync", accountId,
                     $"File deleted from OneDrive: {file.RelativePath} - deleting local copy at {file.LocalPath}",
                     cancellationToken);
-                if(System.IO.File.Exists(file.LocalPath))
-                    System.IO.File.Delete(file.LocalPath);
+                if(File.Exists(file.LocalPath))
+                    File.Delete(file.LocalPath);
 
                 await driveItemsRepository.DeleteAsync(file.DriveItemId, cancellationToken);
             }
@@ -49,7 +48,7 @@ public sealed class DeletionSyncService(
                     ex, cancellationToken);
             }
         }
-        
+
         await DebugLog.ExitAsync("DeletionSyncService.ProcessRemoteToLocalDeletionsAsync", accountId, cancellationToken);
     }
 
@@ -62,7 +61,7 @@ public sealed class DeletionSyncService(
         CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", accountId, cancellationToken);
-        
+
         List<FileMetadata> deletedLocally = GetFilesDeletedLocally(allLocalFiles, remotePathsSet, localPathsSet);
 
         await DebugLog.InfoAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", accountId,
@@ -72,7 +71,7 @@ public sealed class DeletionSyncService(
         foreach(FileMetadata file in deletedLocally)
         {
             await DebugLog.InfoAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", accountId,
-                $"Candidate for remote deletion: Path={file.RelativePath}, Id={file.DriveItemId}, SyncStatus={file.SyncStatus}, ExistsLocally={System.IO.File.Exists(file.LocalPath)}, ExistsRemotely={remotePathsSet.Contains(file.RelativePath)}",
+                $"Candidate for remote deletion: Path={file.RelativePath}, Id={file.DriveItemId}, SyncStatus={file.SyncStatus}, ExistsLocally={File.Exists(file.LocalPath)}, ExistsRemotely={remotePathsSet.Contains(file.RelativePath)}",
                 cancellationToken);
         }
 
@@ -96,7 +95,7 @@ public sealed class DeletionSyncService(
                     ex, cancellationToken);
             }
         }
-        
+
         await DebugLog.ExitAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", accountId, cancellationToken);
     }
 
@@ -107,10 +106,10 @@ public sealed class DeletionSyncService(
         CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync("DeletionSyncService.CleanupDatabaseRecordsAsync", accountId, cancellationToken);
-        
+
         foreach(DriveItemEntity fileToDelete in itemsToDelete)
             await driveItemsRepository.DeleteAsync(fileToDelete.DriveItemId, cancellationToken);
-        
+
         await DebugLog.ExitAsync("DeletionSyncService.CleanupDatabaseRecordsAsync", accountId, cancellationToken);
     }
 

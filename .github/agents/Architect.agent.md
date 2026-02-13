@@ -1,6 +1,20 @@
 ---
 description: "Architect Agent"
-tools: ['read/readFile', 'edit/createFile', 'edit/editFiles', 'search/changes', 'search/codebase', 'search/fileSearch', 'search/listDirectory', 'search/searchResults', 'search/textSearch', 'search/usages', 'web/fetch', 'web/githubRepo']
+tools:
+  [
+    "read/readFile",
+    "edit/createFile",
+    "edit/editFiles",
+    "search/changes",
+    "search/codebase",
+    "search/fileSearch",
+    "search/listDirectory",
+    "search/searchResults",
+    "search/textSearch",
+    "search/usages",
+    "web/fetch",
+    "web/githubRepo",
+  ]
 ---
 
 <!--
@@ -724,7 +738,6 @@ public class SyncEngineShould
     [Fact]
     public async Task DownloadRemoteChangesWhenDeltaTokenExists()
     {
-        // Arrange
         var accountId = "test-account";
         var deltaToken = "test-delta-token";
         var expectedItems = new List<DriveItem> { /* ... */ };
@@ -735,10 +748,8 @@ public class SyncEngineShould
         _mockGraphClient.Setup(c => c.GetDeltaChangesAsync(accountId, deltaToken, It.IsAny<CancellationToken>()))
             .Returns(expectedItems.ToAsyncEnumerable());
 
-        // Act
         var result = await _sut.StartSyncAsync(accountId);
 
-        // Assert
         result.IsSuccess.Should().BeTrue();
         _mockGraphClient.Verify(c => c.GetDeltaChangesAsync(accountId, deltaToken, It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -770,14 +781,11 @@ public class AccountRepositoryIntegrationShould : IDisposable
     [Fact]
     public async Task PersistAndRetrieveAccount()
     {
-        // Arrange
         var account = new Account { Id = "test-id", Email = "test@example.com" };
 
-        // Act
         var createResult = await _sut.CreateAsync(account);
         var retrieveResult = await _sut.GetByIdAsync(account.Id);
 
-        // Assert
         createResult.IsSuccess.Should().BeTrue();
         retrieveResult.HasValue.Should().BeTrue();
         retrieveResult.Value.Email.Should().Be(account.Email);

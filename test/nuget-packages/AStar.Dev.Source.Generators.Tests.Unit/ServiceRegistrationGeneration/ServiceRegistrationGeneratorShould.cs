@@ -1,8 +1,8 @@
-﻿using AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
+﻿using System;
+using System.Linq;
+using AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System;
-using System.Linq;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.ServiceRegistrationGeneration;
 
@@ -38,6 +38,7 @@ public class ServiceRegistrationGeneratorShould
         GeneratorDriverRunResult result = driver.GetRunResult();
         GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
+
         var text = generated.SourceText.ToString();
 
         text.ShouldContain("s.AddScoped<global::TestNamespace.IFoo, global::TestNamespace.Foo>();");
@@ -54,6 +55,7 @@ public class ServiceRegistrationGeneratorShould
         GeneratorDriverRunResult result = driver.GetRunResult();
         GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
+
         var text = generated.SourceText.ToString();
 
         text.ShouldContain("s.AddSingleton<global::TestNamespace.IFoo, global::TestNamespace.Foo>();");
@@ -70,6 +72,7 @@ public class ServiceRegistrationGeneratorShould
         GeneratorDriverRunResult result = driver.GetRunResult();
         GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
+
         var text = generated.SourceText.ToString();
 
         text.ShouldContain("s.AddScoped<global::TestNamespace.IFoo, global::TestNamespace.Foo>();");
@@ -87,6 +90,7 @@ public class ServiceRegistrationGeneratorShould
         GeneratorDriverRunResult result = driver.GetRunResult();
         GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
+
         var text = generated.SourceText.ToString();
 
         text.ShouldContain("s.AddScoped<global::TestNamespace.IBar, global::TestNamespace.Foo>();");
@@ -103,6 +107,7 @@ public class ServiceRegistrationGeneratorShould
         GeneratorDriverRunResult result = driver.GetRunResult();
         GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
+
         var text = generated.SourceText.ToString();
 
         text.ShouldContain("s.AddScoped<global::TestNamespace.Foo>();");
@@ -119,6 +124,7 @@ public class ServiceRegistrationGeneratorShould
         GeneratorDriverRunResult result = driver.GetRunResult();
         GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions"));
         generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
+        
         var text = generated.SourceText.ToString();
 
         text.ShouldNotContain("AbstractFoo");

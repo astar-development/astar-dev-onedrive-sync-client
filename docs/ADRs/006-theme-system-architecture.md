@@ -47,6 +47,7 @@ We chose **ResourceDictionary Merging** (Option 3) as the architecture for the t
 - **Enum-Based**: ThemePreference enum ensures type safety and compile-time validation
 
 **Architecture Flow**:
+
 1. User selects theme from Settings → SettingsViewModel
 2. ViewModel calls ThemeService.ApplyThemeAsync(ThemePreference theme)
 3. ThemeService loads appropriate .axaml file via AvaloniaXamlLoader.Load()

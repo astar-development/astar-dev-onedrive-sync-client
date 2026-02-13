@@ -8,13 +8,10 @@ public class SyncStateShould
     [Fact]
     public void ContainTheCreateMethodWhichCreatesTheExpectedInitialState()
     {
-        // Arrange
         var accountId = "test-account-id";
 
-        // Act
         var syncState = SyncState.CreateInitial(accountId);
 
-        // Assert
         Assert.Equal(accountId, syncState.AccountId);
         Assert.Equal(SyncStatus.Idle, syncState.Status);
         Assert.Equal(0, syncState.TotalFiles);

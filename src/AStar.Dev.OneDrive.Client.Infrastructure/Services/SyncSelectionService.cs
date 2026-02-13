@@ -87,13 +87,11 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
         if(indeterminateCount > 0)
             return SelectionState.Indeterminate;
 
-        if(checkedCount == folder.Children.Count)
-            return SelectionState.Checked;
-
-        if(uncheckedCount == folder.Children.Count && folder.IsSelected == false)
-            return SelectionState.Unchecked;
-
-        return SelectionState.Indeterminate;
+        return checkedCount == folder.Children.Count
+            ? SelectionState.Checked
+            : uncheckedCount == folder.Children.Count && folder.IsSelected == false
+            ? SelectionState.Unchecked
+            : SelectionState.Indeterminate;
     }
 
     /// <inheritdoc />

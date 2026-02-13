@@ -1,9 +1,9 @@
+using System.Reactive.Linq;
+using System.Windows.Input;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.Source.Generators.Attributes;
 using ReactiveUI;
-using System.Reactive.Linq;
-using System.Windows.Input;
 
 namespace AStar.Dev.OneDrive.Client.Settings;
 
@@ -15,26 +15,19 @@ public class SettingsViewModel : ReactiveObject
 {
     private readonly IThemeService _themeService;
     private ThemePreference _selectedTheme;
-    private string? _statusMessage;
 
     public SettingsViewModel(IThemeService themeService)
     {
         _themeService = themeService;
         _selectedTheme = _themeService.CurrentTheme;
 
-        // Subscribe to external theme changes
-        _themeService.ThemeChanged += (_, _) =>
-        {
-            SelectedTheme = _themeService.CurrentTheme;
-        };
+        _themeService.ThemeChanged += (_, _) => SelectedTheme = _themeService.CurrentTheme;
 
-        // Auto-apply theme when selection changes
-        this.WhenAnyValue(x => x.SelectedTheme)
+        _ = this.WhenAnyValue(x => x.SelectedTheme)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Skip(1) // Skip initial value
+            .Skip(1)
             .Subscribe(async theme => await ApplyThemeAsync(theme));
 
-        // Create ApplyThemeCommand
         ApplyThemeCommand = ReactiveCommand.CreateFromTask(ExecuteApplyThemeAsync);
     }
 
@@ -52,8 +45,8 @@ public class SettingsViewModel : ReactiveObject
     /// </summary>
     public string? StatusMessage
     {
-        get => _statusMessage;
-        set => this.RaiseAndSetIfChanged(ref _statusMessage, value);
+        get;
+        set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
     /// <summary>
@@ -70,10 +63,7 @@ public class SettingsViewModel : ReactiveObject
     /// <summary>
     /// Executes the apply theme command.
     /// </summary>
-    private async Task ExecuteApplyThemeAsync()
-    {
-        await ApplyThemeAsync(SelectedTheme);
-    }
+    private async Task ExecuteApplyThemeAsync() => await ApplyThemeAsync(SelectedTheme);
 
     /// <summary>
     /// Applies the specified theme.

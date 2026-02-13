@@ -62,7 +62,7 @@ public sealed class ServiceRegistrationGenerator : IIncrementalGenerator
 
     internal enum Lifetime { Singleton = 0, Scoped = 1, Transient = 2 }
 
-    internal sealed class ServiceModel(ServiceRegistrationGenerator.Lifetime lifetime, string implFqn, string? serviceFqn, bool alsoAsSelf)
+    internal sealed class ServiceModel(Lifetime lifetime, string implFqn, string? serviceFqn, bool alsoAsSelf)
     {
         public Lifetime Lifetime { get; } = lifetime;
         public string ImplFqn { get; } = implFqn;

@@ -25,11 +25,10 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        string? sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
 
-        sessionId.ShouldNotBeNull();
+        _ = sessionId.ShouldNotBeNull();
         sessionId.ShouldNotBeEmpty();
-
         using SyncDbContext context = _contextFactory.CreateDbContext();
         SyncSessionLogEntity? session = await context.SyncSessionLogs.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
         _ = session.ShouldNotBeNull();
@@ -44,10 +43,9 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        string? sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: false, CancellationToken.None);
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: false, CancellationToken.None);
 
         sessionId.ShouldBeNull();
-
         using SyncDbContext context = _contextFactory.CreateDbContext();
         List<SyncSessionLogEntity> sessions = await context.SyncSessionLogs.ToListAsync(TestContext.Current.CancellationToken);
         sessions.Count.ShouldBe(0);
@@ -58,13 +56,12 @@ public class SyncStateCoordinatorShould
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
-
         SyncState? receivedState = null;
-        coordinator.Progress.Subscribe(state => receivedState = state);
+        _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
         coordinator.UpdateProgress("test-account", SyncStatus.Running, totalFiles: 10, completedFiles: 5, totalBytes: 1000, completedBytes: 500);
 
-        receivedState.ShouldNotBeNull();
+        _ = receivedState.ShouldNotBeNull();
         receivedState.AccountId.ShouldBe("test-account");
         receivedState.Status.ShouldBe(SyncStatus.Running);
         receivedState.TotalFiles.ShouldBe(10);
@@ -78,15 +75,14 @@ public class SyncStateCoordinatorShould
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
-
         SyncState? receivedState = null;
-        coordinator.Progress.Subscribe(state => receivedState = state);
+        _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
         coordinator.UpdateProgress("test-account", SyncStatus.Running, completedBytes: 0);
         Thread.Sleep(200);
         coordinator.UpdateProgress("test-account", SyncStatus.Running, completedBytes: 10_485_760); // 10 MB
 
-        receivedState.ShouldNotBeNull();
+        _ = receivedState.ShouldNotBeNull();
         receivedState.MegabytesPerSecond.ShouldBeGreaterThan(0);
     }
 
@@ -95,16 +91,15 @@ public class SyncStateCoordinatorShould
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
-
         SyncState? receivedState = null;
-        coordinator.Progress.Subscribe(state => receivedState = state);
+        _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
         coordinator.UpdateProgress("test-account", SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 0);
         Thread.Sleep(200);
         coordinator.UpdateProgress("test-account", SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 10_485_760);
 
-        receivedState.ShouldNotBeNull();
-        receivedState.EstimatedSecondsRemaining.ShouldNotBeNull();
+        _ = receivedState.ShouldNotBeNull();
+        _ = receivedState.EstimatedSecondsRemaining.ShouldNotBeNull();
         receivedState.EstimatedSecondsRemaining.Value.ShouldBeGreaterThan(0);
     }
 
@@ -113,9 +108,8 @@ public class SyncStateCoordinatorShould
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
-
-        string? sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
-        sessionId.ShouldNotBeNull();
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        _ = sessionId.ShouldNotBeNull();
 
         await coordinator.RecordCompletionAsync(uploadCount: 5, downloadCount: 3, deleteCount: 1, conflictCount: 2, completedBytes: 1024, CancellationToken.None);
 
@@ -128,7 +122,7 @@ public class SyncStateCoordinatorShould
         session.FilesDeleted.ShouldBe(1);
         session.ConflictsDetected.ShouldBe(2);
         session.TotalBytes.ShouldBe(1024);
-        session.CompletedUtc.ShouldNotBeNull();
+        _ = session.CompletedUtc.ShouldNotBeNull();
     }
 
     [Fact]
@@ -150,16 +144,15 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        string? sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
-        sessionId.ShouldNotBeNull();
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
 
+        _ = sessionId.ShouldNotBeNull();
         await coordinator.RecordFailureAsync(CancellationToken.None);
-
         using SyncDbContext context = _contextFactory.CreateDbContext();
         SyncSessionLogEntity? session = await context.SyncSessionLogs.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
         _ = session.ShouldNotBeNull();
         ((SyncStatus)session.Status).ShouldBe(SyncStatus.Failed);
-        session.CompletedUtc.ShouldNotBeNull();
+        _ = session.CompletedUtc.ShouldNotBeNull();
     }
 
     [Fact]
@@ -168,16 +161,15 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        string? sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
-        sessionId.ShouldNotBeNull();
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
 
+        _ = sessionId.ShouldNotBeNull();
         await coordinator.RecordCancellationAsync(CancellationToken.None);
-
         using SyncDbContext context = _contextFactory.CreateDbContext();
         SyncSessionLogEntity? session = await context.SyncSessionLogs.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
         _ = session.ShouldNotBeNull();
         ((SyncStatus)session.Status).ShouldBe(SyncStatus.Paused);
-        session.CompletedUtc.ShouldNotBeNull();
+        _ = session.CompletedUtc.ShouldNotBeNull();
     }
 
     [Fact]
@@ -202,9 +194,8 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        string? sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
-
-        string? currentSessionId = coordinator.GetCurrentSessionId();
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        var currentSessionId = coordinator.GetCurrentSessionId();
 
         currentSessionId.ShouldBe(sessionId);
     }
@@ -215,7 +206,7 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        string? currentSessionId = coordinator.GetCurrentSessionId();
+        var currentSessionId = coordinator.GetCurrentSessionId();
 
         currentSessionId.ShouldBeNull();
     }
@@ -229,12 +220,11 @@ public class SyncStateCoordinatorShould
         SyncState? firstState = null;
         SyncState? secondState = null;
         var stateCount = 0;
-        coordinator.Progress.Subscribe(state =>
+        _ = coordinator.Progress.Subscribe(state =>
         {
             stateCount++;
             if(stateCount == 1)
                 firstState = state;
-            // State 2 is emitted during ResetTrackingDetails, which doesn't publish a state
             else if(stateCount == 3)
                 secondState = state;
         });
@@ -245,10 +235,9 @@ public class SyncStateCoordinatorShould
         Thread.Sleep(200);
         coordinator.UpdateProgress("test-account", SyncStatus.Running, completedBytes: 20_971_520);
 
-        // Verify the first and third states were captured (reset doesn't publish)
-        firstState.ShouldNotBeNull();
-        secondState.ShouldNotBeNull();
-        stateCount.ShouldBe(3); // Initial state + 2 UpdateProgress calls
+        _ = firstState.ShouldNotBeNull();
+        _ = secondState.ShouldNotBeNull();
+        stateCount.ShouldBe(3);
     }
 
     [Fact]
@@ -258,11 +247,11 @@ public class SyncStateCoordinatorShould
         var coordinator = new SyncStateCoordinator(repository);
 
         SyncState? receivedState = null;
-        coordinator.Progress.Subscribe(state => receivedState = state);
+        _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
         coordinator.UpdateProgress("test-account", SyncStatus.Running, currentScanningFolder: "/Documents");
 
-        receivedState.ShouldNotBeNull();
+        _ = receivedState.ShouldNotBeNull();
         receivedState.CurrentStatusMessage.ShouldBe("/Documents");
     }
 
@@ -272,6 +261,7 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
         using var cts = new CancellationTokenSource();
+
         await cts.CancelAsync();
 
         _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
@@ -284,8 +274,9 @@ public class SyncStateCoordinatorShould
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
-        await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        _ = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
         using var cts = new CancellationTokenSource();
+
         await cts.CancelAsync();
 
         _ = await Should.ThrowAsync<OperationCanceledException>(async () =>

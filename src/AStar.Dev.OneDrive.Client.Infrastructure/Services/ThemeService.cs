@@ -2,7 +2,6 @@ using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.Source.Generators.Attributes;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 
@@ -25,19 +24,15 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
     /// <inheritdoc />
     public async Task ApplyThemeAsync(ThemePreference theme, CancellationToken cancellationToken = default)
     {
-        // Update runtime theme if Application.Current is available
         if(Application.Current is not null)
         {
             ApplyThemeVariantAndResources(theme);
         }
 
-        // Update current theme
         CurrentTheme = theme;
 
-        // Persist to window preferences
         await PersistThemePreferenceAsync(theme, cancellationToken);
 
-        // Raise event
         ThemeChanged?.Invoke(this, theme);
     }
 
@@ -46,10 +41,8 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
         if(Application.Current is null)
             return;
 
-        // Clear custom resource dictionaries (preserve base FluentTheme)
         ClearCustomResourceDictionaries();
 
-        // Apply theme based on preference
         switch(theme)
         {
             case ThemePreference.OriginalLight:
@@ -86,7 +79,7 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
         if(Application.Current?.Styles is null)
             return;
 
-        foreach(var style in _loadedThemeStyles.ToList())
+        foreach(IStyle? style in _loadedThemeStyles.ToList())
         {
             _ = Application.Current.Styles.Remove(style);
         }
@@ -115,26 +108,11 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
 
     private async Task PersistThemePreferenceAsync(ThemePreference theme, CancellationToken cancellationToken)
     {
-        // Load existing preferences or create new ones
-        var preferences = await windowPreferencesService.LoadAsync(cancellationToken);
+        WindowPreferences? preferences = await windowPreferencesService.LoadAsync(cancellationToken);
 
-        if(preferences is null)
-        {
-            // Create default preferences with new theme
-            preferences = new WindowPreferences(
-                Id: 1,
-                X: null,
-                Y: null,
-                Width: 800,
-                Height: 600,
-                IsMaximized: false,
-                Theme: theme);
-        }
-        else
-        {
-            // Update theme in existing preferences
-            preferences = preferences with { Theme = theme };
-        }
+        preferences = preferences is null
+            ? new WindowPreferences(Id: 1, X: null, Y: null, Width: 800, Height: 600, IsMaximized: false, Theme: theme)
+            : (preferences with { Theme = theme });
 
         await windowPreferencesService.SaveAsync(preferences, cancellationToken);
     }
