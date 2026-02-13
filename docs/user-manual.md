@@ -1,7 +1,7 @@
 # OneDrive Multi-Account Sync - User Manual
 
-**Version**: 3.0  
-**Last Updated**: January 8, 2026
+**Version**: 3.1
+**Last Updated**: February 13, 2026
 
 ---
 
@@ -14,11 +14,12 @@
 5. [Running a Sync](#running-a-sync)
 6. [Understanding Conflict Resolution](#understanding-conflict-resolution)
 7. [Advanced Settings](#advanced-settings)
-8. [Automatic Sync Features](#automatic-sync-features)
-9. [Viewing Sync History and Logs](#viewing-sync-history-and-logs)
-10. [Troubleshooting - Basic](#troubleshooting---basic)
-11. [Troubleshooting - Advanced](#troubleshooting---advanced)
-12. [Frequently Asked Questions](#frequently-asked-questions)
+8. [Changing Themes](#changing-themes)
+9. [Automatic Sync Features](#automatic-sync-features)
+10. [Viewing Sync History and Logs](#viewing-sync-history-and-logs)
+11. [Troubleshooting - Basic](#troubleshooting---basic)
+12. [Troubleshooting - Advanced](#troubleshooting---advanced)
+13. [Frequently Asked Questions](#frequently-asked-questions)
 
 ---
 
@@ -42,6 +43,7 @@ Welcome to OneDrive Multi-Account Sync! This application helps you synchronize m
 ### First Time Launch
 
 When you first open the application, you'll see:
+
 - An empty account list on the left
 - A message prompting you to add your first account
 - Menu options at the top for settings and logs
@@ -57,6 +59,7 @@ When you first open the application, you'll see:
 **What Permissions Are Requested?**
 
 The application needs permission to:
+
 - **Read your files**: To know what files exist in your OneDrive
 - **Write files**: To upload changes you make locally
 - **Access when you're not using the app**: To enable automatic sync features
@@ -66,6 +69,7 @@ Your password is never shared with this application - Microsoft handles all auth
 ### Understanding the Default Setup
 
 After adding an account, the application creates a default folder on your computer to store synced files. This is typically located at:
+
 - **Windows**: `C:\Users\[YourName]\Documents\AStarOneDrive\[AccountName]`
 - **macOS**: `/Users/[YourName]/Documents/AStarOneDrive/[AccountName]`
 - **Linux**: `~/Documents/AStarOneDrive/[AccountName]`
@@ -79,13 +83,15 @@ You can change this location in the account settings (see [Managing Your Account
 ### Viewing Account Information
 
 The left panel shows all your connected accounts. For each account, you'll see:
-- **Display Name**: Your Microsoft account name (e.g., john.doe@company.com)
+
+- **Display Name**: Your Microsoft account name (e.g., <john.doe@company.com>)
 - **Authentication Status**: Whether the account is currently signed in
 - **Last Sync Time**: When the last successful sync completed
 
 ### Selecting an Account
 
 Click on any account in the list to:
+
 - View and select folders to sync (right panel)
 - Start a manual sync
 - See sync progress and status
@@ -136,6 +142,7 @@ The right panel shows your OneDrive folder structure. Each folder has a checkbox
 4. Subfolders are automatically included when you check a parent folder
 
 **Tips**:
+
 - Checking a parent folder automatically checks all subfolders
 - Unchecking a parent folder automatically unchecks all subfolders
 - You can mix and match - check some subfolders while leaving others unchecked
@@ -188,6 +195,7 @@ The sync process works in several phases:
 ### Monitoring Sync Progress
 
 While syncing, you'll see an overlay showing:
+
 - **Current Phase**: What the sync is currently doing
 - **Progress Bar**: Visual representation of completion
 - **Files Transferred**: How many files have been processed
@@ -198,6 +206,7 @@ While syncing, you'll see an overlay showing:
 ### Canceling a Sync
 
 Click the **"Cancel Sync"** button at the bottom of the screen to stop an in-progress sync. The application will:
+
 - Finish uploading/downloading the current file
 - Save progress so you can resume later
 - Mark incomplete operations so they can be retried
@@ -211,6 +220,7 @@ Click the **"Cancel Sync"** button at the bottom of the screen to stop an in-pro
 ### What Is a Conflict?
 
 A conflict occurs when the same file changes in **both** locations between syncs:
+
 - You edit a document on your computer
 - Someone else (or you from another device) edits the same document in OneDrive
 - The sync needs your help to decide which version to keep
@@ -218,6 +228,7 @@ A conflict occurs when the same file changes in **both** locations between syncs
 ### When Conflicts Appear
 
 Conflicts are detected during the sync process. When conflicts are found:
+
 - The sync overlay **stays open** instead of auto-closing
 - A **"⚠️ View Conflicts"** button appears in yellow/orange
 - The number of conflicts is shown in the sync summary
@@ -225,6 +236,7 @@ Conflicts are detected during the sync process. When conflicts are found:
 ### Viewing Conflicts
 
 Click either:
+
 - **"View Conflicts"** button on the sync overlay, OR
 - **"⚠️ View Conflicts"** button in the main window (appears when conflicts exist)
 
@@ -233,12 +245,14 @@ Click either:
 For each conflict, you'll see:
 
 **File Information**:
+
 - File name and path
 - Local version: Modified date and size
 - Remote version: Modified date and size
 - When the conflict was detected
 
 **Resolution Options**:
+
 1. **None**: Skip this file for now (you can resolve it later)
 2. **Keep Local**: Use the version on your computer (overwrites OneDrive)
 3. **Keep Remote**: Use the version in OneDrive (overwrites your local file)
@@ -247,11 +261,13 @@ For each conflict, you'll see:
 ### Choosing a Resolution Strategy
 
 For each conflict:
+
 1. Review the modification dates and file sizes
 2. Consider which version is more recent or important
 3. Select your preferred resolution from the dropdown
 
 **Tips**:
+
 - **Keep Both** is the safest option if you're unsure
 - You can set different strategies for different files
 - The local file is renamed to `filename_conflict_[timestamp].ext` when keeping both
@@ -259,6 +275,7 @@ For each conflict:
 ### Resolving All Conflicts
 
 After choosing strategies for each conflict:
+
 1. Click the **"Resolve All"** button
 2. The application applies each conflict's strategy
 3. Files are uploaded, downloaded, or renamed as needed
@@ -269,6 +286,7 @@ After choosing strategies for each conflict:
 ### After Resolution
 
 Once conflicts are resolved:
+
 - The conflict resolution screen closes
 - The sync summary updates
 - The **"⚠️ View Conflicts"** button disappears (if no conflicts remain)
@@ -283,12 +301,14 @@ Once conflicts are resolved:
 Access these settings via **File → Update Account Details**:
 
 **Max Parallel Uploads/Downloads (1-10)**:
+
 - Default: 3
 - Higher values = faster sync for many small files
 - Lower values = less network/CPU usage
 - Recommended: 3-5 for typical use, 8-10 for large photo/video libraries
 
 **Max Items in Batch (1-100)**:
+
 - Default: 50
 - How many items to process before checking for cancellation
 - Higher values = slightly better performance
@@ -298,16 +318,105 @@ Access these settings via **File → Update Account Details**:
 ### Logging Options
 
 **Detailed Sync Logging**:
+
 - **When to enable**: If you need to see exactly what happens to each file
 - **Impact**: Creates detailed records of every file operation
 - **Location**: Stored in the database, viewable via **File → View Sync History**
 
 **Debug Logging**:
+
 - **When to enable**: When troubleshooting problems with support
 - **Impact**: Saves extensive diagnostic information
 - **Location**: Database, viewable via **File → View Debug Logs**
 
 **Warning**: Enabling both logging options uses more disk space and may slightly slow down syncs.
+
+---
+
+## Changing Themes
+
+The application includes six visual themes to personalize your experience. You can switch between themes at any time without restarting the application.
+
+### How to Change Themes
+
+1. **Open Settings**
+   - Click **File** in the menu bar
+   - Select **Settings...**
+
+2. **Select a Theme**
+   - In the Settings window, you'll see a **Theme** dropdown
+   - Click the dropdown to view all available themes
+   - Select your desired theme from the list
+
+3. **Changes Apply Automatically**
+   - The theme changes **immediately** when you select it
+   - No restart required
+   - Click **Close** to return to the main window
+
+### Available Themes
+
+#### Original (Automatic)
+
+- **Description**: Follows your Windows system theme preference
+- **Behavior**: Automatically switches between light and dark mode based on your system settings
+- **Visual Style**: Clean, modern Fluent Design with subtle animations
+- **Best For**: Users who prefer consistency with their operating system theme
+
+[Screenshot placeholder: original-auto-theme.png](../images/original-auto-theme.png)
+
+#### Original (Light)
+
+- **Description**: Fixed light mode theme
+- **Visual Style**: Bright, clean interface with white backgrounds and dark text
+- **Best For**: Well-lit environments or users who prefer light backgrounds
+
+[Screenshot placeholder: original-light-theme.png](../images/original-light-theme.png)
+
+#### Original (Dark)
+
+- **Description**: Fixed dark mode theme
+- **Visual Style**: Dark backgrounds with light text for reduced eye strain
+- **Best For**: Low-light environments or users who prefer darker interfaces
+
+[Screenshot placeholder: original-dark-theme.png](../images/original-dark-theme.png)
+
+#### Professional
+
+- **Description**: Corporate minimalist design with blue accents
+- **Visual Style**: Subtle shadows, ample whitespace, and professional color palette
+- **Color Scheme**: Blue (#0078D4) accents on neutral grays
+- **Best For**: Business and enterprise environments where a professional appearance is important
+
+[Screenshot placeholder: professional-theme.png](../images/professional-theme.png)
+
+#### Colourful
+
+- **Description**: Playful and vibrant theme with modern design elements
+- **Visual Style**: Gradient backgrounds, glass morphism effects, and bright colors
+- **Color Scheme**: Purple, pink, and teal gradients with emoji icons
+- **Best For**: Creative professionals and users who enjoy a fun, approachable interface
+
+[Screenshot placeholder: colourful-theme.png](../images/colourful-theme.png)
+
+#### Terminal
+
+- **Description**: Retro hacker aesthetic inspired by classic computer terminals
+- **Visual Style**: Green-on-black color scheme with monospace fonts and ASCII art
+- **Color Scheme**: Neon green (#00FF41) on black backgrounds
+- **Typography**: Monospace fonts throughout
+- **Best For**: Power users and developers who appreciate retro computing aesthetics
+
+[Screenshot placeholder: terminal-theme.png](../images/terminal-theme.png)
+
+### Theme Persistence
+
+Your selected theme is saved automatically and will be remembered when you:
+
+- Close and reopen the application
+- Restart your computer
+- Update the application to a new version
+
+Each theme maintains full functionality - only the visual appearance changes. All features, buttons, and menus work identically across all themes.
 
 ---
 
@@ -318,11 +427,13 @@ Access these settings via **File → Update Account Details**:
 After your first successful manual sync, the application automatically monitors your local folder for changes:
 
 **How It Works**:
+
 - When you save a file, the change is detected immediately
 - A sync starts automatically after a short delay (to batch multiple changes)
 - Only changed files are uploaded - very fast!
 
 **Status Indicator**:
+
 - The account shows "Auto-sync enabled" when file watching is active
 - If file watching stops, run a manual sync to re-enable it
 
@@ -331,6 +442,7 @@ After your first successful manual sync, the application automatically monitors 
 Configure the application to check OneDrive for changes on a schedule:
 
 **Setting Up Scheduled Checks**:
+
 1. Go to **File → Update Account Details**
 2. Select the account
 3. Set **Auto-Sync Interval** to your desired frequency (60-1440 minutes)
@@ -340,6 +452,7 @@ Configure the application to check OneDrive for changes on a schedule:
 4. Leave blank to disable scheduled checks
 
 **How It Works**:
+
 - At the specified interval, the application checks OneDrive for changes
 - If changes are found, a sync automatically starts
 - This ensures you get updates even if the files weren't changed on your computer
@@ -361,6 +474,7 @@ Configure the application to check OneDrive for changes on a schedule:
 Access via **File → View Sync History**:
 
 **What You'll See**:
+
 - List of all sync sessions with date/time
 - For each session:
   - Start and end times
@@ -370,10 +484,12 @@ Access via **File → View Sync History**:
   - Total data transferred
 
 **Filtering**:
+
 - Select an account to see only its sync history
 - Search for specific dates or file paths
 
 **Uses**:
+
 - Verify when files were last synced
 - Track how much data has been transferred
 - Investigate sync errors or unexpected changes
@@ -385,12 +501,14 @@ Access via **File → View Debug Logs**:
 **Prerequisites**: Debug Logging must be enabled in account settings
 
 **What You'll See**:
+
 - Detailed technical information about sync operations
 - Performance metrics
 - Error details and stack traces
 - Internal state information
 
 **When to Use**:
+
 - Troubleshooting persistent sync issues
 - Providing information to support
 - Understanding performance problems
@@ -404,6 +522,7 @@ Access via **File → View Debug Logs**:
 **Cause**: The account isn't configured to record this information.
 
 **Solution**:
+
 1. Go to **File → Update Account Details**
 2. Select the account
 3. Enable **Detailed Sync Logging** (for sync history)
@@ -416,6 +535,7 @@ Access via **File → View Debug Logs**:
 **Cause**: Syncing many files or large files naturally takes time.
 
 **Solutions**:
+
 - **Check progress**: Look at the number of files and data being transferred
 - **Increase parallel transfers**: Go to account settings and increase "Max Parallel Uploads/Downloads" to 8-10
 - **Be patient with large files**: A 2GB video will take time on any connection
@@ -442,6 +562,7 @@ Access via **File → View Debug Logs**:
 **This Is Normal**: It means files changed in both places and need your attention.
 
 **Solution**:
+
 1. Click the **"⚠️ View Conflicts"** button
 2. Review each conflict
 3. Choose a resolution strategy for each (Keep Local, Keep Remote, or Keep Both)
@@ -465,11 +586,13 @@ Access via **File → View Debug Logs**:
 ### Problem: Application Closes Unexpectedly
 
 **Immediate Steps**:
+
 1. Restart the application
 2. Check if any syncs are in progress
 3. Wait for syncs to complete
 
 **If It Keeps Happening**:
+
 - Enable Debug Logging (File → Update Account Details)
 - Reproduce the crash
 - Check the debug logs (File → View Debug Logs)
@@ -482,11 +605,13 @@ Access via **File → View Debug Logs**:
 ### Database and Data Locations
 
 **Database Location**:
+
 - **Windows**: `C:\Users\[YourName]\AppData\Local\AStarOneDrive\sync.db`
 - **macOS**: `~/Library/Application Support/AStarOneDrive/sync.db`
 - **Linux**: `~/.local/share/AStarOneDrive/sync.db`
 
 This database stores:
+
 - Account information
 - Sync state and progress
 - Folder selections
@@ -499,6 +624,7 @@ This database stores:
 **Warning**: This deletes all accounts, settings, and sync history. Your local files remain untouched.
 
 **Steps**:
+
 1. Close the application completely
 2. Delete the database file (see locations above)
 3. Restart the application
@@ -508,6 +634,7 @@ This database stores:
 ### Understanding Sync State
 
 The application tracks sync state for each file:
+
 - **Synced**: File is up-to-date in both locations
 - **Pending Upload**: Local changes waiting to be uploaded
 - **Pending Download**: Remote changes waiting to be downloaded
@@ -519,12 +646,14 @@ The application tracks sync state for each file:
 If you need to manually fix sync issues:
 
 **Removing a File from Sync**:
+
 1. Stop any running syncs
 2. Delete the file from BOTH locations (local and OneDrive)
 3. Run a sync to confirm both sides are clean
 4. Re-create or re-download the file as needed
 
 **Forcing a Re-Sync**:
+
 1. Close the application
 2. Delete the database (see "Resetting the Application")
 3. Start the application
@@ -535,11 +664,13 @@ If you need to manually fix sync issues:
 ### Network and Connectivity Issues
 
 **Symptoms**:
+
 - Syncs start but never complete
 - Frequent timeout errors
 - Slow transfer speeds
 
 **Troubleshooting**:
+
 1. **Check Internet Connection**: Ensure you can access onedrive.com in a browser
 2. **Firewall/Antivirus**: Ensure the application isn't blocked
 3. **Proxy Settings**: If behind a corporate proxy, ensure it's properly configured
@@ -549,14 +680,17 @@ If you need to manually fix sync issues:
 ### Performance Optimization
 
 **For Large Number of Small Files** (e.g., source code, photos):
+
 - Increase "Max Parallel Uploads/Downloads" to 8-10
 - Keep "Max Items in Batch" at 50-100
 
 **For Large Files** (e.g., videos, backups):
+
 - Reduce "Max Parallel Uploads/Downloads" to 1-2
 - This prevents timeouts and memory issues
 
 **For Poor Internet Connections**:
+
 - Reduce "Max Parallel Uploads/Downloads" to 1-2
 - Reduce "Max Items in Batch" to 10-20
 - Consider syncing during off-peak hours
@@ -582,6 +716,7 @@ If you need to manually fix sync issues:
    - Safety first - you can always delete one later
 
 **Understanding Keep Both Naming**:
+
 - Local file is renamed: `document_conflict_2026-01-08_14-30-45.docx`
 - Remote file downloads with original name: `document.docx`
 - Timestamp format: YYYY-MM-DD_HH-MM-SS
@@ -589,11 +724,13 @@ If you need to manually fix sync issues:
 ### File Hash Conflicts
 
 In rare cases, files may have the same size and modification time but different content (hash mismatch). This can happen with:
+
 - Files modified without changing size
 - Corrupted downloads
 - Sync interrupted mid-transfer
 
 **Resolution**:
+
 - Always use "Keep Remote" or "Keep Both" to get the correct file
 - Check the file content after resolution
 - If problems persist, delete and re-download the file
@@ -601,11 +738,13 @@ In rare cases, files may have the same size and modification time but different 
 ### Advanced Logging
 
 **Reading Sync History**:
+
 - Look for patterns in failures (same files, same times)
 - Check transfer speeds to identify network issues
 - Note the duration of each phase (scanning, uploading, downloading)
 
 **Reading Debug Logs**:
+
 - Look for ERROR or WARNING level messages
 - Check for repeated errors on the same files
 - Note any stack traces for sharing with support
@@ -613,6 +752,7 @@ In rare cases, files may have the same size and modification time but different 
 ### When to Contact Support
 
 Contact support if you experience:
+
 - Data loss or file corruption
 - Repeated crashes
 - Authentication problems that persist after re-adding the account
@@ -620,6 +760,7 @@ Contact support if you experience:
 - Unexpected behavior not covered in this manual
 
 **Information to Provide**:
+
 1. What you were trying to do
 2. What actually happened
 3. Error messages (screenshots are helpful)
@@ -637,12 +778,14 @@ Contact support if you experience:
 ### What happens if I manually move files in my local folder?
 
 The application detects moves as "delete old file, create new file." On the next sync:
+
 - The file at the old location is deleted in OneDrive
 - The file at the new location is uploaded as new to OneDrive
 
 ### Can I use this with OneDrive for Business?
 
 **Yes**! The application works with:
+
 - Personal Microsoft accounts (Hotmail, Outlook.com)
 - Work or School accounts (Office 365, Microsoft 365)
 - OneDrive for Business
@@ -654,6 +797,7 @@ This application is designed for users who need to sync multiple accounts or hav
 ### How much space does the database use?
 
 Typically 10-50 MB depending on:
+
 - Number of files being synced
 - Whether logging is enabled
 - How many sync sessions are in history
@@ -661,6 +805,7 @@ Typically 10-50 MB depending on:
 ### Can I sync to an external drive?
 
 **Yes**, but with cautions:
+
 - Ensure the drive is always connected when syncing
 - Format the drive with a file system that supports modification times (NTFS on Windows, APFS on macOS, ext4 on Linux)
 - Avoid FAT32 - it doesn't reliably store modification times
@@ -668,6 +813,7 @@ Typically 10-50 MB depending on:
 ### What happens if I edit a file while it's being synced?
 
 The sync will:
+
 - Complete uploading the version that was current when sync started
 - On the next sync, detect your new changes and upload them again
 
@@ -676,12 +822,14 @@ This is safe but may result in multiple versions in OneDrive's version history.
 ### How do I exclude certain files (like .tmp or .cache)?
 
 Currently, the application syncs all files in selected folders. File filtering will be added in a future version. For now:
+
 - Don't select folders containing files you don't want to sync
 - Or, move files you don't want synced to unselected folders
 
 ### Can I sync to multiple computers?
 
 **Yes**! You can:
+
 1. Install the application on multiple computers
 2. Add the same account on each
 3. Select the same folders
@@ -694,6 +842,7 @@ Currently, the application syncs all files in selected folders. File filtering w
 The application supports files up to OneDrive's limit (currently 250 GB for OneDrive Personal, 15 GB for OneDrive for Business without special features).
 
 **Practical considerations**:
+
 - Very large files take a long time to transfer
 - Ensure you have enough local disk space
 - Large files are more likely to fail if your internet connection is unstable
@@ -701,6 +850,7 @@ The application supports files up to OneDrive's limit (currently 250 GB for OneD
 ### How do I know if automatic sync is working?
 
 After running a manual sync successfully:
+
 - The account status shows "Auto-sync enabled"
 - When you save a file locally, a sync starts automatically after a few seconds
 - If scheduled checks are configured, they run at the specified interval
@@ -728,6 +878,7 @@ After running a manual sync successfully:
 ### Providing Feedback
 
 Your feedback helps improve the application! Please share:
+
 - Features you'd like to see
 - Usability issues
 - Bugs or unexpected behavior
@@ -738,6 +889,7 @@ Your feedback helps improve the application! Please share:
 ## Version History
 
 **Version 3.0** (January 2026)
+
 - Multi-account support
 - Selective folder sync
 - Enhanced conflict resolution

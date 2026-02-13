@@ -1,6 +1,6 @@
 # C# 14 / .NET Development Standards
 
-**Universal coding standards for modern C# projects targeting .NET 8+**
+## Universal coding standards for modern C# projects targeting .NET 8+
 
 ## Quick Reference
 
@@ -80,10 +80,10 @@
 - Place in same relative path within test project
 - Example:
 
-  ```
+``` text
   src/MyApp/Services/Calculator.cs
   test/MyApp.Tests.Unit/Services/CalculatorShould.cs
-  ```
+```
 
 ### Test Naming
 

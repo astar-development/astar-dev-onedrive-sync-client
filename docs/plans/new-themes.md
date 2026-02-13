@@ -251,11 +251,10 @@
 
 1. **Update user documentation**
     - Update [docs/user-manual.md](docs/user-manual.md) - add "Changing Themes" section
-    - Document step-by-step:
-      1. File menu → Settings...
-      2. Select desired theme from dropdown
-      3. Click "Apply"
-      4. Theme changes **immediately** (no restart required)
+      - Document step-by-step:
+        1. File menu → Settings...
+        2. Select desired theme from dropdown
+        3. Theme changes **immediately** (no restart required)
     - Include screenshots of each theme
     - Describe theme characteristics:
       - **Original (Automatic)**: Follows system light/dark preference, clean Fluent design
