@@ -28,6 +28,10 @@ public sealed class App : Application
         _ = Host.StartAsync();
         AppHost.EnsureDatabaseUpdated(services);
 
+        // Initialize theme from saved preferences at startup
+        IThemeStartupCoordinator themeCoordinator = services.GetRequiredService<IThemeStartupCoordinator>();
+        themeCoordinator.InitializeThemeOnStartupAsync(CancellationToken.None).GetAwaiter().GetResult();
+
         // Start auto-sync scheduler
         IAutoSyncSchedulerService scheduler = services.GetRequiredService<IAutoSyncSchedulerService>();
         _ = scheduler.StartAsync();
