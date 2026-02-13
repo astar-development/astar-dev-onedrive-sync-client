@@ -53,6 +53,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         OpenUpdateAccountDetailsCommand = ReactiveCommand.Create(OpenUpdateAccountDetails);
         OpenViewSyncHistoryCommand = ReactiveCommand.Create(OpenViewSyncHistory);
         OpenDebugLogViewerCommand = ReactiveCommand.Create(OpenDebugLogViewer);
+        OpenSettingsCommand = ReactiveCommand.Create(OpenSettings);
         ViewConflictsCommand = ReactiveCommand.Create(ViewConflicts, this.WhenAnyValue(x => x.HasUnresolvedConflicts));
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
         _ = DebugLog.EntryAsync(DebugLogMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount?.AccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
@@ -91,6 +92,8 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     public ReactiveCommand<Unit, Unit> OpenViewSyncHistoryCommand { get; }
 
     public ReactiveCommand<Unit, Unit> OpenDebugLogViewerCommand { get; }
+
+    public ReactiveCommand<Unit, Unit> OpenSettingsCommand { get; }
 
     public ReactiveCommand<Unit, Unit> ViewConflictsCommand { get; }
 
@@ -224,7 +227,22 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             _ = window.ShowDialog(desktop.MainWindow);
         }
     }
+    private void OpenSettings()
+    {
+        var settingsViewModel = _serviceProvider.GetRequiredService<Settings.SettingsViewModel>();
+        var window = new Settings.SettingsWindow
+        {
+            DataContext = settingsViewModel
+        };
 
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+            {
+                MainWindow: not null
+            } desktop)
+        {
+            _ = window.ShowDialog(desktop.MainWindow);
+        }
+    }
     private void WireUpTheAccountManagentViewModel(AccountManagementViewModel accountManagementViewModel, SyncTreeViewModel syncTreeViewModel)
     {
         _ = accountManagementViewModel

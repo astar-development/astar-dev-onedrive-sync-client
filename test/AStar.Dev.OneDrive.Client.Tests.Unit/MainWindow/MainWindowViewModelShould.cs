@@ -134,6 +134,21 @@ public class MainWindowViewModelShould
         Should.NotThrow(sut.Dispose);
     }
 
+    [Fact]
+    public void HaveOpenSettingsCommandInitialized()
+    {
+        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
+        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
+        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
+        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+
+        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+
+        sut.OpenSettingsCommand.ShouldNotBeNull();
+    }
+
     private static AccountManagementViewModel CreateAccountManagementViewModel()
     {
         IAuthService mockAuth = Substitute.For<IAuthService>();
