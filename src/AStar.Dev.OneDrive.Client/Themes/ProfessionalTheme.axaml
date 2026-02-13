@@ -12,6 +12,17 @@
         <SolidColorBrush x:Key="TextPrimaryBrush">#1A1A1A</SolidColorBrush>
         <SolidColorBrush x:Key="TextSecondaryBrush">#666666</SolidColorBrush>
         <SolidColorBrush x:Key="BorderBrush">#E0E0E0</SolidColorBrush>
+        
+        <!-- Override Avalonia theme resources for light theme -->
+        <!-- Text colors - dark for readability on light backgrounds -->
+        <SolidColorBrush x:Key="SystemControlForegroundBaseHighBrush">#1A1A1A</SolidColorBrush>
+        <SolidColorBrush x:Key="SystemControlForegroundBaseMediumBrush">#666666</SolidColorBrush>
+        <SolidColorBrush x:Key="SystemControlForegroundBaseMediumHighBrush">#333333</SolidColorBrush>
+        
+        <!-- Background colors - light for the theme -->
+        <SolidColorBrush x:Key="SystemControlBackgroundAltHighBrush">#FFFFFF</SolidColorBrush>
+        <SolidColorBrush x:Key="SystemControlBackgroundBaseLowBrush">#F5F7FA</SolidColorBrush>
+        <SolidColorBrush x:Key="SystemControlBackgroundChromeMediumBrush">#F5F7FA</SolidColorBrush>
     </Styles.Resources>
     
     <!-- Window Style -->
