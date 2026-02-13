@@ -9,6 +9,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Services;
 public class ThemeServiceShould
 {
     private readonly IWindowPreferencesService _mockWindowPreferencesService;
+    private static CancellationToken CancellationToken => TestContext.Current.CancellationToken;
 
     public ThemeServiceShould()
     {
@@ -23,7 +24,7 @@ public class ThemeServiceShould
         var expectedTheme = ThemePreference.Professional;
 
         // Act
-        await service.ApplyThemeAsync(expectedTheme);
+        await service.ApplyThemeAsync(expectedTheme, CancellationToken);
 
         // Assert
         service.CurrentTheme.ShouldBe(expectedTheme);
@@ -48,7 +49,7 @@ public class ThemeServiceShould
             .Returns(existingPreferences);
 
         // Act
-        await service.ApplyThemeAsync(theme);
+        await service.ApplyThemeAsync(theme, CancellationToken);
 
         // Assert
         await _mockWindowPreferencesService.Received(1).SaveAsync(
@@ -67,7 +68,7 @@ public class ThemeServiceShould
         service.ThemeChanged += (sender, e) => raisedTheme = e;
 
         // Act
-        await service.ApplyThemeAsync(theme);
+        await service.ApplyThemeAsync(theme, CancellationToken);
 
         // Assert
         raisedTheme.ShouldBe(theme);
@@ -90,7 +91,7 @@ public class ThemeServiceShould
         var service = new ThemeService(_mockWindowPreferencesService);
         
         // Act
-        await service.ApplyThemeAsync(ThemePreference.OriginalAuto);
+        await service.ApplyThemeAsync(ThemePreference.OriginalAuto, CancellationToken);
 
         // Assert
         service.CurrentTheme.ShouldBe(ThemePreference.OriginalAuto);
@@ -104,7 +105,7 @@ public class ThemeServiceShould
         var service = new ThemeService(_mockWindowPreferencesService);
 
         // Act
-        await service.ApplyThemeAsync(ThemePreference.OriginalLight);
+        await service.ApplyThemeAsync(ThemePreference.OriginalLight, CancellationToken);
 
         // Assert
         service.CurrentTheme.ShouldBe(ThemePreference.OriginalLight);
@@ -118,7 +119,7 @@ public class ThemeServiceShould
         var service = new ThemeService(_mockWindowPreferencesService);
 
         // Act
-        await service.ApplyThemeAsync(ThemePreference.OriginalDark);
+        await service.ApplyThemeAsync(ThemePreference.OriginalDark, CancellationToken);
 
         // Assert
         service.CurrentTheme.ShouldBe(ThemePreference.OriginalDark);
@@ -132,7 +133,7 @@ public class ThemeServiceShould
         var service = new ThemeService(_mockWindowPreferencesService);
 
         // Act
-        await service.ApplyThemeAsync(ThemePreference.Professional);
+        await service.ApplyThemeAsync(ThemePreference.Professional, CancellationToken);
 
         // Assert
         service.CurrentTheme.ShouldBe(ThemePreference.Professional);
@@ -146,7 +147,7 @@ public class ThemeServiceShould
         var service = new ThemeService(_mockWindowPreferencesService);
 
         // Act
-        await service.ApplyThemeAsync(ThemePreference.Colourful);
+        await service.ApplyThemeAsync(ThemePreference.Colourful, CancellationToken);
 
         // Assert
         service.CurrentTheme.ShouldBe(ThemePreference.Colourful);
@@ -160,7 +161,7 @@ public class ThemeServiceShould
         var service = new ThemeService(_mockWindowPreferencesService);
 
         // Act
-        await service.ApplyThemeAsync(ThemePreference.Terminal);
+        await service.ApplyThemeAsync(ThemePreference.Terminal, CancellationToken);
 
         // Assert
         service.CurrentTheme.ShouldBe(ThemePreference.Terminal);
@@ -185,7 +186,7 @@ public class ThemeServiceShould
             .Returns(existingPreferences);
 
         // Act
-        await service.ApplyThemeAsync(ThemePreference.Professional);
+        await service.ApplyThemeAsync(ThemePreference.Professional, CancellationToken);
 
         // Assert
         await _mockWindowPreferencesService.Received(1).SaveAsync(
@@ -208,7 +209,7 @@ public class ThemeServiceShould
             .Returns((WindowPreferences?)null);
 
         // Act
-        await service.ApplyThemeAsync(ThemePreference.Terminal);
+        await service.ApplyThemeAsync(ThemePreference.Terminal, CancellationToken);
 
         // Assert
         await _mockWindowPreferencesService.Received(1).SaveAsync(

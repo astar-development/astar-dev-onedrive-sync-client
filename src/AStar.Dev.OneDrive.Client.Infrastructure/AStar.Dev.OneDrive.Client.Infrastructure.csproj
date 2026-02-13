@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
@@ -12,40 +12,39 @@
 
     <ItemGroup>
         <!-- Microsoft Identity (MSAL) -->
-        <PackageReference Include="Microsoft.Identity.Client" Version="4.81.0"/>
-        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0"/>
-
+        <PackageReference Include="Microsoft.Identity.Client" Version="4.81.0" />
+        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0" />
         <!-- Microsoft Graph API -->
         <PackageReference Include="Microsoft.Graph" Version="5.101.0" />
-        <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8"/>
+        <PackageReference Include="ReactiveUI.Avalonia" Version="11.3.8" />
 
         <!-- Entity Framework Core + SQLite -->
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
         <!-- Dependency Injection & Logging  -->
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.2"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2"/>
-        <PackageReference Include="Testably.Abstractions" Version="10.0.0"/>
-        <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0"/>
-        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.2" />
+        <PackageReference Include="Testably.Abstractions" Version="10.0.0" />
+        <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
 
-        <PackageReference Include="AStar.Dev.Source.Generators" Version="0.1.7"/>
+        <PackageReference Include="AStar.Dev.Source.Generators" Version="0.1.7" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\AStar.Dev.OneDrive.Client.Core\AStar.Dev.OneDrive.Client.Core.csproj"/>
-        <ProjectReference Include="..\nuget-packages\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj"/>
-        <ProjectReference Include="..\nuget-packages\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj"/>
+        <ProjectReference Include="..\AStar.Dev.OneDrive.Client.Core\AStar.Dev.OneDrive.Client.Core.csproj" />
+        <ProjectReference Include="..\nuget-packages\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj" />
+        <ProjectReference Include="..\nuget-packages\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
     </ItemGroup>
 
 </Project>
