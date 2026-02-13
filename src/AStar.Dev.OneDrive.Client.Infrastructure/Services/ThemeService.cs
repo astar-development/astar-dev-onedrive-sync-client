@@ -14,7 +14,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
 [AutoRegisterService(ServiceLifetime.Singleton, As = typeof(IThemeService))]
 public class ThemeService(IWindowPreferencesService windowPreferencesService) : IThemeService
 {
-    private readonly List<ResourceDictionary> _loadedThemeDictionaries = [];
+    private readonly List<IStyle> _loadedThemeStyles = [];
 
     /// <inheritdoc />
     public ThemePreference CurrentTheme { get; private set; } = ThemePreference.OriginalAuto;
@@ -83,15 +83,15 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
 
     private void ClearCustomResourceDictionaries()
     {
-        if(Application.Current?.Resources.MergedDictionaries is null)
+        if(Application.Current?.Styles is null)
             return;
 
-        foreach(var dictionary in _loadedThemeDictionaries.ToList())
+        foreach(var style in _loadedThemeStyles.ToList())
         {
-            _ = Application.Current.Resources.MergedDictionaries.Remove(dictionary);
+            _ = Application.Current.Styles.Remove(style);
         }
 
-        _loadedThemeDictionaries.Clear();
+        _loadedThemeStyles.Clear();
     }
 
     private void LoadThemeResourceDictionary(string resourceUri)
@@ -102,14 +102,14 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
         try
         {
             var uri = new Uri(resourceUri);
-            var resourceDictionary = (ResourceDictionary)AvaloniaXamlLoader.Load(uri);
-            Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
-            _loadedThemeDictionaries.Add(resourceDictionary);
+            var styles = (Styles)AvaloniaXamlLoader.Load(uri);
+            Application.Current.Styles.Add(styles);
+            _loadedThemeStyles.Add(styles);
         }
         catch(Exception ex)
         {
             // Log error but don't fail - fallback to default theme
-            System.Diagnostics.Debug.WriteLine($"Failed to load theme resource dictionary '{resourceUri}': {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Failed to load theme styles '{resourceUri}': {ex.Message}");
         }
     }
 

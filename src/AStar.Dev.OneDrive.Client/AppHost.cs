@@ -10,6 +10,7 @@ using AStar.Dev.OneDrive.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
 using AStar.Dev.OneDrive.Client.MainWindow;
+using AStar.Dev.OneDrive.Client.Settings;
 using AStar.Dev.OneDrive.Client.Syncronisation;
 using AStar.Dev.OneDrive.Client.SyncronisationConflicts;
 using AStar.Dev.Source.Generators.OptionsBindingGeneration;
@@ -141,6 +142,7 @@ public static class AppHost
         _ = services.AddScoped<ISyncStateCoordinator, SyncStateCoordinator>();
         _ = services.AddScoped<IThemeService, ThemeService>();
         _ = services.AddScoped<IThemeStartupCoordinator, ThemeStartupCoordinator>();
+        _ = services.AddScoped<SettingsViewModel>();
 
         return services;
     }
