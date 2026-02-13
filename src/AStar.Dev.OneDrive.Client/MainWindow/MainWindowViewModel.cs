@@ -235,7 +235,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             DataContext = settingsViewModel
         };
 
-        if (Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
+        if(Avalonia.Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime
             {
                 MainWindow: not null
             } desktop)

@@ -16,10 +16,11 @@ internal static class SerilogConfigure
     /// <param name="configuration">The application configuration containing Serilog settings.</param>
     /// <param name="telemetryConfiguration">The Application Insights telemetry configuration.</param>
     /// <returns>The configured <see cref="LoggerConfiguration" /> instance.</returns>
-    public static LoggerConfiguration Configure(this LoggerConfiguration loggerConfiguration, IConfiguration configuration, TelemetryConfiguration telemetryConfiguration) => loggerConfiguration
+    public static LoggerConfiguration Configure(this LoggerConfiguration loggerConfiguration, IConfiguration configuration, TelemetryConfiguration telemetryConfiguration)
+        => loggerConfiguration
                 .WriteTo.ApplicationInsights(telemetryConfiguration,
                     TelemetryConverter.Traces)
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message:lj}{NewLine}{Exception}")
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message:lj}{NewLine}{Exception}", formatProvider: new System.Globalization.CultureInfo("en-GB"))
                 .ReadFrom.Configuration(configuration);
 #pragma warning restore CA1305 // Specify IFormatProvider
 }
