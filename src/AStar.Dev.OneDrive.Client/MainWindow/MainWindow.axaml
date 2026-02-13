@@ -33,6 +33,8 @@
                           Command="{Binding OpenViewSyncHistoryCommand}" />
                 <MenuItem Header="_View Debug Logs"
                           Command="{Binding OpenDebugLogViewerCommand}" />
+                <MenuItem Header="_Settings..."
+                          Command="{Binding OpenSettingsCommand}" />
                 <Separator />
                 <MenuItem Header="_Close Application"
                           Command="{Binding CloseApplicationCommand}"

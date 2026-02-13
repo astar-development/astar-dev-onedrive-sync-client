@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
+using AStar.Dev.Source.Generators.Attributes;
 using ReactiveUI;
 using System.Windows.Input;
 
@@ -8,6 +9,7 @@ namespace AStar.Dev.OneDrive.Client.Settings;
 /// <summary>
 /// ViewModel for the Settings window, providing theme selection and application.
 /// </summary>
+[AutoRegisterService]
 public class SettingsViewModel : ReactiveObject
 {
     private readonly IThemeService _themeService;
