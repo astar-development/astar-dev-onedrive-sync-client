@@ -207,7 +207,7 @@
 
   1. **Fix existing WindowPreferencesService tests** ✅
     - Debug and fix failing tests in [WindowPreferencesServiceShould_ThemePreference.cs](test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/WindowPreferencesServiceShould_ThemePreference.cs)
-      - ✅ All 9 tests passing for theme persistence across all 6 enum values  
+      - ✅ All 9 tests passing for theme persistence across all 6 enum values
   2. **Create ThemeService unit tests** ✅    - Create [test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/ThemeServiceShould.cs](test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/Services/ThemeServiceShould.cs)
     - Tests:
       - `ApplyTheme_UpdatesCurrentThemeProperty()`
@@ -230,12 +230,12 @@
       - `SelectedTheme_UpdatesWhenThemeChangedEventFires()` - verify reactive subscription works
       - `AvailableThemes_ContainsAllSixThemePreferences()`
     - Mock `IThemeService` using interface and verify method calls      - ✅ All 7 tests passing (covers all required scenarios plus additional cases)
-4. **Create integration tests for theme switching**
+  4. **Create integration tests for theme switching**
     - Create [test/AStar.Dev.OneDrive.Client.Tests.Integration/ThemeSwitchingShould.cs](test/AStar.Dev.OneDrive.Client.Tests.Integration/ThemeSwitchingShould.cs)
     - Test full workflow: Load preferences → Apply theme → Verify UI updated → Save preferences → Reload app → Verify persistence
     - May require Avalonia headless testing or manual verification
 
-5. **Manual testing checklist**
+  5. **Manual testing checklist**
     - Launch app → Verify default theme (OriginalAuto) applies automatically
     - File → Settings → Select "Professional" → Click Apply → **Verify immediate theme change** (no restart)
     - Verify window background, button styles, colors update instantly
