@@ -1,8 +1,8 @@
-﻿using AStar.Dev.Source.Generators.OptionsBindingGeneration;
+﻿using System.Linq;
+using AStar.Dev.Source.Generators.OptionsBindingGeneration;
 using AStar.Dev.Source.Generators.Tests.Unit.Utilitites;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using System.Linq;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.OptionsBindingGeneration;
 

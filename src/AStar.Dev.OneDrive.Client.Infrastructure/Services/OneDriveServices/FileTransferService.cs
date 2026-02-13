@@ -1,11 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
-using AStar.Dev.Logging.Extensions;
-using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
@@ -112,9 +109,9 @@ public sealed class FileTransferService : IFileTransferService
 
                 DriveItem uploadedItem = await _graphApiClient.UploadFileAsync(accountId, file.LocalPath, file.RelativePath, uploadProgress, cancellationSource.Token);
 
-                if(uploadedItem.LastModifiedDateTime.HasValue && System.IO.File.Exists(file.LocalPath))
+                if(uploadedItem.LastModifiedDateTime.HasValue && File.Exists(file.LocalPath))
                 {
-                    System.IO.File.SetLastWriteTimeUtc(file.LocalPath, uploadedItem.LastModifiedDateTime.Value.UtcDateTime);
+                    File.SetLastWriteTimeUtc(file.LocalPath, uploadedItem.LastModifiedDateTime.Value.UtcDateTime);
                     await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
                         $"Synchronized local timestamp to OneDrive: {file.Name}, OldTime={file.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, NewTime={uploadedItem.LastModifiedDateTime.Value.UtcDateTime:yyyy-MM-dd HH:mm:ss}",
                         cancellationToken);

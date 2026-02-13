@@ -231,8 +231,8 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                 {
                     Accounts[index] = updatedAccount;
                     SelectedAccount = updatedAccount;
-                    var accountHash = AccountIdHasher.Hash(updatedAccount.AccountId); 
-                    using (Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
+                    var accountHash = AccountIdHasher.Hash(updatedAccount.AccountId);
+                    using(Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
                     {
                         _logger.LogInformation("Starting sync for account");
                     }

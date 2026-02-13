@@ -1,6 +1,5 @@
 using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
-using AStar.Dev.OneDrive.Client.MainWindow;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;

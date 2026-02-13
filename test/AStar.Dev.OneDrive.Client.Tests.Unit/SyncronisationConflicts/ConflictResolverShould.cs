@@ -47,9 +47,8 @@ public sealed class ConflictResolverShould
         _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns(metadata);
 
-        // Create temporary test file
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await System.IO.File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
 
         try
         {
@@ -76,7 +75,7 @@ public sealed class ConflictResolverShould
         }
         finally
         {
-            System.IO.File.Delete(localPath);
+            File.Delete(localPath);
             Directory.Delete(account.LocalSyncPath, true);
         }
     }
@@ -108,23 +107,19 @@ public sealed class ConflictResolverShould
         AccountInfo account = CreateTestAccount();
         FileMetadata metadata = CreateTestMetadata(account.AccountId, conflict.FilePath);
         var localPath = Path.Combine(account.LocalSyncPath, conflict.FilePath);
-
         _ = _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns(account);
         _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns(metadata);
-
-        // Ensure directory exists
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
 
-        // Mock the download to create the file
         _ = _graphApiClient.DownloadFileAsync(
                 account.AccountId,
                 metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
-            .AndDoes(_ => System.IO.File.WriteAllText(localPath, "remote content"));
+            .AndDoes(_ => File.WriteAllText(localPath, "remote content"));
 
         try
         {
@@ -150,8 +145,8 @@ public sealed class ConflictResolverShould
         }
         finally
         {
-            if(System.IO.File.Exists(localPath))
-                System.IO.File.Delete(localPath);
+            if(File.Exists(localPath))
+                File.Delete(localPath);
 
             Directory.Delete(account.LocalSyncPath, true);
         }
@@ -165,26 +160,19 @@ public sealed class ConflictResolverShould
         AccountInfo account = CreateTestAccount();
         FileMetadata metadata = CreateTestMetadata(account.AccountId, conflict.FilePath);
         var localPath = Path.Combine(account.LocalSyncPath, conflict.FilePath);
-
         _ = _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns(account);
         _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns(metadata);
-
-        // Create temporary test file
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await System.IO.File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
-
-        // Mock the download to create the file
+        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
         _ = _graphApiClient.DownloadFileAsync(
                 account.AccountId,
                 metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
-            .AndDoes(_ => System.IO.File.WriteAllText(localPath, "remote content"));
-
-        // Mock GetDriveItemAsync to return remote file metadata
+            .AndDoes(_ => File.WriteAllText(localPath, "remote content"));
         var remoteItem = new DriveItem
         {
             Id = metadata.DriveItemId,
@@ -197,7 +185,6 @@ public sealed class ConflictResolverShould
         _ = _graphApiClient.GetDriveItemAsync(account.AccountId, metadata.DriveItemId, Arg.Any<CancellationToken>())
             .Returns(remoteItem);
 
-        // Mock ComputeFileHashAsync for both downloaded and conflict files
         _ = _localFileScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns("computed-hash-123");
 
@@ -205,15 +192,13 @@ public sealed class ConflictResolverShould
         {
             await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepBoth, TestContext.Current.CancellationToken);
 
-            // Verify original file now has remote content
-            System.IO.File.Exists(localPath).ShouldBeTrue();
-            (await System.IO.File.ReadAllTextAsync(localPath, TestContext.Current.CancellationToken)).ShouldBe("remote content");
+            File.Exists(localPath).ShouldBeTrue();
+            (await File.ReadAllTextAsync(localPath, TestContext.Current.CancellationToken)).ShouldBe("remote content");
 
-            // Verify conflict file exists with local content
             var directory = Path.GetDirectoryName(localPath)!;
             var conflictFiles = Directory.GetFiles(directory, "*Conflict*.txt");
             conflictFiles.Length.ShouldBe(1);
-            (await System.IO.File.ReadAllTextAsync(conflictFiles[0], TestContext.Current.CancellationToken)).ShouldBe("local content");
+            (await File.ReadAllTextAsync(conflictFiles[0], TestContext.Current.CancellationToken)).ShouldBe("local content");
 
             await _graphApiClient.Received(1).DownloadFileAsync(
                 account.AccountId,
@@ -262,9 +247,8 @@ public sealed class ConflictResolverShould
         _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns((FileMetadata?)null);
 
-        // Create temporary test file
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
-        await System.IO.File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
+        await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
 
         try
         {
@@ -275,7 +259,7 @@ public sealed class ConflictResolverShould
         }
         finally
         {
-            System.IO.File.Delete(localPath);
+            File.Delete(localPath);
             Directory.Delete(account.LocalSyncPath, true);
         }
     }
@@ -292,7 +276,6 @@ public sealed class ConflictResolverShould
 
         await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.None, TestContext.Current.CancellationToken);
 
-        // Verify no API calls were made
         _ = await _graphApiClient.DidNotReceive().UploadFileAsync(
             Arg.Any<string>(),
             Arg.Any<string>(),

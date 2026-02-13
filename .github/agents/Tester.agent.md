@@ -1,7 +1,17 @@
 ---
 description: "Tester Agent"
 tools:
-  ["search/codebase", "execute/testFailure", "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection", "edit/editFiles", "read/problems", "search/changes"]
+  [
+    "search/codebase",
+    "execute/testFailure",
+    "execute/getTerminalOutput",
+    "execute/runInTerminal",
+    "read/terminalLastCommand",
+    "read/terminalSelection",
+    "edit/editFiles",
+    "read/problems",
+    "search/changes",
+  ]
 ---
 
 # Tester Agent Instructions
@@ -191,7 +201,6 @@ public class FileMetadataServiceShould
     [Fact]
     public async Task ReturnSuccessWhenFileExists()
     {
-        // Arrange
         var mockRepository = new Mock<IFileMetadataRepository>();
         mockRepository
             .Setup(x => x.GetByPathAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -199,10 +208,8 @@ public class FileMetadataServiceShould
 
         var service = new FileMetadataService(mockRepository.Object);
 
-        // Act
         var result = await service.GetMetadataAsync("/test.txt");
-
-        // Assert - Test success path
+ - Test success path
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value.Path.Should().Be("/test.txt");
@@ -211,7 +218,6 @@ public class FileMetadataServiceShould
     [Fact]
     public async Task ReturnFailureWhenFileNotFound()
     {
-        // Arrange
         var mockRepository = new Mock<IFileMetadataRepository>();
         mockRepository
             .Setup(x => x.GetByPathAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -219,10 +225,8 @@ public class FileMetadataServiceShould
 
         var service = new FileMetadataService(mockRepository.Object);
 
-        // Act
         var result = await service.GetMetadataAsync("/nonexistent.txt");
-
-        // Assert - Test failure path
+ - Test failure path
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Contain("not found");
     }
@@ -230,15 +234,12 @@ public class FileMetadataServiceShould
     [Fact]
     public async Task ChainOperationsWithBind()
     {
-        // Arrange
         var service = new FileMetadataService();
 
-        // Act
         var result = await service.GetMetadataAsync("/test.txt")
             .BindAsync(async metadata => await service.ValidateMetadataAsync(metadata))
             .BindAsync(async metadata => await service.SyncMetadataAsync(metadata));
-
-        // Assert - Test chained operations
+ - Test chained operations
         result.Match(
             success => success.Should().NotBeNull(),
             error => Assert.Fail($"Expected success but got error: {error}")
@@ -255,7 +256,6 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task ReturnSomeWhenPreferencesExist()
     {
-        // Arrange
         var mockRepository = new Mock<IWindowPreferencesRepository>();
         mockRepository
             .Setup(x => x.GetPreferencesAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -263,10 +263,8 @@ public class WindowPreferencesServiceShould
 
         var service = new WindowPreferencesService(mockRepository.Object);
 
-        // Act
         var result = await service.GetPreferencesAsync("user123");
-
-        // Assert - Test Some case
+ - Test Some case
         result.IsSome.Should().BeTrue();
         result.Value.Width.Should().Be(800);
     }
@@ -274,7 +272,6 @@ public class WindowPreferencesServiceShould
     [Fact]
     public async Task ReturnNoneWhenPreferencesDoNotExist()
     {
-        // Arrange
         var mockRepository = new Mock<IWindowPreferencesRepository>();
         mockRepository
             .Setup(x => x.GetPreferencesAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -282,27 +279,22 @@ public class WindowPreferencesServiceShould
 
         var service = new WindowPreferencesService(mockRepository.Object);
 
-        // Act
         var result = await service.GetPreferencesAsync("user123");
-
-        // Assert - Test None case
+ - Test None case
         result.IsNone.Should().BeTrue();
     }
 
     [Fact]
     public async Task ApplyDefaultsWhenNone()
     {
-        // Arrange
         var service = new WindowPreferencesService();
 
-        // Act
         var preferences = await service.GetPreferencesAsync("user123")
             .MatchAsync(
                 some => some,
                 none => Task.FromResult(WindowPreferences.Default)
             );
-
-        // Assert - Test Match pattern
+ - Test Match pattern
         preferences.Should().NotBeNull();
         preferences.Width.Should().Be(WindowPreferences.Default.Width);
     }
@@ -324,7 +316,6 @@ public class GraphApiClientShould
     [Fact]
     public async Task FetchDriveItemSuccessfully()
     {
-        // Arrange
         var mockGraphClient = new Mock<GraphServiceClient>();
         var expectedItem = new DriveItem { Id = "item123", Name = "test.txt" };
 
@@ -334,10 +325,8 @@ public class GraphApiClientShould
 
         var client = new GraphApiClient(mockGraphClient.Object);
 
-        // Act
         var result = await client.GetItemAsync("user123", "item123");
 
-        // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be("item123");
     }
@@ -345,7 +334,6 @@ public class GraphApiClientShould
     [Fact]
     public async Task CancelOperationWhenTokenCancelled()
     {
-        // Arrange
         var mockGraphClient = new Mock<GraphServiceClient>();
         var cts = new CancellationTokenSource();
 
@@ -355,8 +343,7 @@ public class GraphApiClientShould
 
         var client = new GraphApiClient(mockGraphClient.Object);
         cts.Cancel();
-
-        // Act & Assert
+ & Assert
         await Assert.ThrowsAsync<OperationCanceledException>(
             () => client.GetItemAsync("user123", "item123", cts.Token)
         );
@@ -372,18 +359,15 @@ public class DeltaProcessingServiceShould
     [Fact]
     public async Task YieldAllChangedItems()
     {
-        // Arrange
         var mockGraphClient = new Mock<IGraphApiClient>();
         var service = new DeltaProcessingService(mockGraphClient.Object);
 
-        // Act
         var items = new List<DriveItem>();
         await foreach (var item in service.GetDeltaChangesAsync("account123"))
         {
             items.Add(item);
         }
 
-        // Assert
         items.Should().HaveCount(3);
         items.Select(x => x.Name).Should().Contain(new[] { "file1.txt", "file2.txt", "file3.txt" });
     }
@@ -391,15 +375,13 @@ public class DeltaProcessingServiceShould
     [Fact]
     public async Task PropagateExceptionsFromAsyncStream()
     {
-        // Arrange
         var mockGraphClient = new Mock<IGraphApiClient>();
         mockGraphClient
             .Setup(x => x.GetDeltaAsync(It.IsAny<string>(), It.IsAny<string>()))
             .ThrowsAsync(new ServiceException(new Error { Code = "500" }));
 
         var service = new DeltaProcessingService(mockGraphClient.Object);
-
-        // Act & Assert
+ & Assert
         await Assert.ThrowsAsync<ServiceException>(async () =>
         {
             await foreach (var item in service.GetDeltaChangesAsync("account123"))
@@ -419,7 +401,6 @@ public class SyncEngineShould
     [Fact]
     public async Task ProcessMultipleAccountsConcurrently()
     {
-        // Arrange
         var accounts = new[] { "account1", "account2", "account3" };
         var mockSyncService = new Mock<ISyncService>();
         var callOrder = new ConcurrentBag<string>();
@@ -435,10 +416,8 @@ public class SyncEngineShould
 
         var engine = new SyncEngine(mockSyncService.Object);
 
-        // Act
         var results = await engine.SyncAllAccountsAsync(accounts);
 
-        // Assert
         results.Should().HaveCount(3);
         results.Should().OnlyContain(r => r.IsSuccess);
         callOrder.Should().HaveCount(3); // All executed
@@ -461,12 +440,10 @@ public class SyncProgressServiceShould
     [Fact]
     public async Task EmitProgressUpdatesOverTime()
     {
-        // Arrange
         var scheduler = new TestScheduler();
         var service = new SyncProgressService();
         var receivedStates = new List<SyncState>();
 
-        // Act
         service.Progress
             .ObserveOn(scheduler)
             .Subscribe(state => receivedStates.Add(state));
@@ -478,7 +455,6 @@ public class SyncProgressServiceShould
 
         scheduler.Start();
 
-        // Assert
         receivedStates.Should().HaveCount(3);
         receivedStates[0].Progress.Should().Be(0.25);
         receivedStates[1].Progress.Should().Be(0.50);
@@ -495,17 +471,14 @@ public class AccountStateServiceShould
     [Fact]
     public void EmitCurrentStateToNewSubscribers()
     {
-        // Arrange
         var service = new AccountStateService();
         var initialState = new AccountState { IsAuthenticated = true };
         service.UpdateState(initialState);
 
         SyncState receivedState = null;
 
-        // Act
         service.State.Subscribe(state => receivedState = state);
-
-        // Assert - BehaviorSubject replays last value
+ - BehaviorSubject replays last value
         receivedState.Should().NotBeNull();
         receivedState.IsAuthenticated.Should().BeTrue();
     }
@@ -513,15 +486,13 @@ public class AccountStateServiceShould
     [Fact]
     public async Task ThrottleRapidUpdates()
     {
-        // Arrange
         var service = new AccountStateService();
         var receivedStates = new List<AccountState>();
 
         service.State
             .Throttle(TimeSpan.FromMilliseconds(100))
             .Subscribe(state => receivedStates.Add(state));
-
-        // Act - Rapidly emit 10 states
+ - Rapidly emit 10 states
         for (int i = 0; i < 10; i++)
         {
             service.UpdateState(new AccountState { ConnectionCount = i });
@@ -529,8 +500,7 @@ public class AccountStateServiceShould
         }
 
         await Task.Delay(200); // Wait for throttle window
-
-        // Assert - Should only receive throttled values
+ - Should only receive throttled values
         receivedStates.Should().HaveCountLessThan(10);
     }
 }
@@ -544,7 +514,6 @@ public class MainWindowViewModelShould
     [Fact]
     public void UpdateIsLoadingWhenSyncStarts()
     {
-        // Arrange
         var mockSyncService = new Mock<ISyncService>();
         var viewModel = new MainWindowViewModel(mockSyncService.Object);
 
@@ -552,27 +521,21 @@ public class MainWindowViewModelShould
         viewModel.WhenAnyValue(x => x.IsLoading)
             .Subscribe(isLoadingValues.Add);
 
-        // Act
         viewModel.StartSyncCommand.Execute().Subscribe();
 
-        // Assert
         isLoadingValues.Should().Contain(true);
     }
 
     [Fact]
     public void DisableCommandsWhileLoading()
     {
-        // Arrange
         var viewModel = new MainWindowViewModel();
         viewModel.IsLoading = false;
-
-        // Act & Assert - Command enabled when not loading
+ & Assert - Command enabled when not loading
         viewModel.StartSyncCommand.CanExecute(null).Should().BeTrue();
-
-        // Act - Set loading
+ - Set loading
         viewModel.IsLoading = true;
-
-        // Assert - Command disabled when loading
+ - Command disabled when loading
         viewModel.StartSyncCommand.CanExecute(null).Should().BeFalse();
     }
 }
@@ -594,8 +557,7 @@ public class AccountRepositoryShould : IDisposable
     private readonly AccountRepository _repository;
 
     public AccountRepositoryShould()
-    {
-        // Arrange - Create in-memory database
+    { - Create in-memory database
         var options = new DbContextOptionsBuilder<SyncDbContext>()
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
@@ -607,7 +569,6 @@ public class AccountRepositoryShould : IDisposable
     [Fact]
     public async Task AddAccountSuccessfully()
     {
-        // Arrange
         var account = new Account
         {
             Id = Guid.NewGuid(),
@@ -615,11 +576,9 @@ public class AccountRepositoryShould : IDisposable
             Email = "test@example.com"
         };
 
-        // Act
         await _repository.AddAsync(account);
         await _context.SaveChangesAsync();
 
-        // Assert
         var retrieved = await _repository.GetByIdAsync(account.Id);
         retrieved.Should().NotBeNull();
         retrieved.Email.Should().Be("test@example.com");
@@ -628,7 +587,6 @@ public class AccountRepositoryShould : IDisposable
     [Fact]
     public async Task IncludeRelatedEntitiesInQuery()
     {
-        // Arrange
         var account = new Account { Id = Guid.NewGuid(), UserId = "user123" };
         var config = new SyncConfiguration { AccountId = account.Id, LocalPath = "/sync" };
 
@@ -638,10 +596,8 @@ public class AccountRepositoryShould : IDisposable
 
         _context.ChangeTracker.Clear(); // Clear tracking to test Include
 
-        // Act
         var retrieved = await _repository.GetAccountWithConfigurationsAsync(account.Id);
 
-        // Assert
         retrieved.Should().NotBeNull();
         retrieved.SyncConfigurations.Should().HaveCount(1);
         retrieved.SyncConfigurations.First().LocalPath.Should().Be("/sync");
@@ -663,8 +619,7 @@ public class SyncRepositoryIntegrationShould : IDisposable
     private readonly SqliteConnection _connection;
 
     public SyncRepositoryIntegrationShould()
-    {
-        // Arrange - SQLite in-memory with open connection
+    { - SQLite in-memory with open connection
         _connection = new SqliteConnection("DataSource=:memory:");
         _connection.Open();
 
@@ -679,15 +634,13 @@ public class SyncRepositoryIntegrationShould : IDisposable
     [Fact]
     public async Task RespectUniqueConstraints()
     {
-        // Arrange
         var repository = new SyncRepository(_context);
         var item1 = new FileMetadata { Path = "/test.txt", AccountId = Guid.NewGuid() };
         var item2 = new FileMetadata { Path = "/test.txt", AccountId = item1.AccountId };
 
         await repository.AddAsync(item1);
         await _context.SaveChangesAsync();
-
-        // Act & Assert - Should throw on duplicate
+ & Assert - Should throw on duplicate
         await repository.AddAsync(item2);
         await Assert.ThrowsAsync<DbUpdateException>(() => _context.SaveChangesAsync());
     }
@@ -708,7 +661,6 @@ public class RepositoryPerformanceShould
     [Fact]
     public async Task AvoidNPlusOneQueries()
     {
-        // Arrange
         var options = new DbContextOptionsBuilder<SyncDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .LogTo(message => Debug.WriteLine(message))
@@ -736,13 +688,11 @@ public class RepositoryPerformanceShould
 
         context.ChangeTracker.Clear();
 
-        // Act
         var queryCount = 0;
         context.Database.ExecutingSqlCommand += (_, __) => queryCount++;
 
         var allAccounts = await repository.GetAllAccountsWithConfigurationsAsync();
-
-        // Assert - Should be 1 query with Include, not 11 (1 + N)
+ - Should be 1 query with Include, not 11 (1 + N)
         queryCount.Should().Be(1);
         allAccounts.Should().HaveCount(10);
         allAccounts.Should().OnlyContain(a => a.SyncConfigurations.Count == 1);
@@ -765,15 +715,12 @@ public class SyncServiceShould
     [Fact]
     public async Task CallRepositoryWithCorrectParameters()
     {
-        // Arrange
         var mockRepository = new Mock<IFileMetadataRepository>();
         var mockGraphClient = new Mock<IGraphApiClient>();
         var service = new SyncService(mockRepository.Object, mockGraphClient.Object);
 
-        // Act
         await service.SyncFileAsync("account123", "/test.txt");
-
-        // Assert - Verify method was called with specific arguments
+ - Verify method was called with specific arguments
         mockRepository.Verify(
             x => x.GetByPathAsync("/test.txt", It.IsAny<CancellationToken>()),
             Times.Once
@@ -783,7 +730,6 @@ public class SyncServiceShould
     [Fact]
     public async Task HandleRepositoryException()
     {
-        // Arrange
         var mockRepository = new Mock<IFileMetadataRepository>();
         mockRepository
             .Setup(x => x.GetByPathAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -791,10 +737,8 @@ public class SyncServiceShould
 
         var service = new SyncService(mockRepository.Object);
 
-        // Act
         var result = await service.SyncFileAsync("account123", "/test.txt");
 
-        // Assert
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Contain("Database error");
     }
@@ -802,7 +746,6 @@ public class SyncServiceShould
     [Fact]
     public async Task UseCallbackForComplexSetup()
     {
-        // Arrange
         var mockGraphClient = new Mock<IGraphApiClient>();
         var uploadedContent = string.Empty;
 
@@ -821,10 +764,8 @@ public class SyncServiceShould
 
         var service = new SyncService(mockGraphClient.Object);
 
-        // Act
         await service.UploadFileAsync("account123", "/test.txt", "file content");
 
-        // Assert
         uploadedContent.Should().Be("file content");
     }
 }
@@ -838,7 +779,6 @@ public class AuthenticationServiceShould
     [Fact]
     public async Task AcquireTokenSilently()
     {
-        // Arrange
         var mockAuthClient = Substitute.For<IAuthenticationClient>();
         mockAuthClient
             .AcquireTokenSilentAsync(Arg.Any<string[]>(), Arg.Any<string>())
@@ -846,10 +786,8 @@ public class AuthenticationServiceShould
 
         var service = new AuthenticationService(mockAuthClient);
 
-        // Act
         var token = await service.GetTokenAsync("user123");
 
-        // Assert
         token.Should().Be("token123");
         await mockAuthClient.Received(1).AcquireTokenSilentAsync(
             Arg.Any<string[]>(),
@@ -860,7 +798,6 @@ public class AuthenticationServiceShould
     [Fact]
     public async Task FallbackToInteractiveWhenSilentFails()
     {
-        // Arrange
         var mockAuthClient = Substitute.For<IAuthenticationClient>();
         mockAuthClient
             .AcquireTokenSilentAsync(Arg.Any<string[]>(), Arg.Any<string>())
@@ -872,10 +809,8 @@ public class AuthenticationServiceShould
 
         var service = new AuthenticationService(mockAuthClient);
 
-        // Act
         var token = await service.GetTokenAsync("user123");
 
-        // Assert
         token.Should().Be("interactive-token");
         await mockAuthClient.Received(1).AcquireTokenInteractiveAsync(Arg.Any<string[]>());
     }
@@ -890,7 +825,6 @@ public class FileWatcherServiceShould
     [Fact]
     public async Task DetectFileChanges()
     {
-        // Arrange
         var mockFileSystem = new Mock<IFileSystem>();
         var mockWatcher = new Mock<IFileSystemWatcher>();
         var changedFiles = new List<string>();
@@ -902,7 +836,6 @@ public class FileWatcherServiceShould
         var service = new FileWatcherService(mockFileSystem.Object);
         service.FileChanged.Subscribe(path => changedFiles.Add(path));
 
-        // Act
         await service.StartWatchingAsync("/sync");
         mockWatcher.Raise(x => x.Changed += null, new FileSystemEventArgs(
             WatcherChangeTypes.Changed,
@@ -910,7 +843,6 @@ public class FileWatcherServiceShould
             "test.txt"
         ));
 
-        // Assert
         changedFiles.Should().Contain("/sync/test.txt");
     }
 }
@@ -985,15 +917,13 @@ public class SyncEngineTestDataShould
     [Fact]
     public async Task SyncAccountWithMultipleConfigurations()
     {
-        // Arrange
         var account = new AccountBuilder()
             .WithUserId("user123")
             .WithEmail("user@example.com")
             .WithSyncConfiguration(c => c.WithLocalPath("/documents"))
             .WithSyncConfiguration(c => c.WithLocalPath("/pictures"))
             .Build();
-
-        // Act & Assert
+ & Assert
         account.SyncConfigurations.Should().HaveCount(2);
     }
 }
@@ -1023,7 +953,6 @@ public class AutoFixtureTestDataShould
     [InlineData(100)]
     public async Task ProcessMultipleAccounts(int count)
     {
-        // Arrange
         var accounts = _fixture.CreateMany<Account>(count).ToList();
         var mockRepository = _fixture.Freeze<Mock<IAccountRepository>>();
 
@@ -1033,10 +962,8 @@ public class AutoFixtureTestDataShould
 
         var service = _fixture.Create<AccountService>();
 
-        // Act
         var result = await service.ProcessAllAccountsAsync();
 
-        // Assert
         result.Should().HaveCount(count);
     }
 }
@@ -1089,13 +1016,10 @@ public class RepositoryTestsWithSharedDatabase
     [Fact]
     public async Task UseSharedDatabaseContext()
     {
-        // Arrange
         var repository = new AccountRepository(_fixture.Context);
 
-        // Act
         var accounts = await repository.GetAllAsync();
 
-        // Assert
         accounts.Should().HaveCount(2);
     }
 }
@@ -1116,7 +1040,6 @@ public class SyncAlgorithmShould
     [Fact]
     public async Task DetectConflictWhenBothSidesChanged()
     {
-        // Arrange
         var mockRepository = new Mock<ISyncConflictRepository>();
         var mockGraphClient = new Mock<IGraphApiClient>();
 
@@ -1141,10 +1064,8 @@ public class SyncAlgorithmShould
 
         var syncEngine = new SyncEngine(mockGraphClient.Object, mockRepository.Object);
 
-        // Act
         await syncEngine.SyncFileAsync("account123", localFile);
-
-        // Assert - Conflict should be recorded
+ - Conflict should be recorded
         mockRepository.Verify(
             x => x.AddConflictAsync(
                 It.Is<SyncConflict>(c => c.FilePath == "/test.txt"),
@@ -1156,7 +1077,6 @@ public class SyncAlgorithmShould
     [Fact]
     public async Task ApplyRemoteChangeWhenOnlyRemoteChanged()
     {
-        // Arrange
         var localFile = new FileMetadata
         {
             Path = "/test.txt",
@@ -1173,10 +1093,8 @@ public class SyncAlgorithmShould
         var mockDownloader = new Mock<IFileDownloader>();
         var syncEngine = new SyncEngine(mockDownloader.Object);
 
-        // Act
         await syncEngine.SyncFileAsync("account123", localFile, remoteFile);
 
-        // Assert
         mockDownloader.Verify(
             x => x.DownloadFileAsync(
                 It.IsAny<string>(),
@@ -1196,7 +1114,6 @@ public class DeltaProcessingShould
     [Fact]
     public async Task SaveDeltaTokenAfterProcessing()
     {
-        // Arrange
         var mockRepository = new Mock<ISyncStateRepository>();
         var mockGraphClient = new Mock<IGraphApiClient>();
 
@@ -1210,10 +1127,8 @@ public class DeltaProcessingShould
 
         var service = new DeltaProcessingService(mockGraphClient.Object, mockRepository.Object);
 
-        // Act
         await service.ProcessDeltaAsync("account123");
 
-        // Assert
         mockRepository.Verify(
             x => x.SaveDeltaTokenAsync("account123", "new-delta-token", It.IsAny<CancellationToken>()),
             Times.Once
@@ -1223,7 +1138,6 @@ public class DeltaProcessingShould
     [Fact]
     public async Task ResumeSyncFromSavedDeltaToken()
     {
-        // Arrange
         var mockRepository = new Mock<ISyncStateRepository>();
         mockRepository
             .Setup(x => x.GetDeltaTokenAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -1232,10 +1146,8 @@ public class DeltaProcessingShould
         var mockGraphClient = new Mock<IGraphApiClient>();
         var service = new DeltaProcessingService(mockGraphClient.Object, mockRepository.Object);
 
-        // Act
         await service.ProcessDeltaAsync("account123");
 
-        // Assert
         mockGraphClient.Verify(
             x => x.GetDeltaAsync("account123", "saved-token"),
             Times.Once
@@ -1252,7 +1164,6 @@ public class AuthenticationFlowShould
     [Fact]
     public async Task RefreshTokenWhenExpired()
     {
-        // Arrange
         var mockAuthClient = new Mock<IAuthenticationClient>();
         var expiredToken = new AuthenticationResult
         {
@@ -1276,10 +1187,8 @@ public class AuthenticationFlowShould
 
         var service = new AuthenticationService(mockAuthClient.Object);
 
-        // Act
         var token = await service.GetValidTokenAsync("user123");
 
-        // Assert
         token.Should().Be("new-token");
         mockAuthClient.Verify(
             x => x.AcquireTokenSilentAsync(It.IsAny<string[]>(), "user123"),
@@ -1310,13 +1219,10 @@ public class FilePathValidationShould
     [InlineData("C:\\windows\\path.txt", false)]
     public void ValidateFilePaths(string path, bool expectedValid)
     {
-        // Arrange
         var validator = new FilePathValidator();
 
-        // Act
         var result = validator.IsValid(path);
 
-        // Assert
         result.Should().Be(expectedValid);
     }
 
@@ -1324,13 +1230,10 @@ public class FilePathValidationShould
     [MemberData(nameof(GetSyncScenarios))]
     public async Task HandleVariousSyncScenarios(SyncScenario scenario)
     {
-        // Arrange
         var engine = new SyncEngine();
 
-        // Act
         var result = await engine.SyncAsync(scenario.LocalFile, scenario.RemoteFile);
 
-        // Assert
         result.Action.Should().Be(scenario.ExpectedAction);
     }
 
@@ -1400,13 +1303,10 @@ public class CustomAssertionUsageShould
     [Fact]
     public async Task DemonstrateCustomAssertions()
     {
-        // Arrange
         var syncEngine = new SyncEngine();
 
-        // Act
         var result = await syncEngine.SyncAccountAsync("account123");
-
-        // Assert - Use custom assertion
+ - Use custom assertion
         result.Should()
             .BeSuccessfulSync()
             .And.HaveProcessedFiles(5);
@@ -1422,7 +1322,6 @@ public class SyncSummarySerializationShould
     [Fact]
     public Task MatchExpectedJsonStructure()
     {
-        // Arrange
         var summary = new SyncSummary
         {
             FilesDownloaded = 10,
@@ -1431,15 +1330,13 @@ public class SyncSummarySerializationShould
             BytesTransferred = 1024000,
             Duration = TimeSpan.FromMinutes(5)
         };
-
-        // Act & Assert - Verify against saved snapshot
+ & Assert - Verify against saved snapshot
         return Verifier.Verify(summary);
     }
 
     [Fact]
     public Task MatchExpectedGraphApiResponse()
     {
-        // Arrange
         var mockGraphClient = new Mock<IGraphApiClient>();
         var response = new DeltaResponse
         {
@@ -1457,10 +1354,8 @@ public class SyncSummarySerializationShould
 
         var service = new DeltaProcessingService(mockGraphClient.Object);
 
-        // Act
         var result = await service.GetChangesAsync("account123");
-
-        // Assert - Verify complex object structure
+ - Verify complex object structure
         return Verifier.Verify(result);
     }
 }
@@ -1530,11 +1425,9 @@ public class MemoryLeakDetectionShould
     [Fact]
     public async Task NotLeakMemoryOnRepeatedSync()
     {
-        // Arrange
         var engine = new SyncEngine();
         var initialMemory = GC.GetTotalMemory(true);
-
-        // Act - Run sync 100 times
+ - Run sync 100 times
         for (int i = 0; i < 100; i++)
         {
             await engine.SyncAccountAsync("account123");
@@ -1549,15 +1442,13 @@ public class MemoryLeakDetectionShould
 
         var finalMemory = GC.GetTotalMemory(true);
         var memoryGrowth = finalMemory - initialMemory;
-
-        // Assert - Memory growth should be minimal (< 10MB)
+ - Memory growth should be minimal (< 10MB)
         memoryGrowth.Should().BeLessThan(10 * 1024 * 1024);
     }
 
     [Fact]
     public async Task DisposeResourcesProperly()
     {
-        // Arrange
         WeakReference weakRef = null;
 
         async Task CreateAndDispose()
@@ -1567,14 +1458,12 @@ public class MemoryLeakDetectionShould
             await service.SyncAsync();
         }
 
-        // Act
         await CreateAndDispose();
 
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-
-        // Assert - Object should be garbage collected
+ - Object should be garbage collected
         weakRef.IsAlive.Should().BeFalse();
     }
 }
@@ -1619,16 +1508,13 @@ public class SyncWorkflowIntegrationShould : IAsyncLifetime
 
     [Fact]
     public async Task CompleteSyncWorkflowFromStartToFinish()
-    {
-        // Arrange - Seed account
+    { - Seed account
         var account = new Account { Id = Guid.NewGuid(), UserId = "user123" };
         _context.Accounts.Add(account);
         await _context.SaveChangesAsync();
-
-        // Act - Execute full sync
+ - Execute full sync
         var result = await _engine.SyncAccountAsync(account.Id.ToString());
-
-        // Assert - Check database state
+ - Check database state
         result.IsSuccess.Should().BeTrue();
 
         var syncLog = await _context.SyncSessionLogs
@@ -1673,8 +1559,7 @@ public class GraphApiIntegrationShould : IDisposable
 
     [Fact]
     public async Task HandleGraphApiRateLimiting()
-    {
-        // Arrange - Mock rate limit response
+    { - Mock rate limit response
         _mockServer
             .Given(Request.Create().WithPath("/v1.0/me/drive/items/item123").UsingGet())
             .InScenario("Rate Limit")
@@ -1692,10 +1577,8 @@ public class GraphApiIntegrationShould : IDisposable
                 .WithStatusCode(200)
                 .WithBodyAsJson(new { id = "item123", name = "test.txt" }));
 
-        // Act
         var result = await _client.GetItemAsync("user123", "item123");
 
-        // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be("item123");
     }

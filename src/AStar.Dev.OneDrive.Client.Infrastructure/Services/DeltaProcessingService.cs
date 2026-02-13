@@ -13,15 +13,15 @@ public sealed class DeltaProcessingService(ISyncRepository syncRepository, IDelt
     public async Task<DeltaToken?> GetDeltaTokenAsync(string accountId, CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaProcessingService.GetDeltaTokenAsync, accountId, cancellationToken);
-        
+
         DeltaToken? token = await syncRepository.GetDeltaTokenAsync(accountId, cancellationToken);
-        
+
         await DebugLog.InfoAsync(
             DebugLogMetadata.Services.DeltaProcessingService.GetDeltaTokenAsync,
             accountId,
             token != null ? $"Retrieved delta token for account {accountId}" : $"No delta token found for account {accountId}",
             cancellationToken);
-        
+
         return token;
     }
 
@@ -29,9 +29,9 @@ public sealed class DeltaProcessingService(ISyncRepository syncRepository, IDelt
     public async Task SaveDeltaTokenAsync(DeltaToken token, CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaProcessingService.SaveDeltaTokenAsync, token.AccountId, cancellationToken);
-        
+
         await syncRepository.SaveOrUpdateDeltaTokenAsync(token, cancellationToken);
-        
+
         await DebugLog.InfoAsync(
             DebugLogMetadata.Services.DeltaProcessingService.SaveDeltaTokenAsync,
             token.AccountId,
@@ -44,28 +44,24 @@ public sealed class DeltaProcessingService(ISyncRepository syncRepository, IDelt
         CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaProcessingService.ProcessDeltaPagesAsync, accountId, cancellationToken);
-        
+
         DeltaToken tokenToUse = deltaToken ?? new DeltaToken(accountId, string.Empty, string.Empty, DateTimeOffset.UtcNow);
-        
+
         await DebugLog.InfoAsync(
             DebugLogMetadata.Services.DeltaProcessingService.ProcessDeltaPagesAsync,
             accountId,
             $"Starting delta page processing for account {accountId}, initialSync={string.IsNullOrEmpty(tokenToUse.Token)}",
             cancellationToken);
-        
-        (DeltaToken? finalDelta, int pageCount, int totalItemsProcessed) = 
-            await deltaPageProcessor.ProcessAllDeltaPagesAsync(
-                accountId,
-                tokenToUse,
-                progressCallback,
-                cancellationToken);
-        
+
+        (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
+            await deltaPageProcessor.ProcessAllDeltaPagesAsync(accountId, tokenToUse, progressCallback, cancellationToken);
+
         await DebugLog.InfoAsync(
             DebugLogMetadata.Services.DeltaProcessingService.ProcessDeltaPagesAsync,
             accountId,
             $"Completed delta page processing: pageCount={pageCount}, totalItems={totalItemsProcessed}",
             cancellationToken);
-        
+
         return (finalDelta, pageCount, totalItemsProcessed);
     }
 }

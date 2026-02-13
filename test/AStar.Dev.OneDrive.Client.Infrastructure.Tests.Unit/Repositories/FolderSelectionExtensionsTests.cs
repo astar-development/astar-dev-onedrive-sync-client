@@ -23,7 +23,7 @@ public class FolderSelectionExtensionsTests
                 isDeleted: false,
                 isSelected: false,
                 remoteHash: null,
-                name: System.IO.Path.GetFileName(path),
+                name: Path.GetFileName(path),
                 localPath: null,
                 localHash: null,
                 syncStatus: FileSyncStatus.SyncOnly,
@@ -33,7 +33,7 @@ public class FolderSelectionExtensionsTests
     private static FileMetadata Meta(string path, bool? selected) => new(
                 DriveItemId: Guid.NewGuid().ToString(),
                 AccountId: "acc",
-                Name: System.IO.Path.GetFileName(path),
+                Name: Path.GetFileName(path),
                 RelativePath: path,
                 Size: 0,
                 LastModifiedUtc: DateTimeOffset.UtcNow,
@@ -42,10 +42,6 @@ public class FolderSelectionExtensionsTests
                 IsDeleted: false,
                 IsSelected: selected ?? false
             );
-
-    // ------------------------------------------------------------
-    // 1. Normalization
-    // ------------------------------------------------------------
 
     [Fact]
     public void Normalization_Should_Resolve_Equivalent_Paths()
@@ -68,10 +64,6 @@ public class FolderSelectionExtensionsTests
             item.IsSelected.ShouldBe(true);
     }
 
-    // ------------------------------------------------------------
-    // 2. Direct match
-    // ------------------------------------------------------------
-
     [Fact]
     public void DirectMatch_Should_Apply_Selection()
     {
@@ -89,10 +81,6 @@ public class FolderSelectionExtensionsTests
 
         items[0].IsSelected.ShouldBe(true);
     }
-
-    // ------------------------------------------------------------
-    // 3. Ancestor match
-    // ------------------------------------------------------------
 
     [Fact]
     public void AncestorMatch_Should_Propagate_Selection()
@@ -112,10 +100,6 @@ public class FolderSelectionExtensionsTests
         items[0].IsSelected.ShouldBe(true);
     }
 
-    // ------------------------------------------------------------
-    // 4. Tri-state: explicit null
-    // ------------------------------------------------------------
-
     [Fact]
     public void ExplicitNull_Should_Apply_Null()
     {
@@ -134,10 +118,6 @@ public class FolderSelectionExtensionsTests
         items[0].IsSelected?.ShouldBeFalse();
     }
 
-    // ------------------------------------------------------------
-    // 5. Tri-state: inherited null
-    // ------------------------------------------------------------
-
     [Fact]
     public void InheritedNull_Should_Apply_Null()
     {
@@ -155,10 +135,6 @@ public class FolderSelectionExtensionsTests
 
         items[0].IsSelected?.ShouldBeFalse();
     }
-
-    // ------------------------------------------------------------
-    // 6. Tri-state: false overrides ancestor true
-    // ------------------------------------------------------------
 
     [Fact]
     public void ExplicitFalse_Should_Override_Ancestor_True()
@@ -179,10 +155,6 @@ public class FolderSelectionExtensionsTests
         items[0].IsSelected.ShouldBe(false);
     }
 
-    // ------------------------------------------------------------
-    // 7. File inherits from folder
-    // ------------------------------------------------------------
-
     [Fact]
     public void File_Should_Inherit_Selection_From_ParentFolder()
     {
@@ -200,10 +172,6 @@ public class FolderSelectionExtensionsTests
 
         items[0].IsSelected.ShouldBe(true);
     }
-
-    // ------------------------------------------------------------
-    // 8. File inherits null
-    // ------------------------------------------------------------
 
     [Fact]
     public void File_Should_Inherit_Null_When_Parent_Is_Null()
@@ -223,10 +191,6 @@ public class FolderSelectionExtensionsTests
         items[0].IsSelected?.ShouldBeFalse();
     }
 
-    // ------------------------------------------------------------
-    // 9. No metadata → all null
-    // ------------------------------------------------------------
-
     [Fact]
     public void NoMetadata_Should_Leave_All_Items_Null()
     {
@@ -244,10 +208,6 @@ public class FolderSelectionExtensionsTests
         foreach(DriveItemEntity? item in items)
             item.IsSelected?.ShouldBeFalse();
     }
-
-    // ------------------------------------------------------------
-    // 10. Root metadata applies everywhere
-    // ------------------------------------------------------------
 
     [Fact(Skip = "Requires refactor to support new production code structure")]
     public void RootSelection_Should_Apply_To_All_Items()
@@ -270,10 +230,6 @@ public class FolderSelectionExtensionsTests
         foreach(DriveItemEntity? item in items)
             item.IsSelected?.ShouldBeFalse();
     }
-
-    // ------------------------------------------------------------
-    // 11. Mixed folder/file scenario
-    // ------------------------------------------------------------
 
     [Fact]
     public void MixedHierarchy_Should_Apply_Correct_Selections()

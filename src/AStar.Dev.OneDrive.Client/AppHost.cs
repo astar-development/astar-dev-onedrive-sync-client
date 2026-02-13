@@ -65,7 +65,7 @@ public static class AppHost
             })
             .Build();
 
-            return host;
+        return host;
     }
 
     /// <summary>

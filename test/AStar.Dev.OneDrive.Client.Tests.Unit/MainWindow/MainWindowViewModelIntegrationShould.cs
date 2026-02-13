@@ -49,7 +49,6 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _progressSubject = new Subject<SyncState>();
         _ = _mockSyncEngine.Progress.Returns(_progressSubject);
 
-        // Setup folder tree service to return empty list by default
         _ = _mockFolderTreeService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([]));
     }
@@ -59,7 +58,6 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task LoadFoldersWhenAccountIsSelected()
     {
-        // Arrange
         var account = new AccountInfo(
             "acc-123",
             "test@example.com",
@@ -85,14 +83,11 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, _accountRepository, mockConflictRepo);
 
-        // Allow initialization to complete
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        // Act
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        // Assert
         syncTreeVm.SelectedAccountId.ShouldBe("acc-123");
         syncTreeVm.Folders.ShouldNotBeEmpty();
         syncTreeVm.Folders.Count.ShouldBe(1);
@@ -102,7 +97,6 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task ClearFoldersWhenAccountIsDeselected()
     {
-        // Arrange
         var account = new AccountInfo(
             "acc-456",
             "user@example.com",
@@ -132,10 +126,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        // Act
         accountVm.SelectedAccount = null;
         await Task.Delay(100, TestContext.Current.CancellationToken);
-        // Assert
         syncTreeVm.SelectedAccountId.ShouldBeNull();
         syncTreeVm.Folders.ShouldBeEmpty();
     }
@@ -143,7 +135,6 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task SwitchFoldersWhenDifferentAccountIsSelected()
     {
-        // Arrange
         var account1 = new AccountInfo("acc-1", "user1@example.com", @"C:\Sync1", true, null, null, false, false, 3, 50, 0);
         var account2 = new AccountInfo("acc-2", "user2@example.com", @"C:\Sync2", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account1, TestContext.Current.CancellationToken);
@@ -165,18 +156,14 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         using var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, _accountRepository, mockConflictRepo);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
-
-        // Act - Select first account
         accountVm.SelectedAccount = account1;
         await Task.Delay(100, TestContext.Current.CancellationToken);
         var firstFolder = syncTreeVm.Folders.FirstOrDefault()?.Name;
 
-        // Act - Select second account
         accountVm.SelectedAccount = account2;
         await Task.Delay(100, TestContext.Current.CancellationToken);
         var secondFolder = syncTreeVm.Folders.FirstOrDefault()?.Name;
 
-        // Assert
         firstFolder.ShouldBe("Folder1");
         secondFolder.ShouldBe("Folder2");
         syncTreeVm.SelectedAccountId.ShouldBe("acc-2");
@@ -185,7 +172,6 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task HandleErrorsGracefullyWhenFolderLoadingFails()
     {
-        // Arrange
         var account = new AccountInfo("acc-999", "error@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
@@ -202,10 +188,8 @@ public class MainWindowViewModelIntegrationShould : IDisposable
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        // Act
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
-        // Assert
         syncTreeVm.ErrorMessage.ShouldNotBeNullOrEmpty();
         syncTreeVm.Folders.ShouldBeEmpty();
     }
@@ -213,7 +197,6 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task LoadFreshFolderInstancesWhenAccountIsReselected()
     {
-        // Arrange
         var account = new AccountInfo("acc-sel", "sel@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
@@ -233,22 +216,16 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
-
-        // Act - Select the folder
         OneDriveFolderNode folderToSelect = syncTreeVm.Folders[0];
         _ = syncTreeVm.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
-        // Store the selection state
         SelectionState initialState = folderToSelect.SelectionState;
 
-        // Deselect and reselect account
         accountVm.SelectedAccount = null;
         await Task.Delay(100, TestContext.Current.CancellationToken);
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
-
-        // Assert - Fresh instances should have reset selection state
         OneDriveFolderNode reloadedFolder = syncTreeVm.Folders[0];
         reloadedFolder.SelectionState.ShouldBe(SelectionState.Unchecked);
         initialState.ShouldBe(SelectionState.Checked);

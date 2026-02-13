@@ -230,7 +230,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     }
     private void OpenSettings()
     {
-        var settingsViewModel = _serviceProvider.GetRequiredService<SettingsViewModel>();
+        SettingsViewModel settingsViewModel = _serviceProvider.GetRequiredService<SettingsViewModel>();
         var window = new SettingsWindow
         {
             DataContext = settingsViewModel
@@ -252,18 +252,19 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             .BindTo(syncTreeViewModel, x => x.SelectedAccountId)
             .DisposeWith(_disposables);
 
-        // Wire up: Check for unresolved conflicts when account selection changes
-        _ = accountManagementViewModel
-            .WhenAnyValue(x => x.SelectedAccount)
-            .Subscribe(async account =>
-            {
-                if(account is not null)
-                    await UpdateConflictStatusAsync(account.AccountId);
-                else
-                    HasUnresolvedConflicts = false;
-            })
-            .DisposeWith(_disposables);
+        WireUpConflictDetection(accountManagementViewModel);
     }
+
+    private void WireUpConflictDetection(AccountManagementViewModel accountManagementViewModel) => _ = accountManagementViewModel
+                .WhenAnyValue(x => x.SelectedAccount)
+                .Subscribe(async account =>
+                {
+                    if(account is not null)
+                        await UpdateConflictStatusAsync(account.AccountId);
+                    else
+                        HasUnresolvedConflicts = false;
+                })
+                .DisposeWith(_disposables);
 
     private void WireUpTheSyncTreeViewModel(SyncTreeViewModel syncTreeViewModel)
     {
@@ -307,84 +308,82 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
             })
             .DisposeWith(_disposables);
 
-        // Wire up: When sync completes successfully, start auto-sync monitoring
-        _ = syncTreeViewModel
-            .WhenAnyValue(x => x.SyncState)
-            .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.AccountId))
-            .Subscribe(async state =>
-            {
-                try
-                {
-                    // Get account info to retrieve local sync path
-                    AccountInfo? account = await _accountRepository.GetByIdAsync(state.AccountId);
-                    if(account is not null && !string.IsNullOrEmpty(account.LocalSyncPath))
-                        await _autoSyncCoordinator.StartMonitoringAsync(state.AccountId, account.LocalSyncPath);
-                }
-                catch
-                {
-                    // Silently fail - auto-sync is a convenience feature
-                    // Manual sync will still work
-                }
-            })
-            .DisposeWith(_disposables);
+        WireUpSyncCompletion(syncTreeViewModel);
 
-        // Wire up: When sync starts, show sync progress view
-        _ = syncTreeViewModel
-            .WhenAnyValue(x => x.IsSyncing, x => x.SelectedAccountId,
-                (isSyncing, accountId) => new { IsSyncing = isSyncing, AccountId = accountId })
-            .Subscribe(state =>
-            {
-                if(state.IsSyncing && !string.IsNullOrEmpty(state.AccountId))
+        WireUpSyncStartAndProgress(syncTreeViewModel);
+    }
+
+    private void WireUpSyncStartAndProgress(SyncTreeViewModel syncTreeViewModel) => _ = syncTreeViewModel
+                .WhenAnyValue(x => x.IsSyncing, x => x.SelectedAccountId,
+                    (isSyncing, accountId) => new { IsSyncing = isSyncing, AccountId = accountId })
+                .Subscribe(state =>
                 {
-                    // Create sync progress view model if not already created
-                    if(SyncProgress is null || SyncProgress.AccountId != state.AccountId)
+                    if(state.IsSyncing && !string.IsNullOrEmpty(state.AccountId))
                     {
-                        SyncProgress?.Dispose();
-                        SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
+                        // Create sync progress view model if not already created
+                        if(SyncProgress is null || SyncProgress.AccountId != state.AccountId)
+                        {
+                            SyncProgress?.Dispose();
+                            SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
                             _serviceProvider,
                             state.AccountId);
 
-                        // Wire up ViewConflictsCommand to show conflict resolution
-                        _ = syncProgressVm.ViewConflictsCommand
-                            .Subscribe(_ => ShowConflictResolutionView(state.AccountId))
-                            .DisposeWith(_disposables);
+                            // Wire up ViewConflictsCommand to show conflict resolution
+                            _ = syncProgressVm.ViewConflictsCommand
+                                .Subscribe(_ => ShowConflictResolutionView(state.AccountId))
+                                .DisposeWith(_disposables);
 
-                        // Wire up CloseCommand to dismiss sync progress view
-                        _ = syncProgressVm.CloseCommand
-                            .Subscribe(_ => CloseSyncProgressView())
-                            .DisposeWith(_disposables);
+                            // Wire up CloseCommand to dismiss sync progress view
+                            _ = syncProgressVm.CloseCommand
+                                .Subscribe(_ => CloseSyncProgressView())
+                                .DisposeWith(_disposables);
 
-                        // Auto-close overlay when sync completes successfully without conflicts
-                        // Note: Do NOT auto-close on Failed status - user needs to see error details
-                        _ = syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
-                            .Where(progress => progress is not null and
+                            WireUpAutoClose(syncProgressVm);
 
-                            { Status: SyncStatus.Completed, ConflictsDetected: 0 })
-                            .Delay(TimeSpan.FromSeconds(2)) // Show completion message briefly
-                            .ObserveOn(RxApp.MainThreadScheduler)
-                            .Subscribe(_ => CloseSyncProgressView())
-                            .DisposeWith(_disposables);
+                            // Update conflict status when sync completes
+                            _ = syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
+                                .Where(progress => progress is not null && progress.Status == SyncStatus.Completed)
+                                .Subscribe(async _ => await UpdateConflictStatusAsync(state.AccountId))
+                                .DisposeWith(_disposables);
 
-                        // Update conflict status when sync completes
-                        _ = syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
-                            .Where(progress => progress is not null && progress.Status == SyncStatus.Completed)
-                            .Subscribe(async _ => await UpdateConflictStatusAsync(state.AccountId))
-                            .DisposeWith(_disposables);
-
-                        SyncProgress = syncProgressVm;
+                            SyncProgress = syncProgressVm;
+                        }
                     }
-                }
-                else if(!state.IsSyncing && SyncProgress is not null)
-                {
-                    // Keep showing progress view even when not syncing (shows completion/pause state)
-                    // User can manually close by navigating away
-                }
+                    else if(!state.IsSyncing && SyncProgress is not null)
+                    {
+                        // Keep showing progress view even when not syncing (shows completion/pause state)
+                        // User can manually close by navigating away
+                    }
 
-                this.RaisePropertyChanged(nameof(ShowSyncProgress));
-                this.RaisePropertyChanged(nameof(ShowConflictResolution));
-            })
-            .DisposeWith(_disposables);
-    }
+                    this.RaisePropertyChanged(nameof(ShowSyncProgress));
+                    this.RaisePropertyChanged(nameof(ShowConflictResolution));
+                })
+                .DisposeWith(_disposables);
+
+    private void WireUpAutoClose(SyncProgressViewModel syncProgressVm) => _ = syncProgressVm.WhenAnyValue(x => x.CurrentProgress)
+                                    .Where(progress => progress is not null and { Status: SyncStatus.Completed, ConflictsDetected: 0 })
+                                    .Delay(TimeSpan.FromSeconds(2))
+                                    .ObserveOn(RxApp.MainThreadScheduler)
+                                    .Subscribe(_ => CloseSyncProgressView())
+                                    .DisposeWith(_disposables); private void WireUpSyncCompletion(SyncTreeViewModel syncTreeViewModel) => _ = syncTreeViewModel
+                .WhenAnyValue(x => x.SyncState)
+                .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.AccountId))
+                .Subscribe(async state =>
+                {
+                    try
+                    {
+                        // Get account info to retrieve local sync path
+                        AccountInfo? account = await _accountRepository.GetByIdAsync(state.AccountId);
+                        if(account is not null && !string.IsNullOrEmpty(account.LocalSyncPath))
+                            await _autoSyncCoordinator.StartMonitoringAsync(state.AccountId, account.LocalSyncPath);
+                    }
+                    catch
+                    {
+                        // Silently fail - auto-sync is a convenience feature
+                        // Manual sync will still work
+                    }
+                })
+                .DisposeWith(_disposables);
 
     private void CloseApplication()
     {

@@ -53,7 +53,6 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task PersistSelectionsToDatabase()
     {
-        // Arrange
         List<OneDriveFolderNode> folders = CreateTestFolders();
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
@@ -61,13 +60,9 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _syncRepository);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async load
-
-        // Act - Select a folder
         OneDriveFolderNode folderToSelect = sut.Folders[0];
         _ = sut.ToggleSelectionCommand.Execute(folderToSelect).Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async save
-
-        // Assert - Check database
         IReadOnlyList<string> savedPaths = await _configRepository.GetSelectedFoldersAsync("acc-1", TestContext.Current.CancellationToken);
         savedPaths.ShouldContain("/Folder1");
     }
@@ -75,7 +70,6 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task RestoreSelectionsFromDatabase()
     {
-        // Arrange - Pre-populate database
         await _configRepository.SaveBatchAsync("acc-1", [
             new FileMetadata("", "acc-1", "name",  "/Parent/Child1", 0,DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
@@ -83,13 +77,10 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         List<OneDriveFolderNode> folders = CreateTestFolders();
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
-
-        // Act - Load folders (should restore selections)
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _syncRepository);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
-        // Assert
         OneDriveFolderNode? folder2 = sut.Folders.FirstOrDefault(f => f.Path == "/Folder2");
         _ = folder2.ShouldNotBeNull();
         folder2.SelectionState.ShouldBe(SelectionState.Checked);
@@ -98,7 +89,6 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task ClearSelectionsFromDatabase()
     {
-        // Arrange - Pre-populate database
         await _configRepository.SaveBatchAsync("acc-1", [
             new FileMetadata("", "acc-1", "name",  "/Folder1", 0, DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
@@ -110,12 +100,8 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _syncRepository);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
-
-        // Act - Clear all selections
         _ = sut.ClearSelectionsCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken); // Allow async save
-
-        // Assert - Check database
         IReadOnlyList<string> savedPaths = await _configRepository.GetSelectedFoldersAsync("acc-1", TestContext.Current.CancellationToken);
         savedPaths.ShouldBeEmpty();
     }
@@ -123,7 +109,6 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task MaintainSeparateSelectionsPerAccount()
     {
-        // Arrange - Create selections for two accounts
         await _configRepository.SaveBatchAsync("acc-1", [
             new FileMetadata("", "acc-1", "name",  "/Folder1", 0, DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
@@ -131,11 +116,9 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
             new FileMetadata("", "acc-2", "name",  "/Folder2", 0, DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
 
-        List<OneDriveFolderNode> folders = CreateTestFolders();
+        List < OneDriveFolderNode > folders = CreateTestFolders();
         _ = _mockFolderTreeService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
-
-        // Act - Load account 1
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _syncRepository);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
@@ -143,12 +126,10 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         SelectionState folder1Selected = sut.Folders.First(f => f.Path == "/Folder1").SelectionState;
         SelectionState folder2Selected = sut.Folders.First(f => f.Path == "/Folder2").SelectionState;
 
-        // Assert
         folder1Selected.ShouldBe(SelectionState.Checked);
         folder2Selected.ShouldBe(SelectionState.Unchecked);
     }
 
-    // Skipped: Fails due to exception type mismatch, cannot fix without production code changes
     [Fact(Skip = "Fails due to exception type mismatch, cannot fix without production code changes")]
     public async Task HandleDatabaseErrorsGracefully()
     {
@@ -157,8 +138,6 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         List<OneDriveFolderNode> folders = CreateTestFolders();
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>(folders));
-
-        // Act - Should not throw even if database is unavailable
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _syncRepository);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
@@ -173,7 +152,6 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task RestoreIndeterminateStatesCorrectly()
     {
-        // Arrange - Save only one child checked
         await _configRepository.SaveBatchAsync("acc-1", [
             new FileMetadata("", "acc-1", "name",  "/Parent/Child1", 0,DateTime.UtcNow, "")
         ], TestContext.Current.CancellationToken);
@@ -189,12 +167,10 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([parent]));
 
-        // Act
         using var sut = new SyncTreeViewModel(_mockFolderTreeService, _selectionService, _mockSyncEngine, _mockDebugLogger, _syncRepository);
         sut.SelectedAccountId = "acc-1";
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
-        // Assert
         OneDriveFolderNode loadedParent = sut.Folders[0];
         OneDriveFolderNode loadedChild1 = loadedParent.Children.First(c => c.Path == "/Parent/Child1");
         OneDriveFolderNode loadedChild2 = loadedParent.Children.First(c => c.Path == "/Parent/Child2");
@@ -202,7 +178,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         loadedChild1.SelectionState.ShouldBe(SelectionState.Checked);
         loadedChild2.SelectionState.ShouldBe(SelectionState.Unchecked);
         loadedParent.SelectionState.ShouldBe(SelectionState.Indeterminate);
-    }
+        }
 
     private static List<OneDriveFolderNode> CreateTestFolders() => [
                 CreateFolder("1", "Folder1", "/Folder1"),

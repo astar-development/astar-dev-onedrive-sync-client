@@ -74,12 +74,12 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             })
             .DisposeWith(_disposables);
 
-        var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? string.Empty); 
-        using (Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
+        var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? string.Empty);
+        using(Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
         {
             _ = _debugLogger.LogInfoAsync("SyncTreeViewModel", SelectedAccountId ?? string.Empty, "Starting sync for account");
         }
-        
+
         SyncTooltip = "This will perform the initial sync, which will retrieve details of all files and folders from OneDrive. This may take some time depending on the number of files. Subsequent syncs will be faster as only changes (and your selections) are processed.";
         SyncButtonText = "Start Initial Sync";
     }

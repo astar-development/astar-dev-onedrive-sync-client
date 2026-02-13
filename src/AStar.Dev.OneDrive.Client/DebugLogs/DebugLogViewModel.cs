@@ -170,15 +170,15 @@ public sealed class DebugLogViewModel : ReactiveObject
         var accountHash = SelectedAccount is not null
             ? AccountIdHasher.Hash(SelectedAccount.AccountId)
             : string.Empty;
-            
-        foreach (var file in allFiles.Where(f => f.Contains(accountHash)))
+
+        foreach(var file in allFiles.Where(f => f.Contains(accountHash)))
         {
             var lines = await File.ReadAllLinesAsync(file);
 
-            foreach (var line in lines)
+            foreach(var line in lines)
             {
                 DebugLogEntry? entry = SerilogLogParser.Parse(line, id++);
-                if (entry is not null)
+                if(entry is not null)
                     DebugLogs.Add(entry);
             }
         }

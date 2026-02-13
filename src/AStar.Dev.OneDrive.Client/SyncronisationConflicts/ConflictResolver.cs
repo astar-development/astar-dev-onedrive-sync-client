@@ -94,7 +94,7 @@ public sealed class ConflictResolver(
         if(_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Keeping local version of {FilePath}", conflict.FilePath);
 
-        if(!System.IO.File.Exists(localPath))
+        if(!File.Exists(localPath))
             throw new FileNotFoundException($"Local file not found: {localPath}");
 
         // Get file metadata to retrieve OneDrive file ID
@@ -156,7 +156,7 @@ public sealed class ConflictResolver(
         if(remoteItem?.LastModifiedDateTime.HasValue == true)
         {
             // Set local file timestamp to match OneDrive's timestamp
-            System.IO.File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
+            File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
         }
 
         // Compute hash of downloaded file
@@ -184,7 +184,7 @@ public sealed class ConflictResolver(
         if(_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Keeping both versions of {FilePath}", conflict.FilePath);
 
-        if(!System.IO.File.Exists(localPath))
+        if(!File.Exists(localPath))
             throw new FileNotFoundException($"Local file not found: {localPath}");
 
         // Get file metadata to retrieve OneDrive file ID
@@ -203,7 +203,7 @@ public sealed class ConflictResolver(
         var conflictFileName = $"{fileNameWithoutExtension} (Conflict {timestamp}){extension}";
         var conflictPath = Path.Combine(directory, conflictFileName);
 
-        System.IO.File.Move(localPath, conflictPath);
+        File.Move(localPath, conflictPath);
 
         if(_logger.IsEnabled(LogLevel.Information))
             _logger.LogInformation("Renamed local file to {ConflictPath}", conflictPath);
@@ -225,7 +225,7 @@ public sealed class ConflictResolver(
 
         // Set local file timestamp to match OneDrive's timestamp
         if(remoteItem.LastModifiedDateTime.HasValue)
-            System.IO.File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
+            File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
 
         // Compute hash of downloaded file
         var downloadedHash = await _localFileScanner.ComputeFileHashAsync(localPath, cancellationToken);

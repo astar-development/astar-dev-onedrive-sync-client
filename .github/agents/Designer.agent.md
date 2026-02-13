@@ -776,18 +776,15 @@ public class SyncViewModelShould
     [Fact]
     public async Task UpdateStatusMessageWhenSyncStarts()
     {
-        // Arrange
         var syncEngine = Substitute.For<ISyncEngine>();
         var stateSubject = new BehaviorSubject<SyncState>(SyncState.Idle);
         syncEngine.SyncState.Returns(stateSubject);
 
         var viewModel = new SyncViewModel(syncEngine);
 
-        // Act
         stateSubject.OnNext(SyncState.Syncing);
         await Task.Delay(10); // Allow reactive pipeline to complete
 
-        // Assert
         viewModel.StatusMessage.Should().Be("Syncing...");
         viewModel.IsSyncing.Should().BeTrue();
     }
@@ -795,18 +792,15 @@ public class SyncViewModelShould
     [Fact]
     public async Task DisableStartCommandWhenSyncing()
     {
-        // Arrange
         var syncEngine = Substitute.For<ISyncEngine>();
         var stateSubject = new BehaviorSubject<SyncState>(SyncState.Idle);
         syncEngine.SyncState.Returns(stateSubject);
 
         var viewModel = new SyncViewModel(syncEngine);
 
-        // Act
         stateSubject.OnNext(SyncState.Syncing);
         await Task.Delay(10);
 
-        // Assert
         var canExecute = await viewModel.StartSyncCommand.CanExecute.FirstAsync();
         canExecute.Should().BeFalse();
     }
@@ -826,30 +820,24 @@ public class BoolToVisibilityConverterShould
     [InlineData(false, false)]
     public void ConvertBoolToVisibility(bool input, bool expectedVisible)
     {
-        // Act
         var result = _converter.Convert(input, typeof(bool), null, CultureInfo.InvariantCulture);
 
-        // Assert
         result.Should().Be(expectedVisible);
     }
 
     [Fact]
     public void InvertWhenParameterIsInvert()
     {
-        // Act
         var result = _converter.Convert(true, typeof(bool), "Invert", CultureInfo.InvariantCulture);
 
-        // Assert
         result.Should().Be(false);
     }
 
     [Fact]
     public void ReturnDoNothingForNonBoolValue()
     {
-        // Act
         var result = _converter.Convert("not a bool", typeof(bool), null, CultureInfo.InvariantCulture);
 
-        // Assert
         result.Should().Be(BindingOperations.DoNothing);
     }
 }
@@ -864,18 +852,15 @@ public class SyncViewShould
     [AvaloniaFact]
     public async Task DisplaySyncStatusWhenViewModelUpdates()
     {
-        // Arrange
         var viewModel = new SyncViewModel(Substitute.For<ISyncEngine>());
         var view = new SyncView { DataContext = viewModel };
 
         var window = new Window { Content = view };
         window.Show();
 
-        // Act
         viewModel.StatusMessage = "Syncing...";
         await Task.Delay(100); // Allow UI to update
 
-        // Assert
         var statusText = view.FindControl<TextBlock>("StatusText");
         statusText.Text.Should().Be("Syncing...");
 

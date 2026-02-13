@@ -7,7 +7,10 @@ tools:
     "read/problems",
     "search/changes",
     "execute/testFailure",
-    "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection",
+    "execute/getTerminalOutput",
+    "execute/runInTerminal",
+    "read/terminalLastCommand",
+    "read/terminalSelection",
     "web/fetch",
     "search/searchResults",
     "edit/editFiles",
@@ -728,16 +731,13 @@ public class SyncEngineShould
     [Fact]
     public async Task ReturnSuccessWhenSyncCompletes()
     {
-        // Arrange
         var accountId = "test-account";
         _mockGraphClient
             .Setup(x => x.GetDeltaAsync(accountId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<DriveItem>());
 
-        // Act
         var result = await _sut.SyncAsync(accountId);
 
-        // Assert
         result.IsSuccess.Should().BeTrue();
         _mockSyncRepo.Verify(
             x => x.SaveSyncStateAsync(accountId, It.IsAny<SyncState>(), It.IsAny<CancellationToken>()),
@@ -750,10 +750,8 @@ public class SyncEngineShould
     [InlineData("   ")]
     public async Task ReturnFailureWhenAccountIdIsInvalid(string invalidAccountId)
     {
-        // Act
         var result = await _sut.SyncAsync(invalidAccountId);
 
-        // Assert
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Contain("accountId");
     }
@@ -781,7 +779,6 @@ public class AccountRepositoryShould : IDisposable
     [Fact]
     public async Task ReturnAccountWhenExists()
     {
-        // Arrange
         var account = new Account
         {
             Id = "test-account",
@@ -790,10 +787,8 @@ public class AccountRepositoryShould : IDisposable
         _context.Accounts.Add(account);
         await _context.SaveChangesAsync();
 
-        // Act
         var result = await _sut.GetByIdAsync("test-account");
 
-        // Assert
         result.IsSome.Should().BeTrue();
         result.Unwrap().Email.Should().Be("test@example.com");
     }
@@ -801,10 +796,8 @@ public class AccountRepositoryShould : IDisposable
     [Fact]
     public async Task ReturnNoneWhenAccountDoesNotExist()
     {
-        // Act
         var result = await _sut.GetByIdAsync("non-existent");
 
-        // Assert
         result.IsNone.Should().BeTrue();
     }
 

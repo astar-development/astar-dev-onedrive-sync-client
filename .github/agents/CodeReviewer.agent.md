@@ -539,7 +539,6 @@ public class SyncEngineShould
     [Fact]
     public async Task DownloadRemoteChangesWhenDeltaHasNewItems()
     {
-        // Arrange
         var mockGraphClient = new Mock<IGraphApiClient>();
         var mockRepository = new Mock<ISyncRepository>();
 
@@ -550,10 +549,8 @@ public class SyncEngineShould
 
         var sut = new SyncEngine(mockGraphClient.Object, mockRepository.Object);
 
-        // Act
         await sut.SyncAsync("account-123", CancellationToken.None);
 
-        // Assert
         mockRepository.Verify(
             x => x.SaveItemAsync(It.Is<DriveItem>(d => d.Id == "1"), It.IsAny<CancellationToken>()),
             Times.Once);
@@ -630,7 +627,6 @@ public class AccountRepositoryShould : IDisposable
     [Fact]
     public async Task SaveAndRetrieveAccountWithTokens()
     {
-        // Arrange
         var repository = new AccountRepository(_context);
         var account = new Account
         {
@@ -642,11 +638,9 @@ public class AccountRepositoryShould : IDisposable
             }
         };
 
-        // Act
         await repository.SaveAsync(account, CancellationToken.None);
         var retrieved = await repository.GetAccountWithTokensAsync("acc-123", CancellationToken.None);
 
-        // Assert
         retrieved.HasValue.Should().BeTrue();
         retrieved.Value.Email.Should().Be("test@example.com");
         retrieved.Value.RefreshTokens.Should().HaveCount(1);

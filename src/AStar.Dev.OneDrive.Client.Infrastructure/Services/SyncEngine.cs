@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Reactive.Subjects;
 using System.Text.RegularExpressions;
 using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Client.Core;
@@ -8,7 +6,6 @@ using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.OneDriveServices;
-using Microsoft.Graph.Models;
 using Unit = AStar.Dev.Functional.Extensions.Unit;
 
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Services;
@@ -26,11 +23,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     private readonly IConflictDetectionService _conflictDetectionService;
     private readonly IDeletionSyncService _deletionSyncService;
     private readonly IDeltaProcessingService _deltaProcessingService;
-    private readonly IDriveItemsRepository _driveItemsRepository;
     private readonly IFileTransferService _fileTransferService;
-    private readonly IGraphApiClient _graphApiClient;
     private readonly ILocalFileScanner _localFileScanner;
-    private readonly IRemoteChangeDetector _remoteChangeDetector;
     private readonly ISyncConfigurationRepository _syncConfigurationRepository;
     private readonly ISyncConflictRepository _syncConflictRepository;
     private readonly ISyncStateCoordinator _syncStateCoordinator;
@@ -39,11 +33,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
     public SyncEngine(
         ILocalFileScanner localFileScanner,
-        IRemoteChangeDetector remoteChangeDetector,
-        IDriveItemsRepository fileMetadataRepository,
         ISyncConfigurationRepository syncConfigurationRepository,
         IAccountRepository accountRepository,
-        IGraphApiClient graphApiClient,
         ISyncConflictRepository syncConflictRepository,
         IConflictDetectionService conflictDetectionService,
         IDeltaProcessingService deltaProcessingService,
@@ -52,11 +43,8 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         ISyncStateCoordinator syncStateCoordinator)
     {
         _localFileScanner = localFileScanner ?? throw new ArgumentNullException(nameof(localFileScanner));
-        _remoteChangeDetector = remoteChangeDetector ?? throw new ArgumentNullException(nameof(remoteChangeDetector));
-        _driveItemsRepository = fileMetadataRepository ?? throw new ArgumentNullException(nameof(fileMetadataRepository));
         _syncConfigurationRepository = syncConfigurationRepository ?? throw new ArgumentNullException(nameof(syncConfigurationRepository));
         _accountRepository = accountRepository ?? throw new ArgumentNullException(nameof(accountRepository));
-        _graphApiClient = graphApiClient ?? throw new ArgumentNullException(nameof(graphApiClient));
         _syncConflictRepository = syncConflictRepository ?? throw new ArgumentNullException(nameof(syncConflictRepository));
         _conflictDetectionService = conflictDetectionService ?? throw new ArgumentNullException(nameof(conflictDetectionService));
         _deltaProcessingService = deltaProcessingService ?? throw new ArgumentNullException(nameof(deltaProcessingService));
@@ -102,13 +90,13 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 return;
             }
 
-            await ProcessDeltaChangesAsync(accountId, cancellationToken)
+            _ = await ProcessDeltaChangesAsync(accountId, cancellationToken)
                 .MatchAsync(
                     async _ => Unit.Value,
                     async error =>
                     {
                         // Log error but continue - delta processing errors shouldn't stop the sync
-                        await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId, 
+                        await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", accountId,
                             $"Delta processing failed: {error.Message}", error.Exception, cancellationToken);
                         return Unit.Value;
                     });
@@ -120,7 +108,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                 return;
             }
 
-            string? currentSessionId = await _syncStateCoordinator.InitializeSessionAsync(accountId, account.EnableDetailedSyncLogging, cancellationToken);
+            var currentSessionId = await _syncStateCoordinator.InitializeSessionAsync(accountId, account.EnableDetailedSyncLogging, cancellationToken);
 
             List<FileMetadata> allLocalFiles = await ScanLocalFilesAsync(accountId, folders, account);
             var existingFilesDict = folders.ToDictionary(f => f.RelativePath ?? "", f => f);
@@ -177,7 +165,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
             await _syncStateCoordinator.RecordCompletionAsync(filesToUpload.Count,
                 filesToDownload.Count, filesDeleted, conflictCount, completedBytes, cancellationToken);
-            
+
             await UpdateLastAccountSyncAsync(account, cancellationToken);
         }
         catch(OperationCanceledException)
@@ -213,18 +201,12 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
                                                          {
                                                              AccountInfo? account = await _accountRepository.GetByIdAsync(accountId, cancellationToken);
 
-                                                             if(account is null)
-                                                             {
-                                                                 throw new InvalidOperationException($"Account '{accountId}' not found");
-                                                             }
-
-                                                             return account;
+                                                             return account is null ? throw new InvalidOperationException($"Account '{accountId}' not found") : account;
                                                          })
             .MapFailureAsync(ex =>
                 ex is InvalidOperationException
                     ? SyncError.AccountNotFound(accountId)
                     : SyncError.SyncFailed($"Failed to retrieve account: {ex.Message}", ex));
-
 
     /// <summary>
     ///     Processes delta changes using Result pattern.
@@ -232,35 +214,31 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Result indicating success or failure.</returns>
-    internal async Task<Result<Unit, SyncError>> ProcessDeltaChangesAsync(
-        string accountId,
-        CancellationToken cancellationToken) => await Try.RunAsync(async () =>
-                                                         {
-                                                             DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
-                                                             (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
-                                                                 await _deltaProcessingService.ProcessDeltaPagesAsync(
-                                                                     accountId,
-                                                                     token,
-                                                                     state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
-                                                                         state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
-                                                                         state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
-                                                                     cancellationToken);
-                                                             await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
-                                                             await DebugLog.EntryAsync("SyncEngine.ProcessDeltaChangesAsync", accountId, cancellationToken);
+    internal async Task<Result<Unit, SyncError>> ProcessDeltaChangesAsync(string accountId, CancellationToken cancellationToken)
+        => await Try.RunAsync(async () =>
+                    {
+                        DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
+                        (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
+                            await _deltaProcessingService.ProcessDeltaPagesAsync(
+                                accountId,
+                                token,
+                                state => _syncStateCoordinator.UpdateProgress(state.AccountId, state.Status, state.TotalFiles, state.CompletedFiles,
+                                    state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
+                                    state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
+                                cancellationToken);
+                        await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
+                        await DebugLog.EntryAsync("SyncEngine.ProcessDeltaChangesAsync", accountId, cancellationToken);
 
-                                                             return Unit.Value;
-                                                         })
+                        return Unit.Value;
+                    })
             .MapFailureAsync(ex => SyncError.DeltaProcessingFailed(ex.Message, ex));
-
 
     private async Task<IReadOnlyList<DriveItemEntity>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken)
     {
         IReadOnlyList<DriveItemEntity> folders = await _syncConfigurationRepository
             .GetSelectedItemsByAccountIdAsync(accountId, cancellationToken);
 
-        await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId,
-            $"Starting sync with {folders.Count} selected folders: {string.Join(", ", folders)}",
-            cancellationToken);
+        await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", accountId, $"Starting sync with {folders.Count} selected folders: {string.Join(", ", folders)}", cancellationToken);
 
         return folders;
     }
@@ -279,6 +257,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
             if(localFiles?.Count > 0)
                 allLocalFiles.AddRange(localFiles);
         }
+
         return allLocalFiles.DistinctBy(f => f.RelativePath).ToList();
     }
 
@@ -357,7 +336,7 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
         var conflictCount = 0;
         var conflictPaths = new HashSet<string>();
         var filesToRecordWithoutTransfer = new List<FileMetadata>();
-        string? sessionId = _syncStateCoordinator.GetCurrentSessionId();
+        var sessionId = _syncStateCoordinator.GetCurrentSessionId();
 
         foreach(DriveItemEntity remoteFile in folders)
         {
@@ -438,8 +417,6 @@ public sealed partial class SyncEngine : ISyncEngine, IDisposable
 
         return (filesToDownload, totalFiles, totalBytes, uploadBytes, downloadBytes);
     }
-
-
 
     /// <inheritdoc />
     public Task StopSyncAsync()
