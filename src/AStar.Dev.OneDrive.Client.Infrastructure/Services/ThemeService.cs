@@ -27,7 +27,7 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
     public async Task ApplyThemeAsync(ThemePreference theme, CancellationToken cancellationToken = default)
     {
         // Update runtime theme if Application.Current is available
-        if (Application.Current is not null)
+        if(Application.Current is not null)
         {
             ApplyThemeVariantAndResources(theme);
         }
@@ -44,14 +44,14 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
 
     private void ApplyThemeVariantAndResources(ThemePreference theme)
     {
-        if (Application.Current is null)
+        if(Application.Current is null)
             return;
 
         // Clear custom resource dictionaries (preserve base FluentTheme)
         ClearCustomResourceDictionaries();
 
         // Apply theme based on preference
-        switch (theme)
+        switch(theme)
         {
             case ThemePreference.OriginalLight:
                 Application.Current.RequestedThemeVariant = ThemeVariant.Light;
@@ -84,10 +84,10 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
 
     private void ClearCustomResourceDictionaries()
     {
-        if (Application.Current?.Resources.MergedDictionaries is null)
+        if(Application.Current?.Resources.MergedDictionaries is null)
             return;
 
-        foreach (var dictionary in _loadedThemeDictionaries.ToList())
+        foreach(var dictionary in _loadedThemeDictionaries.ToList())
         {
             _ = Application.Current.Resources.MergedDictionaries.Remove(dictionary);
         }
@@ -97,7 +97,7 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
 
     private void LoadThemeResourceDictionary(string resourceUri)
     {
-        if (Application.Current is null)
+        if(Application.Current is null)
             return;
 
         try
@@ -107,7 +107,7 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
             Application.Current.Resources.MergedDictionaries.Add(resourceDictionary);
             _loadedThemeDictionaries.Add(resourceDictionary);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             // Log error but don't fail - fallback to default theme
             System.Diagnostics.Debug.WriteLine($"Failed to load theme resource dictionary '{resourceUri}': {ex.Message}");
@@ -119,7 +119,7 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
         // Load existing preferences or create new ones
         var preferences = await windowPreferencesService.LoadAsync(cancellationToken);
 
-        if (preferences is null)
+        if(preferences is null)
         {
             // Create default preferences with new theme
             preferences = new WindowPreferences(

@@ -89,7 +89,7 @@ public class ThemeServiceShould
     {
         // Arrange
         var service = new ThemeService(_mockWindowPreferencesService);
-        
+
         // Act
         await service.ApplyThemeAsync(ThemePreference.OriginalAuto, CancellationToken);
 
@@ -204,7 +204,7 @@ public class ThemeServiceShould
     {
         // Arrange
         var service = new ThemeService(_mockWindowPreferencesService);
-        
+
         _mockWindowPreferencesService.LoadAsync(Arg.Any<CancellationToken>())
             .Returns((WindowPreferences?)null);
 

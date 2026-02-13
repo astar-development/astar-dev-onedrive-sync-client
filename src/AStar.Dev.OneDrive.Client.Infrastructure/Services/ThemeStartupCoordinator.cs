@@ -29,7 +29,7 @@ public class ThemeStartupCoordinator(
             var themeToApply = preferences?.Theme ?? ThemePreference.OriginalAuto;
             await themeService.ApplyThemeAsync(themeToApply, cancellationToken);
         }
-        catch (Exception)
+        catch(Exception)
         {
             // Silently fail - application continues with default theme
             // Error logging could be added here if logger is injected
