@@ -20,11 +20,10 @@ public sealed class OptionsTypeInfo : IEquatable<OptionsTypeInfo>
 
     public override bool Equals(object obj) => Equals((OptionsTypeInfo)obj);
 
-    public bool Equals(OptionsTypeInfo other) => ReferenceEquals(this, other) || (other is not null && string.Equals(TypeName, other.TypeName, StringComparison.Ordinal)
-            && string.Equals(FullTypeName, other.FullTypeName, StringComparison.Ordinal)
-            && string.Equals(SectionName, other.SectionName, StringComparison.Ordinal)
+    public bool Equals(OptionsTypeInfo other) => ReferenceEquals(this, other) || (other is not null && string.Equals(TypeName, other.TypeName, System.StringComparison.Ordinal)
+            && string.Equals(FullTypeName, other.FullTypeName, System.StringComparison.Ordinal)
+            && string.Equals(SectionName, other.SectionName, System.StringComparison.Ordinal)
             && Equals(Location, other.Location));
-
     public override int GetHashCode()
     {
         unchecked
@@ -37,6 +36,5 @@ public sealed class OptionsTypeInfo : IEquatable<OptionsTypeInfo>
             return hash;
         }
     }
-    
     public override string ToString() => $"{FullTypeName} (Section: {SectionName})";
 }

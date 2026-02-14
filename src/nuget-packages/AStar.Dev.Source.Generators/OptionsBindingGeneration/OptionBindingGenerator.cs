@@ -61,7 +61,7 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
         var fullTypeName = ns != null ? string.Concat(ns, ".", typeName) : typeName;
         string? sectionName = null;
         AttributeData? attr = typeSymbol.GetAttributes().FirstOrDefault(a => a.AttributeClass?.ToDisplayString() == AttrFqn);
-        if(attr != null && attr.ConstructorArguments.Length > 0 && attr.ConstructorArguments[0].Value is string s && !string.IsNullOrWhiteSpace(s))
+        if(attr is { ConstructorArguments.Length: > 0 } && attr.ConstructorArguments[0].Value is string s && !string.IsNullOrWhiteSpace(s))
         {
             sectionName = s;
         }
@@ -72,23 +72,27 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
             if(attrSyntax?.ArgumentList?.Arguments.Count > 0)
             {
                 ExpressionSyntax expr = attrSyntax.ArgumentList.Arguments[0].Expression;
-                if(expr is LiteralExpressionSyntax literal && literal.Token.Value is string literalValue)
-                {
-                    sectionName = literalValue;
-                }
+                if(expr is LiteralExpressionSyntax { Token.Value: string literalValue }) sectionName = literalValue;
             }
         }
 
-        if(string.IsNullOrWhiteSpace(sectionName))
+        return !string.IsNullOrWhiteSpace(sectionName) 
+            ? new OptionsTypeInfo(typeName, fullTypeName, sectionName!, ctx.TargetNode.GetLocation()) 
+            : ExtractSectionNameFromMembers(ctx, typeSymbol, sectionName, typeName, fullTypeName);
+    }
+
+    private static OptionsTypeInfo? ExtractSectionNameFromMembers(GeneratorAttributeSyntaxContext ctx, INamedTypeSymbol typeSymbol, string? sectionName, string typeName, string fullTypeName)
+    {
+        foreach(ISymbol member in typeSymbol.GetMembers())
         {
-            foreach(ISymbol member in typeSymbol.GetMembers())
+            if(member is not IFieldSymbol { IsStatic: true, IsConst: true, Name: "SectionName" } field || field.Type.SpecialType != SpecialType.System_String ||
+               field.ConstantValue is not string val || string.IsNullOrWhiteSpace(val))
             {
-                if(member is IFieldSymbol field && field.IsStatic && field.IsConst && field.Name == "SectionName" && field.Type.SpecialType == SpecialType.System_String && field.ConstantValue is string val && !string.IsNullOrWhiteSpace(val))
-                {
-                    sectionName = val;
-                    break;
-                }
+                continue;
             }
+
+            sectionName = val;
+            break;
         }
 
         return new OptionsTypeInfo(typeName, fullTypeName, sectionName ?? string.Empty, ctx.TargetNode.GetLocation());

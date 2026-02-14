@@ -9,26 +9,33 @@
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsRoslynComponent>true</IsRoslynComponent>
         <PackageId>AStar.Dev.Source.Generators</PackageId>
-        <!-- Do NOT include referenced projects in this generator package -->
-        <IncludeReferencedProjects>false</IncludeReferencedProjects>
+        <!-- <IncludeReferencedProjects>true</IncludeReferencedProjects> -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <!-- Include generator DLL in analyzers folder for proper loading -->
         <IncludeBuildOutput>false</IncludeBuildOutput>
         <NoWarn>$(NoWarn);NU5128</NoWarn>
 
         <!-- Package metadata -->
-        <Version>0.1.3</Version>
-        <Authors>AStar Dev</Authors>
-        <Company>AStar</Company>
+        <Version>0.1.7</Version>
+        <Authors>AStar Development, Jason Barden</Authors>
+        <Company>AStar Development</Company>
         <Description>Source generators and supporting attribute types for AStar.Dev projects.</Description>
         <PackageTags>source-generator;strongid;attributes;astartools</PackageTags>
-        <PackageProjectUrl>https://example.com/AStar.Dev.Source.Generators</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/your-org/SourceGenerators1111</RepositoryUrl>
+        <PackageProjectUrl>https://astardevelopment.co.uk</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/astar-development/astar-dev-source-generators.git</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-        <PackageReleaseNotes>Initial 0.1.2 release.</PackageReleaseNotes>
+		<PackageReleaseNotes>
+			v0.1.7 - Fix bug in AutoRegisterServiceAttribute detection/code generation.
+			v0.1.6 - Fix build and packaging issues.
+			v0.1.5 - Update dependencies to latest Roslyn versions.
+			v0.1.4 - Add missing namespace in generated ServiceRegistrations class.
+			- Rename ServiceAttribute to AutoRegisterServiceAttribute for clarity</PackageReleaseNotes>
         <RepositoryBranch>main</RepositoryBranch>
+        <Title>AStar Dev Source Generators</Title>
+        <PackageReadmeFile>Readme.md</PackageReadmeFile>
+        <PackageIcon>astar.png</PackageIcon>
+        <IncludeSymbols>True</IncludeSymbols>
     </PropertyGroup>
 
     <ItemGroup>
@@ -59,7 +66,18 @@
         <!-- Include build props to auto-reference the Attributes assembly -->
         <None Include="build\AStar.Dev.Source.Generators.props" Pack="true" PackagePath="build" />
     </ItemGroup>
-        <!-- (BuildAndCopyAttributes target above handles building and copying the Attributes DLL) -->
-
+    <ItemGroup>
+      <ProjectReference Include="..\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" PrivateAssets="all" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Update="astar.png">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+      <None Update="Readme.md">
+        <Pack>True</Pack>
+        <PackagePath>\</PackagePath>
+      </None>
+    </ItemGroup>
 
 </Project>
