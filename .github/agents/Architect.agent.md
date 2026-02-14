@@ -210,7 +210,7 @@ The application follows a strict layered architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Presentation Layer (AStar.Dev.OneDrive.Client)             │
+│  Presentation Layer (AStar.Dev.OneDrive.Sync.Client)             │
 │  - Avalonia Views (XAML)                                    │
 │  - ViewModels (ReactiveUI)                                  │
 │  - Value Converters, Behaviors                             │
@@ -219,7 +219,7 @@ The application follows a strict layered architecture:
                      │ depends on
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Infrastructure Layer (AStar.Dev.OneDrive.Client.Infra...)  │
+│  Infrastructure Layer (AStar.Dev.OneDrive.Sync.Client.Infra...)  │
 │  - Business Services (Sync, Auth, File Watcher)            │
 │  - Repositories (Data Access)                               │
 │  - External Integrations (Graph API, MSAL)                 │
@@ -228,7 +228,7 @@ The application follows a strict layered architecture:
                      │ depends on
                      ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Core/Domain Layer (AStar.Dev.OneDrive.Client.Core)        │
+│  Core/Domain Layer (AStar.Dev.OneDrive.Sync.Client.Core)        │
 │  - Domain Models (pure business objects)                    │
 │  - Data Entities (EF Core entities)                        │
 │  - Enums, Value Objects                                    │
@@ -307,7 +307,7 @@ public class SyncViewModel : ReactiveObject
 -->
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        x:Class="AStar.Dev.OneDrive.Client.MainWindow">
+        x:Class="AStar.Dev.OneDrive.Sync.Client.MainWindow">
 
     <!-- Bind to ViewModel observable properties -->
     <TextBlock Text="{Binding SyncStatus^}" />

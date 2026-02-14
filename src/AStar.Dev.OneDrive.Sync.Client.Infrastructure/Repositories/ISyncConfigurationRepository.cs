@@ -1,0 +1,87 @@
+using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
+
+/// <summary>
+///     Repository for managing sync configuration data.
+/// </summary>
+public interface ISyncConfigurationRepository
+{
+    /// <summary>
+    ///     Gets all sync configurations for a specific account.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of sync configurations for the account.</returns>
+    Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<DriveItemEntity>> GetSelectedItemsByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Gets all selected folder paths for a specific account.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of selected folder paths.</returns>
+    Task<IReadOnlyList<string>> GetSelectedFoldersAsync(string accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Gets all folders for a specific account.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>List of selected folders.</returns>
+    Task<IReadOnlyList<DriveItemEntity>> GetFoldersByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+
+    Task<Result<bool, ErrorResponse>> UpdateFoldersByAccountIdAsync(string accountId, IEnumerable<FileMetadata> configurations, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Adds a new sync configuration.
+    /// </summary>
+    /// <param name="configuration">The configuration to add.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The updated sync configuration.</returns>
+    Task<FileMetadata> AddAsync(FileMetadata configuration, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Updates an existing sync configuration.
+    /// </summary>
+    /// <param name="configuration">The configuration to update.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The updated sync configuration.</returns>
+    Task UpdateAsync(FileMetadata configuration, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Deletes a sync configuration by its ID.
+    /// </summary>
+    /// <param name="id">The configuration identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Deletes all sync configurations for a specific account.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Saves multiple sync configurations for an account in a batch operation.
+    /// </summary>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="configurations">The configurations to save.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task SaveBatchAsync(string accountId, IEnumerable<FileMetadata> configurations, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Retrieves the parent folder configuration for a given account and parent folder path.
+    /// </summary>
+    /// <param name="accountId">The identifier of the account.</param>
+    /// <param name="parentPath">The path of the parent folder to retrieve.</param>
+    /// <param name="possibleParentPath">The possible path of the parent folder to retrieve.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The parent folder configuration entity if one exists; otherwise, null.</returns>
+    Task<DriveItemEntity?> GetParentFolderAsync(string accountId, string parentPath, string possibleParentPath, CancellationToken cancellationToken);
+}

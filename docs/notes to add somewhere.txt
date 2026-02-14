@@ -1,6 +1,6 @@
-dotnet ef migrations add AdditionalTableUpdates --startup-project .\AStar.Dev.OneDrive.Client\AStar.Dev.OneDrive.Client.csproj --project .\AStar.Dev.OneDrive.Client.Infrastructure\AStar.Dev.OneDrive.Client.Infrastructure.csproj -o Data/Migrations
+dotnet ef migrations add AdditionalTableUpdates --startup-project .\AStar.Dev.OneDrive.Sync.Client\AStar.Dev.OneDrive.Sync.Client.csproj --project .\AStar.Dev.OneDrive.Sync.Client.Infrastructure\AStar.Dev.OneDrive.Sync.Client.Infrastructure.csproj -o Data/Migrations
 or
-dotnet ef migrations add AdditionalTableUpdates --startup-project ./AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj --project ./AStar.Dev.OneDrive.Client.Infrastructure/AStar.Dev.OneDrive.Client.Infrastructure.csproj -o Data/Migrations
+dotnet ef migrations add AdditionalTableUpdates --startup-project ./AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj --project ./AStar.Dev.OneDrive.Sync.Client.Infrastructure/AStar.Dev.OneDrive.Sync.Client.Infrastructure.csproj -o Data/Migrations
 
 MUST HAVE:
 
@@ -8,7 +8,7 @@ MUST HAVE:
     {
         if (!optionsBuilder.IsConfigured)
         {
-            _ = optionsBuilder.UseSqlite(@"Data Source=C:\Users\jbarden\AppData\Local\AStar.Dev.OneDrive.Client\sync.db");
+            _ = optionsBuilder.UseSqlite(@"Data Source=C:\Users\jbarden\AppData\Local\AStar.Dev.OneDrive.Sync.Client\sync.db");
         }
     }
 	

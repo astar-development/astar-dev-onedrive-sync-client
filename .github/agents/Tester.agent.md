@@ -1610,10 +1610,10 @@ PROMPTING TECHNIQUES: High-level testing strategy and architectural patterns.
 
 ```
 test/
-├── AStar.Dev.OneDrive.Client.Tests.Unit/          # Unit tests for presentation layer
-├── AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/  # Unit tests for infrastructure
-├── AStar.Dev.OneDrive.Client.Core.Tests.Unit/     # Unit tests for domain/core
-└── AStar.Dev.OneDrive.Client.Tests.Integration/   # Integration tests (all layers)
+├── AStar.Dev.OneDrive.Sync.Client.Tests.Unit/          # Unit tests for presentation layer
+├── AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit/  # Unit tests for infrastructure
+├── AStar.Dev.OneDrive.Sync.Client.Core.Tests.Unit/     # Unit tests for domain/core
+└── AStar.Dev.OneDrive.Sync.Client.Tests.Integration/   # Integration tests (all layers)
 ```
 
 **Test Naming Conventions**:

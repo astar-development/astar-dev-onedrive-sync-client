@@ -9,12 +9,12 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 ```xml
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:accounts="using:AStar.Dev.OneDrive.Client.Accounts"
-        xmlns:syncronisation="using:AStar.Dev.OneDrive.Client.Syncronisation"
-        xmlns:syncronisationConflicts="using:AStar.Dev.OneDrive.Client.SyncronisationConflicts"
-        xmlns:vm="using:AStar.Dev.OneDrive.Client.MainWindow"
-        Icon="avares://AStar.Dev.OneDrive.Client/Assets/astar.png"
-        x:Class="AStar.Dev.OneDrive.Client.MainWindow.MainWindow"
+        xmlns:accounts="using:AStar.Dev.OneDrive.Sync.Client.Accounts"
+        xmlns:syncronisation="using:AStar.Dev.OneDrive.Sync.Client.Syncronisation"
+        xmlns:syncronisationConflicts="using:AStar.Dev.OneDrive.Sync.Client.SyncronisationConflicts"
+        xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.MainWindow"
+        Icon="avares://AStar.Dev.OneDrive.Sync.Client/Assets/astar.png"
+        x:Class="AStar.Dev.OneDrive.Sync.Client.MainWindow.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="AStar OneDrive Sync"
         Width="1280"
@@ -35,7 +35,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <Setter Property="Padding" Value="24"/>
             <Setter Property="BoxShadow" Value="0 2 8 0 #10000000"/>
         </Style>
-        
+
         <Style Selector="Button.primary">
             <Setter Property="Background" Value="#0078D4"/>
             <Setter Property="Foreground" Value="White"/>
@@ -44,11 +44,11 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
-        
+
         <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
             <Setter Property="Background" Value="#106EBE"/>
         </Style>
-        
+
         <Style Selector="Button.secondary">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#0078D4"/>
@@ -69,18 +69,18 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
         <Border Grid.Row="0" Background="White" BoxShadow="0 1 4 0 #10000000">
             <Grid ColumnDefinitions="Auto,*,Auto" Margin="24,0">
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <PathIcon Data="M19,2H14.82C14.25,0.44 12.53,0.64 12,2C11.47,0.64 9.75,0.44 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z" 
+                    <PathIcon Data="M19,2H14.82C14.25,0.44 12.53,0.64 12,2C11.47,0.64 9.75,0.44 9.18,2H5A2,2 0 0,0 3,4V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V4A2,2 0 0,0 19,2Z"
                               Width="24" Height="24" Foreground="#0078D4"/>
                     <TextBlock Text="AStar OneDrive Sync" FontSize="18" FontWeight="SemiBold" Foreground="#1A1A1A"/>
                 </StackPanel>
-                
+
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <Button Content="Sync History" Command="{Binding OpenViewSyncHistoryCommand}" Classes="secondary" Height="36"/>
                     <Button Content="Debug Logs" Command="{Binding OpenDebugLogViewerCommand}" Classes="secondary" Height="36"/>
                     <Button Content="Account Details" Command="{Binding OpenUpdateAccountDetailsCommand}" Classes="secondary" Height="36"/>
                     <Separator Width="1" Height="24" Background="#E0E0E0"/>
-                    <Button Content="✕" Command="{Binding CloseApplicationCommand}" 
-                            Background="Transparent" BorderThickness="0" 
+                    <Button Content="✕" Command="{Binding CloseApplicationCommand}"
+                            Background="Transparent" BorderThickness="0"
                             Foreground= "#666666" FontSize="20" Padding="12,4"
                             ToolTip.Tip="Close Application (Alt+F4)"/>
                 </StackPanel>
@@ -98,11 +98,11 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <Border Grid.Column="1" Classes="card" Margin="8,0,0,0">
                 <Panel>
                     <syncronisation:SyncTreeView DataContext="{Binding SyncTree}" />
-                    
+
                     <syncronisation:SyncProgressView DataContext="{Binding SyncProgress}"
                                                      IsVisible="{Binding #SyncProgressView.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
                                                      x:Name="SyncProgressView" />
-                    
+
                     <syncronisationConflicts:ConflictResolutionView DataContext="{Binding ConflictResolution}"
                                                                     IsVisible="{Binding #ConflictResolutionView.DataContext, Converter={x:Static ObjectConverters.IsNotNull}}"
                                                                     x:Name="ConflictResolutionView" />
@@ -118,8 +118,8 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 ```xml
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:AStar.Dev.OneDrive.Client.Accounts"
-             x:Class="AStar.Dev.OneDrive.Client.Accounts.AccountManagementView"
+             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.Accounts"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.AccountManagementView"
              x:DataType="vm:AccountManagementViewModel">
 
     <Design.DataContext>
@@ -150,17 +150,17 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                 </ListBox.Styles>
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="#F8F9FA" 
-                                BorderBrush="#E0E0E0" 
-                                BorderThickness="1" 
-                                CornerRadius="6" 
+                        <Border Background="#F8F9FA"
+                                BorderBrush="#E0E0E0"
+                                BorderThickness="1"
+                                CornerRadius="6"
                                 Padding="16">
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <!-- Avatar -->
-                                <Border Grid.Column="0" Width="48" Height="48" 
-                                        Background="#0078D4" CornerRadius="24" 
+                                <Border Grid.Column="0" Width="48" Height="48"
+                                        Background="#0078D4" CornerRadius="24"
                                         VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding DisplayName, Converter={StaticResource InitialsConverter}}" 
+                                    <TextBlock Text="{Binding DisplayName, Converter={StaticResource InitialsConverter}}"
                                                Foreground="White" FontSize="18" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
@@ -171,7 +171,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                                     <TextBlock Text="{Binding Email}" FontSize="12" Foreground="#666666" Margin="0,2,0,0"/>
                                     <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
                                         <Ellipse Width="8" Height="8" Fill="{Binding IsAuthenticated, Converter={StaticResource BoolToStatusColorConverter}}"/>
-                                        <TextBlock Text="{Binding IsAuthenticated, Converter={StaticResource BoolToStatusTextConverter}}" 
+                                        <TextBlock Text="{Binding IsAuthenticated, Converter={StaticResource BoolToStatusTextConverter}}"
                                                    FontSize="11" Foreground="#666666"/>
                                     </StackPanel>
                                 </StackPanel>
@@ -188,13 +188,13 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                     <Style Selector="ListBox:empty">
                         <Setter Property="Template">
                             <ControlTemplate>
-                                <Border Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1" 
+                                <Border Background="#FAFAFA" BorderBrush="#E0E0E0" BorderThickness="1"
                                         CornerRadius="6" Padding="32" MinHeight="200">
                                     <StackPanel Spacing="12" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <PathIcon Data="M12,12A5,5 0 0,1 17,7A5,5 0 0,1 22,12A5,5 0 0,1 17,17A5,5 0 0,1 12,12M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
                                                   Width="48" Height="48" Foreground="#CCCCCC"/>
                                         <TextBlock Text="No accounts added" FontSize="15" FontWeight="SemiBold" Foreground="#666666"/>
-                                        <TextBlock Text="Click 'Add Account' to connect your OneDrive" 
+                                        <TextBlock Text="Click 'Add Account' to connect your OneDrive"
                                                    FontSize="12" Foreground="#999999" TextWrapping="Wrap" TextAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
@@ -224,7 +224,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Margin="0,0,0,0">
-            <Border Background="#323232" CornerRadius="4" Padding="16,12" 
+            <Border Background="#323232" CornerRadius="4" Padding="16,12"
                     BoxShadow="0 4 12 0 #40000000">
                 <TextBlock Text="{Binding ToastMessage}" Foreground="White" FontSize="13"/>
             </Border>
@@ -249,9 +249,9 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 ```xml
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:syncronisation="using:AStar.Dev.OneDrive.Client.Syncronisation"
-             xmlns:models1="clr-namespace:AStar.Dev.OneDrive.Client.Core.Models;assembly=AStar.Dev.OneDrive.Client.Core"
-             x:Class="AStar.Dev.OneDrive.Client.Syncronisation.SyncTreeView"
+             xmlns:syncronisation="using:AStar.Dev.OneDrive.Sync.Client.Syncronisation"
+             xmlns:models1="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Core.Models;assembly=AStar.Dev.OneDrive.Sync.Client.Core"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Syncronisation.SyncTreeView"
              x:DataType="syncronisation:SyncTreeViewModel">
 
     <Design.DataContext>
@@ -318,7 +318,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="16" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <!-- Progress -->
                 <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsSyncing}">
-                    <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100" 
+                    <ProgressBar Value="{Binding ProgressPercentage}" Minimum="0" Maximum="100"
                                  Width="120" Height="6" VerticalAlignment="Center" Foreground="#0078D4"/>
                     <TextBlock Text="{Binding ProgressText}" FontSize="12" Foreground="#666666" VerticalAlignment="Center"/>
                 </StackPanel>
@@ -359,8 +359,8 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 <!-- ConflictResolutionView.axaml -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:AStar.Dev.OneDrive.Client.SyncronisationConflicts"
-             x:Class="AStar.Dev.OneDrive.Client.SyncronisationConflicts.ConflictResolutionView"
+             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.SyncronisationConflicts"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.SyncronisationConflicts.ConflictResolutionView"
              x:DataType="vm:ConflictResolutionViewModel">
 
     <Border Background="White" CornerRadius="8" Padding="32">
@@ -368,9 +368,9 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <!-- Header -->
             <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,24">
                 <TextBlock Text="Resolve Conflicts" FontSize="24" FontWeight="SemiBold" Foreground="#1A1A1A"/>
-                <TextBlock Text="Files modified in multiple locations require your attention" 
+                <TextBlock Text="Files modified in multiple locations require your attention"
                            FontSize="13" Foreground="#666666" TextWrapping="Wrap"/>
-                <TextBlock Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold" 
+                <TextBlock Text="{Binding StatusMessage}" FontSize="13" FontWeight="SemiBold"
                            Foreground="#0078D4" Margin="0,8,0,0"/>
             </StackPanel>
 
@@ -379,21 +379,21 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                 <ItemsControl ItemsSource="{Binding Conflicts}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate DataType="vm:ConflictItemViewModel">
-                            <Border Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1" 
+                            <Border Background="#F8F9FA" BorderBrush="#E0E0E0" BorderThickness="1"
                                     CornerRadius="6" Padding="20" Margin="0,0,0,16">
                                 <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowGap="12">
-                                    <TextBlock Grid.Row="0" Text="{Binding FilePath}" FontWeight="SemiBold" 
+                                    <TextBlock Grid.Row="0" Text="{Binding FilePath}" FontWeight="SemiBold"
                                                FontSize="14" Foreground="#1A1A1A"/>
 
                                     <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnGap="16">
-                                        <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
+                                        <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
                                                 CornerRadius="4" Padding="12">
                                             <StackPanel Spacing="4">
                                                 <TextBlock Text="Local Version" FontSize="11" Foreground="#666666" FontWeight="SemiBold"/>
                                                 <TextBlock Text="{Binding LocalDetailsDisplay}" FontSize="12" Foreground="#1A1A1A"/>
                                             </StackPanel>
                                         </Border>
-                                        <Border Grid.Column="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
+                                        <Border Grid.Column="1" Background="White" BorderBrush="#E0E0E0" BorderThickness="1"
                                                 CornerRadius="4" Padding="12">
                                             <StackPanel Spacing="4">
                                                 <TextBlock Text="Remote Version" FontSize="11" Foreground="#666666" FontWeight="SemiBold"/>
@@ -402,7 +402,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                                         </Border>
                                     </Grid>
 
-                                    <TextBlock Grid.Row="2" Text="Resolution Strategy" FontSize="12" 
+                                    <TextBlock Grid.Row="2" Text="Resolution Strategy" FontSize="12"
                                                FontWeight="SemiBold" Foreground="#1A1A1A"/>
 
                                     <StackPanel Grid.Row="3" Spacing="8">
@@ -419,7 +419,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             </ScrollViewer>
 
             <!-- Actions -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12" 
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="12"
                         HorizontalAlignment="Right" Margin="0,24,0,0">
                 <Button Content="Resolve All" Command="{Binding ResolveAllCommand}" Classes="primary" MinWidth="120"/>
                 <Button Content="Cancel" Command="{Binding CancelCommand}" Classes="secondary" MinWidth="120"/>
@@ -440,12 +440,12 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 ```xml
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:accounts="using:AStar.Dev.OneDrive.Client.Accounts"
-        xmlns:syncronisation="using:AStar.Dev.OneDrive.Client.Syncronisation"
-        xmlns:syncronisationConflicts="using:AStar.Dev.OneDrive.Client.SyncronisationConflicts"
-        xmlns:vm="using:AStar.Dev.OneDrive.Client.MainWindow"
-        Icon="avares://AStar.Dev.OneDrive.Client/Assets/astar.png"
-        x:Class="AStar.Dev.OneDrive.Client.MainWindow.MainWindow"
+        xmlns:accounts="using:AStar.Dev.OneDrive.Sync.Client.Accounts"
+        xmlns:syncronisation="using:AStar.Dev.OneDrive.Sync.Client.Syncronisation"
+        xmlns:syncronisationConflicts="using:AStar.Dev.OneDrive.Sync.Client.SyncronisationConflicts"
+        xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.MainWindow"
+        Icon="avares://AStar.Dev.OneDrive.Sync.Client/Assets/astar.png"
+        x:Class="AStar.Dev.OneDrive.Sync.Client.MainWindow.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="☁️ OneDrive Sync Party!"
         Width="1300"
@@ -467,7 +467,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                 </LinearGradientBrush>
             </Setter>
         </Style>
-        
+
         <!-- Glass morphism card -->
         <Style Selector="Border.glass-card">
             <Setter Property="Background" Value="#E0FFFFFF"/>
@@ -475,7 +475,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <Setter Property="BoxShadow" Value="0 8 32 0 #40000000"/>
             <Setter Property="Padding" Value="24"/>
         </Style>
-        
+
         <!-- Fun button styles -->
         <Style Selector="Button.fun-primary">
             <Setter Property="Background">
@@ -491,7 +491,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="14"/>
         </Style>
-        
+
         <Style Selector="Button.fun-secondary">
             <Setter Property="Background" Value="#40FFFFFF"/>
             <Setter Property="Foreground" Value="White"/>
@@ -511,7 +511,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
     <Border Classes="gradient-bg">
         <Grid RowDefinitions="80,*" Margin="16">
             <!-- Playful Header -->
-            <Border Grid.Row="0" Background="#20FFFFFF" CornerRadius="20" 
+            <Border Grid.Row="0" Background="#20FFFFFF" CornerRadius="20"
                     BoxShadow="0 4 16 0 #30000000" Padding="20,0">
                 <Grid ColumnDefinitions="Auto,*,Auto">
                     <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
@@ -528,13 +528,13 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                             <TextBlock Text="Keep your files dancing together! 💃" FontSize="11" Foreground="#DDFFFFFF"/>
                         </StackPanel>
                     </StackPanel>
-                    
+
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <Button Content="📜 History" Command="{Binding OpenViewSyncHistoryCommand}" 
+                        <Button Content="📜 History" Command="{Binding OpenViewSyncHistoryCommand}"
                                 Classes="fun-secondary" Height="44"/>
-                        <Button Content="🐛 Logs" Command="{Binding OpenDebugLogViewerCommand}" 
+                        <Button Content="🐛 Logs" Command="{Binding OpenDebugLogViewerCommand}"
                                 Classes="fun-secondary" Height="44"/>
-                        <Button Content="⚙️ Settings" Command="{Binding OpenUpdateAccountDetailsCommand}" 
+                        <Button Content="⚙️ Settings" Command="{Binding OpenUpdateAccountDetailsCommand}"
                                 Classes="fun-secondary" Height="44"/>
                     </StackPanel>
                 </Grid>
@@ -570,8 +570,8 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 ```xml
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:AStar.Dev.OneDrive.Client.Accounts"
-             x:Class="AStar.Dev.OneDrive.Client.Accounts.AccountManagementView"
+             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.Accounts"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.AccountManagementView"
              x:DataType="vm:AccountManagementViewModel">
 
     <Design.DataContext>
@@ -589,7 +589,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                     </LinearGradientBrush>
                 </TextBlock.Foreground>
             </TextBlock>
-            <TextBlock Text="Manage all your cloud connections in one place!" 
+            <TextBlock Text="Manage all your cloud connections in one place!"
                        FontSize="14" Foreground="#666666"/>
         </StackPanel>
 
@@ -631,7 +631,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                                     <TextBlock Text="{Binding DisplayName}" FontWeight="Bold" FontSize="16" Foreground="White"/>
                                     <TextBlock Text="{Binding Email}" FontSize="13" Foreground="#DDFFFFFF" Margin="0,4,0,0"/>
                                     <Border Background="#40FFFFFF" CornerRadius="12" Padding="8,4" Margin="0,8,0,0" HorizontalAlignment="Left">
-                                        <TextBlock Text="{Binding IsAuthenticated, Converter={StaticResource BoolToStatusTextConverter}}" 
+                                        <TextBlock Text="{Binding IsAuthenticated, Converter={StaticResource BoolToStatusTextConverter}}"
                                                    FontSize="11" FontWeight="Bold" Foreground="White"/>
                                     </Border>
                                 </StackPanel>
@@ -644,7 +644,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                     <Style Selector="ListBox:empty">
                         <Setter Property="Template">
                             <ControlTemplate>
-                                <Border Background="#F0F4FF" BorderBrush="#667eea" BorderThickness="2" 
+                                <Border Background="#F0F4FF" BorderBrush="#667eea" BorderThickness="2"
                                         BorderDashArray="4,2" CornerRadius="16" Padding="40" MinHeight="250">
                                     <StackPanel Spacing="16" HorizontalAlignment="Center" VerticalAlignment="Center">
                                         <TextBlock Text="🎈" FontSize="64" HorizontalAlignment="Center"/>
@@ -656,7 +656,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                                                 </LinearGradientBrush>
                                             </TextBlock.Foreground>
                                         </TextBlock>
-                                        <TextBlock Text="Let's add your first OneDrive account!" 
+                                        <TextBlock Text="Let's add your first OneDrive account!"
                                                    FontSize="13" Foreground="#666666" TextAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
@@ -668,7 +668,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
         </ScrollViewer>
 
         <!-- Fun Buttons -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" 
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
               ColumnGap="12" RowGap="12" Margin="0,24,0,0">
             <Button Grid.Row="0" Grid.Column="0" Content="➕ Add Account" Command="{Binding AddAccountCommand}"
                     Classes="fun-primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Height="50"/>
@@ -725,12 +725,12 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 ```xml
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:accounts="using:AStar.Dev.OneDrive.Client.Accounts"
-        xmlns:syncronisation="using:AStar.Dev.OneDrive.Client.Syncronisation"
-        xmlns:syncronisationConflicts="using:AStar.Dev.OneDrive.Client.SyncronisationConflicts"
-        xmlns:vm="using:AStar.Dev.OneDrive.Client.MainWindow"
-        Icon="avares://AStar.Dev.OneDrive.Client/Assets/astar.png"
-        x:Class="AStar.Dev.OneDrive.Client.MainWindow.MainWindow"
+        xmlns:accounts="using:AStar.Dev.OneDrive.Sync.Client.Accounts"
+        xmlns:syncronisation="using:AStar.Dev.OneDrive.Sync.Client.Syncronisation"
+        xmlns:syncronisationConflicts="using:AStar.Dev.OneDrive.Sync.Client.SyncronisationConflicts"
+        xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.MainWindow"
+        Icon="avares://AStar.Dev.OneDrive.Sync.Client/Assets/astar.png"
+        x:Class="AStar.Dev.OneDrive.Sync.Client.MainWindow.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="[ASTAR_SYNC_v2.1] - TERMINAL ACCESS"
         Width="1400"
@@ -753,13 +753,13 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <Setter Property="CornerRadius" Value="0"/>
             <Setter Property="Padding" Value="16"/>
         </Style>
-        
+
         <!-- Green terminal text -->
         <Style Selector="TextBlock.terminal-text">
             <Setter Property="Foreground" Value="#00FF41"/>
             <Setter Property="FontFamily" Value="Consolas, Courier New, monospace"/>
         </Style>
-        
+
         <!-- Neon button -->
         <Style Selector="Button.neon">
             <Setter Property="Background" Value="#001100"/>
@@ -770,12 +770,12 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <Setter Property="FontFamily" Value="Consolas, monospace"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
-        
+
         <Style Selector="Button.neon:pointerover">
             <Setter Property="Background" Value="#003300"/>
             <Setter Property="BoxShadow" Value="0 0 10 0 #00FF41"/>
         </Style>
-        
+
         <!-- Danger button -->
         <Style Selector="Button.neon-red">
             <Setter Property="Background" Value="#110000"/>
@@ -786,7 +786,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
             <Setter Property="FontFamily" Value="Consolas, monospace"/>
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
-        
+
         <Style Selector="Button.neon-red:pointerover">
             <Setter Property="Background" Value="#330000"/>
             <Setter Property="BoxShadow" Value="0 0 10 0 #FF0000"/>
@@ -807,7 +807,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                     <TextBlock Text="ASTAR_SYNC_CLIENT" FontSize="14" Classes="terminal-text" FontWeight="Bold"/>
                     <TextBlock Text="[v2.1.0_STABLE]" FontSize="11" Foreground="#00AA33"/>
                 </StackPanel>
-                
+
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <Button Content="[HISTORY]" Command="{Binding OpenViewSyncHistoryCommand}" Classes="neon" Height="32"/>
                     <Button Content="[LOGS]" Command="{Binding OpenDebugLogViewerCommand}" Classes="neon" Height="32"/>
@@ -826,7 +826,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                     <TextBlock Text="SECURE CONNECTION ESTABLISHED" Foreground="#00AA33" FontSize="10"/>
                     <TextBlock Text="◣" Foreground="#00FF41" FontSize="14"/>
                 </StackPanel>
-                <TextBlock Grid.Column="2" Text="{Binding CurrentTime, StringFormat='[TIME: {0:HH:mm:ss}]'}" 
+                <TextBlock Grid.Column="2" Text="{Binding CurrentTime, StringFormat='[TIME: {0:HH:mm:ss}]'}"
                            Foreground="#00AA33" FontSize="11"/>
             </Grid>
         </Border>
@@ -870,8 +870,8 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 ```xml
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:AStar.Dev.OneDrive.Client.Accounts"
-             x:Class="AStar.Dev.OneDrive.Client.Accounts.AccountManagementView"
+             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.Accounts"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Accounts.AccountManagementView"
              x:DataType="vm:AccountManagementViewModel"
              FontFamily="Consolas, monospace">
 
@@ -905,14 +905,14 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                     <DataTemplate>
                         <Border Background="#001100" BorderBrush="#00FF41" BorderThickness="1" Padding="12">
                             <Grid RowDefinitions="Auto,Auto,Auto">
-                                <TextBlock Grid.Row="0" Text="{Binding DisplayName, StringFormat='USER: {0}'}" 
+                                <TextBlock Grid.Row="0" Text="{Binding DisplayName, StringFormat='USER: {0}'}"
                                            Foreground="#00FF41" FontSize="12" FontWeight="Bold"/>
-                                <TextBlock Grid.Row="1" Text="{Binding Email, StringFormat='MAIL: {0}'}" 
+                                <TextBlock Grid.Row="1" Text="{Binding Email, StringFormat='MAIL: {0}'}"
                                            Foreground="#00AA33" FontSize="10" Margin="0,4,0,0"/>
                                 <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,6,0,0">
                                     <TextBlock Text="[STATUS:" Foreground="#00AA33" FontSize="10"/>
-                                    <TextBlock Text="{Binding IsAuthenticated, Converter={StaticResource BoolToStatusTextConverter}}" 
-                                               Foreground="{Binding IsAuthenticated, Converter={StaticResource BoolToTerminalColorConverter}}" 
+                                    <TextBlock Text="{Binding IsAuthenticated, Converter={StaticResource BoolToStatusTextConverter}}"
+                                               Foreground="{Binding IsAuthenticated, Converter={StaticResource BoolToTerminalColorConverter}}"
                                                FontSize="10" FontWeight="Bold"/>
                                     <TextBlock Text="]" Foreground="#00AA33" FontSize="10"/>
                                 </StackPanel>
@@ -925,12 +925,12 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                     <Style Selector="ListBox:empty">
                         <Setter Property="Template">
                             <ControlTemplate>
-                                <Border Background="#110000" BorderBrush="#FF0000" BorderThickness="1" 
+                                <Border Background="#110000" BorderBrush="#FF0000" BorderThickness="1"
                                         BorderDashArray="2,2" Padding="24" MinHeight="180">
                                     <StackPanel Spacing="8" VerticalAlignment="Center">
-                                        <TextBlock Text="[!] NO ACCOUNTS DETECTED" FontSize="12" 
+                                        <TextBlock Text="[!] NO ACCOUNTS DETECTED" FontSize="12"
                                                    Foreground="#FF0000" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                        <TextBlock Text=">> Execute ADD_ACCOUNT command to initialize connection" 
+                                        <TextBlock Text=">> Execute ADD_ACCOUNT command to initialize connection"
                                                    FontSize="10" Foreground="#AA0000" HorizontalAlignment="Center"/>
                                     </StackPanel>
                                 </Border>
@@ -942,7 +942,7 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
         </ScrollViewer>
 
         <!-- Command Buttons -->
-        <Grid Grid.Row="2" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" 
+        <Grid Grid.Row="2" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto"
               ColumnGap="8" RowGap="8" Margin="0,16,0,0">
             <Button Grid.Row="0" Grid.Column="0" Content="[+] ADD" Command="{Binding AddAccountCommand}"
                     Classes="neon" HorizontalAlignment="Stretch" Height="40"/>
@@ -960,9 +960,9 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
                 HorizontalAlignment="Center"
                 VerticalAlignment="Top"
                 Margin="0,10,0,0">
-            <Border Background="#001100" BorderBrush="#00FF41" BorderThickness="2" 
+            <Border Background="#001100" BorderBrush="#00FF41" BorderThickness="2"
                     Padding="16,10" BoxShadow="0 0 20 0 #00FF41">
-                <TextBlock Text="{Binding ToastMessage, StringFormat='>> {0}'}" 
+                <TextBlock Text="{Binding ToastMessage, StringFormat='>> {0}'}"
                            Foreground="#00FF41" FontSize="11" FontWeight="Bold"/>
             </Border>
         </Border>
@@ -1016,11 +1016,13 @@ The theme system was successfully implemented using the **ResourceDictionary app
 ### Architecture
 
 **Core Components**:
+
 - **ThemeService** (`Infrastructure/Services/ThemeService.cs`): Singleton service managing theme state and persistence
 - **WindowPreferencesService** (`Infrastructure/Services/WindowPreferencesService.cs`): Handles database persistence of user theme selection
-- **Theme Resource Dictionaries** (`src/AStar.Dev.OneDrive.Client/Themes/*.axaml`): XAML files defining colors, styles, and brushes for each theme
+- **Theme Resource Dictionaries** (`src/AStar.Dev.OneDrive.Sync.Client/Themes/*.axaml`): XAML files defining colors, styles, and brushes for each theme
 
 **Theme Switching Flow**:
+
 1. User selects theme from Settings window dropdown
 2. SettingsViewModel calls `ThemeService.ApplyThemeAsync()`
 3. ThemeService updates `Application.Current.Resources.MergedDictionaries`
@@ -1033,7 +1035,7 @@ Six themes implemented as complete ResourceDictionary files:
 
 1. **OriginalAuto** - Follows Windows system theme (light/dark)
 2. **OriginalLight** - Fixed light mode
-3. **OriginalDark** - Fixed dark mode  
+3. **OriginalDark** - Fixed dark mode
 4. **Professional** - Corporate minimalist with blue accents
 5. **Colourful** - Vibrant gradients and glass morphism
 6. **Terminal** - Retro green-on-black hacker aesthetic
@@ -1041,16 +1043,19 @@ Six themes implemented as complete ResourceDictionary files:
 ### Technical Implementation
 
 **Theme Loading**:
+
 - ResourceDictionaries loaded dynamically using `AvaloniaXamlLoader.Load()`
 - Base styles defined in `App.axaml` remain constant
 - Theme-specific resources override base definitions
 
 **Persistence**:
+
 - Theme selection stored in `WindowPreferences` table as enum string
 - Automatically restored on application launch
 - Survives application updates and system restarts
 
 **UI Integration**:
+
 - Settings window (`Settings/SettingsWindow.axaml`) provides theme selection
 - ComboBox bound to `ThemePreference` enum with custom display name converter
 - Auto-apply on selection change for immediate visual feedback
@@ -1058,11 +1063,13 @@ Six themes implemented as complete ResourceDictionary files:
 ### Testing
 
 **Integration Tests**:
+
 - `ThemePersistenceShould.cs`: Verifies theme persistence across application restarts
 - 6 test cases covering all theme variants
 - Uses in-memory SQLite database to test full persistence stack
 
 **Manual Testing**:
+
 - All themes validated across all application views
 - Theme switching tested during active sync operations
 - Persistence verified across multiple application sessions

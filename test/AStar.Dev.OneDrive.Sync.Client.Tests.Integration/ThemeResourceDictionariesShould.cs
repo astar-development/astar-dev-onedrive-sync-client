@@ -1,0 +1,59 @@
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration;
+
+public class ThemeResourceDictionariesShould
+{
+    [Fact]
+    public void ProfessionalThemeFile_ShouldExist()
+    {
+        var projectRoot = GetProjectRoot();
+        var themeFilePath = Path.Combine(projectRoot, "src", "AStar.Dev.OneDrive.Sync.Client", "Themes", "ProfessionalTheme.axaml");
+
+        File.Exists(themeFilePath).ShouldBeTrue($"Professional theme file should exist at {themeFilePath}");
+    }
+
+    [Fact]
+    public void ColourfulThemeFile_ShouldExist()
+    {
+        var projectRoot = GetProjectRoot();
+        var themeFilePath = Path.Combine(projectRoot, "src", "AStar.Dev.OneDrive.Sync.Client", "Themes", "ColourfulTheme.axaml");
+
+        File.Exists(themeFilePath).ShouldBeTrue($"Colourful theme file should exist at {themeFilePath}");
+    }
+
+    [Fact]
+    public void TerminalThemeFile_ShouldExist()
+    {
+        var projectRoot = GetProjectRoot();
+        var themeFilePath = Path.Combine(projectRoot, "src", "AStar.Dev.OneDrive.Sync.Client", "Themes", "TerminalTheme.axaml");
+
+        File.Exists(themeFilePath).ShouldBeTrue($"Terminal theme file should exist at {themeFilePath}");
+    }
+
+    [Fact]
+    public void ThemeFiles_ShouldHaveValidXamlStructure()
+    {
+        var projectRoot = GetProjectRoot();
+        var themesFolder = Path.Combine(projectRoot, "src", "AStar.Dev.OneDrive.Sync.Client", "Themes");
+        var themeFiles = new[] { "ProfessionalTheme.axaml", "ColourfulTheme.axaml", "TerminalTheme.axaml" };
+
+        foreach(var themeFile in themeFiles)
+        {
+            var filePath = Path.Combine(themesFolder, themeFile);
+            var content = File.ReadAllText(filePath);
+
+            content.ShouldContain("<Styles");
+            content.ShouldContain("https://github.com/avaloniaui");
+        }
+    }
+
+    private string GetProjectRoot()
+    {
+        var currentDir = Directory.GetCurrentDirectory();
+        while(currentDir != null && !File.Exists(Path.Combine(currentDir, "AStar.Dev.OneDrive.Sync.Client.slnx")))
+        {
+            currentDir = Directory.GetParent(currentDir)?.FullName;
+        }
+
+        return currentDir ?? throw new InvalidOperationException("Could not find project root");
+    }
+}
