@@ -1,6 +1,16 @@
 ---
 description: "DevOps Agent"
-tools: ["search/codebase", "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection", "search", "web/fetch", "web/githubRepo"]
+tools:
+  [
+    "search/codebase",
+    "execute/getTerminalOutput",
+    "execute/runInTerminal",
+    "read/terminalLastCommand",
+    "read/terminalSelection",
+    "search",
+    "web/fetch",
+    "web/githubRepo",
+  ]
 ---
 
 <!-- This is an example Agent, rather than a canonical one -->
@@ -202,9 +212,9 @@ For the AStar Dev OneDrive Sync Client:
 ```
 AStar.Dev.OneDrive.Sync.Client.slnx        # Solution file
 src/
-  ├── AStar.Dev.OneDrive.Client/      # Main Avalonia UI application (csproj)
-  ├── AStar.Dev.OneDrive.Client.Core/ # Domain/core library
-  ├── AStar.Dev.OneDrive.Client.Infrastructure/ # Services and repositories
+  ├── AStar.Dev.OneDrive.Sync.Client/      # Main Avalonia UI application (csproj)
+  ├── AStar.Dev.OneDrive.Sync.Client.Core/ # Domain/core library
+  ├── AStar.Dev.OneDrive.Sync.Client.Infrastructure/ # Services and repositories
   └── nuget-packages/                 # Internal NuGet packages
 test/
   ├── *.Tests.Unit/                   # Unit test projects
@@ -326,7 +336,7 @@ jobs:
 ```yaml
 - name: Publish Windows x64
   run: |
-    dotnet publish src/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj `
+    dotnet publish src/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj `
       --configuration Release `
       --runtime win-x64 `
       --self-contained true `
@@ -336,7 +346,7 @@ jobs:
 
 - name: Publish Linux x64
   run: |
-    dotnet publish src/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj `
+    dotnet publish src/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj `
       --configuration Release `
       --runtime linux-x64 `
       --self-contained true `
@@ -345,7 +355,7 @@ jobs:
 
 - name: Publish macOS (Apple Silicon)
   run: |
-    dotnet publish src/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj `
+    dotnet publish src/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj `
       --configuration Release `
       --runtime osx-arm64 `
       --self-contained true `
@@ -361,8 +371,8 @@ jobs:
 - name: Generate Migration SQL Scripts
   run: |
     dotnet ef migrations script `
-      --project src/AStar.Dev.OneDrive.Client.Infrastructure `
-      --startup-project src/AStar.Dev.OneDrive.Client `
+      --project src/AStar.Dev.OneDrive.Sync.Client.Infrastructure `
+      --startup-project src/AStar.Dev.OneDrive.Sync.Client `
       --idempotent `
       --output ./artifacts/migrations/migration.sql
 
@@ -370,8 +380,8 @@ jobs:
   run: |
     # Use connection string from secure vault
     dotnet ef database update `
-      --project src/AStar.Dev.OneDrive.Client.Infrastructure `
-      --startup-project src/AStar.Dev.OneDrive.Client `
+      --project src/AStar.Dev.OneDrive.Sync.Client.Infrastructure `
+      --startup-project src/AStar.Dev.OneDrive.Sync.Client `
       --connection "${{ secrets.DB_CONNECTION_STRING }}"
   env:
     ASPNETCORE_ENVIRONMENT: Production
@@ -441,7 +451,7 @@ jobs:
 - name: Configure Application Insights
   run: |
     # Inject instrumentation key during build
-    dotnet publish src/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj `
+    dotnet publish src/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj `
       --configuration Release `
       /p:ApplicationInsightsInstrumentationKey="${{ secrets.APPINSIGHTS_KEY }}"
 
@@ -451,7 +461,7 @@ jobs:
     az artifacts universal publish `
       --organization https://dev.azure.com/astar-dev `
       --feed symbols `
-      --name AStar.Dev.OneDrive.Client `
+      --name AStar.Dev.OneDrive.Sync.Client `
       --version ${{ env.VERSION }} `
       --description "Debug symbols for v${{ env.VERSION }}" `
       --path ./publish/**/*.pdb
@@ -667,13 +677,13 @@ jobs:
         include:
           - os: windows-latest
             runtime: win-x64
-            artifact: AStar.Dev.OneDrive.Client-win-x64
+            artifact: AStar.Dev.OneDrive.Sync.Client-win-x64
           - os: ubuntu-latest
             runtime: linux-x64
-            artifact: AStar.Dev.OneDrive.Client-linux-x64
+            artifact: AStar.Dev.OneDrive.Sync.Client-linux-x64
           - os: macos-latest
             runtime: osx-arm64
-            artifact: AStar.Dev.OneDrive.Client-osx-arm64
+            artifact: AStar.Dev.OneDrive.Sync.Client-osx-arm64
 
     steps:
       - name: Checkout
@@ -690,7 +700,7 @@ jobs:
 
       - name: Publish
         run: |
-          dotnet publish src/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj `
+          dotnet publish src/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj `
             --configuration Release `
             --runtime ${{ matrix.runtime }} `
             --self-contained true `
@@ -859,7 +869,7 @@ RUN dotnet build AStar.Dev.OneDrive.Sync.Client.slnx --configuration Release --n
 RUN dotnet test AStar.Dev.OneDrive.Sync.Client.slnx --configuration Release --no-build --verbosity normal
 
 # Publish
-RUN dotnet publish src/AStar.Dev.OneDrive.Client/AStar.Dev.OneDrive.Client.csproj \
+RUN dotnet publish src/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj \
     --configuration Release \
     --no-build \
     --output /app/publish
@@ -883,7 +893,7 @@ RUN addgroup -g 1000 appuser && \
     adduser -D -u 1000 -G appuser appuser
 USER appuser
 
-ENTRYPOINT ["dotnet", "AStar.Dev.OneDrive.Client.dll"]
+ENTRYPOINT ["dotnet", "AStar.Dev.OneDrive.Sync.Client.dll"]
 ```
 
 <!--
@@ -1023,7 +1033,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
     .Enrich.FromLogContext()
     .Enrich.WithProperty("Environment", environmentName)
-    .Enrich.WithProperty("Application", "AStar.Dev.OneDrive.Client")
+    .Enrich.WithProperty("Application", "AStar.Dev.OneDrive.Sync.Client")
     .WriteTo.Console(
         outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj} {Properties:j}{NewLine}{Exception}")
     .WriteTo.ApplicationInsights(

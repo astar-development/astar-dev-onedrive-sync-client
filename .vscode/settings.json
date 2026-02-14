@@ -52,5 +52,9 @@
         "Wireframes"
     ],
     "editor.formatOnSave": true,
-    "files.autoSave": "afterDelay"
+    "files.autoSave": "afterDelay",
+    "files.exclude": {
+    "**/obj/": true,
+    "**/bin/": true
+    }
 }

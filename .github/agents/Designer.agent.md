@@ -260,8 +260,8 @@ public class SyncViewModel : INotifyPropertyChanged
 <!-- GOOD: Proper data binding with DataContext -->
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:AStar.Dev.OneDrive.Client.Syncronisation"
-             x:Class="AStar.Dev.OneDrive.Client.Syncronisation.SyncView"
+             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.Syncronisation"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Syncronisation.SyncView"
              x:DataType="vm:SyncViewModel">
 
     <StackPanel Spacing="10">

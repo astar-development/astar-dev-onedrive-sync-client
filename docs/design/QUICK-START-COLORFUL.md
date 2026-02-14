@@ -8,6 +8,7 @@
 > editing of `App.axaml.cs` is no longer necessary.
 >
 > **New Approach:**
+>
 > 1. Launch the application
 > 2. Click **File** -> **Settings...**
 > 3. Select desired theme from dropdown
@@ -21,14 +22,16 @@
 
 ## Fastest Way to See the Colorful Design
 
-1. Open [App.axaml.cs](../../src/AStar.Dev.OneDrive.Client/App.axaml.cs)
+1. Open [App.axaml.cs](../../src/AStar.Dev.OneDrive.Sync.Client/App.axaml.cs)
 
 2. Find this line (around line 28):
+
    ```csharp
    desktop.MainWindow = new MainWindow.MainWindow();
    ```
 
 3. Change it to:
+
    ```csharp
    desktop.MainWindow = new MainWindow.MainWindowColorful();
    ```
@@ -36,12 +39,13 @@
 4. Build and run:
    ```bash
    dotnet build
-   dotnet run --project src/AStar.Dev.OneDrive.Client
+   dotnet run --project src/AStar.Dev.OneDrive.Sync.Client
    ```
 
 ## That's it! 🎉
 
 The colorful, playful design should now appear with:
+
 - Purple gradient background
 - Glassmorphism cards
 - Vibrant rainbow buttons
@@ -51,6 +55,7 @@ The colorful, playful design should now appear with:
 ## To Switch Back
 
 Just change the line back to:
+
 ```csharp
 desktop.MainWindow = new MainWindow.MainWindow();
 ```
@@ -58,6 +63,7 @@ desktop.MainWindow = new MainWindow.MainWindow();
 ## Files Created
 
 All colorful theme files are named with "Colorful" suffix:
+
 - `MainWindow-Colorful.axaml`
 - `AccountManagementViewColorful.axaml`
 - `SyncTreeViewColorful.axaml`
@@ -65,4 +71,3 @@ All colorful theme files are named with "Colorful" suffix:
 - `SyncProgressViewColorful.axaml`
 
 Plus 3 new converters in the `Converters/` folder.
-

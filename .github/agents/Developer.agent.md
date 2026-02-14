@@ -405,7 +405,7 @@ public class SyncService(
 }
 
 // Use file-scoped namespaces (C# 10)
-namespace AStar.Dev.OneDrive.Client.Services;
+namespace AStar.Dev.OneDrive.Sync.Client.Services;
 
 // Use records for immutable data
 public record FileMetadata(

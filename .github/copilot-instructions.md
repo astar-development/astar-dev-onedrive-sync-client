@@ -21,13 +21,13 @@
 
 ### Layered Architecture
 
-#### 1. **Presentation Layer** (`AStar.Dev.OneDrive.Client`)
+#### 1. **Presentation Layer** (`AStar.Dev.OneDrive.Sync.Client`)
 
 - Avalonia UI with XAML views and ViewModels
 - ReactiveUI for MVVM implementation
 - View-specific converters and behaviors
 
-#### 2. **Infrastructure Layer** (`AStar.Dev.OneDrive.Client.Infrastructure`)
+#### 2. **Infrastructure Layer** (`AStar.Dev.OneDrive.Sync.Client.Infrastructure`)
 
 **Key Services**:
 
@@ -46,7 +46,7 @@
 - `IFileOperationLogRepository` - Historical file operations
 - `IDebugLogRepository` - Application logs
 
-#### 3. **Core/Domain Layer** (`AStar.Dev.OneDrive.Client.Core`)
+#### 3. **Core/Domain Layer** (`AStar.Dev.OneDrive.Sync.Client.Core`)
 
 - **Models**: Domain objects and data structures
 - **Data Entities**: EF Core entity definitions
@@ -310,7 +310,7 @@ See **Test-Driven Development (TDD) Policy** section above for complete testing 
 **Creating Migrations**:
 
 ```bash
-dotnet ef migrations add MigrationName --project src/AStar.Dev.OneDrive.Client.Infrastructure
+dotnet ef migrations add MigrationName --project src/AStar.Dev.OneDrive.Sync.Client.Infrastructure
 ```
 
 **Key Entities**:
@@ -422,7 +422,7 @@ public class MyService : IMyService { }
 
 ```
 src/
-├── AStar.Dev.OneDrive.Client/           # Presentation Layer
+├── AStar.Dev.OneDrive.Sync.Client/           # Presentation Layer
 │   ├── Accounts/                        # Account management UI
 │   ├── MainWindow/                      # Main window + ViewModel
 │   ├── Syncronisation/                  # Sync UI components
@@ -434,7 +434,7 @@ src/
 │   ├── Program.cs                       # Entry point
 │   └── App.axaml.cs                     # Application initialization
 │
-├── AStar.Dev.OneDrive.Client.Infrastructure/  # Infrastructure Layer
+├── AStar.Dev.OneDrive.Sync.Client.Infrastructure/  # Infrastructure Layer
 │   ├── Services/                        # Business logic services
 │   │   ├── Authentication/              # Auth services
 │   │   └── OneDriveServices/            # OneDrive-specific services
@@ -442,7 +442,7 @@ src/
 │   ├── Data/                            # EF Core context + migrations
 │   └── SerilogLogParser.cs              # Log parsing utilities
 │
-├── AStar.Dev.OneDrive.Client.Core/      # Core/Domain Layer
+├── AStar.Dev.OneDrive.Sync.Client.Core/      # Core/Domain Layer
 │   ├── Models/                          # Domain models
 │   ├── Data/
 │   │   └── Entities/                    # EF Core entities
@@ -456,10 +456,10 @@ src/
     └── AStar.Dev.Utilities/
 
 test/
-├── AStar.Dev.OneDrive.Client.Tests.Unit/
-├── AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/
-├── AStar.Dev.OneDrive.Client.Core.Tests.Unit/
-├── AStar.Dev.OneDrive.Client.Tests.Integration/
+├── AStar.Dev.OneDrive.Sync.Client.Tests.Unit/
+├── AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit/
+├── AStar.Dev.OneDrive.Sync.Client.Core.Tests.Unit/
+├── AStar.Dev.OneDrive.Sync.Client.Tests.Integration/
 └── nuget-packages/                      # Package-specific tests
 ```
 
@@ -488,7 +488,7 @@ dotnet build {{ workspace_folder }}/AStar.Dev.OneDrive.Sync.Client.slnx
 ### Run/Debug
 
 ```bash
-dotnet watch run --project src/AStar.Dev.OneDrive.Client/
+dotnet watch run --project src/AStar.Dev.OneDrive.Sync.Client/
 # Or via task (watch mode)
 ```
 
@@ -503,7 +503,7 @@ dotnet publish {{ workspace_folder }}/AStar.Dev.OneDrive.Sync.Client.slnx
 ```bash
 dotnet test
 # Specific test project:
-dotnet test test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/
+dotnet test test/AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit/
 ```
 
 ### Entity Framework Migrations
@@ -511,13 +511,13 @@ dotnet test test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit/
 ```bash
 # Create migration
 dotnet ef migrations add MigrationName \
-  --project src/AStar.Dev.OneDrive.Client.Infrastructure \
-  --startup-project src/AStar.Dev.OneDrive.Client
+  --project src/AStar.Dev.OneDrive.Sync.Client.Infrastructure \
+  --startup-project src/AStar.Dev.OneDrive.Sync.Client
 
 # Update database
 dotnet ef database update \
-  --project src/AStar.Dev.OneDrive.Client.Infrastructure \
-  --startup-project src/AStar.Dev.OneDrive.Client
+  --project src/AStar.Dev.OneDrive.Sync.Client.Infrastructure \
+  --startup-project src/AStar.Dev.OneDrive.Sync.Client
 ```
 
 ---
@@ -648,7 +648,7 @@ await DebugLog.ErrorAsync("Source", accountId, exception, "Message", cancellatio
 
 ```bash
 # All tests in a project
-dotnet test test/AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit
+dotnet test test/AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit
 
 # Specific test class
 dotnet test --filter WindowPreferencesServiceShould

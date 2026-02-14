@@ -1,4 +1,4 @@
-AStar.Dev.OneDrive.Client.Infrastructure.Services;
+AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 
 DebugLogContext.SetAccountId(account.AccountId);
 
@@ -14,7 +14,7 @@ ArgumentException.ThrowIfNull
 features/delta-crawl-part-
 
 
-/home/jason/.local/share/AStar.Dev.OneDrive.Client
+/home/jason/.local/share/AStar.Dev.OneDrive.Sync.Client
 
 # Issues:
 

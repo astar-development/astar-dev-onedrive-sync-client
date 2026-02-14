@@ -1,77 +1,77 @@
 <Solution>
-    <Folder Name="/.github/" />
-    <Folder Name="/.github/workflows/">
-        <File Path=".github\workflows\main_astar-dev.yml" />
-    </Folder>
-    <Folder Name="/docs/">
-        <File Path="docs/bugs-and-updates.md" />
-        <File Path="docs/debug-logging-usage-guide.md" />
-        <File Path="docs/multi-account-ux-implementation-plan.md" />
-        <File Path="docs/new 7.txt" />
-        <File Path="docs/notes to add somewhere.txt" />
-        <File Path="docs/README.md" />
-        <File Path="docs/sprint-4-manual-testing-guide.md" />
-        <File Path="docs/sprint-5-breakdown.md" />
-        <File Path="docs/sync-algorithm-overview.md" />
-        <File Path="docs/thinking-or-rather-typing-aloud.md" />
-        <File Path="docs/user-manual.md" />
-    </Folder>
-    <Folder Name="/docs/ADRs/">
-        <File Path="docs/ADRs/006-theme-system-architecture.md" />
-        <File Path="docs/ADRs/adr-template.md" />
-        <File Path="docs/ADRs/README.md" />
-    </Folder>
-    <Folder Name="/docs/architecture/">
-        <File Path="docs/architecture/README.md" />
-    </Folder>
-    <Folder Name="/docs/design/">
-        <File Path="docs/design/colorful-theme-guide.md" />
-        <File Path="docs/design/options-for-ui-changes.md" />
-        <File Path="docs/design/QUICK-START-COLORFUL.md" />
-        <File Path="docs/design/README.md" />
-    </Folder>
-    <Folder Name="/docs/EARS-specs/">
-        <File Path="docs/EARS-specs/README.md" />
-    </Folder>
-    <Folder Name="/docs/engineering/">
-        <File Path="docs/engineering/code-review-guidelines.md" />
-        <File Path="docs/engineering/pull-request-guidelines.md" />
-        <File Path="docs/engineering/README.md" />
-    </Folder>
-    <Folder Name="/docs/images/">
-        <File Path="docs/images/README.md" />
-    </Folder>
-    <Folder Name="/docs/plans/">
-        <File Path="docs/plans/new-themes.md" />
-    </Folder>
-    <Folder Name="/docs/PRDs/">
-        <File Path="docs/PRDs/prd-template.md" />
-        <File Path="docs/PRDs/README.md" />
-    </Folder>
-    <Folder Name="/src/">
-        <Project Path="src\AStar.Dev.OneDrive.Client.Core\AStar.Dev.OneDrive.Client.Core.csproj" />
-        <Project Path="src\AStar.Dev.OneDrive.Client.Infrastructure\AStar.Dev.OneDrive.Client.Infrastructure.csproj" />
-        <Project Path="src\AStar.Dev.OneDrive.Client\AStar.Dev.OneDrive.Client.csproj" />
-    </Folder>
-    <Folder Name="/src/nuget-packages/">
-        <Project Path="src/nuget-packages/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
-        <Project Path="src/nuget-packages/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
-        <Project Path="src/nuget-packages/AStar.Dev.Source.Analyzers/AStar.Dev.Source.Analyzers.csproj" />
-        <Project Path="src/nuget-packages/AStar.Dev.Source.Generators.Attributes/AStar.Dev.Source.Generators.Attributes.csproj" />
-        <Project Path="src/nuget-packages/AStar.Dev.Source.Generators/AStar.Dev.Source.Generators.csproj" />
-        <Project Path="src/nuget-packages/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
-    </Folder>
-    <Folder Name="/test/">
-        <Project Path="test\AStar.Dev.OneDrive.Client.Core.Tests.Unit\AStar.Dev.OneDrive.Client.Core.Tests.Unit.csproj" />
-        <Project Path="test\AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit\AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.csproj" />
-        <Project Path="test\AStar.Dev.OneDrive.Client.Tests.Integration\AStar.Dev.OneDrive.Client.Tests.Integration.csproj" />
-        <Project Path="test\AStar.Dev.OneDrive.Client.Tests.Unit\AStar.Dev.OneDrive.Client.Tests.Unit.csproj" />
-    </Folder>
-    <Folder Name="/test/nuget-packages/">
-        <Project Path="test/nuget-packages/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj" />
-        <Project Path="test/nuget-packages/AStar.Dev.Logging.Extensions.Tests.Unit/AStar.Dev.Logging.Extensions.Tests.Unit.csproj" />
-        <Project Path="test/nuget-packages/AStar.Dev.Source.Generators.Attributes.Tests.Unit/AStar.Dev.Source.Generators.Attributes.Tests.Unit.csproj" />
-        <Project Path="test/nuget-packages/AStar.Dev.Source.Generators.Tests.Unit/AStar.Dev.Source.Generators.Tests.Unit.csproj" />
-        <Project Path="test/nuget-packages/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
-    </Folder>
+  <Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path=".github\workflows\main_astar-dev.yml" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/bugs-and-updates.md" />
+    <File Path="docs/debug-logging-usage-guide.md" />
+    <File Path="docs/multi-account-ux-implementation-plan.md" />
+    <File Path="docs/new 7.txt" />
+    <File Path="docs/notes to add somewhere.txt" />
+    <File Path="docs/README.md" />
+    <File Path="docs/sprint-4-manual-testing-guide.md" />
+    <File Path="docs/sprint-5-breakdown.md" />
+    <File Path="docs/sync-algorithm-overview.md" />
+    <File Path="docs/thinking-or-rather-typing-aloud.md" />
+    <File Path="docs/user-manual.md" />
+  </Folder>
+  <Folder Name="/docs/ADRs/">
+    <File Path="docs/ADRs/006-theme-system-architecture.md" />
+    <File Path="docs/ADRs/adr-template.md" />
+    <File Path="docs/ADRs/README.md" />
+  </Folder>
+  <Folder Name="/docs/architecture/">
+    <File Path="docs/architecture/README.md" />
+  </Folder>
+  <Folder Name="/docs/design/">
+    <File Path="docs/design/colorful-theme-guide.md" />
+    <File Path="docs/design/options-for-ui-changes.md" />
+    <File Path="docs/design/QUICK-START-COLORFUL.md" />
+    <File Path="docs/design/README.md" />
+  </Folder>
+  <Folder Name="/docs/EARS-specs/">
+    <File Path="docs/EARS-specs/README.md" />
+  </Folder>
+  <Folder Name="/docs/engineering/">
+    <File Path="docs/engineering/code-review-guidelines.md" />
+    <File Path="docs/engineering/pull-request-guidelines.md" />
+    <File Path="docs/engineering/README.md" />
+  </Folder>
+  <Folder Name="/docs/images/">
+    <File Path="docs/images/README.md" />
+  </Folder>
+  <Folder Name="/docs/plans/">
+    <File Path="docs/plans/new-themes.md" />
+  </Folder>
+  <Folder Name="/docs/PRDs/">
+    <File Path="docs/PRDs/prd-template.md" />
+    <File Path="docs/PRDs/README.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src\AStar.Dev.OneDrive.Sync.Client.Core\AStar.Dev.OneDrive.Sync.Client.Core.csproj" />
+    <Project Path="src\AStar.Dev.OneDrive.Sync.Client.Infrastructure\AStar.Dev.OneDrive.Sync.Client.Infrastructure.csproj" />
+    <Project Path="src\AStar.Dev.OneDrive.Sync.Client\AStar.Dev.OneDrive.Sync.Client.csproj" />
+  </Folder>
+  <Folder Name="/src/nuget-packages/">
+    <Project Path="src/nuget-packages/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Source.Analyzers/AStar.Dev.Source.Analyzers.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Source.Generators.Attributes/AStar.Dev.Source.Generators.Attributes.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Source.Generators/AStar.Dev.Source.Generators.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test\AStar.Dev.OneDrive.Sync.Client.Core.Tests.Unit\AStar.Dev.OneDrive.Sync.Client.Core.Tests.Unit.csproj" />
+    <Project Path="test\AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit\AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit.csproj" />
+    <Project Path="test\AStar.Dev.OneDrive.Sync.Client.Tests.Integration\AStar.Dev.OneDrive.Sync.Client.Tests.Integration.csproj" />
+    <Project Path="test\AStar.Dev.OneDrive.Sync.Client.Tests.Unit\AStar.Dev.OneDrive.Sync.Client.Tests.Unit.csproj" />
+  </Folder>
+  <Folder Name="/test/nuget-packages/">
+    <Project Path="test/nuget-packages/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj" />
+    <Project Path="test/nuget-packages/AStar.Dev.Logging.Extensions.Tests.Unit/AStar.Dev.Logging.Extensions.Tests.Unit.csproj" />
+    <Project Path="test/nuget-packages/AStar.Dev.Source.Generators.Attributes.Tests.Unit/AStar.Dev.Source.Generators.Attributes.Tests.Unit.csproj" />
+    <Project Path="test/nuget-packages/AStar.Dev.Source.Generators.Tests.Unit/AStar.Dev.Source.Generators.Tests.Unit.csproj" />
+    <Project Path="test/nuget-packages/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />
+  </Folder>
 </Solution>

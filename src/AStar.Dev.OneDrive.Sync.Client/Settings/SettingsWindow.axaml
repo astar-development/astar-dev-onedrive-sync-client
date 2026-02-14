@@ -1,0 +1,63 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Converters"
+        xmlns:vm="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Settings"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
+        x:Class="AStar.Dev.OneDrive.Sync.Client.Settings.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="Settings"
+        Width="600"
+        Height="400"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Window.Resources>
+        <converters:ThemePreferenceToDisplayNameConverter x:Key="ThemeConverter"/>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Theme Selection Section -->
+        <StackPanel Grid.Row="0" Spacing="10">
+            <TextBlock Text="Theme" FontSize="16" FontWeight="SemiBold"/>
+            <ComboBox Name="ThemeComboBox"
+                      ItemsSource="{Binding AvailableThemes}"
+                      SelectedItem="{Binding SelectedTheme}"
+                      HorizontalAlignment="Stretch"
+                      MinWidth="300">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource ThemeConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Spacer -->
+        <Border Grid.Row="1"/>
+
+        <!-- Status Message -->
+        <TextBlock Grid.Row="2"
+                   Text="{Binding StatusMessage}"
+                   IsVisible="{Binding StatusMessage, Converter={x:Static ObjectConverters.IsNotNull}}"
+                   Foreground="#666"
+                   FontStyle="Italic"
+                   Margin="0,0,0,10"
+                   HorizontalAlignment="Center"/>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10">
+            <Button Content="Close"
+                    Click="CloseButton_Click"
+                    MinWidth="100"/>
+        </StackPanel>
+    </Grid>
+</Window>
