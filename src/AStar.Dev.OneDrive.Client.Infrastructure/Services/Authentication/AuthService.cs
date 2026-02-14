@@ -17,24 +17,13 @@ public sealed class AuthService(IAuthenticationClient authClient, AuthConfigurat
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(TimeSpan.FromSeconds(30));
 
-            MsalAuthResult result = await authClient
-                .AcquireTokenInteractiveAsync(configuration.Scopes, cts.Token);
+            MsalAuthResult result = await authClient.AcquireTokenInteractiveAsync(configuration.Scopes, cts.Token);
 
-            return new AuthenticationResult(
-                true,
-                result.Account.HomeAccountId.Identifier,
-                result.Account.Username,
-                null
-            );
+            return AuthenticationResult.Success(AccountIdHasher.Hash(result.Account.HomeAccountId.Identifier), result.Account.Username);
         }
         catch(MsalException ex)
         {
-            return new AuthenticationResult(
-                false,
-                null,
-                null,
-                ex.Message
-            );
+            return AuthenticationResult.Failed(ex.Message);
         }
         catch(OperationCanceledException)
         {
@@ -42,12 +31,7 @@ public sealed class AuthService(IAuthenticationClient authClient, AuthConfigurat
                 ? "Login was cancelled."
                 : "Login timed out after 30 seconds.";
 
-            return new AuthenticationResult(
-                false,
-                null,
-                null,
-                message
-            );
+            return AuthenticationResult.Failed(message);
         }
     }
 

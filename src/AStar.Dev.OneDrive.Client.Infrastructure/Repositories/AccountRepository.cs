@@ -49,7 +49,7 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
     public async Task UpdateAsync(AccountInfo account, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
-        AccountEntity dbAccount = await context.Accounts.FindAsync([account.AccountId], cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.AccountId}' not found.");
+        AccountEntity dbAccount = await context.Accounts.FindAsync([account.HashedAccountId], cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.HashedAccountId}' not found.");
 
         dbAccount.DisplayName = account.DisplayName;
         dbAccount.LocalSyncPath = account.LocalSyncPath;
@@ -60,7 +60,7 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
         dbAccount.EnableDebugLogging = account.EnableDebugLogging;
         dbAccount.MaxParallelUpDownloads = account.MaxParallelUpDownloads;
         dbAccount.MaxItemsInBatch = account.MaxItemsInBatch;
-        dbAccount.AutoSyncIntervalMinutes = account.AutoSyncIntervalMinutes;
+        dbAccount.AutoSyncIntervalMinutes = account.AutoSyncIntervalMinutes ?? -1;
 
         _ = await context.SaveChangesAsync(cancellationToken);
     }
@@ -101,7 +101,7 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
 
     private static AccountEntity MapToEntity(AccountInfo model) => new()
     {
-        AccountId = model.AccountId,
+        AccountId = model.HashedAccountId,
         DisplayName = model.DisplayName,
         LocalSyncPath = model.LocalSyncPath,
         IsAuthenticated = model.IsAuthenticated,
@@ -111,6 +111,6 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
         EnableDebugLogging = model.EnableDebugLogging,
         MaxParallelUpDownloads = model.MaxParallelUpDownloads,
         MaxItemsInBatch = model.MaxItemsInBatch,
-        AutoSyncIntervalMinutes = model.AutoSyncIntervalMinutes
+        AutoSyncIntervalMinutes = model.AutoSyncIntervalMinutes ?? -1
     };
 }

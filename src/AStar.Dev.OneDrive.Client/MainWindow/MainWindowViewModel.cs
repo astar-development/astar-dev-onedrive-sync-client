@@ -57,7 +57,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings);
         ViewConflictsCommand = ReactiveCommand.Create(ViewConflicts, this.WhenAnyValue(x => x.HasUnresolvedConflicts));
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
-        _ = DebugLog.EntryAsync(DebugLogMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount?.AccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
+        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount?.HashedAccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
     }
 
     public SyncProgressViewModel? SyncProgress
@@ -139,7 +139,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
         // Update main window conflict status
         if(AccountManagement.SelectedAccount is not null)
-            await UpdateConflictStatusAsync(AccountManagement.SelectedAccount.AccountId);
+            await UpdateConflictStatusAsync(AccountManagement.SelectedAccount.HashedAccountId);
     }
 
     /// <inheritdoc />
@@ -165,7 +165,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     private void ViewConflicts()
     {
         if(AccountManagement.SelectedAccount is not null)
-            ShowConflictResolutionView(AccountManagement.SelectedAccount.AccountId);
+            ShowConflictResolutionView(AccountManagement.SelectedAccount.HashedAccountId);
     }
 
     /// <summary>
@@ -248,7 +248,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         _ = accountManagementViewModel
             .WhenAnyValue(x => x.SelectedAccount)
-            .Select(account => account?.AccountId)
+            .Select(account => account?.HashedAccountId)
             .BindTo(syncTreeViewModel, x => x.SelectedAccountId)
             .DisposeWith(_disposables);
 
@@ -260,7 +260,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                 .Subscribe(async account =>
                 {
                     if(account is not null)
-                        await UpdateConflictStatusAsync(account.AccountId);
+                        await UpdateConflictStatusAsync(account.HashedAccountId);
                     else
                         HasUnresolvedConflicts = false;
                 })

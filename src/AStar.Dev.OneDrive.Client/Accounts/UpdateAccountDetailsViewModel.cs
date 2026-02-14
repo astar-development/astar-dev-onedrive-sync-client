@@ -65,7 +65,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
                 EnableDebugLogging = value.EnableDebugLogging;
                 MaxParallelUpDownloads = value.MaxParallelUpDownloads;
                 MaxItemsInBatch = value.MaxItemsInBatch;
-                AutoSyncIntervalMinutes = value.AutoSyncIntervalMinutes;
+                AutoSyncIntervalMinutes = value.AutoSyncIntervalMinutes ?? -1;
                 StatusMessage = string.Empty;
             }
         }
@@ -183,7 +183,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
             Accounts.Clear();
             foreach(AccountInfo account in accounts)
             {
-                AccountInfo? acc = await _accountRepository.GetByIdAsync(account.AccountId);
+                AccountInfo? acc = await _accountRepository.GetByIdAsync(account.HashedAccountId);
                 AccountInfo accountWithSync = account with { LastSyncUtc = acc?.LastSyncUtc };
                 Accounts.Add(accountWithSync);
             }
@@ -224,7 +224,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
             await _accountRepository.UpdateAsync(updatedAccount);
 
             // Update the scheduler with new auto-sync interval
-            _schedulerService.UpdateSchedule(updatedAccount.AccountId, updatedAccount.AutoSyncIntervalMinutes);
+            _schedulerService.UpdateSchedule(updatedAccount.HashedAccountId, updatedAccount.AutoSyncIntervalMinutes);
 
             // Update the account in the collection
             var index = Accounts.IndexOf(SelectedAccount);

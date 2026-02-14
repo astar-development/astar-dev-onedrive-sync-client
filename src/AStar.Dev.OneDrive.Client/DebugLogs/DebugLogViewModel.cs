@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using AStar.Dev.Logging.Extensions.Serilog;
+using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services;
@@ -168,7 +169,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         var id = 1;
 
         var accountHash = SelectedAccount is not null
-            ? AccountIdHasher.Hash(SelectedAccount.AccountId)
+            ? AccountIdHasher.Hash(SelectedAccount.HashedAccountId)
             : string.Empty;
 
         foreach(var file in allFiles.Where(f => f.Contains(accountHash)))
@@ -210,7 +211,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         IsLoading = true;
         try
         {
-            await _debugLogRepository.DeleteByAccountIdAsync(SelectedAccount.AccountId);
+            await _debugLogRepository.DeleteByAccountIdAsync(SelectedAccount.HashedAccountId);
             CurrentPage = 1;
             await LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
         }

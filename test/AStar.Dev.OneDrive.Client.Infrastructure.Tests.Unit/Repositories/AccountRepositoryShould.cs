@@ -52,8 +52,8 @@ public class AccountRepositoryShould
         IReadOnlyList<AccountInfo> result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
-        result.ShouldContain(a => a.AccountId == "acc1");
-        result.ShouldContain(a => a.AccountId == "acc2");
+        result.ShouldContain(a => a.HashedAccountId == "acc1");
+        result.ShouldContain(a => a.HashedAccountId == "acc2");
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class AccountRepositoryShould
         AccountInfo? result = await repository.GetByIdAsync("acc1", TestContext.Current.CancellationToken);
 
         _ = result.ShouldNotBeNull();
-        result.AccountId.ShouldBe("acc1");
+        result.HashedAccountId.ShouldBe("acc1");
         result.DisplayName.ShouldBe("User 1");
         result.DeltaToken.ShouldBe("token123");
     }

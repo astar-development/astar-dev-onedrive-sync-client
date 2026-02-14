@@ -10,7 +10,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Tests.Unit.Services;
 
 public class SyncEngineShould
 {
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public async Task UploadFiles_BatchedDbUpdates_UsesSaveBatchAsync()
     {
         (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
