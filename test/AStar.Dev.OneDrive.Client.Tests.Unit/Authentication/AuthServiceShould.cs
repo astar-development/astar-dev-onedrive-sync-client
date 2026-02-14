@@ -23,7 +23,7 @@ public class AuthServiceShould
         AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
         result.Success.ShouldBeTrue();
-        result.AccountId.ShouldBe("acc1");
+        result.HashedAccountId.ShouldBe("3567EAB1B59A4D7A962B47B57203582A72E1FD46CE2B8C0A9414C8161C62CA96");
         result.DisplayName.ShouldBe("user@example.com");
         result.ErrorMessage.ShouldBeNull();
     }
@@ -40,8 +40,8 @@ public class AuthServiceShould
         AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
         result.Success.ShouldBeFalse();
-        result.AccountId.ShouldBeNull();
-        result.DisplayName.ShouldBeNull();
+        result.HashedAccountId.ShouldBeEmpty();
+        result.DisplayName.ShouldBeEmpty();
         _ = result.ErrorMessage.ShouldNotBeNull();
     }
 

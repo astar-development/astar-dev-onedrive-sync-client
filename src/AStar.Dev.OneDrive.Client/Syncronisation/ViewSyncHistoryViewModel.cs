@@ -139,7 +139,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         {
             var skip = (CurrentPage - 1) * PageSize;
             IReadOnlyList<FileOperationLog> records = await _fileOperationLogRepository.GetByAccountIdAsync(
-                SelectedAccount.AccountId,
+                SelectedAccount.HashedAccountId,
                 PageSize + 1, // Fetch one extra to determine if more records exist
                 skip);
 
@@ -156,7 +156,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         }
         catch(Exception ex)
         {
-            await _debugLogger.LogErrorAsync("ViewSyncHistoryViewModel", SelectedAccount.AccountId, "", ex, cancellationToken: default);
+            await _debugLogger.LogErrorAsync("ViewSyncHistoryViewModel", SelectedAccount.HashedAccountId, "", ex, cancellationToken: default);
             Console.WriteLine($"Error loading sync history: {ex.Message}");
             // Silently fail - display will remain empty
         }

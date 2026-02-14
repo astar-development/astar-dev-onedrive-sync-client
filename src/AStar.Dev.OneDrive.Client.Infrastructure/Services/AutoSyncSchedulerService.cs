@@ -28,9 +28,9 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
         {
             if(account is not { AutoSyncIntervalMinutes: > 0, IsAuthenticated: true })
                 continue;
-            UpdateSchedule(account.AccountId, account.AutoSyncIntervalMinutes);
+            UpdateSchedule(account.HashedAccountId, account.AutoSyncIntervalMinutes);
             autoSyncCount++;
-            debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StartAsync, account.AccountId, "Stopping auto-sync scheduler", CancellationToken.None).GetAwaiter().GetResult();
+            debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StartAsync, account.HashedAccountId, "Stopping auto-sync scheduler", CancellationToken.None).GetAwaiter().GetResult();
         }
 
         if(autoSyncCount == 0)

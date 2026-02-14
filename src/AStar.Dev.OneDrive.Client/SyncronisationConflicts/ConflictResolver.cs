@@ -99,13 +99,13 @@ public sealed class ConflictResolver(
 
         // Get file metadata to retrieve OneDrive file ID
         FileMetadata metadata = await _metadataRepo.GetByPathAsync(
-            account.AccountId,
+            account.HashedAccountId,
             conflict.FilePath,
             cancellationToken) ?? throw new InvalidOperationException($"File metadata not found for {conflict.FilePath}");
 
         // Upload local file to OneDrive (overwrite remote)
         _ = await _graphApiClient.UploadFileAsync(
-            account.AccountId,
+            account.HashedAccountId,
             localPath,
             conflict.FilePath,
             null,
@@ -134,7 +134,7 @@ public sealed class ConflictResolver(
 
         // Get file metadata to retrieve OneDrive file ID
         FileMetadata metadata = await _metadataRepo.GetByPathAsync(
-            account.AccountId,
+            account.HashedAccountId,
             conflict.FilePath,
             cancellationToken) ?? throw new InvalidOperationException($"File metadata not found for {conflict.FilePath}");
 
@@ -146,13 +146,13 @@ public sealed class ConflictResolver(
             _ = Directory.CreateDirectory(localDirectory);
 
         await _graphApiClient.DownloadFileAsync(
-            account.AccountId,
+            account.HashedAccountId,
             fileId,
             localPath,
             cancellationToken);
 
         // Get remote metadata to get accurate timestamp
-        DriveItem? remoteItem = await _graphApiClient.GetDriveItemAsync(account.AccountId, fileId, cancellationToken);
+        DriveItem? remoteItem = await _graphApiClient.GetDriveItemAsync(account.HashedAccountId, fileId, cancellationToken);
         if(remoteItem?.LastModifiedDateTime.HasValue == true)
         {
             // Set local file timestamp to match OneDrive's timestamp
@@ -189,7 +189,7 @@ public sealed class ConflictResolver(
 
         // Get file metadata to retrieve OneDrive file ID
         FileMetadata metadata = await _metadataRepo.GetByPathAsync(
-            account.AccountId,
+            account.HashedAccountId,
             conflict.FilePath,
             cancellationToken) ?? throw new InvalidOperationException($"File metadata not found for {conflict.FilePath}");
 
@@ -214,13 +214,13 @@ public sealed class ConflictResolver(
             _ = Directory.CreateDirectory(localDirectory);
 
         await _graphApiClient.DownloadFileAsync(
-            account.AccountId,
+            account.HashedAccountId,
             fileId,
             localPath,
             cancellationToken);
 
         // Get fresh metadata from OneDrive to get accurate remote timestamp
-        DriveItem remoteItem = await _graphApiClient.GetDriveItemAsync(account.AccountId, fileId, cancellationToken) ??
+        DriveItem remoteItem = await _graphApiClient.GetDriveItemAsync(account.HashedAccountId, fileId, cancellationToken) ??
                                throw new InvalidOperationException($"Failed to retrieve metadata for remote file {fileId}");
 
         // Set local file timestamp to match OneDrive's timestamp

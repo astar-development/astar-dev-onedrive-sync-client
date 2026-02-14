@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Client.Core;
 using AStar.Dev.OneDrive.Client.Core.Models;
 using AStar.Dev.OneDrive.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Client.Infrastructure.Services.Authentication;
@@ -39,24 +40,15 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
         IObservable<bool> canRemove = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null);
-        RemoveAccountCommand = ReactiveCommand.CreateFromTask(
-            RemoveAccountAsync,
-            canRemove,
-            RxApp.MainThreadScheduler);
+        RemoveAccountCommand = ReactiveCommand.CreateFromTask(RemoveAccountAsync, canRemove, RxApp.MainThreadScheduler);
 
         IObservable<bool> canLogin = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null && !account.IsAuthenticated);
-        LoginCommand = ReactiveCommand.CreateFromTask(
-            LoginAsync,
-            canLogin,
-            RxApp.MainThreadScheduler);
+        LoginCommand = ReactiveCommand.CreateFromTask(LoginAsync, canLogin, RxApp.MainThreadScheduler);
 
         IObservable<bool> canLogout = this.WhenAnyValue(x => x.SelectedAccount)
             .Select(account => account is not null && account.IsAuthenticated);
-        LogoutCommand = ReactiveCommand.CreateFromTask(
-            LogoutAsync,
-            canLogout,
-            RxApp.MainThreadScheduler);
+        LogoutCommand = ReactiveCommand.CreateFromTask(LogoutAsync, canLogout, RxApp.MainThreadScheduler);
 
         _ = canRemove.Subscribe().DisposeWith(_disposables);
         _ = canLogin.Subscribe().DisposeWith(_disposables);
@@ -155,25 +147,11 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if(result is { Success: true, AccountId: not null, DisplayName: not null })
+            if(result is { Success: true, HashedAccountId: not null, DisplayName: not null })
             {
-                var defaultPath = Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                    ApplicationMetadata.ApplicationFolder,
-                    result.DisplayName.Replace("@", "_").Replace(".", "_"));
+                var localSyncPath = CreateTheLocalSyncPath(result);
 
-                var newAccount = new AccountInfo(
-                    result.AccountId,
-                    result.DisplayName,
-                    defaultPath,
-                    true,
-                    null,
-                    null,
-                    false,
-                    false,
-                    5,
-                    50,
-                    0);
+                var newAccount = AccountInfo.Standard(result.HashedAccountId, result.DisplayName, localSyncPath);
 
                 await _accountRepository.AddAsync(newAccount);
                 Accounts.Add(newAccount);
@@ -190,6 +168,9 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         }
     }
 
+    private static string CreateTheLocalSyncPath(AuthenticationResult result)
+        => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ApplicationMetadata.ApplicationFolder, result.DisplayName.Replace("@", "_").Replace(".", "_"));
+
     private async Task RemoveAccountAsync()
     {
         if(SelectedAccount is null)
@@ -198,7 +179,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            await _accountRepository.DeleteAsync(SelectedAccount.AccountId);
+            await _accountRepository.DeleteAsync(SelectedAccount.HashedAccountId);
             _ = Accounts.Remove(SelectedAccount);
             SelectedAccount = null;
         }
@@ -231,8 +212,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                 {
                     Accounts[index] = updatedAccount;
                     SelectedAccount = updatedAccount;
-                    var accountHash = AccountIdHasher.Hash(updatedAccount.AccountId);
-                    using(Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
+                    using(Serilog.Context.LogContext.PushProperty("AccountHash", updatedAccount.HashedAccountId))
                     {
                         _logger.LogInformation("Starting sync for account");
                     }
@@ -260,7 +240,6 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
             await Task.Delay(TimeSpan.FromSeconds(5), _toastCts.Token);
 
-            // Clear toast if not cancelled
             ToastVisible = false;
             ToastMessage = null;
         }
@@ -283,7 +262,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            var success = await _authService.LogoutAsync(SelectedAccount.AccountId);
+            var success = await _authService.LogoutAsync(SelectedAccount.HashedAccountId);
             if(success)
             {
                 AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };

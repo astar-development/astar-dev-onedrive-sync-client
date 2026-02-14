@@ -51,8 +51,8 @@ public class AccountManagementViewModelShould
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.Accounts.Count.ShouldBe(2);
-        viewModel.Accounts[0].AccountId.ShouldBe("acc1");
-        viewModel.Accounts[1].AccountId.ShouldBe("acc2");
+        viewModel.Accounts[0].HashedAccountId.ShouldBe("acc1");
+        viewModel.Accounts[1].HashedAccountId.ShouldBe("acc2");
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]

@@ -39,12 +39,12 @@ public sealed class ConflictResolverShould
         ConflictResolver resolver = CreateResolver();
         SyncConflict conflict = CreateTestConflict();
         AccountInfo account = CreateTestAccount();
-        FileMetadata metadata = CreateTestMetadata(account.AccountId, conflict.FilePath);
+        FileMetadata metadata = CreateTestMetadata(account.HashedAccountId, conflict.FilePath);
         var localPath = Path.Combine(account.LocalSyncPath, conflict.FilePath);
 
         _ = _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns(account);
-        _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
+        _ = _metadataRepo.GetByPathAsync(account.HashedAccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns(metadata);
 
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
@@ -55,7 +55,7 @@ public sealed class ConflictResolverShould
             await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal, TestContext.Current.CancellationToken);
 
             _ = await _graphApiClient.Received(1).UploadFileAsync(
-                account.AccountId,
+                account.HashedAccountId,
                 localPath,
                 conflict.FilePath,
                 Arg.Any<IProgress<long>?>(),
@@ -86,11 +86,11 @@ public sealed class ConflictResolverShould
         ConflictResolver resolver = CreateResolver();
         SyncConflict conflict = CreateTestConflict();
         AccountInfo account = CreateTestAccount();
-        FileMetadata metadata = CreateTestMetadata(account.AccountId, conflict.FilePath);
+        FileMetadata metadata = CreateTestMetadata(account.HashedAccountId, conflict.FilePath);
 
         _ = _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns(account);
-        _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
+        _ = _metadataRepo.GetByPathAsync(account.HashedAccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns(metadata);
 
         FileNotFoundException exception = await Should.ThrowAsync<FileNotFoundException>(async () => await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepLocal,
@@ -105,16 +105,16 @@ public sealed class ConflictResolverShould
         ConflictResolver resolver = CreateResolver();
         SyncConflict conflict = CreateTestConflict();
         AccountInfo account = CreateTestAccount();
-        FileMetadata metadata = CreateTestMetadata(account.AccountId, conflict.FilePath);
+        FileMetadata metadata = CreateTestMetadata(account.HashedAccountId, conflict.FilePath);
         var localPath = Path.Combine(account.LocalSyncPath, conflict.FilePath);
         _ = _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns(account);
-        _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
+        _ = _metadataRepo.GetByPathAsync(account.HashedAccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns(metadata);
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
 
         _ = _graphApiClient.DownloadFileAsync(
-                account.AccountId,
+                account.HashedAccountId,
                 metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>())
@@ -126,7 +126,7 @@ public sealed class ConflictResolverShould
             await resolver.ResolveAsync(conflict, ConflictResolutionStrategy.KeepRemote, TestContext.Current.CancellationToken);
 
             await _graphApiClient.Received(1).DownloadFileAsync(
-                account.AccountId,
+                account.HashedAccountId,
                 metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>());
@@ -158,16 +158,16 @@ public sealed class ConflictResolverShould
         ConflictResolver resolver = CreateResolver();
         SyncConflict conflict = CreateTestConflict();
         AccountInfo account = CreateTestAccount();
-        FileMetadata metadata = CreateTestMetadata(account.AccountId, conflict.FilePath);
+        FileMetadata metadata = CreateTestMetadata(account.HashedAccountId, conflict.FilePath);
         var localPath = Path.Combine(account.LocalSyncPath, conflict.FilePath);
         _ = _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns(account);
-        _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
+        _ = _metadataRepo.GetByPathAsync(account.HashedAccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns(metadata);
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);
         await File.WriteAllTextAsync(localPath, "local content", TestContext.Current.CancellationToken);
         _ = _graphApiClient.DownloadFileAsync(
-                account.AccountId,
+                account.HashedAccountId,
                 metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>())
@@ -182,7 +182,7 @@ public sealed class ConflictResolverShould
             CTag = "remote-ctag",
             ETag = "remote-etag"
         };
-        _ = _graphApiClient.GetDriveItemAsync(account.AccountId, metadata.DriveItemId, Arg.Any<CancellationToken>())
+        _ = _graphApiClient.GetDriveItemAsync(account.HashedAccountId, metadata.DriveItemId, Arg.Any<CancellationToken>())
             .Returns(remoteItem);
 
         _ = _localFileScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
@@ -201,13 +201,13 @@ public sealed class ConflictResolverShould
             (await File.ReadAllTextAsync(conflictFiles[0], TestContext.Current.CancellationToken)).ShouldBe("local content");
 
             await _graphApiClient.Received(1).DownloadFileAsync(
-                account.AccountId,
+                account.HashedAccountId,
                 metadata.DriveItemId,
                 localPath,
                 Arg.Any<CancellationToken>());
 
             _ = await _graphApiClient.Received(1).GetDriveItemAsync(
-                account.AccountId,
+                account.HashedAccountId,
                 metadata.DriveItemId,
                 Arg.Any<CancellationToken>());
 
@@ -244,7 +244,7 @@ public sealed class ConflictResolverShould
 
         _ = _accountRepo.GetByIdAsync(conflict.AccountId, Arg.Any<CancellationToken>())
             .Returns(account);
-        _ = _metadataRepo.GetByPathAsync(account.AccountId, conflict.FilePath, Arg.Any<CancellationToken>())
+        _ = _metadataRepo.GetByPathAsync(account.HashedAccountId, conflict.FilePath, Arg.Any<CancellationToken>())
             .Returns((FileMetadata?)null);
 
         _ = Directory.CreateDirectory(Path.GetDirectoryName(localPath)!);

@@ -19,4 +19,17 @@ public static class ApplicationMetadata
         Version? version = typeof(ApplicationMetadata).Assembly.GetName().Version;
         return version is null ? "1.0.0-alpha" : $"{version.Major}.{version.Minor}.{version.Build}-alpha";
     }
+
+    public static class UI
+    {
+        public static class MainWindowViewModel
+        {
+            public const string Constructor = "MainWindowViewModel.Constructor";
+        }
+
+        public static class SyncTreeViewModel
+        {
+            public const string StartSync = "SyncTreeViewModel.StartSyncAsync";
+        }
+    }
 }

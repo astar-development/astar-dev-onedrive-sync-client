@@ -3,7 +3,7 @@
 namespace AStar.Dev.Source.Generators.Attributes;
 
 [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-public sealed class ServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped) : Attribute
+public sealed class AutoRegisterServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Scoped) : Attribute
 {
     /// <summary>
     /// Specifies the lifetime of the service. Defaults to Scoped.

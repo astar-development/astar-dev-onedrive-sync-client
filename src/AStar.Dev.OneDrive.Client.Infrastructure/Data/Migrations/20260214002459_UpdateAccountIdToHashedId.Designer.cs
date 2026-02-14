@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(SyncDbContext))]
-    [Migration("20260128083404_RefactorFileOperationLogs")]
-    partial class RefactorFileOperationLogs
+    [Migration("20260214002459_UpdateAccountIdToHashedId")]
+    partial class UpdateAccountIdToHashedId
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                     b.Property<string>("AccountId")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("AutoSyncIntervalMinutes")
+                    b.Property<int>("AutoSyncIntervalMinutes")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("DeltaToken")
@@ -119,7 +119,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Client.Core.Data.Entities.DriveItemEntity", b =>
                 {
-                    b.Property<string>("Id")
+                    b.Property<string>("DriveItemId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("AccountId")
@@ -127,10 +127,6 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("CTag")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("DriveItemId")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ETag")
@@ -174,9 +170,7 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
                     b.Property<int>("SyncStatus")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("DriveItemId");
+                    b.HasKey("DriveItemId");
 
                     b.HasIndex("IsFolder");
 
@@ -339,6 +333,9 @@ namespace AStar.Dev.OneDrive.Client.Infrastructure.Data.Migrations
 
                     b.Property<bool>("IsMaximized")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Theme")
+                        .HasColumnType("TEXT");
 
                     b.Property<double>("Width")
                         .ValueGeneratedOnAdd()

@@ -1,4 +1,4 @@
-namespace AStar.Dev.OneDrive.Client;
+namespace AStar.Dev.OneDrive.Client.Core;
 
 /// <summary>
 ///    Provides functionality to hash account IDs for secure logging.

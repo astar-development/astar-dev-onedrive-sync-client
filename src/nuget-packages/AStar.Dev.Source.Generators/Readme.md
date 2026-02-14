@@ -1,42 +1,29 @@
-# AStar.Dev.Source.Generators
+# Roslyn Source Generators Sample
 
-## Introduction
+A set of three projects that illustrates Roslyn source generators. Enjoy this template to learn from and modify source generators for your own needs.
 
-AStar.Dev.Source.Generators is a focused set of Roslyn source generators that reduce boilerplate in AStar Dev projects. The generators are designed to keep registration and wiring code consistent, predictable, and easy to maintain.
+## Content
+### AStar.Dev.Source.Generators
+A .NET Standard project with implementations of sample source generators.
+**You must build this project to see the result (generated code) in the IDE.**
 
-## Purpose and Scope
+- [SampleSourceGenerator.cs](SampleSourceGenerator.cs): A source generator that creates C# classes based on a text file (in this case, Domain Driven Design ubiquitous language registry).
+- [SampleIncrementalSourceGenerator.cs](SampleIncrementalSourceGenerator.cs): A source generator that creates a custom report based on class properties. The target class should be annotated with the `Generators.ReportAttribute` attribute.
 
-This package provides high-level, compile-time generation for common application wiring tasks. It does not replace DI frameworks or configuration providers; it only generates the glue code that teams otherwise hand-write repeatedly.
+### AStar.Dev.Source.Generators.Sample
+A project that references source generators. Note the parameters of `ProjectReference` in [AStar.Dev.Source.Generators.Sample.csproj](../AStar.Dev.Source.Generators.Sample/AStar.Dev.Source.Generators.Sample.csproj), they make sure that the project is referenced as a set of source generators. 
 
-## Target Audience
+### AStar.Dev.Source.Generators.Tests
+Unit tests for source generators. The easiest way to develop language-related features is to start with unit tests.
 
-- Internal developers building AStar Dev applications
-- External developers integrating AStar Dev packages
-- Contributors extending or maintaining the generators
+## How To?
+### How to debug?
+- Use the [launchSettings.json](Properties/launchSettings.json) profile.
+- Debug tests.
 
-## Key Features
+### How can I determine which syntax nodes I should expect?
+Consider using the Roslyn Visualizer toolwindow, witch allow you to observe syntax tree.
 
-- DI service registration generator that produces `IServiceCollection` extensions based on service attributes
-- Options registration generator that binds configuration sections to options classes and registers them in DI
-
-## Examples and Code Snippets
-
-```csharp
-// Example intent: annotate services once, then let the generator emit registration code.
-[Service(ServiceLifetime.Scoped, As = typeof(IMyOtherService))] // This service will be registered as IMyOtherService with scoped lifetime.
-public sealed class MyService : IMyService, IMyOtherService { }
-```
-
-```csharp
-// Example intent: bind and register options from configuration with generated glue.
-// Exact attribute names may vary by project conventions.
-[Options("MyOptions")]
-public sealed class MyOptions
-{
- public string Endpoint { get; init; } = string.Empty;
-}
-```
-
-## Conclusion
-
-Use AStar.Dev.Source.Generators to keep DI and options registration consistent, reduce boilerplate, and make configuration wiring easier to review.
+### How to learn more about wiring source generators?
+Watch the walkthrough video: [Let’s Build an Incremental Source Generator With Roslyn, by Stefan Pölz](https://youtu.be/azJm_Y2nbAI)
+The complete set of information is available in [Source Generators Cookbook](https://github.com/dotnet/roslyn/blob/main/docs/features/source-generators.cookbook.md).

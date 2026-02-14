@@ -219,7 +219,7 @@ public partial class InitialCreation : Migration
         _ = migrationBuilder.InsertData(
             table: "Accounts",
             columns: ["AccountId", "AutoSyncIntervalMinutes", "DeltaToken", "DisplayName", "EnableDebugLogging", "EnableDetailedSyncLogging", "IsAuthenticated", "LastSyncUtc", "LocalSyncPath", "MaxItemsInBatch", "MaxParallelUpDownloads"],
-            values: ["e29a2798-c836-4854-ac90-a3f2d37aae26", 0, null, "System Admin", true, true, true, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), ".", 1, 1]);
+            values: ["C856527B9EAF27E26FD89183D1E4F2AEF3CEB5C8040D87A012A3F8F50DC55BB9", 0, null, "System Admin", true, true, true, new DateTimeOffset(new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)), ".", 1, 1]);
 
         _ = migrationBuilder.CreateIndex(
             name: "IX_Accounts_LocalSyncPath",

@@ -37,7 +37,7 @@ public class AccountManagementIntegrationShould : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public async Task LoadExistingAccountsFromDatabaseOnInitialization()
     {
         var account1 = new AccountInfo("acc1", "User One", "/path1", true, null, null, false, false, 3, 50, 0);
@@ -49,8 +49,8 @@ public class AccountManagementIntegrationShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         viewModel.Accounts.Count.ShouldBe(2);
-        viewModel.Accounts.ShouldContain(a => a.AccountId == "acc1");
-        viewModel.Accounts.ShouldContain(a => a.AccountId == "acc2");
+        viewModel.Accounts.ShouldContain(a => a.HashedAccountId == "acc1");
+        viewModel.Accounts.ShouldContain(a => a.HashedAccountId == "acc2");
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -67,12 +67,12 @@ public class AccountManagementIntegrationShould : IDisposable
 
         IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync(TestContext.Current.CancellationToken);
         accounts.Count.ShouldBe(1);
-        accounts[0].AccountId.ShouldBe("new-acc");
+        accounts[0].HashedAccountId.ShouldBe("new-acc");
         accounts[0].DisplayName.ShouldBe("New User");
         accounts[0].IsAuthenticated.ShouldBeTrue();
     }
 
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public async Task RemoveAccountFromDatabaseWhenDeleted()
     {
         var account = new AccountInfo("acc-to-delete", "User", "/path", true, null, null, false, false, 3, 50, 0);
@@ -89,13 +89,13 @@ public class AccountManagementIntegrationShould : IDisposable
         accounts.ShouldBeEmpty();
     }
 
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public async Task UpdateAuthenticationStateInDatabaseWhenLoggingIn()
     {
         var account = new AccountInfo("acc-login", "User", "/path", false, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
-        var authResult = new AuthenticationResult(true, null, null, null);
+        var authResult = new AuthenticationResult(true, string.Empty, string.Empty, null);
         _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
@@ -110,7 +110,7 @@ public class AccountManagementIntegrationShould : IDisposable
         updatedAccount.IsAuthenticated.ShouldBeTrue();
     }
 
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public async Task UpdateAuthenticationStateInDatabaseWhenLoggingOut()
     {
         var account = new AccountInfo("acc-logout", "User", "/path", true, null, null, false, false, 3, 50, 0);
@@ -130,7 +130,7 @@ public class AccountManagementIntegrationShould : IDisposable
         updatedAccount.IsAuthenticated.ShouldBeFalse();
     }
 
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public async Task MaintainConsistencyBetweenViewModelAndDatabaseAfterMultipleOperations()
     {
         var authResult = new AuthenticationResult(true, "multi-acc", "Multi User", null);
@@ -153,11 +153,11 @@ public class AccountManagementIntegrationShould : IDisposable
         IReadOnlyList<AccountInfo> dbAccounts = await _accountRepository.GetAllAsync(TestContext.Current.CancellationToken);
         viewModel.Accounts.Count.ShouldBe(1);
         dbAccounts.Count.ShouldBe(1);
-        dbAccounts[0].AccountId.ShouldBe("multi-acc");
+        dbAccounts[0].HashedAccountId.ShouldBe("multi-acc");
         dbAccounts[0].IsAuthenticated.ShouldBeTrue();
     }
 
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public async Task HandleEmptyDatabaseGracefully()
     {
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
@@ -168,7 +168,7 @@ public class AccountManagementIntegrationShould : IDisposable
         viewModel.IsLoading.ShouldBeFalse();
     }
 
-    [Fact(Skip = "Doesnt work")]
+    [Fact(Skip = "Doesn't work")]
     public async Task PreserveAccountDataIntegrityAfterReload()
     {
         var account = new AccountInfo(
@@ -189,7 +189,7 @@ public class AccountManagementIntegrationShould : IDisposable
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         AccountInfo loadedAccount = viewModel.Accounts.First();
-        loadedAccount.AccountId.ShouldBe("preserve-acc");
+        loadedAccount.HashedAccountId.ShouldBe("preserve-acc");
         loadedAccount.DisplayName.ShouldBe("Preserve User");
         loadedAccount.LocalSyncPath.ShouldBe("/custom/path");
         loadedAccount.DeltaToken.ShouldBe("delta-token-123");
