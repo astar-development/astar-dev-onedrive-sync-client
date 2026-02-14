@@ -20,7 +20,7 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
     /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        await debugLogger.LogEntryAsync("Starting auto-sync scheduler", AdminAccountMetadata.AccountId, cancellationToken);
+        await debugLogger.LogEntryAsync("Starting auto-sync scheduler", AdminAccountMetadata.HashedAccountId, cancellationToken);
         var autoSyncCount = 0;
 
         IReadOnlyList<AccountInfo> accounts = await accountRepository.GetAllAsync(cancellationToken);
@@ -35,20 +35,20 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
 
         if(autoSyncCount == 0)
         {
-            await debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StartAsync, AdminAccountMetadata.AccountId, "No accounts with auto-sync enabled", cancellationToken);
+            await debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StartAsync, AdminAccountMetadata.HashedAccountId, "No accounts with auto-sync enabled", cancellationToken);
         }
         else
         {
-            await debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StartAsync, AdminAccountMetadata.AccountId, $"Auto-sync scheduler started with {autoSyncCount} scheduled accounts", cancellationToken);
+            await debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StartAsync, AdminAccountMetadata.HashedAccountId, $"Auto-sync scheduler started with {autoSyncCount} scheduled accounts", cancellationToken);
         }
 
-        await debugLogger.LogExitAsync("Auto-sync scheduler started", AdminAccountMetadata.AccountId, cancellationToken);
+        await debugLogger.LogExitAsync("Auto-sync scheduler started", AdminAccountMetadata.HashedAccountId, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task StopAsync()
     {
-        debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StopAsync, AdminAccountMetadata.AccountId, "Stopping auto-sync scheduler", CancellationToken.None).GetAwaiter().GetResult();
+        debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StopAsync, AdminAccountMetadata.HashedAccountId, "Stopping auto-sync scheduler", CancellationToken.None).GetAwaiter().GetResult();
 
         foreach((var accountId, Timer? timer) in _timers)
         {
@@ -59,7 +59,7 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
         }
 
         _timers.Clear();
-        debugLogger.LogExitAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StopAsync, AdminAccountMetadata.AccountId).GetAwaiter().GetResult();
+        debugLogger.LogExitAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StopAsync, AdminAccountMetadata.HashedAccountId).GetAwaiter().GetResult();
 
         return Task.CompletedTask;
     }

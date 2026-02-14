@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
@@ -8,7 +8,7 @@
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <LangVersion>14</LangVersion>
     </PropertyGroup>
-
+	
     <ItemGroup>
         <!-- Avalonia UI -->
         <PackageReference Include="Avalonia" Version="11.3.11"/>
@@ -49,8 +49,6 @@
         <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1"/>
 
         <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="10.0.1"/>
-
-        <PackageReference Include="AStar.Dev.Source.Generators" Version="0.1.7"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -63,7 +61,9 @@
         <AvaloniaResource Include="Assets\**"/>
     </ItemGroup>
 
-    <ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\nuget-packages\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />
+		<ProjectReference Include="..\nuget-packages\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
         <ProjectReference Include="..\AStar.Dev.OneDrive.Sync.Client.Core\AStar.Dev.OneDrive.Sync.Client.Core.csproj" />
         <ProjectReference Include="..\AStar.Dev.OneDrive.Sync.Client.Infrastructure\AStar.Dev.OneDrive.Sync.Client.Infrastructure.csproj" />
         <ProjectReference Include="..\nuget-packages\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj"/>

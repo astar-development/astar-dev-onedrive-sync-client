@@ -17,7 +17,7 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<DebugLogEntity> entities = await context.DebugLogs
-            .Where(log => log.AccountId == accountId)
+            .Where(log => log.HashedAccountId == accountId)
             .OrderByDescending(log => log.TimestampUtc)
             .Skip(skip)
             .Take(pageSize)
@@ -27,7 +27,7 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
         [
             .. entities.Select(debugLog => new DebugLogEntry(
                 debugLog.Id,
-                debugLog.AccountId,
+                debugLog.HashedAccountId,
                 debugLog.TimestampUtc,
                 debugLog.LogLevel,
                 debugLog.Source,
@@ -42,7 +42,7 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<DebugLogEntity> entities = await context.DebugLogs
-            .Where(log => log.AccountId == accountId)
+            .Where(log => log.HashedAccountId == accountId)
             .OrderByDescending(log => log.TimestampUtc)
             .ToListAsync(cancellationToken);
 
@@ -50,7 +50,7 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
         [
             .. entities.Select(debugLog => new DebugLogEntry(
                 debugLog.Id,
-                debugLog.AccountId,
+                debugLog.HashedAccountId,
                 debugLog.TimestampUtc,
                 debugLog.LogLevel,
                 debugLog.Source,
@@ -65,7 +65,7 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<DebugLogEntity> entities = await context.DebugLogs
-            .Where(log => log.AccountId == accountId)
+            .Where(log => log.HashedAccountId == accountId)
             .ToListAsync(cancellationToken);
 
         context.DebugLogs.RemoveRange(entities);
@@ -89,7 +89,28 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         return await context.DebugLogs
-                .Where(log => log.AccountId == accountId)
+                .Where(log => log.HashedAccountId == accountId)
                 .CountAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task AddAsync(DebugLogEntry debugLogEntry, CancellationToken cancellationToken)
+    {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        DebugLogEntity entity = MapToEntity(debugLogEntry);
+        _ = await context.DebugLogs.AddAsync(entity, cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static DebugLogEntity MapToEntity(DebugLogEntry debugLogEntry)
+        => new()
+        {
+            Id = debugLogEntry.Id,
+            HashedAccountId = debugLogEntry.AccountId,
+            TimestampUtc = debugLogEntry.Timestamp,
+            LogLevel = debugLogEntry.LogLevel,
+            Source = debugLogEntry.Source,
+            Message = debugLogEntry.Message,
+            Exception = debugLogEntry.Exception
+        };
 }

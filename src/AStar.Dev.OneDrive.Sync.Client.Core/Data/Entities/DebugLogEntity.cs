@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 public sealed class DebugLogEntity
 {
     public int Id { get; set; }
-    public required string AccountId { get; set; }
+    public required HashedAccountId HashedAccountId { get; set; }
     public DateTimeOffset TimestampUtc { get; set; }
     public required string LogLevel { get; set; }
     public required string Source { get; set; }

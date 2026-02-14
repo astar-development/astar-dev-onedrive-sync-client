@@ -393,7 +393,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
     private async Task StartSyncAsync(CancellationToken cancellationToken = default)
     {
-        await DebugLog.EntryAsync(ApplicationMetadata.UI.SyncTreeViewModel.StartSync, SelectedAccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
+        await DebugLog.EntryAsync(ApplicationMetadata.UI.SyncTreeViewModel.StartSync, SelectedAccountId ?? AdminAccountMetadata.HashedAccountId, CancellationToken.None);
         if(string.IsNullOrEmpty(SelectedAccountId))
             return;
 

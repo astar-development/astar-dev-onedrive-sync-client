@@ -46,4 +46,12 @@ public interface IDebugLogRepository
     /// <param name="olderThan">Delete entries older than this date.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     Task DeleteOlderThanAsync(DateTimeOffset olderThan, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    ///    Adds a new debug log entry to the repository.
+    /// </summary>
+    /// <param name="debugLogEntry">The debug log entry to add.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task AddAsync(DebugLogEntry debugLogEntry, CancellationToken cancellationToken);
 }

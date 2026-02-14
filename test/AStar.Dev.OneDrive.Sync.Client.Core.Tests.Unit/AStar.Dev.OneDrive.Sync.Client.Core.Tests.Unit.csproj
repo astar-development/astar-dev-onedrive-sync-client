@@ -14,13 +14,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest"/>
+        <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <ItemGroup>
-        <Using Include="Xunit"/>
-        <Using Include="NSubstitute"/>
-        <Using Include="Shouldly"/>
+        <Using Include="Xunit" />
+        <Using Include="NSubstitute" />
+        <Using Include="Shouldly" />
     </ItemGroup>
 
     <ItemGroup>
@@ -28,17 +28,19 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1"/>
-        <PackageReference Include="xunit.v3" Version="3.2.1"/>
-        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+        <PackageReference Include="xunit.v3" Version="3.2.1" />
+        <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
 
         <!-- Assertion & Mocking -->
-        <PackageReference Include="NSubstitute" Version="5.3.0"/>
-        <PackageReference Include="Shouldly" Version="4.3.0"/>
+        <PackageReference Include="NSubstitute" Version="5.3.0" />
+        <PackageReference Include="Shouldly" Version="4.3.0" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\AStar.Dev.OneDrive.Sync.Client.Core\AStar.Dev.OneDrive.Sync.Client.Core.csproj" />
+        <ProjectReference Include="..\..\src\nuget-packages\AStar.Dev.Source.Generators.Attributes\AStar.Dev.Source.Generators.Attributes.csproj" />
+        <ProjectReference Include="..\..\src\nuget-packages\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" />
     </ItemGroup>
 
 </Project>

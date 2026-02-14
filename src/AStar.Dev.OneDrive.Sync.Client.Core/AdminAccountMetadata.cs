@@ -6,7 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core;
 public static class AdminAccountMetadata
 {
     /// <summary>
-    ///  The unique identifier for the admin account used for syncing OneDrive data. This should be a hashed value to avoid storing personally identifiable information. This constant can be used throughout the codebase whenever we need to reference the admin account, ensuring consistency and making it easier to update if the identifier ever needs to change.
+    ///  The unique identifier for the admin account used for syncing OneDrive data. This constant can be used throughout the codebase whenever we need to reference the admin account, ensuring consistency and making it easier to update if the identifier ever needs to change.
     /// </summary>
-    public const string AccountId = "e29a2798-c836-4854-ac90-a3f2d37aae26";
+    public const string HashedAccountId = "C856527B9EAF27E26FD89183D1E4F2AEF3CEB5C8040D87A012A3F8F50DC55BB9";
 }

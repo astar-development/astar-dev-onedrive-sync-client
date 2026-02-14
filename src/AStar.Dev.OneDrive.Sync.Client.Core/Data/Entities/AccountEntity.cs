@@ -19,7 +19,7 @@ public sealed class AccountEntity
 
     public static AccountEntity CreateSystemAccount() => new()
     {
-        AccountId = AdminAccountMetadata.AccountId,
+        AccountId = AdminAccountMetadata.HashedAccountId,
         DisplayName = "System Admin",
         LocalSyncPath = ".",
         AutoSyncIntervalMinutes = 0,

@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Core;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -33,11 +34,15 @@ public sealed class App : Application
         IAutoSyncSchedulerService scheduler = services.GetRequiredService<IAutoSyncSchedulerService>();
         _ = scheduler.StartAsync();
 
+        IDebugLogRepository debugLogger = services.GetRequiredService<IDebugLogRepository>();
+        IAccountRepository accountRepository = services.GetRequiredService<IAccountRepository>();
+        DebugLog.Initialize(debugLogger, accountRepository);
+
         if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             desktop.MainWindow = new MainWindow.MainWindow();
 
-            desktop.Startup += async (_, _) => await DebugLog.InfoAsync("App Startup", "Application has started", AdminAccountMetadata.AccountId, CancellationToken.None);
+            desktop.Startup += async (_, _) => await DebugLog.LogInfoAsync("App Startup", "Application has started", AdminAccountMetadata.HashedAccountId, CancellationToken.None);
 
             desktop.Exit += (_, _) => scheduler.Dispose();
         }

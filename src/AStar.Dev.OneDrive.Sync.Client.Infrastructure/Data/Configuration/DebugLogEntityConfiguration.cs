@@ -11,12 +11,12 @@ public sealed class DebugLogEntityConfiguration : IEntityTypeConfiguration<Debug
         _ = builder.ToTable("DebugLogs");
         _ = builder.HasKey(d => d.Id);
 
-        _ = builder.HasIndex(e => e.AccountId);
+        _ = builder.HasIndex(e => e.HashedAccountId);
         _ = builder.HasIndex(e => e.TimestampUtc);
 
         _ = builder.HasOne<AccountEntity>()
             .WithMany()
-            .HasForeignKey(e => e.AccountId)
+            .HasForeignKey(e => e.HashedAccountId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

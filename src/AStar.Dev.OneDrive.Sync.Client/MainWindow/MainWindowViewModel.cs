@@ -57,7 +57,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings);
         ViewConflictsCommand = ReactiveCommand.Create(ViewConflicts, this.WhenAnyValue(x => x.HasUnresolvedConflicts));
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
-        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount?.HashedAccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
+        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount?.HashedAccountId ?? AdminAccountMetadata.HashedAccountId, CancellationToken.None);
     }
 
     public SyncProgressViewModel? SyncProgress
