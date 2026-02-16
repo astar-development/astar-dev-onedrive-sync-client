@@ -178,6 +178,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
                 var conflict = new SyncConflict(
                     conflictVm.Id,
                     conflictVm.AccountId,
+                    conflictVm.HashedAccountId,
                     conflictVm.FilePath,
                     conflictVm.LocalModifiedUtc,
                     conflictVm.RemoteModifiedUtc,
