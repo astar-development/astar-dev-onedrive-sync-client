@@ -331,7 +331,7 @@ public sealed partial class SyncEngine(
         {
             if(existingFilesDict.TryGetValue(remoteFile.RelativePath ?? "", out DriveItemEntity? existingFile))
             {
-                (var HasConflict, FileMetadata? FileToDownload) = await _conflictDetectionService.CheckKnownFileConflictAsync(
+                (var HasConflict, FileMetadata? FileToDownload) = await _conflictDetectionService.CheckKnownFileConflictAsync(account.Id,
                     hashedAccountId, remoteFile, existingFile, localFilesDict, account.LocalSyncPath, sessionId, cancellationToken);
                 if(HasConflict)
                 {
@@ -345,7 +345,7 @@ public sealed partial class SyncEngine(
             }
             else
             {
-                (var HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile) = await _conflictDetectionService.CheckFirstSyncFileConflictAsync(
+                (var HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile) = await _conflictDetectionService.CheckFirstSyncFileConflictAsync(account.Id,
                     hashedAccountId, remoteFile, localFilesDict, account.LocalSyncPath, sessionId, cancellationToken);
                 if(HasConflict)
                 {

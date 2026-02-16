@@ -14,7 +14,7 @@ public interface IFileTransferService
     /// </summary>
     Task<(int CompletedFiles, long CompletedBytes)> ExecuteUploadsAsync(string accountId, HashedAccountId hashedAccountId, IReadOnlyList<DriveItemEntity> existingItems, List<FileMetadata> filesToUpload,
         int maxParallelUploads, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, int completedFiles, long completedBytes, string? sessionId,
-        Action<string, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter, CancellationTokenSource cancellationSource,
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter, CancellationTokenSource cancellationSource,
         CancellationToken cancellationToken);
 
     /// <summary>
@@ -22,6 +22,6 @@ public interface IFileTransferService
     /// </summary>
     Task<(int CompletedFiles, long CompletedBytes)> ExecuteDownloadsAsync(string accountId, HashedAccountId hashedAccountId, IReadOnlyList<DriveItemEntity> existingItems, List<FileMetadata> filesToDownload,
         int maxParallelDownloads, int conflictCount, int totalFiles, long totalBytes, long uploadBytes, long downloadBytes, int completedFiles, long completedBytes, string? sessionId,
-        Action<string, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter, CancellationTokenSource cancellationSource,
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter, CancellationTokenSource cancellationSource,
         CancellationToken cancellationToken);
 }

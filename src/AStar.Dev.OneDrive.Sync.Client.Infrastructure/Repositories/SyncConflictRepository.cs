@@ -105,6 +105,7 @@ public sealed class SyncConflictRepository(IDbContextFactory<SyncDbContext> cont
 
     private static SyncConflict MapToDomain(SyncConflictEntity syncConflict) => new(
                 syncConflict.Id,
+                syncConflict.AccountId,
                 syncConflict.HashedAccountId,
                 syncConflict.FilePath,
                 syncConflict.LocalModifiedUtc,

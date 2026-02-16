@@ -16,6 +16,11 @@ public sealed class SyncConflictEntity
     /// <summary>
     ///     Gets or sets the account identifier.
     /// </summary>
+    public string AccountId { get; set; } = string.Empty;
+
+    /// <summary>
+    ///     Gets or sets the hashed account identifier.
+    /// </summary>
     public HashedAccountId HashedAccountId { get; set; } = string.Empty;
 
     /// <summary>

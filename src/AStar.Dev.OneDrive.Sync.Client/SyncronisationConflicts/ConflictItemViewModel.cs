@@ -22,6 +22,7 @@ public sealed class ConflictItemViewModel : ReactiveObject
     {
         Id = conflict.Id;
         AccountId = conflict.AccountId;
+        HashedAccountId = conflict.HashedAccountId;
         FilePath = conflict.FilePath;
         LocalModifiedUtc = conflict.LocalModifiedUtc;
         RemoteModifiedUtc = conflict.RemoteModifiedUtc;
@@ -39,7 +40,12 @@ public sealed class ConflictItemViewModel : ReactiveObject
     /// <summary>
     ///     Gets the account ID this conflict belongs to.
     /// </summary>
-    public string accountId { get; }
+    public string AccountId { get; }
+
+    /// <summary>
+    ///     Gets the hashed account ID this conflict belongs to.
+    /// </summary>
+    public HashedAccountId HashedAccountId { get; }
 
     /// <summary>
     ///     Gets the file path relative to the sync root.

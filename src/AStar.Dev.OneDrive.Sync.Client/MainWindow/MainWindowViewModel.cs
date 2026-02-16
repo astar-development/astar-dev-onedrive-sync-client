@@ -375,7 +375,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                         // Get account info to retrieve local sync path
                         AccountInfo? account = await _accountRepository.GetByIdAsync(state.HashedAccountId);
                         if(account is not null && !string.IsNullOrEmpty(account.LocalSyncPath))
-                            await _autoSyncCoordinator.StartMonitoringAsync(state.HashedAccountId, account.LocalSyncPath);
+                            await _autoSyncCoordinator.StartMonitoringAsync(account.Id, state.HashedAccountId, account.LocalSyncPath);
                     }
                     catch
                     {

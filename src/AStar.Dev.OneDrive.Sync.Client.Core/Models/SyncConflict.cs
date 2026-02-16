@@ -6,6 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 ///     Represents a file synchronization conflict.
 /// </summary>
 /// <param name="Id">Unique identifier for the conflict.</param>
+/// <param name="AccountId">The account ID this conflict belongs to.</param>
 /// <param name="HashedAccountId">Hashed account identifier for privacy.</param>
 /// <param name="FilePath">Path to the conflicted file.</param>
 /// <param name="LocalModifiedUtc">Local file modification timestamp.</param>
@@ -17,6 +18,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <param name="IsResolved">Indicates whether the conflict has been resolved.</param>
 public sealed record SyncConflict(
     string Id,
+    string AccountId,
     HashedAccountId HashedAccountId,
     string FilePath,
     DateTimeOffset LocalModifiedUtc,
@@ -28,8 +30,9 @@ public sealed record SyncConflict(
     bool IsResolved
 )
 {
-    public static SyncConflict CreateUnresolvedConflict(HashedAccountId hashedAccountId, string filePath, DateTimeOffset localModifiedUtc, DateTimeOffset remoteModifiedUtc, long localSize, long remoteSize) => new(
+    public static SyncConflict CreateUnresolvedConflict(string accountId,HashedAccountId hashedAccountId, string filePath, DateTimeOffset localModifiedUtc, DateTimeOffset remoteModifiedUtc, long localSize, long remoteSize) => new(
         Guid.CreateVersion7().ToString(),
+        accountId,
         hashedAccountId,
         filePath,
         localModifiedUtc,

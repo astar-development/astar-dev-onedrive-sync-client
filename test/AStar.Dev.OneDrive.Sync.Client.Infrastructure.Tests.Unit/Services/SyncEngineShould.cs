@@ -475,6 +475,20 @@ public class SyncEngineShould
     }
 
     [Fact]
+    public void ProgressReporterIncludesHashedAccountId()
+    {
+        var uploadMethod = typeof(IFileTransferService).GetMethod(nameof(IFileTransferService.ExecuteUploadsAsync));
+        uploadMethod.ShouldNotBeNull();
+        var uploadProgressParameter = uploadMethod!.GetParameters().Single(p => p.Name == "progressReporter");
+        uploadProgressParameter.ParameterType.ShouldBe(typeof(Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?>));
+
+        var downloadMethod = typeof(IFileTransferService).GetMethod(nameof(IFileTransferService.ExecuteDownloadsAsync));
+        downloadMethod.ShouldNotBeNull();
+        var downloadProgressParameter = downloadMethod!.GetParameters().Single(p => p.Name == "progressReporter");
+        downloadProgressParameter.ParameterType.ShouldBe(typeof(Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?>));
+    }
+
+    [Fact]
     public async Task GetConflictsAsyncReturnsUnresolvedConflicts()
     {
         (SyncEngine? engine, TestMocks? mocks) = CreateTestEngine();

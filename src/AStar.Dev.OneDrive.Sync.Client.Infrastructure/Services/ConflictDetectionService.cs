@@ -29,14 +29,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     }
 
     /// <inheritdoc />
-    public async Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(
-        HashedAccountId hashedAccountId,
-        DriveItemEntity remoteFile,
-        DriveItemEntity existingFile,
-        Dictionary<string, FileMetadata> localFilesDict,
-        string? localSyncPath,
-        string? sessionId,
-        CancellationToken cancellationToken)
+    public async Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken)
     {
         await DebugLog.InfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync", hashedAccountId,
             $"Found file in DB: {remoteFile.RelativePath}, DB Status={existingFile.SyncStatus}", cancellationToken);
@@ -62,7 +55,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         if(localFileHasChanged)
         {
             FileMetadata localFile = localFilesDict[remoteFile.RelativePath ?? ""];
-            await RecordSyncConflictAsync(hashedAccountId, remoteFile, localFile, sessionId, cancellationToken);
+            await RecordSyncConflictAsync(accountId, hashedAccountId, remoteFile, localFile, sessionId, cancellationToken);
             return (true, null);
         }
 
@@ -71,13 +64,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     }
 
     /// <inheritdoc />
-    public async Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(
-        HashedAccountId hashedAccountId,
-        DriveItemEntity remoteFile,
-        Dictionary<string, FileMetadata> localFilesDict,
-        string? localSyncPath,
-        string? sessionId,
-        CancellationToken cancellationToken)
+    public async Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken)
     {
         await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
             $"File not in DB: {remoteFile.RelativePath} - first sync or new file", cancellationToken);
@@ -117,15 +104,12 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
             $"First sync CONFLICT: {remoteFile.RelativePath} - files differ (TimeDiff={timeDiff:F1}s, SizeMatch={localFile.Size == remoteFile.Size})",
             cancellationToken);
-        await RecordSyncConflictAsync(hashedAccountId, remoteFile, localFile, sessionId, cancellationToken);
+        await RecordSyncConflictAsync(accountId, hashedAccountId, remoteFile, localFile, sessionId, cancellationToken);
         return (true, null, null);
     }
 
     /// <inheritdoc />
-    public bool CheckIfLocalFileHasChanged(
-        string relativePath,
-        DriveItemEntity existingFile,
-        Dictionary<string, FileMetadata> localFilesDict)
+    public bool CheckIfLocalFileHasChanged(string relativePath, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict)
     {
         if(!localFilesDict.TryGetValue(relativePath, out FileMetadata? localFile))
             return false;
@@ -135,20 +119,9 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     }
 
     /// <inheritdoc />
-    public async Task RecordSyncConflictAsync(
-        HashedAccountId hashedAccountId,
-        DriveItemEntity remoteFile,
-        FileMetadata localFile,
-        string? sessionId,
-        CancellationToken cancellationToken)
+    public async Task RecordSyncConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, FileMetadata localFile, string? sessionId, CancellationToken cancellationToken)
     {
-        var conflict = SyncConflict.CreateUnresolvedConflict(
-            hashedAccountId,
-            remoteFile.RelativePath ?? "",
-            localFile.LastModifiedUtc,
-            remoteFile.LastModifiedUtc,
-            localFile.Size,
-            remoteFile.Size);
+        var conflict = SyncConflict.CreateUnresolvedConflict(accountId,hashedAccountId,remoteFile.RelativePath ?? "",localFile.LastModifiedUtc,remoteFile.LastModifiedUtc,localFile.Size,remoteFile.Size);
 
         SyncConflict? existingConflict = await _syncConflictRepository.GetByFilePathAsync(
             hashedAccountId,
@@ -193,22 +166,6 @@ public sealed class ConflictDetectionService : IConflictDetectionService
 
         var localFilePath = Path.Combine(localSyncPath, remoteFile.RelativePath?.TrimStart('/') ?? string.Empty);
 
-        return new FileMetadata(
-            remoteFile.DriveItemId,
-            hashedAccountId,
-            remoteFile.Name ?? string.Empty,
-            remoteFile.RelativePath ?? string.Empty,
-            remoteFile.Size,
-            remoteFile.LastModifiedUtc,
-            localFilePath,
-            remoteFile.IsFolder,
-            remoteFile.IsDeleted,
-            remoteFile.IsSelected ?? false,
-            remoteFile.RemoteHash,
-            remoteFile.CTag,
-            remoteFile.ETag,
-            null,
-            FileSyncStatus.PendingDownload,
-            null);
+        return new FileMetadata(remoteFile.DriveItemId, hashedAccountId, remoteFile.Name ?? string.Empty, remoteFile.RelativePath ?? string.Empty, remoteFile.Size, remoteFile.LastModifiedUtc, localFilePath, remoteFile.IsFolder, remoteFile.IsDeleted, remoteFile.IsSelected ?? false, remoteFile.RemoteHash, remoteFile.CTag, remoteFile.ETag, null, FileSyncStatus.PendingDownload, null);
     }
 }
