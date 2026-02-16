@@ -19,7 +19,7 @@ public class SyncConflictShould
         var isResolved = false;
 
         var syncConflict = SyncConflict.CreateUnresolvedConflict(
-            accountId,
+             AccountIdHasher.Hash(accountId),
             filePath,
             localModifiedUtc,
             remoteModifiedUtc,
@@ -27,7 +27,7 @@ public class SyncConflictShould
             remoteSize);
 
         _ = syncConflict.Id.ShouldNotBeNull();
-        syncConflict.AccountId.ShouldBe(accountId);
+        syncConflict.HashedAccountId.Id.ShouldBe(accountId);
         syncConflict.FilePath.ShouldBe(filePath);
         syncConflict.LocalModifiedUtc.ShouldBe(localModifiedUtc);
         syncConflict.RemoteModifiedUtc.ShouldBe(remoteModifiedUtc);

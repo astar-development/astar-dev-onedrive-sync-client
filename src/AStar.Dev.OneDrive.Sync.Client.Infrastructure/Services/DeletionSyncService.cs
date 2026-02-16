@@ -13,12 +13,7 @@ public sealed class DeletionSyncService(
     IGraphApiClient graphApiClient) : IDeletionSyncService
 {
     /// <inheritdoc />
-    public async Task ProcessRemoteToLocalDeletionsAsync(
-        string accountId,
-        IReadOnlyList<DriveItemEntity> existingFiles,
-        HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet,
-        CancellationToken cancellationToken)
+    public async Task ProcessRemoteToLocalDeletionsAsync(string accountId, IReadOnlyList<DriveItemEntity> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet, CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync("DeletionSyncService.ProcessRemoteToLocalDeletionsAsync", accountId, cancellationToken);
 
@@ -53,12 +48,7 @@ public sealed class DeletionSyncService(
     }
 
     /// <inheritdoc />
-    public async Task ProcessLocalToRemoteDeletionsAsync(
-        string accountId,
-        List<FileMetadata> allLocalFiles,
-        HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet,
-        CancellationToken cancellationToken)
+    public async Task ProcessLocalToRemoteDeletionsAsync(string accountId, HashedAccountId hashedAccountId, List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet, CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", accountId, cancellationToken);
 
@@ -82,7 +72,7 @@ public sealed class DeletionSyncService(
                 await DebugLog.InfoAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", accountId,
                     $"Deleting from OneDrive: Path={file.RelativePath}, Id={file.DriveItemId}, SyncStatus={file.SyncStatus}",
                     cancellationToken);
-                await graphApiClient.DeleteFileAsync(accountId, file.DriveItemId, cancellationToken);
+                await graphApiClient.DeleteFileAsync(accountId, hashedAccountId, file.DriveItemId, cancellationToken);
                 await DebugLog.InfoAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", accountId,
                     $"Deleted from OneDrive: Path={file.RelativePath}, Id={file.DriveItemId}",
                     cancellationToken);
@@ -100,10 +90,7 @@ public sealed class DeletionSyncService(
     }
 
     /// <inheritdoc />
-    public async Task CleanupDatabaseRecordsAsync(
-        string accountId,
-        IEnumerable<DriveItemEntity> itemsToDelete,
-        CancellationToken cancellationToken)
+    public async Task CleanupDatabaseRecordsAsync(string accountId, IEnumerable<DriveItemEntity> itemsToDelete, CancellationToken cancellationToken)
     {
         await DebugLog.EntryAsync("DeletionSyncService.CleanupDatabaseRecordsAsync", accountId, cancellationToken);
 

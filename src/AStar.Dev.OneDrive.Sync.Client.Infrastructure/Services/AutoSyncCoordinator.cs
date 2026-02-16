@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using Microsoft.Extensions.Logging;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -22,7 +23,7 @@ public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, 
     ///     File changes are debounced with a 2-second delay to avoid excessive sync triggers
     ///     when multiple files are changed rapidly.
     /// </remarks>
-    public async Task StartMonitoringAsync(string accountId, string localPath, CancellationToken cancellationToken = default)
+    public async Task StartMonitoringAsync(string accountId, HashedAccountId hashedAccountId, string localPath, CancellationToken cancellationToken = default)
     {
         StopMonitoring(accountId);
 
@@ -31,7 +32,7 @@ public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, 
             fileWatcherService.StartWatching(accountId, localPath);
 
             IDisposable subscription = fileWatcherService.FileChanges
-                .Where(e => e.AccountId == accountId)
+                .Where(e => e.HashedAccountId == hashedAccountId)
                 .Buffer(TimeSpan.FromSeconds(2))
                 .Where(changes => changes.Count > 0)
                 .Subscribe(async changes =>
@@ -40,7 +41,7 @@ public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, 
 
                     try
                     {
-                        await syncEngine.StartSyncAsync(accountId, CancellationToken.None);
+                        await syncEngine.StartSyncAsync(accountId, hashedAccountId, cancellationToken);
                     }
                     catch(Exception ex)
                     {

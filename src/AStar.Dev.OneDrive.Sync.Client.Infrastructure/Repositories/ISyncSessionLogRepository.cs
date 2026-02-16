@@ -10,10 +10,10 @@ public interface ISyncSessionLogRepository
     /// <summary>
     ///     Gets all sync sessions for an account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of sync sessions.</returns>
-    Task<IReadOnlyList<SyncSessionLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SyncSessionLog>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets a sync session by ID.
@@ -40,8 +40,8 @@ public interface ISyncSessionLogRepository
     /// <summary>
     ///     Deletes old sync session logs for an account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="olderThan">Delete sessions older than this date.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default);
+    Task DeleteOldSessionsAsync(HashedAccountId hashedAccountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default);
 }

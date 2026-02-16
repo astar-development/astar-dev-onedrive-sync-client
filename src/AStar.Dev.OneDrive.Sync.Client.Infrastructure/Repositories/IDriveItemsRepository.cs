@@ -10,10 +10,10 @@ public interface IDriveItemsRepository
     /// <summary>
     ///     Gets all file metadata for a specific account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of file metadata for the account.</returns>
-    Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets file metadata by its ID.
@@ -26,11 +26,11 @@ public interface IDriveItemsRepository
     /// <summary>
     ///     Gets file metadata by account ID and path.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="path">The file path.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The file metadata if found, otherwise null.</returns>
-    Task<FileMetadata?> GetByPathAsync(string accountId, string path, CancellationToken cancellationToken = default);
+    Task<FileMetadata?> GetByPathAsync(HashedAccountId hashedAccountId, string path, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Adds new file metadata.

@@ -13,15 +13,15 @@ public interface ISyncConflictRepository
     /// <param name="accountId">The account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of conflicts for the account.</returns>
-    Task<IReadOnlyList<SyncConflict>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SyncConflict>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets unresolved conflicts for a specific account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of unresolved conflicts for the account.</returns>
-    Task<IReadOnlyList<SyncConflict>> GetUnresolvedByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SyncConflict>> GetUnresolvedByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets a conflict by its ID.
@@ -34,11 +34,11 @@ public interface ISyncConflictRepository
     /// <summary>
     ///     Gets a conflict by account ID and file path.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="filePath">The file path.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The conflict if found, otherwise null.</returns>
-    Task<SyncConflict?> GetByFilePathAsync(string accountId, string filePath, CancellationToken cancellationToken = default);
+    Task<SyncConflict?> GetByFilePathAsync(HashedAccountId hashedAccountId, string filePath, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Adds a new conflict.
@@ -64,7 +64,7 @@ public interface ISyncConflictRepository
     /// <summary>
     ///     Deletes all conflicts for a specific account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+    Task DeleteByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 }

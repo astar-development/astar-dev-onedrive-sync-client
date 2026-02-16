@@ -12,7 +12,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <param name="Exception">Exception details if applicable.</param>
 public sealed record DebugLogEntry(
     int Id,
-    string AccountId,
+    HashedAccountId AccountId,
     DateTimeOffset Timestamp,
     string LogLevel,
     string Source,
@@ -33,7 +33,7 @@ public static class DebugLogEntryFactory
         /// <param name="logLevel">The severity level of the log (Info, Error, Entry, Exit).</param>
         /// <param name="exception">Exception details if applicable.</param>
         /// <returns>A new DebugLogEntry instance.</returns>
-        public static DebugLogEntry Create(string hashedAccountId, string source, string message, string logLevel = "Info", Exception? exception = null)
+        public static DebugLogEntry Create(HashedAccountId hashedAccountId, string source, string message, string logLevel = "Info", Exception? exception = null)
             => new(0, hashedAccountId, DateTimeOffset.UtcNow, logLevel, source, message, exception?.ToString());
     }
 }

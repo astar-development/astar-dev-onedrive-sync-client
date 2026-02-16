@@ -14,11 +14,11 @@ public sealed class SyncSessionLogRepository(IDbContextFactory<SyncDbContext> co
     private readonly IDbContextFactory<SyncDbContext> _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SyncSessionLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<SyncSessionLog>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         List<SyncSessionLogEntity> entities = await _contextFactory.CreateDbContext().SyncSessionLogs
             .AsNoTracking()
-            .Where(s => s.AccountId == accountId)
+            .Where(s => s.HashedAccountId == hashedAccountId)
             .OrderByDescending(s => s.StartedUtc)
             .ToListAsync(cancellationToken);
 
@@ -63,13 +63,13 @@ public sealed class SyncSessionLogRepository(IDbContextFactory<SyncDbContext> co
     }
 
     /// <inheritdoc />
-    public async Task DeleteOldSessionsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default) => _ = await _contextFactory.CreateDbContext().SyncSessionLogs
-            .Where(s => s.AccountId == accountId && s.StartedUtc < olderThan)
+    public async Task DeleteOldSessionsAsync(HashedAccountId hashedAccountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default) => _ = await _contextFactory.CreateDbContext().SyncSessionLogs
+            .Where(s => s.HashedAccountId == hashedAccountId && s.StartedUtc < olderThan)
             .ExecuteDeleteAsync(cancellationToken);
 
     private static SyncSessionLog MapToModel(SyncSessionLogEntity syncSessionLog) => new(
                 syncSessionLog.Id,
-                syncSessionLog.AccountId,
+                syncSessionLog.HashedAccountId,
                 syncSessionLog.StartedUtc,
                 syncSessionLog.CompletedUtc,
                 (SyncStatus)syncSessionLog.Status,
@@ -82,7 +82,7 @@ public sealed class SyncSessionLogRepository(IDbContextFactory<SyncDbContext> co
     private static SyncSessionLogEntity MapToEntity(SyncSessionLog model) => new()
     {
         Id = model.Id,
-        AccountId = model.AccountId,
+        HashedAccountId = model.HashedAccountId,
         StartedUtc = model.StartedUtc,
         CompletedUtc = model.CompletedUtc,
         Status = (int)model.Status,

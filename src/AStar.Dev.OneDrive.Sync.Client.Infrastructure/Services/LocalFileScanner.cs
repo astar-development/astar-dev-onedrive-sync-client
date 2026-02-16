@@ -11,7 +11,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
 {
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FileMetadata>> ScanFolderAsync(string accountId, string localFolderPath, string oneDriveFolderPath, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileMetadata>> ScanFolderAsync(HashedAccountId hashedAccountId, string localFolderPath, string oneDriveFolderPath, CancellationToken cancellationToken = default)
     {
         var indexOfDrives = localFolderPath.IndexOf("drives", StringComparison.OrdinalIgnoreCase);
         if(indexOfDrives >= 0)
@@ -25,20 +25,20 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
             }
         }
 
-        await DebugLog.EntryAsync("LocalFileScanner.ScanFolderAsync", accountId, cancellationToken);
+        await DebugLog.EntryAsync("LocalFileScanner.ScanFolderAsync", hashedAccountId, cancellationToken);
 
         if(!fileSystem.Directory.Exists(localFolderPath))
             return [];
 
-        await DebugLog.InfoAsync("LocalFileScanner.ScanFolderAsync", $"Scanning folder: {localFolderPath}", accountId, cancellationToken);
+        await DebugLog.InfoAsync("LocalFileScanner.ScanFolderAsync", $"Scanning folder: {localFolderPath}", hashedAccountId, cancellationToken);
         var fileMetadataList = new List<FileMetadata>();
         await ScanDirectoryRecursiveAsync(
-            accountId,
+            hashedAccountId,
             localFolderPath,
             oneDriveFolderPath,
             fileMetadataList,
             cancellationToken);
-        await DebugLog.ExitAsync("LocalFileScanner.ScanFolderAsync", accountId, cancellationToken);
+        await DebugLog.ExitAsync("LocalFileScanner.ScanFolderAsync", hashedAccountId, cancellationToken);
 
         return fileMetadataList;
     }
@@ -51,9 +51,9 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
         return Convert.ToHexString(hashBytes);
     }
 
-    private async Task ScanDirectoryRecursiveAsync(string accountId, string currentLocalPath, string currentOneDrivePath, List<FileMetadata> fileMetadataList, CancellationToken cancellationToken)
+    private async Task ScanDirectoryRecursiveAsync(HashedAccountId hashedAccountId, string currentLocalPath, string currentOneDrivePath, List<FileMetadata> fileMetadataList, CancellationToken cancellationToken)
     {
-        await DebugLog.EntryAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", accountId, cancellationToken);
+        await DebugLog.EntryAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", hashedAccountId, cancellationToken);
 
         try
         {
@@ -74,7 +74,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
 
                     var metadata = new FileMetadata(
                         Guid.CreateVersion7().ToString(), // Will be populated from OneDrive after upload
-                        accountId,
+                        hashedAccountId,
                         fileInfo.Name,
                         oneDrivePath,
                         fileInfo.Length,
@@ -109,7 +109,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
                 var oneDrivePath = CombinePaths(currentOneDrivePath, relativePath);
 
                 await ScanDirectoryRecursiveAsync(
-                    accountId,
+                    hashedAccountId,
                     directory,
                     oneDrivePath,
                     fileMetadataList,
@@ -125,7 +125,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
             // Directory was deleted during scan
         }
 
-        await DebugLog.ExitAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", accountId, cancellationToken);
+        await DebugLog.ExitAsync("LocalFileScanner.ScanDirectoryRecursiveAsync", hashedAccountId, cancellationToken);
     }
 
     private static string GetRelativePath(string basePath, string fullPath)

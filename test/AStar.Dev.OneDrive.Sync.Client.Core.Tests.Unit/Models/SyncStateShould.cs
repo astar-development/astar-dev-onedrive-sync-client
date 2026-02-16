@@ -10,9 +10,9 @@ public class SyncStateShould
     {
         var accountId = "test-account-id";
 
-        var syncState = SyncState.CreateInitial(accountId);
+        var syncState = SyncState.CreateInitial(accountId, AccountIdHasher.Hash("test-account-id"));
 
-        Assert.Equal(accountId, syncState.AccountId);
+        Assert.Equal(accountId, syncState.HashedAccountId);
         Assert.Equal(SyncStatus.Idle, syncState.Status);
         Assert.Equal(0, syncState.TotalFiles);
         Assert.Equal(0, syncState.CompletedFiles);

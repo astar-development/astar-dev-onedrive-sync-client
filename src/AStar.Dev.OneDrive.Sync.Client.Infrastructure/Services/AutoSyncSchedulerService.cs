@@ -28,7 +28,7 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
         {
             if(account is not { AutoSyncIntervalMinutes: > 0, IsAuthenticated: true })
                 continue;
-            UpdateSchedule(account.HashedAccountId, account.AutoSyncIntervalMinutes);
+            UpdateSchedule(account.Id, account.HashedAccountId, account.AutoSyncIntervalMinutes);
             autoSyncCount++;
             debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.StartAsync, account.HashedAccountId, "Stopping auto-sync scheduler", CancellationToken.None).GetAwaiter().GetResult();
         }
@@ -65,13 +65,13 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
     }
 
     /// <inheritdoc />
-    public void UpdateSchedule(string accountId, int? intervalMinutes)
+    public void UpdateSchedule(string accountId, HashedAccountId hashedAccountId, int? intervalMinutes)
     {
         if(_timers.TryRemove(accountId, out Timer? existingTimer))
         {
             existingTimer.Stop();
             existingTimer.Dispose();
-            debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.UpdateSchedule, accountId, "Removed existing timer for account", CancellationToken.None).GetAwaiter().GetResult();
+            debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.UpdateSchedule, hashedAccountId, "Removed existing timer for account", CancellationToken.None).GetAwaiter().GetResult();
         }
 
         if(intervalMinutes.HasValue)
@@ -85,8 +85,8 @@ public sealed class AutoSyncSchedulerService(IAccountRepository accountRepositor
             {
                 try
                 {
-                    await debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.AutoSyncTriggered, accountId, "Auto-sync triggered", CancellationToken.None);
-                    await syncEngine.StartSyncAsync(accountId, CancellationToken.None);
+                    await debugLogger.LogInfoAsync(DebugLogMetadata.Services.AutoSyncSchedulerService.AutoSyncTriggered, hashedAccountId, "Auto-sync triggered", CancellationToken.None);
+                    await syncEngine.StartSyncAsync(accountId, hashedAccountId, CancellationToken.None);
                 }
                 catch(Exception ex)
                 {

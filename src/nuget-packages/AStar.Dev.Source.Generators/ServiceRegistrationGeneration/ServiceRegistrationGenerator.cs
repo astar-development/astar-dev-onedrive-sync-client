@@ -61,6 +61,8 @@ public sealed partial class ServiceRegistrationGenerator : IIncrementalGenerator
     private static void GenerateSource(SourceProductionContext spc, (Compilation Left, ImmutableArray<ServiceModel?> Right) pair)
     {
         var code = ServiceCollectionCodeGenerator.Generate(pair.Right);
-        spc.AddSource("GeneratedServiceCollectionExtensions.g.cs", code);
+
+        if(!string.IsNullOrEmpty(code))
+            spc.AddSource("GeneratedServiceCollectionExtensions.g.cs", code);
     }
 }

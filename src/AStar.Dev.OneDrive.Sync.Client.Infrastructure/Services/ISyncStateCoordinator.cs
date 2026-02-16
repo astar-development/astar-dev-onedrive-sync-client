@@ -17,15 +17,17 @@ public interface ISyncStateCoordinator
     ///     Initializes a new sync session.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="enableDetailedLogging">Whether to enable detailed sync logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The session ID if logging is enabled, otherwise null.</returns>
-    Task<string?> InitializeSessionAsync(string accountId, bool enableDetailedLogging, CancellationToken cancellationToken = default);
+    Task<string?> InitializeSessionAsync(string accountId, HashedAccountId hashedAccountId, bool enableDetailedLogging, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Updates and reports sync progress.
     /// </summary>
-    /// <param name="accountId">Account identifier.</param>
+    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">Hashed account identifier.</param>
     /// <param name="status">Current sync status.</param>
     /// <param name="totalFiles">Total number of files to synchronize.</param>
     /// <param name="completedFiles">Number of files already synchronized.</param>
@@ -39,6 +41,7 @@ public interface ISyncStateCoordinator
     /// <param name="phaseTotalBytes">Total bytes for the current phase (upload/download).</param>
     void UpdateProgress(
         string accountId,
+        HashedAccountId hashedAccountId,
         SyncStatus status,
         int totalFiles = 0,
         int completedFiles = 0,

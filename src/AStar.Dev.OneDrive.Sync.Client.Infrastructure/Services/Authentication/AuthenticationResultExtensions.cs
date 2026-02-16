@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 
 /// <summary>
@@ -10,10 +12,11 @@ public static class AuthenticationResultExtensions
         /// <summary>
         ///     Creates a successful authentication result for the specified account.
         /// </summary>
+        /// <param name="accountId">The identifier of the authenticated account.</param>
         /// <param name="hashedAccountId">The hashed identifier of the authenticated account.</param>
         /// <param name="displayName">The display name of the authenticated user.</param>
         /// <returns>An <see cref="AuthenticationResult"/> representing a successful authentication.</returns>
-        public static AuthenticationResult Success(string hashedAccountId, string displayName) => new(true, hashedAccountId, displayName);
+        public static AuthenticationResult Success(string accountId, HashedAccountId hashedAccountId, string displayName) => new(true, accountId, hashedAccountId, displayName);
 
         /// <summary>
         ///     Creates a failed authentication result with the specified error message.

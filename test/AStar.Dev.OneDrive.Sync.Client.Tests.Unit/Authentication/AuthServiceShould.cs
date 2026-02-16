@@ -101,7 +101,7 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        IReadOnlyList<(string AccountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<(string accountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -117,7 +117,7 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        IReadOnlyList<(string AccountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<(string accountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
         result.Count.ShouldBe(2);
         result[0].AccountId.ShouldBe("acc1");
         result[0].DisplayName.ShouldBe("user1@example.com");

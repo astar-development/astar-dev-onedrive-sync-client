@@ -24,15 +24,15 @@ public interface IFileWatcherService : IDisposable
     /// <summary>
     ///     Starts watching a directory for file system changes.
     /// </summary>
-    /// <param name="accountId">Account identifier for isolating change events.</param>
+    /// <param name="hashedAccountId">The hashed account identifier for isolating change events.</param>
     /// <param name="localPath">Local directory path to monitor.</param>
-    /// <exception cref="ArgumentNullException">Thrown if accountId or localPath is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if hashedAccountId or localPath is null.</exception>
     /// <exception cref="DirectoryNotFoundException">Thrown if localPath does not exist.</exception>
-    void StartWatching(string accountId, string localPath);
+    void StartWatching(HashedAccountId hashedAccountId, string localPath);
 
     /// <summary>
     ///     Stops watching a directory for the specified account.
     /// </summary>
-    /// <param name="accountId">Account identifier whose watcher should be stopped.</param>
-    void StopWatching(string accountId);
+    /// <param name="hashedAccountId">The hashed account identifier whose watcher should be stopped.</param>
+    void StopWatching(HashedAccountId hashedAccountId);
 }

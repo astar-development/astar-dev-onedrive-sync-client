@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace AStar.Dev.Source.Analyzers;
 
 /// <summary>
-/// Analyzer that enforces [AutoRegisterOptions] is only applied to partial classes or structs.
+/// Analyzer that enforces [AutoRegisterOptions] usage rules for partial types and readonly record structs.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
@@ -18,6 +18,11 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
     /// </summary>
     public const string DiagnosticId = "ASTAROPT002";
 
+    /// <summary>
+    /// The diagnostic ID for non-readonly record struct options.
+    /// </summary>
+    public const string ReadonlyRecordDiagnosticId = "ASTAROPT003";
+
     private static readonly DiagnosticDescriptor Rule = new(
         DiagnosticId,
         "Options class must be partial",
@@ -26,15 +31,28 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
+    private static readonly DiagnosticDescriptor ReadonlyRecordRule = new(
+        ReadonlyRecordDiagnosticId,
+        "Options record struct must be readonly",
+        "Options record struct '{0}' must be declared readonly to support source generation",
+        "AStar.Dev.Source.Analyzers",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     /// <inheritdoc/>
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Rule);
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => [Rule, ReadonlyRecordRule];
 
     /// <inheritdoc/>
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         context.EnableConcurrentExecution();
-        context.RegisterSyntaxNodeAction(AnalyzeType, SyntaxKind.ClassDeclaration, SyntaxKind.StructDeclaration);
+        context.RegisterSyntaxNodeAction(
+            AnalyzeType,
+            SyntaxKind.ClassDeclaration,
+            SyntaxKind.StructDeclaration,
+            SyntaxKind.RecordDeclaration,
+            SyntaxKind.RecordStructDeclaration);
     }
 
     /// <summary>
@@ -45,9 +63,11 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
     {
         if(context.Node is not TypeDeclarationSyntax typeDecl)
             return;
+
         INamedTypeSymbol? symbol = context.SemanticModel.GetDeclaredSymbol(typeDecl, context.CancellationToken);
         if(symbol == null)
             return;
+
         foreach(AttributeData attr in symbol.GetAttributes())
         {
             if(attr.AttributeClass?.ToDisplayString() == "AStar.Dev.Source.Generators.Attributes.AutoRegisterOptionsAttribute")
@@ -55,6 +75,14 @@ public sealed class AutoRegisterOptionsPartialAnalyzer : DiagnosticAnalyzer
                 if(!typeDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.PartialKeyword)))
                 {
                     var diag = Diagnostic.Create(Rule, typeDecl.Identifier.GetLocation(), symbol.Name);
+                    context.ReportDiagnostic(diag);
+                }
+
+                if(typeDecl is RecordDeclarationSyntax recordDecl &&
+                   recordDecl.ClassOrStructKeyword.IsKind(SyntaxKind.StructKeyword) &&
+                   !recordDecl.Modifiers.Any(m => m.IsKind(SyntaxKind.ReadOnlyKeyword)))
+                {
+                    var diag = Diagnostic.Create(ReadonlyRecordRule, recordDecl.Identifier.GetLocation(), symbol.Name);
                     context.ReportDiagnostic(diag);
                 }
 

@@ -421,7 +421,7 @@ public record FileMetadata(
 // Use init-only properties
 public class SyncConfiguration
 {
-    public string AccountId { get; init; }
+    public string accountId { get; init; }
     public string LocalPath { get; init; }
     public bool IsEnabled { get; init; }
 }
@@ -1339,7 +1339,7 @@ public async Task<SyncSummary> PerformFullSyncAsync(string accountId)
 ```csharp
 // GOOD: Immutable records with with-expressions
 public record SyncState(
-    string AccountId,
+    string accountId,
     SyncStatus Status,
     long BytesTransferred,
     long TotalBytes,
@@ -1369,7 +1369,7 @@ state = state.Completed();
 // BAD: Mutable class requiring defensive copies
 public class SyncState
 {
-    public string AccountId { get; set; }
+    public string accountId { get; set; }
     public SyncStatus Status { get; set; }
     public long BytesTransferred { get; set; }
     // Easy to mutate accidentally, requires cloning for immutability

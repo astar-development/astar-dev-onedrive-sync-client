@@ -14,12 +14,12 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
     private readonly IDbContextFactory<SyncDbContext> _contextFactory = contextFactory;
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<DriveItemEntity> entities = await context.DriveItems
             .AsNoTracking()
-            .Where(fm => fm.AccountId == accountId)
+            .Where(fm => fm.HashedAccountId == hashedAccountId)
             .ToListAsync(cancellationToken);
 
         return [.. entities.Select(MapToModel)];
@@ -34,11 +34,11 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
     }
 
     /// <inheritdoc />
-    public async Task<FileMetadata?> GetByPathAsync(string accountId, string path, CancellationToken cancellationToken = default)
+    public async Task<FileMetadata?> GetByPathAsync(HashedAccountId hashedAccountId, string path, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         DriveItemEntity? entity = await context.DriveItems
-            .FirstOrDefaultAsync(driveItem => driveItem.AccountId == accountId && driveItem.RelativePath == path, cancellationToken);
+            .FirstOrDefaultAsync(driveItem => driveItem.HashedAccountId == hashedAccountId && driveItem.RelativePath == path, cancellationToken);
 
         return entity is null ? null : MapToModel(entity);
     }
@@ -103,7 +103,7 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
 
     private static FileMetadata MapToModel(DriveItemEntity driveItem) => new(
                 driveItem.DriveItemId,
-                driveItem.AccountId,
+                driveItem.HashedAccountId,
                 driveItem.Name ?? string.Empty,
                 driveItem.RelativePath,
                 driveItem.Size,
@@ -120,5 +120,5 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
                 driveItem.LastSyncDirection
             );
 
-    private static DriveItemEntity MapToEntity(FileMetadata fileMetadata) => new(fileMetadata.AccountId, fileMetadata.DriveItemId, fileMetadata.RelativePath, fileMetadata.ETag, fileMetadata.CTag, fileMetadata.Size, fileMetadata.LastModifiedUtc, fileMetadata.IsFolder, fileMetadata.IsDeleted, fileMetadata.IsSelected, fileMetadata.RemoteHash, fileMetadata.Name, fileMetadata.LocalPath, fileMetadata.LocalHash, fileMetadata.SyncStatus, fileMetadata.LastSyncDirection ?? SyncDirection.None);
+    private static DriveItemEntity MapToEntity(FileMetadata fileMetadata) => new(fileMetadata.HashedAccountId, fileMetadata.DriveItemId, fileMetadata.RelativePath, fileMetadata.ETag, fileMetadata.CTag, fileMetadata.Size, fileMetadata.LastModifiedUtc, fileMetadata.IsFolder, fileMetadata.IsDeleted, fileMetadata.IsSelected, fileMetadata.RemoteHash, fileMetadata.Name, fileMetadata.LocalPath, fileMetadata.LocalHash, fileMetadata.SyncStatus, fileMetadata.LastSyncDirection ?? SyncDirection.None);
 }

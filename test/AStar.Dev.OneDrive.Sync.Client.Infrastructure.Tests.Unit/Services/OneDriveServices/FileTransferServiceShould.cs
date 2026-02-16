@@ -47,7 +47,7 @@ public class FileTransferServiceShould
         (FileTransferService? service, TestMocks? mocks) = CreateTestService();
         var accountId = "test-account";
         var existingFile = new DriveItemEntity(
-            accountId: accountId, driveItemId: "existing-id", relativePath: "/Documents/test.txt", eTag: "etag-old", cTag: "ctag-old",
+            hashedAccountId: accountId, driveItemId: "existing-id", relativePath: "/Documents/test.txt", eTag: "etag-old", cTag: "ctag-old",
             size: 90, lastModifiedUtc: DateTime.UtcNow.AddDays(-1), isFolder: false, isDeleted: false, isSelected: false,
             remoteHash: null, name: "test.txt", localPath: @"C:\Sync\Documents\test.txt", localHash: "old-hash",
             syncStatus: FileSyncStatus.Synced, lastSyncDirection: SyncDirection.Upload);

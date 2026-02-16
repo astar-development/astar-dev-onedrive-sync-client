@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
@@ -15,7 +16,7 @@ public sealed class SyncConflictEntity
     /// <summary>
     ///     Gets or sets the account identifier.
     /// </summary>
-    public string AccountId { get; set; } = string.Empty;
+    public HashedAccountId HashedAccountId { get; set; } = string.Empty;
 
     /// <summary>
     ///     Gets or sets the path to the conflicted file.

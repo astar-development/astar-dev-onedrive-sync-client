@@ -26,15 +26,15 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
     public IObservable<FileChangeEvent> FileChanges => _fileChanges.AsObservable();
 
     /// <inheritdoc />
-    public void StartWatching(string accountId, string localPath)
+    public void StartWatching(HashedAccountId hashedAccountId, string localPath)
     {
         if(!Directory.Exists(localPath))
             throw new DirectoryNotFoundException($"Directory not found: {localPath}");
 
-        if(_watchers.ContainsKey(accountId))
+        if(_watchers.ContainsKey(hashedAccountId))
         {
-            logger.LogWarning("Already watching path for account {AccountId}. Stopping existing watcher first.", accountId);
-            StopWatching(accountId);
+            logger.LogWarning("Already watching path for account {AccountId}. Stopping existing watcher first.", hashedAccountId);
+            StopWatching(hashedAccountId);
         }
 
         try
@@ -53,32 +53,32 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
             var changeBuffer = new Subject<FileSystemEventArgs>();
             IDisposable subscription = changeBuffer
                 .Throttle(TimeSpan.FromMilliseconds(500))
-                .Subscribe(e => ProcessFileChange(accountId, localPath, e));
+                .Subscribe(e => ProcessFileChange(hashedAccountId, localPath, e));
 
             // Wire up FileSystemWatcher events
             watcher.Changed += (s, e) => changeBuffer.OnNext(e);
             watcher.Created += (s, e) => changeBuffer.OnNext(e);
-            watcher.Deleted += (s, e) => EmitFileChange(accountId, localPath, e, FileChangeType.Deleted);
-            watcher.Renamed += (s, e) => EmitFileChange(accountId, localPath, e, FileChangeType.Renamed);
-            watcher.Error += (s, e) => HandleWatcherError(accountId, e);
+            watcher.Deleted += (s, e) => EmitFileChange(hashedAccountId, localPath, e, FileChangeType.Deleted);
+            watcher.Renamed += (s, e) => EmitFileChange(hashedAccountId, localPath, e, FileChangeType.Renamed);
+            watcher.Error += (s, e) => HandleWatcherError(hashedAccountId, e);
 
-            _watchers[accountId] = new WatcherContext(watcher, changeBuffer, subscription);
-            logger.LogInformation("Started watching {Path} for account {AccountId}", localPath, accountId);
+            _watchers[hashedAccountId] = new WatcherContext(watcher, changeBuffer, subscription);
+            logger.LogInformation("Started watching {Path} for account {AccountId}", localPath, hashedAccountId);
         }
         catch(Exception ex)
         {
-            logger.LogError(ex, "Failed to start watching {Path} for account {AccountId}", localPath, accountId);
+            logger.LogError(ex, "Failed to start watching {Path} for account {AccountId}", localPath, hashedAccountId);
             throw;
         }
     }
 
     /// <inheritdoc />
-    public void StopWatching(string accountId)
+    public void StopWatching(HashedAccountId hashedAccountId)
     {
-        if(_watchers.Remove(accountId, out WatcherContext? context))
+        if(_watchers.Remove(hashedAccountId, out WatcherContext? context))
         {
             context.Dispose();
-            logger.LogInformation("Stopped watching for account {AccountId}", accountId);
+            logger.LogInformation("Stopped watching for account {AccountId}", hashedAccountId);
         }
     }
 
@@ -100,24 +100,24 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
         logger.LogInformation("FileWatcherService disposed");
     }
 
-    private void ProcessFileChange(string accountId, string basePath, FileSystemEventArgs e)
+    private void ProcessFileChange(HashedAccountId hashedAccountId, string basePath, FileSystemEventArgs e)
     {
         // Determine if this is a creation or modification
         FileChangeType changeType = e.ChangeType == WatcherChangeTypes.Created
             ? FileChangeType.Created
             : FileChangeType.Modified;
 
-        EmitFileChange(accountId, basePath, e, changeType);
+        EmitFileChange(hashedAccountId, basePath, e, changeType);
     }
 
-    private void EmitFileChange(string accountId, string basePath, FileSystemEventArgs e, FileChangeType changeType)
+    private void EmitFileChange(HashedAccountId hashedAccountId, string basePath, FileSystemEventArgs e, FileChangeType changeType)
     {
         try
         {
             var relativePath = Path.GetRelativePath(basePath, e.FullPath);
 
             var changeEvent = new FileChangeEvent(
-                accountId,
+                hashedAccountId,
                 e.FullPath,
                 relativePath,
                 changeType,
@@ -126,7 +126,7 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
 
             _fileChanges.OnNext(changeEvent);
             logger.LogDebug("File change detected: {ChangeType} - {RelativePath} (Account: {AccountId})",
-                changeType, relativePath, accountId);
+                changeType, relativePath, hashedAccountId);
         }
         catch(Exception ex)
         {
@@ -134,10 +134,10 @@ public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFi
         }
     }
 
-    private void HandleWatcherError(string accountId, ErrorEventArgs e)
+    private void HandleWatcherError(HashedAccountId hashedAccountId, ErrorEventArgs e)
     {
         Exception exception = e.GetException();
-        logger.LogError(exception, "FileSystemWatcher error for account {AccountId}", accountId);
+        logger.LogError(exception, "FileSystemWatcher error for account {AccountId}", hashedAccountId);
 
         // Optionally emit an error event or attempt to restart the watcher
         // For now, just log the error

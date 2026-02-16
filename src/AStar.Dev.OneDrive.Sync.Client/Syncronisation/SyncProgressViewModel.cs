@@ -79,7 +79,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <summary>
     ///     Gets the account ID for this sync progress.
     /// </summary>
-    public string AccountId { get; }
+    public string accountId { get; }
 
     /// <summary>
     ///     Gets or sets the current sync progress state.

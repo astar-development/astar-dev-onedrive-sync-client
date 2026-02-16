@@ -34,8 +34,8 @@ public static class DebugLog
     /// <param name="source">The source of the log (typically class or method name).</param>
     /// <param name="message">The log message.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task InfoAsync(string source, string accountId, string message, CancellationToken cancellationToken = default) => _instance?.LogInfoAsync(source, accountId, message, cancellationToken) ?? Task.CompletedTask;
-    
+    public static Task InfoAsync(string source, HashedAccountId hashedAccountId, string message, CancellationToken cancellationToken = default) => _instance?.LogInfoAsync(source, hashedAccountId, message, cancellationToken) ?? Task.CompletedTask;
+
     /// <summary>
     ///     Logs an informational message - if debug logging is enabled.
     /// </summary>
@@ -44,7 +44,7 @@ public static class DebugLog
     /// <param name="hashedAccountId">The hashed account ID associated with the log.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public static Task<Result<Unit, ErrorResponse>> LogInfoAsync(string source, string message, string hashedAccountId, CancellationToken cancellationToken = default)
+    public static Task<Result<Unit, ErrorResponse>> LogInfoAsync(string source, string message, HashedAccountId  hashedAccountId, CancellationToken cancellationToken = default)
         => LogMessage(source, hashedAccountId, message, LogLevel.Information, cancellationToken);
 
     /// <summary>
@@ -54,34 +54,34 @@ public static class DebugLog
     /// <param name="message">The log message.</param>
     /// <param name="exception">Optional exception details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task ErrorAsync(string source, string accountId, string message, Exception? exception = null, CancellationToken cancellationToken = default) => _instance?.LogErrorAsync(source, accountId, message, exception, cancellationToken) ?? Task.CompletedTask;
+    public static Task ErrorAsync(string source, HashedAccountId hashedAccountId, string message, Exception? exception = null, CancellationToken cancellationToken = default) => _instance?.LogErrorAsync(source, hashedAccountId, message, exception, cancellationToken) ?? Task.CompletedTask;
 
     /// <summary>
     ///     Logs a method entry.
     /// </summary>
     /// <param name="source">The source of the log (typically class.Method).</param>
-    /// <param name="accountId">The account ID associated with the log.</param>
+    /// <param name="hashedAccountId">The hashed account ID associated with the log.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task EntryAsync(string source, string accountId, CancellationToken cancellationToken = default) => _instance?.LogEntryAsync(source, accountId, cancellationToken) ?? Task.CompletedTask;
+    public static Task EntryAsync(string source, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default) => _instance?.LogEntryAsync(source, hashedAccountId, cancellationToken) ?? Task.CompletedTask;
 
     /// <summary>
     ///     Logs a method exit.
     /// </summary>
     /// <param name="source">The source of the log (typically class.Method).</param>
-    /// <param name="accountId">The account ID associated with the log.</param>
+    /// <param name="hashedAccountId">The hashed account ID associated with the log.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task ExitAsync(string source, string accountId, CancellationToken cancellationToken = default) => _instance?.LogExitAsync(source, accountId, cancellationToken) ?? Task.CompletedTask;
+    public static Task ExitAsync(string source, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default) => _instance?.LogExitAsync(source, hashedAccountId, cancellationToken) ?? Task.CompletedTask;
 
-    private static async Task<Result<Unit, ErrorResponse>> LogMessage(string source, string accountId, string message, LogLevel logLevel, CancellationToken cancellationToken)
+    private static async Task<Result<Unit, ErrorResponse>> LogMessage(string source, HashedAccountId hashedAccountId, string message, LogLevel logLevel, CancellationToken cancellationToken)
         => await Try.RunAsync<Result<Unit, ErrorResponse>>(async () =>
             {
-                AccountInfo? account = await _accountRepository!.GetByIdAsync(accountId, cancellationToken);
+                AccountInfo? account = await _accountRepository!.GetByIdAsync(hashedAccountId, cancellationToken);
 
                 if(account is null)
-                    return new ErrorResponse($"Account with ID {accountId} not found");
+                    return new ErrorResponse($"Account with ID {hashedAccountId} not found");
 
                 if(account.EnableDebugLogging)
-                    await _debugRepository!.AddAsync(DebugLogEntry.Create(accountId, source, message, logLevel.ToString()), cancellationToken);
+                    await _debugRepository!.AddAsync(DebugLogEntry.Create(hashedAccountId, source, message, logLevel.ToString()), cancellationToken);
 
                 return Unit.Value;
             })

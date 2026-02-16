@@ -24,7 +24,15 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
     public async Task<AccountInfo?> GetByIdAsync(string accountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
-        AccountEntity? entity = await context.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.AccountId == accountId, cancellationToken);
+        AccountEntity? entity = await context.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.Id == accountId, cancellationToken);
+        return entity is null ? null : MapToModel(entity);
+    }
+
+    /// <inheritdoc />
+    public async Task<AccountInfo?> GetByIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
+    {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        AccountEntity? entity = await context.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.HashedAccountId == hashedAccountId, cancellationToken);
         return entity is null ? null : MapToModel(entity);
     }
 
@@ -82,11 +90,12 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
 
-        return await context.Accounts.AnyAsync(a => a.AccountId == accountId, cancellationToken);
+        return await context.Accounts.AnyAsync(a => a.Id == accountId, cancellationToken);
     }
 
     private static AccountInfo MapToModel(AccountEntity account) => new(
-                account.AccountId,
+                account.Id,
+                account.HashedAccountId,
                 account.DisplayName,
                 account.LocalSyncPath,
                 account.IsAuthenticated,
@@ -101,7 +110,8 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
 
     private static AccountEntity MapToEntity(AccountInfo model) => new()
     {
-        AccountId = model.HashedAccountId,
+        Id = model.Id,
+        HashedAccountId = model.HashedAccountId,
         DisplayName = model.DisplayName,
         LocalSyncPath = model.LocalSyncPath,
         IsAuthenticated = model.IsAuthenticated,

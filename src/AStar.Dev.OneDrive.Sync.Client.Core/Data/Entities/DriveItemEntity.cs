@@ -1,9 +1,10 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 
 public sealed class DriveItemEntity(
-    string accountId,
+    HashedAccountId hashedAccountId,
     string driveItemId,
     string relativePath,
     string? eTag,
@@ -20,7 +21,7 @@ public sealed class DriveItemEntity(
     FileSyncStatus syncStatus = FileSyncStatus.SyncOnly,
     SyncDirection lastSyncDirection = SyncDirection.None)
 {
-    public string AccountId { get; set; } = accountId;
+    public HashedAccountId HashedAccountId { get; set; } = hashedAccountId;
     public string DriveItemId { get; set; } = driveItemId;
     public string RelativePath { get; set; } = relativePath;
     public string? ETag { get; set; } = eTag;
@@ -38,7 +39,7 @@ public sealed class DriveItemEntity(
     public SyncDirection LastSyncDirection { get; set; } = lastSyncDirection;
 
     public DriveItemEntity WithUpdatedSelection(bool isSelected) => new(
-                AccountId,
+                HashedAccountId,
                 DriveItemId,
                 RelativePath,
                 ETag,
@@ -57,7 +58,7 @@ public sealed class DriveItemEntity(
             );
 
     public DriveItemEntity WithUpdatedDetails(bool isSelected, string relativePath, DateTimeOffset lastModifiedUtc) => new(
-                AccountId,
+                HashedAccountId,
                 DriveItemId,
                 relativePath,
                 ETag,

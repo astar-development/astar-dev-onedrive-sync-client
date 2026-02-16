@@ -13,11 +13,11 @@ public sealed class SyncConflictRepository(IDbContextFactory<SyncDbContext> cont
     private readonly IDbContextFactory<SyncDbContext> _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SyncConflict>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<SyncConflict>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<SyncConflictEntity> entities = await context.SyncConflicts
-            .Where(c => c.AccountId == accountId)
+            .Where(c => c.HashedAccountId == hashedAccountId)
             .OrderByDescending(c => c.DetectedUtc)
             .ToListAsync(cancellationToken);
 
@@ -25,11 +25,11 @@ public sealed class SyncConflictRepository(IDbContextFactory<SyncDbContext> cont
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<SyncConflict>> GetUnresolvedByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<SyncConflict>> GetUnresolvedByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<SyncConflictEntity> entities = await context.SyncConflicts
-            .Where(c => c.AccountId == accountId && !c.IsResolved)
+            .Where(c => c.HashedAccountId == hashedAccountId && !c.IsResolved)
             .OrderByDescending(c => c.DetectedUtc)
             .ToListAsync(cancellationToken);
 
@@ -47,11 +47,11 @@ public sealed class SyncConflictRepository(IDbContextFactory<SyncDbContext> cont
     }
 
     /// <inheritdoc />
-    public async Task<SyncConflict?> GetByFilePathAsync(string accountId, string filePath, CancellationToken cancellationToken = default)
+    public async Task<SyncConflict?> GetByFilePathAsync(HashedAccountId hashedAccountId, string filePath, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         SyncConflictEntity? entity = await context.SyncConflicts
-            .Where(c => c.AccountId == accountId && c.FilePath == filePath && !c.IsResolved)
+            .Where(c => c.HashedAccountId == hashedAccountId && c.FilePath == filePath && !c.IsResolved)
             .OrderByDescending(c => c.DetectedUtc)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -95,17 +95,17 @@ public sealed class SyncConflictRepository(IDbContextFactory<SyncDbContext> cont
     }
 
     /// <inheritdoc />
-    public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task DeleteByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         _ = await context.SyncConflicts
-        .Where(c => c.AccountId == accountId)
+        .Where(c => c.HashedAccountId == hashedAccountId)
         .ExecuteDeleteAsync(cancellationToken);
     }
 
     private static SyncConflict MapToDomain(SyncConflictEntity syncConflict) => new(
                 syncConflict.Id,
-                syncConflict.AccountId,
+                syncConflict.HashedAccountId,
                 syncConflict.FilePath,
                 syncConflict.LocalModifiedUtc,
                 syncConflict.RemoteModifiedUtc,
@@ -118,7 +118,7 @@ public sealed class SyncConflictRepository(IDbContextFactory<SyncDbContext> cont
     private static SyncConflictEntity MapToEntity(SyncConflict conflict) => new()
     {
         Id = conflict.Id,
-        AccountId = conflict.AccountId,
+        HashedAccountId = conflict.HashedAccountId,
         FilePath = conflict.FilePath,
         LocalModifiedUtc = conflict.LocalModifiedUtc,
         RemoteModifiedUtc = conflict.RemoteModifiedUtc,

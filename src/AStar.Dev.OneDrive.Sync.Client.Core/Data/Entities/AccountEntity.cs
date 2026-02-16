@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 
 /// <summary>
@@ -5,7 +7,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 /// </summary>
 public sealed class AccountEntity
 {
-    public required string AccountId { get; set; }
+    public required string Id { get; set; }
+    public required HashedAccountId HashedAccountId { get; set; }
     public required string DisplayName { get; set; }
     public required string LocalSyncPath { get; set; }
     public bool IsAuthenticated { get; set; }
@@ -19,7 +22,8 @@ public sealed class AccountEntity
 
     public static AccountEntity CreateSystemAccount() => new()
     {
-        AccountId = AdminAccountMetadata.HashedAccountId,
+        Id = Guid.CreateVersion7().ToString(),
+        HashedAccountId = AdminAccountMetadata.HashedAccountId,
         DisplayName = "System Admin",
         LocalSyncPath = ".",
         AutoSyncIntervalMinutes = 0,

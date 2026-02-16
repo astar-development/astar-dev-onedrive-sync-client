@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 
 /// <summary>
@@ -7,7 +9,7 @@ public class FileOperationLogEntity
 {
     public string Id { get; set; } = string.Empty;
     public string SyncSessionId { get; set; } = string.Empty;
-    public string AccountId { get; set; } = string.Empty;
+    public HashedAccountId HashedAccountId { get; set; } = string.Empty;
     public DateTimeOffset Timestamp { get; set; }
     public int Operation { get; set; }
     public string FilePath { get; set; } = string.Empty;

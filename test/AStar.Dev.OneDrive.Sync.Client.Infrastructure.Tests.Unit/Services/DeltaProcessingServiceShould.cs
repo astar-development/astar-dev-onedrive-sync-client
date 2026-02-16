@@ -138,7 +138,7 @@ public class DeltaProcessingServiceShould
                 Action<SyncState>? callback = callInfo.ArgAt<Action<SyncState>?>(2);
                 callback?.Invoke(SyncState.Create(accountId, SyncStatus.InitialDeltaSync, "Processing..."));
                 return Task.FromResult((finalToken, 1, 50));
-           });
+            });
         var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
 
         _ = await service.ProcessDeltaPagesAsync(

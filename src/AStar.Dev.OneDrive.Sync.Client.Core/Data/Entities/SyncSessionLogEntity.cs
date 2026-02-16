@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 
 /// <summary>
@@ -6,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 public class SyncSessionLogEntity
 {
     public string Id { get; set; } = string.Empty;
-    public string AccountId { get; set; } = string.Empty;
+    public HashedAccountId HashedAccountId { get; set; } = string.Empty;
     public DateTimeOffset StartedUtc { get; set; }
     public DateTimeOffset? CompletedUtc { get; set; }
     public int Status { get; set; }

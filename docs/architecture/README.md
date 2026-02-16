@@ -12,7 +12,7 @@ Architecture docs that are specific to this repository should live here. Organiz
 
 ### In-repository Architecture documents
 
-- (Add links to architecture docs in this repository)
+- [Source analyzers](analyzers.md)
 
 ### External Architecture documents
 

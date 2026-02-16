@@ -32,7 +32,7 @@ public class FileOperationLogShould
             remoteLastModifiedUtc);
 
         _ = fileOperationLog.Id.ShouldNotBeNull();
-        fileOperationLog.AccountId.ShouldBe(accountId);
+        fileOperationLog.HashedAccountId.Id.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);
         fileOperationLog.Operation.ShouldBe(operationType);
@@ -69,7 +69,7 @@ public class FileOperationLogShould
             reason);
 
         _ = fileOperationLog.Id.ShouldNotBeNull();
-        fileOperationLog.AccountId.ShouldBe(accountId);
+        fileOperationLog.HashedAccountId.Id.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);
         fileOperationLog.Operation.ShouldBe(operationType);
@@ -106,7 +106,7 @@ public class FileOperationLogShould
             reason);
 
         _ = fileOperationLog.Id.ShouldNotBeNull();
-        fileOperationLog.AccountId.ShouldBe(accountId);
+        fileOperationLog.HashedAccountId.Id.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);
         fileOperationLog.Operation.ShouldBe(operationType);

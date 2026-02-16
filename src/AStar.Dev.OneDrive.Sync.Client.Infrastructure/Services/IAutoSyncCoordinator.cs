@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 
 /// <summary>
@@ -14,9 +16,10 @@ public interface IAutoSyncCoordinator : IDisposable
     /// </summary>
     /// <param name="accountId">The unique identifier of the account.</param>
     /// <param name="localPath">The local directory path to monitor.</param>
+    /// <param name="hashedAccountId">The hashed account ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    Task StartMonitoringAsync(string accountId, string localPath, CancellationToken cancellationToken = default);
+    Task StartMonitoringAsync(string accountId, HashedAccountId hashedAccountId, string localPath, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Stops monitoring file changes for the specified account.

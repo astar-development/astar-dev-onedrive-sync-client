@@ -8,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit.Services;
 
 public class ConflictDetectionServiceShould
 {
-    private const string AccountId = "test-account-id";
+    private const string accountId = "test-account-id";
 
     [Fact]
     public async Task DetectConflictForKnownFile_WhenBothLocalAndRemoteChanged()

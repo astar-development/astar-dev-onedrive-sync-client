@@ -367,15 +367,15 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                                     .Subscribe(_ => CloseSyncProgressView())
                                     .DisposeWith(_disposables); private void WireUpSyncCompletion(SyncTreeViewModel syncTreeViewModel) => _ = syncTreeViewModel
                 .WhenAnyValue(x => x.SyncState)
-                .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.AccountId))
+                .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.HashedAccountId))
                 .Subscribe(async state =>
                 {
                     try
                     {
                         // Get account info to retrieve local sync path
-                        AccountInfo? account = await _accountRepository.GetByIdAsync(state.AccountId);
+                        AccountInfo? account = await _accountRepository.GetByIdAsync(state.HashedAccountId);
                         if(account is not null && !string.IsNullOrEmpty(account.LocalSyncPath))
-                            await _autoSyncCoordinator.StartMonitoringAsync(state.AccountId, account.LocalSyncPath);
+                            await _autoSyncCoordinator.StartMonitoringAsync(state.HashedAccountId, account.LocalSyncPath);
                     }
                     catch
                     {
