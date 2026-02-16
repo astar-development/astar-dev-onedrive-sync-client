@@ -168,7 +168,7 @@ public class AccountManagementViewModelShould
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
 
-        var authResult = new AuthenticationResult(true, "acc1", "user@example.com", null);
+        var authResult = new AuthenticationResult(true, "acc1", AccountIdHasher.Hash("acc1"), "user@example.com", null);
         _ = mockAuth.LoginAsync(Arg.Any<CancellationToken>()).Returns(authResult);
 
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
@@ -308,7 +308,7 @@ public class AccountManagementViewModelShould
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
 
-        var authResult = new AuthenticationResult(true, "acc1", "User 1", null);
+        var authResult = new AuthenticationResult(true, "acc1", "User 1","User 1", null);
         _ = mockAuth.LoginAsync(Arg.Any<CancellationToken>()).Returns(authResult);
 
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
@@ -447,6 +447,6 @@ public class AccountManagementViewModelShould
         Should.NotThrow(viewModel.Dispose);
     }
 
-    private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false) =>
-        new(id, AccountIdHasher.Hash(id), displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, 0);
+    private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false)
+        => new(id, AccountIdHasher.Hash(id), displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, 0);
 }

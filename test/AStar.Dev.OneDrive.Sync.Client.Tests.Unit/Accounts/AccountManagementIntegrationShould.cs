@@ -57,7 +57,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task PersistNewAccountToDatabaseWhenAdded()
     {
-        var authResult = new AuthenticationResult(true, "new-acc", "New User", null);
+        var authResult = new AuthenticationResult(true, "new-acc", "New User","New User", null);
         _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
@@ -96,7 +96,7 @@ public class AccountManagementIntegrationShould : IDisposable
         var account = new AccountInfo("acc-login", AccountIdHasher.Hash("acc-login"), "User", "/path", false, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
-        var authResult = new AuthenticationResult(true, string.Empty, string.Empty, null);
+        var authResult = new AuthenticationResult(true, "acc-login", AccountIdHasher.Hash("acc-login"), "User", null);
         _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
@@ -134,7 +134,7 @@ public class AccountManagementIntegrationShould : IDisposable
     [Fact(Skip = "Doesn't work")]
     public async Task MaintainConsistencyBetweenViewModelAndDatabaseAfterMultipleOperations()
     {
-        var authResult = new AuthenticationResult(true, "multi-acc", "Multi User", null);
+        var authResult = new AuthenticationResult(true, "multi-acc", AccountIdHasher.Hash("multi-acc"), "Multi User", null);
         _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
         _ = _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
 

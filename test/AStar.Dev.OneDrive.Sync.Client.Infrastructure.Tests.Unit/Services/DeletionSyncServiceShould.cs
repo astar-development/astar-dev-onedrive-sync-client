@@ -98,7 +98,7 @@ public class DeletionSyncServiceShould
 
         await service.ProcessLocalToRemoteDeletionsAsync(accountId, AccountIdHasher.Hash("test-account"), allLocalFiles, remotePathsSet, localPathsSet, CancellationToken.None);
 
-        await graphApiClient.Received(1).DeleteFileAsync(accountId, "file1", "", Arg.Any<CancellationToken>());
+        await graphApiClient.Received(1).DeleteFileAsync(accountId, "file1", "1F4444A951229CB3C984B4D8B7309EC55BF3ADB0704810B849068439F978411D", Arg.Any<CancellationToken>());
         await driveItemsRepo.Received(1).DeleteAsync("file1", Arg.Any<CancellationToken>());
     }
 
@@ -125,8 +125,8 @@ public class DeletionSyncServiceShould
 
         await service.ProcessLocalToRemoteDeletionsAsync(accountId, AccountIdHasher.Hash("test-account"), allLocalFiles, remotePathsSet, localPathsSet, CancellationToken.None);
 
-        await graphApiClient.Received(1).DeleteFileAsync(accountId, "file1", "", Arg.Any<CancellationToken>());
-        await graphApiClient.Received(1).DeleteFileAsync(accountId, "file2", "", Arg.Any<CancellationToken>());
+        await graphApiClient.Received(1).DeleteFileAsync(accountId, "file1", "1F4444A951229CB3C984B4D8B7309EC55BF3ADB0704810B849068439F978411D", Arg.Any<CancellationToken>());
+        await graphApiClient.Received(1).DeleteFileAsync(accountId, "file2", "1F4444A951229CB3C984B4D8B7309EC55BF3ADB0704810B849068439F978411D", Arg.Any<CancellationToken>());
         await driveItemsRepo.Received(1).DeleteAsync("file2", Arg.Any<CancellationToken>());
     }
 

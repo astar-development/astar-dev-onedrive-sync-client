@@ -33,7 +33,7 @@ public class SyncStateCoordinatorShould
         using SyncDbContext context = _contextFactory.CreateDbContext();
         SyncSessionLogEntity? session = await context.SyncSessionLogs.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
         _ = session.ShouldNotBeNull();
-        session.HashedAccountId.Id.ShouldBe("test-account");
+        session.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("test-account"));
         ((SyncStatus)session.Status).ShouldBe(SyncStatus.Running);
         session.CompletedUtc.ShouldBeNull();
     }
@@ -63,7 +63,7 @@ public class SyncStateCoordinatorShould
         coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, totalFiles: 10, completedFiles: 5, totalBytes: 1000, completedBytes: 500);
 
         _ = receivedState.ShouldNotBeNull();
-        receivedState.HashedAccountId.Id.ShouldBe("test-account");
+        receivedState.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("test-account"));  
         receivedState.Status.ShouldBe(SyncStatus.Running);
         receivedState.TotalFiles.ShouldBe(10);
         receivedState.CompletedFiles.ShouldBe(5);

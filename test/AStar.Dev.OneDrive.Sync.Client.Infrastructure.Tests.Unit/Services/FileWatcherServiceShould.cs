@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
+using Microsoft.Graph.Models.Security;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit.Services;
 
@@ -56,7 +57,7 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching("account1", _testDirectory);
+        _sut.StartWatching(AccountIdHasher.Hash("account1"), _testDirectory);
 
         // Give watcher time to initialize
         await Task.Delay(200, TestContext.Current.CancellationToken);
@@ -113,7 +114,7 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching("account1", _testDirectory);
+        _sut.StartWatching(AccountIdHasher.Hash("account1"), _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Delete the file
@@ -139,7 +140,7 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching("account1", _testDirectory);
+        _sut.StartWatching(AccountIdHasher.Hash("account1"), _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Create file in subdirectory
@@ -167,8 +168,8 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching("account1", dir1);
-        _sut.StartWatching("account2", dir2);
+        _sut.StartWatching(AccountIdHasher.Hash("account1"), dir1);
+        _sut.StartWatching(AccountIdHasher.Hash("account2"), dir2);
         await Task.Delay(200, TestContext.Current.CancellationToken);
 
         // Create files in both directories

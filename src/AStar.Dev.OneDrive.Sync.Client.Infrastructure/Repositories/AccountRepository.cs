@@ -57,7 +57,7 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
     public async Task UpdateAsync(AccountInfo account, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
-        AccountEntity dbAccount = await context.Accounts.FindAsync([account.HashedAccountId], cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.HashedAccountId}' not found.");
+        AccountEntity dbAccount = await context.Accounts.FindAsync([account.Id], cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.HashedAccountId}' not found.");
 
         dbAccount.DisplayName = account.DisplayName;
         dbAccount.LocalSyncPath = account.LocalSyncPath;

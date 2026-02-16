@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using Microsoft.Identity.Client;
 using AuthenticationResult = AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication.AuthenticationResult;
@@ -23,7 +24,7 @@ public class AuthServiceShould
         AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
         result.Success.ShouldBeTrue();
-        result.HashedAccountId.ShouldBe("acc1");
+        result.HashedAccountId.ShouldBe(AccountIdHasher.Hash("acc1"));
         result.DisplayName.ShouldBe("3567EAB1B59A4D7A962B47B57203582A72E1FD46CE2B8C0A9414C8161C62CA96");
         result.ErrorMessage.ShouldBe("user@example.com");
     }

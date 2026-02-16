@@ -22,7 +22,7 @@ public class SyncConflictShould
 
         _ = syncConflict.Id.ShouldNotBeNull();
         syncConflict.AccountId.ShouldBe(accountId);
-        syncConflict.HashedAccountId.Id.ShouldBe(accountId);
+        syncConflict.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash(accountId));
         syncConflict.FilePath.ShouldBe(filePath);
         syncConflict.LocalModifiedUtc.ShouldBe(localModifiedUtc);
         syncConflict.RemoteModifiedUtc.ShouldBe(remoteModifiedUtc);
