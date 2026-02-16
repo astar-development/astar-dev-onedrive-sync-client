@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
@@ -30,7 +31,7 @@ public class AccountRepositoryShould
     public async Task AddNewAccountSuccessfully()
     {
         var repository = new AccountRepository(_contextFactory);
-        var account = new AccountInfo("acc1", "John Doe", @"C:\Sync1", true, null, null, false, false, 3, 50, 0);
+        var account = new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "John Doe", @"C:\Sync1", true, null, null, false, false, 3, 50, 0);
 
         await repository.AddAsync(account, CancellationToken.None);
 
@@ -46,8 +47,8 @@ public class AccountRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(_contextFactory);
-        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
-        await repository.AddAsync(new AccountInfo("acc2", "User 2", @"C:\Sync2", false, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "User 1", @"C:\Sync1", true, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new AccountInfo("acc2", AccountIdHasher.Hash("acc2"), "User 2", @"C:\Sync2", false, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
 
         IReadOnlyList<AccountInfo> result = await repository.GetAllAsync(TestContext.Current.CancellationToken);
 
@@ -61,12 +62,12 @@ public class AccountRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(_contextFactory);
-        await repository.AddAsync(new AccountInfo("acc1", "User 1", @"C:\Sync1", true, null, "token123", false, false, 3, 50, 0), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "User 1", @"C:\Sync1", true, null, "token123", false, false, 3, 50, 0), TestContext.Current.CancellationToken);
 
         AccountInfo? result = await repository.GetByIdAsync("acc1", TestContext.Current.CancellationToken);
 
         _ = result.ShouldNotBeNull();
-        result.HashedAccountId.ShouldBe("acc1");
+        result.HashedAccountId.Id.ShouldBe("acc1");
         result.DisplayName.ShouldBe("User 1");
         result.DeltaToken.ShouldBe("token123");
     }
@@ -87,9 +88,9 @@ public class AccountRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(_contextFactory);
-        await repository.AddAsync(new AccountInfo("acc1", "Old Name", @"C:\Sync1", true, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "Old Name", @"C:\Sync1", true, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
 
-        var updated = new AccountInfo("acc1", "New Name", @"C:\NewPath", false, DateTime.UtcNow, "newToken", false, false, 3, 50, 0);
+        var updated = new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "New Name", @"C:\NewPath", false, DateTime.UtcNow, "newToken", false, false, 3, 50, 0);
         await repository.UpdateAsync(updated, TestContext.Current.CancellationToken);
 
         AccountInfo? result = await repository.GetByIdAsync("acc1", TestContext.Current.CancellationToken);
@@ -105,7 +106,7 @@ public class AccountRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(_contextFactory);
-        var account = new AccountInfo("nonexistent", "Name", @"C:\Path", true, null, null, false, false, 3, 50, 0);
+        var account = new AccountInfo("nonexistent", AccountIdHasher.Hash("nonexistent"), "Name", @"C:\Path", true, null, null, false, false, 3, 50, 0);
 
         InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () => await repository.UpdateAsync(account)
         );
@@ -118,7 +119,7 @@ public class AccountRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(_contextFactory);
-        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "User", @"C:\Sync", true, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
 
         await repository.DeleteAsync("acc1", TestContext.Current.CancellationToken);
 
@@ -140,7 +141,7 @@ public class AccountRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new AccountRepository(_contextFactory);
-        await repository.AddAsync(new AccountInfo("acc1", "User", @"C:\Sync", true, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "User", @"C:\Sync", true, null, null, false, false, 3, 50, 0), TestContext.Current.CancellationToken);
 
         var result = await repository.ExistsAsync("acc1", TestContext.Current.CancellationToken);
 

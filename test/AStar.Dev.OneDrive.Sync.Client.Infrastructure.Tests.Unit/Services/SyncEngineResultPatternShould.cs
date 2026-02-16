@@ -1,4 +1,5 @@
 using AStar.Dev.Functional.Extensions;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
@@ -20,6 +21,7 @@ public class SyncEngineResultPatternShould
         (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
         var expectedAccount = new AccountInfo(
             "acc1",
+            AccountIdHasher.Hash("acc1"),
             "Test User",
             @"C:\Sync",
             true,
@@ -69,18 +71,19 @@ public class SyncEngineResultPatternShould
     public async Task ProcessDeltaChangesAsync_ReturnsOk_WhenSuccessful()
     {
         (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
-        var deltaToken = new DeltaToken("acc1", "", "delta-token-123", DateTimeOffset.UtcNow);
+        var deltaToken = new DeltaToken("acc1", "", "", "delta-token-123", DateTimeOffset.UtcNow);
         _ = mocks.DeltaProcessingService.GetDeltaTokenAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(deltaToken);
         _ = mocks.DeltaProcessingService.ProcessDeltaPagesAsync(
                 "acc1",
+                "", 
                 deltaToken,
                 Arg.Any<Action<SyncState>?>(),
                 Arg.Any<CancellationToken>())
             .Returns((deltaToken, 2, 10));
 
         Result<Functional.Extensions.Unit, SyncError> result = await engine.ProcessDeltaChangesAsync(
-            "acc1",
+            "acc1","", 
             TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Result<Functional.Extensions.Unit, SyncError>.Ok>();
@@ -100,14 +103,15 @@ public class SyncEngineResultPatternShould
         var exception = new InvalidOperationException("Delta processing failed");
         _ = mocks.DeltaProcessingService.ProcessDeltaPagesAsync(
                 Arg.Any<string>(),
+                Arg.Any<string>(),
                 Arg.Any<DeltaToken?>(),
                 Arg.Any<Action<SyncState>?>(),
                 Arg.Any<CancellationToken>())
             .Returns(Task.FromException<(DeltaToken?, int, int)>(exception));
 
         Result<Functional.Extensions.Unit, SyncError> result = await engine.ProcessDeltaChangesAsync(
-            "acc1",
-            TestContext.Current.CancellationToken);
+            "acc1","id", 
+             TestContext.Current.CancellationToken);    
 
         _ = result.ShouldBeOfType<Result<Functional.Extensions.Unit, SyncError>.Error>();
         SyncError error = result.Match(
@@ -122,16 +126,17 @@ public class SyncEngineResultPatternShould
     public async Task StartSyncAsync_UsesResultChaining_WhenAllOperationsSucceed()
     {
         (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
-        var account = new AccountInfo("acc1", "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
+        var account = new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
         _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(account);
         _ = mocks.SyncConfigRepo.GetSelectedItemsByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(new List<DriveItemEntity>().AsReadOnly());
 
-        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+        await engine.StartSyncAsync("acc1", AccountIdHasher.Hash("acc1"), TestContext.Current.CancellationToken);
 
         _ = await mocks.AccountRepo.Received(1).GetByIdAsync("acc1", Arg.Any<CancellationToken>());
         _ = await mocks.DeltaProcessingService.Received(1).ProcessDeltaPagesAsync(
+            Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<DeltaToken?>(),
             Arg.Any<Action<SyncState>?>(),
@@ -147,9 +152,10 @@ public class SyncEngineResultPatternShould
         var progressStates = new List<SyncState>();
         _ = engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1", TestContext.Current.CancellationToken);
+        await engine.StartSyncAsync("acc1", AccountIdHasher.Hash("acc1"), TestContext.Current.CancellationToken);
 
         _ = await mocks.DeltaProcessingService.DidNotReceive().ProcessDeltaPagesAsync(
+            Arg.Any<string>(),
             Arg.Any<string>(),
             Arg.Any<DeltaToken?>(),
             Arg.Any<Action<SyncState>?>(),
@@ -165,20 +171,21 @@ public class SyncEngineResultPatternShould
         ISyncConflictRepository syncConflictRepo = Substitute.For<ISyncConflictRepository>();
         IDeltaProcessingService deltaProcessingService = Substitute.For<IDeltaProcessingService>();
 
-                _ = syncConflictRepo.GetByFilePathAsync(
-                Arg.Any<string>(),
-                Arg.Any<string>(),
-                Arg.Any<CancellationToken>())
-            .Returns((SyncConflict?)null);
+        _ = syncConflictRepo.GetByFilePathAsync(
+        Arg.Any<HashedAccountId>(),
+        Arg.Any<string>(),
+        Arg.Any<CancellationToken>())
+    .Returns((SyncConflict?)null);
 
         _ = deltaProcessingService.GetDeltaTokenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((DeltaToken?)null);
         _ = deltaProcessingService.ProcessDeltaPagesAsync(
                 Arg.Any<string>(),
+                Arg.Any<string>(),
                 Arg.Any<DeltaToken?>(),
                 Arg.Any<Action<SyncState>?>(),
                 Arg.Any<CancellationToken>())
-            .Returns((new DeltaToken("acc1", "", "delta-token", DateTimeOffset.UtcNow), 1, 0));
+            .Returns((new DeltaToken("acc1", AccountIdHasher.Hash("acc1"), "id", "delta-token", DateTimeOffset.UtcNow), 1, 0));
 
         IFileTransferService fileTransferService = Substitute.For<IFileTransferService>();
         IDeletionSyncService deletionSyncService = Substitute.For<IDeletionSyncService>();
@@ -186,6 +193,7 @@ public class SyncEngineResultPatternShould
         IConflictDetectionService conflictDetectionService = Substitute.For<IConflictDetectionService>();
 
         _ = conflictDetectionService.CheckKnownFileConflictAsync(
+                Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<DriveItemEntity>(),
                 Arg.Any<DriveItemEntity>(),
@@ -196,6 +204,7 @@ public class SyncEngineResultPatternShould
             .Returns((false, null));
         _ = conflictDetectionService.CheckFirstSyncFileConflictAsync(
                 Arg.Any<string>(),
+                Arg.Any<string>(),
                 Arg.Any<DriveItemEntity>(),
                 Arg.Any<Dictionary<string, FileMetadata>>(),
                 Arg.Any<string?>(),
@@ -204,9 +213,10 @@ public class SyncEngineResultPatternShould
             .Returns((false, null, null));
 
         var progressSubject = new System.Reactive.Subjects.BehaviorSubject<SyncState>(
-            SyncState.CreateInitial(string.Empty));
+            SyncState.CreateInitial(string.Empty,string.Empty));
         _ = syncStateCoordinator.Progress.Returns(progressSubject);
         _ = syncStateCoordinator.InitializeSessionAsync(
+                Arg.Any<string>(),
                 Arg.Any<string>(),
                 Arg.Any<bool>(),
                 Arg.Any<CancellationToken>())
@@ -218,11 +228,12 @@ public class SyncEngineResultPatternShould
 
         syncStateCoordinator.When(x => x.UpdateProgress(
             Arg.Any<string>(),
+            Arg.Any<string>(),
             Arg.Any<SyncStatus>(),
             Arg.Any<int>(),
             Arg.Any<int>(),
-            Arg.Any<long>(),
-            Arg.Any<long>(),
+            Arg.Any<int>(),
+            Arg.Any<int>(),
             Arg.Any<int>(),
             Arg.Any<int>(),
             Arg.Any<int>(),
@@ -233,18 +244,19 @@ public class SyncEngineResultPatternShould
             {
                 var newState = new SyncState(
                     callInfo.ArgAt<string>(0),
-                    callInfo.ArgAt<SyncStatus>(1),
-                    callInfo.ArgAt<int>(2),
+                    callInfo.ArgAt<string>(1),
+                    callInfo.ArgAt<SyncStatus>(2),
                     callInfo.ArgAt<int>(3),
-                    callInfo.ArgAt<long>(4),
-                    callInfo.ArgAt<long>(5),
+                    callInfo.ArgAt<int>(4),
+                    callInfo.ArgAt<int>(5),
                     callInfo.ArgAt<int>(6),
                     callInfo.ArgAt<int>(7),
                     callInfo.ArgAt<int>(8),
                     callInfo.ArgAt<int>(9),
+                    callInfo.ArgAt<int>(10),
                     0.0,
                     0,
-                    callInfo.ArgAt<string?>(10)
+                    callInfo.ArgAt<string?>(11)
                 );
                 progressSubject.OnNext(newState);
             });

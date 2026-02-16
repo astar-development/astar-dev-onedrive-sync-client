@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -72,7 +73,7 @@ public class FileWatcherServiceShould : IDisposable
 
         // Verify at least one event is for our test file
         FileChangeEvent? fileEvent = events.FirstOrDefault(e => e.RelativePath == "test.txt");
-        fileEvent?.AccountId.ShouldBe("account1");
+        fileEvent?.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("account1"));
     }
 
     [Fact(Skip = "Fails on CI - likely due to timing issues with FileSystemWatcher. Works locally. Needs investigation or refactor to be more testable without relying on real file system events.")]
@@ -99,7 +100,7 @@ public class FileWatcherServiceShould : IDisposable
         FileChangeEvent? modifiedEvent = events.FirstOrDefault(e => e is { ChangeType: FileChangeType.Modified, RelativePath: "modify.txt" });
 
         _ = modifiedEvent.ShouldNotBeNull();
-        modifiedEvent.AccountId.ShouldBe("account1");
+        modifiedEvent.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("account1"));
     }
 
     [Fact]
@@ -126,7 +127,7 @@ public class FileWatcherServiceShould : IDisposable
         FileChangeEvent? deletedEvent = events.FirstOrDefault(e => e is { ChangeType: FileChangeType.Deleted, RelativePath: "delete.txt" });
 
         _ = deletedEvent.ShouldNotBeNull();
-        deletedEvent.AccountId.ShouldBe("account1");
+        deletedEvent.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("account1"));
     }
 
     [Fact]
@@ -152,7 +153,7 @@ public class FileWatcherServiceShould : IDisposable
         FileChangeEvent? nestedEvent = events.FirstOrDefault(e => e.RelativePath == Path.Combine("SubFolder", "nested.txt"));
 
         _ = nestedEvent.ShouldNotBeNull();
-        nestedEvent.AccountId.ShouldBe("account1");
+        nestedEvent.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("account1"));
     }
 
     [Fact]
@@ -179,8 +180,8 @@ public class FileWatcherServiceShould : IDisposable
         // Verify events were captured for both accounts
         events.ShouldNotBeEmpty();
 
-        var account1Events = events.Where(e => e.AccountId == "account1").ToList();
-        var account2Events = events.Where(e => e.AccountId == "account2").ToList();
+        var account1Events = events.Where(e => e.HashedAccountId == AccountIdHasher.Hash("account1")).ToList();
+        var account2Events = events.Where(e => e.HashedAccountId == AccountIdHasher.Hash("account2")).ToList();
 
         // At least one of the accounts should have events
         (account1Events.Count + account2Events.Count).ShouldBeGreaterThan(0);

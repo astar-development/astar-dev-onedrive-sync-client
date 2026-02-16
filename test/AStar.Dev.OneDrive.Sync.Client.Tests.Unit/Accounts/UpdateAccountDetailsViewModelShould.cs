@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -128,6 +129,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
+            AccountIdHasher.Hash("account-123"),
             "Test User",
             @"C:\TestPath",
             true,
@@ -155,6 +157,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
+            AccountIdHasher.Hash("account-123"),
             "Test User",
             @"C:\TestPath",
             true,
@@ -180,6 +183,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
+            AccountIdHasher.Hash("account-123"),
             "Test User",
             @"C:\TestPath",
             true,
@@ -212,6 +216,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
+            AccountIdHasher.Hash("account-123"),
             "Test User",
             @"C:\TestPath",
             true,
@@ -376,6 +381,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
+            AccountIdHasher.Hash("account-123"),
             "Test User",
             @"C:\TestPath",
             true,
@@ -405,6 +411,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
+            AccountIdHasher.Hash("account-123"),
             "Test User",
             @"C:\TestPath",
             true,
@@ -473,6 +480,7 @@ public class UpdateAccountDetailsViewModelShould
         var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler);
         var account = new AccountInfo(
             "acc1",
+            AccountIdHasher.Hash("acc1"),
             "Test User",
             @"C:\Sync",
             true,
@@ -497,6 +505,7 @@ public class UpdateAccountDetailsViewModelShould
         var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler);
         var account = new AccountInfo(
             "acc1",
+            AccountIdHasher.Hash("acc1"),
             "Test User",
             @"C:\Sync",
             true,

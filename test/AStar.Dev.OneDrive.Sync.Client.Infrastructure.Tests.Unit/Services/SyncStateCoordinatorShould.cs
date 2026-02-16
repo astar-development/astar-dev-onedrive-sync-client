@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
@@ -25,14 +26,14 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", AccountIdHasher.Hash("test-account"), enableDetailedLogging: true, CancellationToken.None);
 
         _ = sessionId.ShouldNotBeNull();
         sessionId.ShouldNotBeEmpty();
         using SyncDbContext context = _contextFactory.CreateDbContext();
         SyncSessionLogEntity? session = await context.SyncSessionLogs.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
         _ = session.ShouldNotBeNull();
-        session.HashedAccountId.ShouldBe("test-account");
+        session.HashedAccountId.Id.ShouldBe("test-account");
         ((SyncStatus)session.Status).ShouldBe(SyncStatus.Running);
         session.CompletedUtc.ShouldBeNull();
     }
@@ -43,7 +44,7 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: false, CancellationToken.None);
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", AccountIdHasher.Hash("test-account"), enableDetailedLogging: false, CancellationToken.None);
 
         sessionId.ShouldBeNull();
         using SyncDbContext context = _contextFactory.CreateDbContext();
@@ -59,10 +60,10 @@ public class SyncStateCoordinatorShould
         SyncState? receivedState = null;
         _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, totalFiles: 10, completedFiles: 5, totalBytes: 1000, completedBytes: 500);
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, totalFiles: 10, completedFiles: 5, totalBytes: 1000, completedBytes: 500);
 
         _ = receivedState.ShouldNotBeNull();
-        receivedState.HashedAccountId.ShouldBe("test-account");
+        receivedState.HashedAccountId.Id.ShouldBe("test-account");
         receivedState.Status.ShouldBe(SyncStatus.Running);
         receivedState.TotalFiles.ShouldBe(10);
         receivedState.CompletedFiles.ShouldBe(5);
@@ -78,9 +79,9 @@ public class SyncStateCoordinatorShould
         SyncState? receivedState = null;
         _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, completedBytes: 0);
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, completedBytes: 0);
         Thread.Sleep(200);
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, completedBytes: 10_485_760); // 10 MB
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, completedBytes: 10_485_760); // 10 MB
 
         _ = receivedState.ShouldNotBeNull();
         receivedState.MegabytesPerSecond.ShouldBeGreaterThan(0);
@@ -94,9 +95,9 @@ public class SyncStateCoordinatorShould
         SyncState? receivedState = null;
         _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 0);
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 0);
         Thread.Sleep(200);
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 10_485_760);
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 10_485_760);
 
         _ = receivedState.ShouldNotBeNull();
         _ = receivedState.EstimatedSecondsRemaining.ShouldNotBeNull();
@@ -108,7 +109,7 @@ public class SyncStateCoordinatorShould
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", AccountIdHasher.Hash("test-account"), enableDetailedLogging: true, CancellationToken.None);
         _ = sessionId.ShouldNotBeNull();
 
         await coordinator.RecordCompletionAsync(uploadCount: 5, downloadCount: 3, deleteCount: 1, conflictCount: 2, completedBytes: 1024, CancellationToken.None);
@@ -144,7 +145,7 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", AccountIdHasher.Hash("test-account"), enableDetailedLogging: true, CancellationToken.None);
 
         _ = sessionId.ShouldNotBeNull();
         await coordinator.RecordFailureAsync(CancellationToken.None);
@@ -161,7 +162,7 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", AccountIdHasher.Hash("test-account"), enableDetailedLogging: true, CancellationToken.None);
 
         _ = sessionId.ShouldNotBeNull();
         await coordinator.RecordCancellationAsync(CancellationToken.None);
@@ -178,11 +179,11 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, totalFiles: 100, completedFiles: 50);
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, totalFiles: 100, completedFiles: 50);
 
         SyncState currentState = coordinator.GetCurrentState();
 
-        currentState.HashedAccountId.ShouldBe("test-account");
+        currentState.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("test-account"));
         currentState.Status.ShouldBe(SyncStatus.Running);
         currentState.TotalFiles.ShouldBe(100);
         currentState.CompletedFiles.ShouldBe(50);
@@ -194,7 +195,7 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        var sessionId = await coordinator.InitializeSessionAsync("test-account", AccountIdHasher.Hash("test-account"), enableDetailedLogging: true, CancellationToken.None);
         var currentSessionId = coordinator.GetCurrentSessionId();
 
         currentSessionId.ShouldBe(sessionId);
@@ -229,11 +230,11 @@ public class SyncStateCoordinatorShould
                 secondState = state;
         });
 
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, completedBytes: 10_485_760);
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, completedBytes: 10_485_760);
         Thread.Sleep(200);
         coordinator.ResetTrackingDetails(completedBytes: 10_485_760);
         Thread.Sleep(200);
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, completedBytes: 20_971_520);
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, completedBytes: 20_971_520);
 
         _ = firstState.ShouldNotBeNull();
         _ = secondState.ShouldNotBeNull();
@@ -249,7 +250,7 @@ public class SyncStateCoordinatorShould
         SyncState? receivedState = null;
         _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
-        coordinator.UpdateProgress("test-account", SyncStatus.Running, currentScanningFolder: "/Documents");
+        coordinator.UpdateProgress("test-account", AccountIdHasher.Hash("test-account"), SyncStatus.Running, currentScanningFolder: "/Documents");
 
         _ = receivedState.ShouldNotBeNull();
         receivedState.CurrentStatusMessage.ShouldBe("/Documents");
@@ -265,7 +266,7 @@ public class SyncStateCoordinatorShould
         await cts.CancelAsync();
 
         _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
-            await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, cts.Token)
+            await coordinator.InitializeSessionAsync("test-account", AccountIdHasher.Hash("test-account"), enableDetailedLogging: true, cts.Token)
         );
     }
 
@@ -274,7 +275,7 @@ public class SyncStateCoordinatorShould
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
-        _ = await coordinator.InitializeSessionAsync("test-account", enableDetailedLogging: true, CancellationToken.None);
+        _ = await coordinator.InitializeSessionAsync("test-account", AccountIdHasher.Hash("test-account"), enableDetailedLogging: true, CancellationToken.None);
         using var cts = new CancellationTokenSource();
 
         await cts.CancelAsync();

@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -104,7 +105,7 @@ public class ConflictResolutionViewModelShould
 
         viewModel.Conflicts.Count.ShouldBe(2);
         viewModel.HasConflicts.ShouldBeTrue();
-        _ = await syncEngine.Received(1).GetConflictsAsync("test-account", Arg.Any<CancellationToken>());
+        _ = await syncEngine.Received(1).GetConflictsAsync(AccountIdHasher.Hash("test-account"), Arg.Any<CancellationToken>());
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -223,7 +224,7 @@ public class ConflictResolutionViewModelShould
         IConflictResolver conflictResolver = Substitute.For<IConflictResolver>();
         ILogger<ConflictResolutionViewModel> logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
 
-        _ = syncEngine.GetConflictsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.GetConflictsAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns<IReadOnlyList<SyncConflict>>(_ => throw new InvalidOperationException("Database error"));
 
         var viewModel = new ConflictResolutionViewModel("test-account", syncEngine, conflictResolver, logger);
@@ -282,6 +283,7 @@ public class ConflictResolutionViewModelShould
     private static SyncConflict CreateTestConflict(string filePath) => new(
         Guid.CreateVersion7().ToString(),
         "test-account",
+        AccountIdHasher.Hash("test-account"),
         filePath,
         DateTime.UtcNow.AddHours(-1),
         DateTime.UtcNow,
@@ -299,7 +301,7 @@ public class ConflictResolutionViewModelShould
         IConflictResolver conflictResolver = Substitute.For<IConflictResolver>();
         ILogger<ConflictResolutionViewModel> logger = Substitute.For<ILogger<ConflictResolutionViewModel>>();
 
-        _ = syncEngine.GetConflictsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.GetConflictsAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(conflicts);
 
         _ = conflictResolver.ResolveAsync(Arg.Any<SyncConflict>(), Arg.Any<ConflictResolutionStrategy>(), Arg.Any<CancellationToken>())

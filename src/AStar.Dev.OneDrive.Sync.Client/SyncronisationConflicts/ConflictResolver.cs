@@ -37,9 +37,8 @@ public sealed class ConflictResolver(
             _logger.LogInformation("Resolving conflict for file {FilePath} in account {AccountId} with strategy {Strategy}",conflict.FilePath,conflict.Id,strategy);
         }
 
-        AccountInfo account = await _accountRepo.GetByIdAsync(conflict.Id, cancellationToken) ?? throw new InvalidOperationException($"Account not found: {conflict.Id}");
+        AccountInfo account = await _accountRepo.GetByIdAsync(conflict.AccountId, cancellationToken) ?? throw new InvalidOperationException($"Account not found: {conflict.HashedAccountId}");
 
-        // Trim leading slash from OneDrive path for Windows compatibility
         var relativePath = conflict.FilePath.TrimStart('/');
         var localPath = Path.Combine(account.LocalSyncPath, relativePath);
 
