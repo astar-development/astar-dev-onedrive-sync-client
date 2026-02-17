@@ -272,8 +272,6 @@ This package is part of the AStar Development internal tooling ecosystem. For is
 **Author**: Jason Barden
 **Repository**: <https://github.com/astar-development/astar-dev-functional-extensions>
 
-```
-
 ---
 
 This README provides:
