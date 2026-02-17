@@ -57,7 +57,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings);
         ViewConflictsCommand = ReactiveCommand.Create(ViewConflicts, this.WhenAnyValue(x => x.HasUnresolvedConflicts));
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
-        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount?.HashedAccountId ?? AdminAccountMetadata.HashedAccountId, CancellationToken.None);
+        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount!.HashedAccountId!, CancellationToken.None);
     }
 
     public SyncProgressViewModel? SyncProgress
@@ -139,7 +139,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
         // Update main window conflict status
         if(AccountManagement.SelectedAccount is not null)
-            await UpdateConflictStatusAsync(AccountManagement.SelectedAccount.HashedAccountId);
+            await UpdateConflictStatusAsync(AccountManagement.SelectedAccount!.Id!);
     }
 
     /// <inheritdoc />
@@ -155,7 +155,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
     private async Task UpdateConflictStatusAsync(string accountId)
     {
-        IReadOnlyList<SyncConflict> conflicts = await _conflictRepository.GetUnresolvedByAccountIdAsync(accountId);
+        IReadOnlyList<SyncConflict> conflicts = await _conflictRepository.GetUnresolvedByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash(accountId)));
         HasUnresolvedConflicts = conflicts.Any();
     }
 
@@ -165,7 +165,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     private void ViewConflicts()
     {
         if(AccountManagement.SelectedAccount is not null)
-            ShowConflictResolutionView(AccountManagement.SelectedAccount.HashedAccountId);
+            ShowConflictResolutionView(AccountManagement.SelectedAccount.Id);
     }
 
     /// <summary>
@@ -260,7 +260,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                 .Subscribe(async account =>
                 {
                     if(account is not null)
-                        await UpdateConflictStatusAsync(account.HashedAccountId);
+                        await UpdateConflictStatusAsync(account.Id);
                     else
                         HasUnresolvedConflicts = false;
                 })
@@ -367,7 +367,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                                     .Subscribe(_ => CloseSyncProgressView())
                                     .DisposeWith(_disposables); private void WireUpSyncCompletion(SyncTreeViewModel syncTreeViewModel) => _ = syncTreeViewModel
                 .WhenAnyValue(x => x.SyncState)
-                .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.HashedAccountId))
+                .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.AccountId))
                 .Subscribe(async state =>
                 {
                     try

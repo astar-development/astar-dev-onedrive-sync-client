@@ -76,7 +76,7 @@ public class MainWindowViewModelShould
 
         var account = new AccountInfo(
             "account-123",
-            AccountIdHasher.Hash("account-123"),
+            new HashedAccountId(AccountIdHasher.Hash("account-123")),
             "test@example.com",
             "Test User",
             true,
@@ -106,7 +106,7 @@ public class MainWindowViewModelShould
 
         var account = new AccountInfo(
             "account-123",
-            AccountIdHasher.Hash("account-123"),
+            new HashedAccountId(AccountIdHasher.Hash("account-123")),
             "test@example.com",
             "Test User",
             true,

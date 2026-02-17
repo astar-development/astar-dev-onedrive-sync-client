@@ -53,7 +53,7 @@
                         <Style Selector="ListBox:empty">
                             <Setter Property="Template">
                                 <ControlTemplate>
-                                    <TextBlock Text="No accounts configured. Click 'Add Account' to get started."
+                                    <TextBlock Text="There are no accounts configured. Please click 'Add Account' to get started."
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
                                                TextWrapping="Wrap"

@@ -37,7 +37,7 @@ A flexible debug logging system that writes to the SQLite database when enabled 
 await DebugLog.EntryAsync("ClassName.MethodName", cancellationToken);
 
 // Info logging
-await DebugLog.InfoAsync("ClassName.MethodName", "Details about what happened", cancellationToken);
+await DebugLog.LogInfoAsync("ClassName.MethodName", "Details about what happened", cancellationToken);
 
 // Error logging
 try 
@@ -46,7 +46,7 @@ try
 }
 catch (Exception ex)
 {
-    await DebugLog.ErrorAsync("ClassName.MethodName", "What failed", ex, cancellationToken);
+    await DebugLog.LogErrorAsync("ClassName.MethodName", "What failed", ex, cancellationToken);
     throw;
 }
 
@@ -103,17 +103,17 @@ public async Task ProcessFileAsync(string filePath, CancellationToken cancellati
     
     try
     {
-        await DebugLog.InfoAsync("FileProcessor.ProcessFileAsync", 
+        await DebugLog.LogInfoAsync("FileProcessor.ProcessFileAsync", 
             $"Processing file: {filePath}", cancellationToken);
         
         // ... file processing logic ...
         
-        await DebugLog.InfoAsync("FileProcessor.ProcessFileAsync", 
+        await DebugLog.LogInfoAsync("FileProcessor.ProcessFileAsync", 
             "File processed successfully", cancellationToken);
     }
     catch (IOException ex)
     {
-        await DebugLog.ErrorAsync("FileProcessor.ProcessFileAsync", 
+        await DebugLog.LogErrorAsync("FileProcessor.ProcessFileAsync", 
             $"Failed to process file: {filePath}", ex, cancellationToken);
         throw;
     }

@@ -9,7 +9,7 @@ public class FileOperationLogEntity
 {
     public string Id { get; set; } = string.Empty;
     public string SyncSessionId { get; set; } = string.Empty;
-    public HashedAccountId HashedAccountId { get; set; } = string.Empty;
+    public HashedAccountId HashedAccountId { get; set; }
     public DateTimeOffset Timestamp { get; set; }
     public int Operation { get; set; }
     public string FilePath { get; set; } = string.Empty;

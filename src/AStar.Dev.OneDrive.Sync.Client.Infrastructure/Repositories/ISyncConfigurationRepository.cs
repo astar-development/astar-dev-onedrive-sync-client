@@ -12,30 +12,30 @@ public interface ISyncConfigurationRepository
     /// <summary>
     ///     Gets all sync configurations for a specific account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed identifier of the account.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of sync configurations for the account.</returns>
-    Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(HashedAccountId accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FileMetadata>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<DriveItemEntity>> GetSelectedItemsByAccountIdAsync(HashedAccountId accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<DriveItemEntity>> GetSelectedItemsByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets all selected folder paths for a specific account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed identifier of the account.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of selected folder paths.</returns>
-    Task<IReadOnlyList<string>> GetSelectedFoldersAsync(HashedAccountId accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<string>> GetSelectedFoldersAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets all folders for a specific account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed identifier of the account.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of selected folders.</returns>
-    Task<IReadOnlyList<DriveItemEntity>> GetFoldersByAccountIdAsync(HashedAccountId accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<DriveItemEntity>> GetFoldersByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
-    Task<Result<bool, ErrorResponse>> UpdateFoldersByAccountIdAsync(HashedAccountId accountId, IEnumerable<FileMetadata> configurations, CancellationToken cancellationToken = default);
+    Task<Result<bool, ErrorResponse>> UpdateFoldersByAccountIdAsync(HashedAccountId hashedAccountId, IEnumerable<FileMetadata> configurations, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Adds a new sync configuration.
@@ -63,25 +63,25 @@ public interface ISyncConfigurationRepository
     /// <summary>
     ///     Deletes all sync configurations for a specific account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed identifier of the account.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task DeleteByAccountIdAsync(HashedAccountId accountId, CancellationToken cancellationToken = default);
+    Task DeleteByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Saves multiple sync configurations for an account in a batch operation.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed identifier of the account.</param>
     /// <param name="configurations">The configurations to save.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task SaveBatchAsync(HashedAccountId accountId, IEnumerable<FileMetadata> configurations, CancellationToken cancellationToken = default);
+    Task SaveBatchAsync(HashedAccountId hashedAccountId, IEnumerable<FileMetadata> configurations, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Retrieves the parent folder configuration for a given account and parent folder path.
     /// </summary>
-    /// <param name="accountId">The identifier of the account.</param>
+    /// <param name="hashedAccountId">The hashed identifier of the account.</param>
     /// <param name="parentPath">The path of the parent folder to retrieve.</param>
     /// <param name="possibleParentPath">The possible path of the parent folder to retrieve.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The parent folder configuration entity if one exists; otherwise, null.</returns>
-    Task<DriveItemEntity?> GetParentFolderAsync(HashedAccountId accountId, string parentPath, string possibleParentPath, CancellationToken cancellationToken);
+    Task<DriveItemEntity?> GetParentFolderAsync(HashedAccountId hashedAccountId, string parentPath, string possibleParentPath, CancellationToken cancellationToken);
 }

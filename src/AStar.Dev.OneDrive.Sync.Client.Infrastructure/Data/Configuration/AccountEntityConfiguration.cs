@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
-using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

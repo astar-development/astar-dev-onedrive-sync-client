@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using Microsoft.Extensions.Logging;
 
@@ -29,7 +30,7 @@ public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, 
 
         try
         {
-            fileWatcherService.StartWatching(accountId, localPath);
+            fileWatcherService.StartWatching(hashedAccountId, localPath);
 
             IDisposable subscription = fileWatcherService.FileChanges
                 .Where(e => e.HashedAccountId == hashedAccountId)
@@ -72,7 +73,7 @@ public sealed class AutoSyncCoordinator(IFileWatcherService fileWatcherService, 
         if(_accountSubscriptions.Remove(accountId, out IDisposable? subscription))
         {
             subscription.Dispose();
-            fileWatcherService.StopWatching(accountId);
+            fileWatcherService.StopWatching(new HashedAccountId(AccountIdHasher.Hash(accountId)));
 
             logger.LogInformation("Stopped auto-sync monitoring for account {AccountId}", accountId);
         }

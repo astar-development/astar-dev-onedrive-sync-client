@@ -19,7 +19,7 @@ public sealed class AuthService(IAuthenticationClient authClient, AuthConfigurat
 
             MsalAuthResult result = await authClient.AcquireTokenInteractiveAsync(configuration.Scopes, cts.Token);
 
-            return AuthenticationResult.Success(result.Account.HomeAccountId.Identifier, AccountIdHasher.Hash(result.Account.HomeAccountId.Identifier), result.Account.Username);
+            return AuthenticationResult.Success(result.Account.HomeAccountId.Identifier, new Core.Models.HashedAccountId(AccountIdHasher.Hash(result.Account.HomeAccountId.Identifier)), result.Account.Username);
         }
         catch(MsalException ex)
         {

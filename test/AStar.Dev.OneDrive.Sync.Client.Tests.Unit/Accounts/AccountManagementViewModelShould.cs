@@ -52,8 +52,8 @@ public class AccountManagementViewModelShould
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         viewModel.Accounts.Count.ShouldBe(2);
-        viewModel.Accounts[0].HashedAccountId.Id.ShouldBe("acc1");
-        viewModel.Accounts[1].HashedAccountId.Id.ShouldBe("acc2");
+        viewModel.Accounts[0].HashedAccountId.Value.ShouldBe("acc1");
+        viewModel.Accounts[1].HashedAccountId.Value.ShouldBe("acc2");
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -168,7 +168,7 @@ public class AccountManagementViewModelShould
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
 
-        var authResult = new AuthenticationResult(true, "acc1", AccountIdHasher.Hash("acc1"), "user@example.com", null);
+        var authResult = new AuthenticationResult(true, "acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "user@example.com", null);
         _ = mockAuth.LoginAsync(Arg.Any<CancellationToken>()).Returns(authResult);
 
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
@@ -308,7 +308,7 @@ public class AccountManagementViewModelShould
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
 
-        var authResult = new AuthenticationResult(true, "acc1", "User 1","User 1", null);
+        var authResult = new AuthenticationResult(true, "acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "User 1", null);
         _ = mockAuth.LoginAsync(Arg.Any<CancellationToken>()).Returns(authResult);
 
         using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
@@ -448,5 +448,5 @@ public class AccountManagementViewModelShould
     }
 
     private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false)
-        => new(id, AccountIdHasher.Hash(id), displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, 0);
+        => new(id, new HashedAccountId(AccountIdHasher.Hash(id)), displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, 0);
 }

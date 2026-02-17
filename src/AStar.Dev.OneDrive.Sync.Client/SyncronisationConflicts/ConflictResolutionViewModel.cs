@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -126,7 +127,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
             StatusMessage = "Loading conflicts...";
             Conflicts.Clear();
 
-            IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(_accountId, cancellationToken);
+            IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(new HashedAccountId(AccountIdHasher.Hash(_accountId)), cancellationToken);
 
             foreach(SyncConflict conflict in conflicts)
                 Conflicts.Add(new ConflictItemViewModel(conflict));

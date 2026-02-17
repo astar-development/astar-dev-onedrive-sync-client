@@ -129,7 +129,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
-            AccountIdHasher.Hash("account-123"),
+            new HashedAccountId(AccountIdHasher.Hash("account-123")),
             "Test User",
             @"C:\TestPath",
             true,
@@ -157,7 +157,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
-            AccountIdHasher.Hash("account-123"),
+            new HashedAccountId(AccountIdHasher.Hash("account-123")),
             "Test User",
             @"C:\TestPath",
             true,
@@ -183,7 +183,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
-            AccountIdHasher.Hash("account-123"),
+            new HashedAccountId(AccountIdHasher.Hash("account-123")),
             "Test User",
             @"C:\TestPath",
             true,
@@ -216,7 +216,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
-            AccountIdHasher.Hash("account-123"),
+            new HashedAccountId(AccountIdHasher.Hash("account-123")),
             "Test User",
             @"C:\TestPath",
             true,
@@ -381,7 +381,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
-            AccountIdHasher.Hash("account-123"),
+            new HashedAccountId(AccountIdHasher.Hash("account-123")),
             "Test User",
             @"C:\TestPath",
             true,
@@ -411,7 +411,7 @@ public class UpdateAccountDetailsViewModelShould
 
         var account = new AccountInfo(
             "account-123",
-            AccountIdHasher.Hash("account-123"),
+            new HashedAccountId(AccountIdHasher.Hash("account-123")),
             "Test User",
             @"C:\TestPath",
             true,
@@ -480,7 +480,7 @@ public class UpdateAccountDetailsViewModelShould
         var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler);
         var account = new AccountInfo(
             "acc1",
-            AccountIdHasher.Hash("acc1"),
+            new HashedAccountId(AccountIdHasher.Hash("acc1")),
             "Test User",
             @"C:\Sync",
             true,
@@ -505,7 +505,7 @@ public class UpdateAccountDetailsViewModelShould
         var sut = new UpdateAccountDetailsViewModel(mockAccountRepo, mockScheduler);
         var account = new AccountInfo(
             "acc1",
-            AccountIdHasher.Hash("acc1"),
+            new HashedAccountId(AccountIdHasher.Hash("acc1")),
             "Test User",
             @"C:\Sync",
             true,

@@ -50,7 +50,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         _progressSubject = new Subject<SyncState>();
         _ = _mockSyncEngine.Progress.Returns(_progressSubject);
 
-        _ = _mockFolderTreeService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderTreeService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([]));
     }
 
@@ -61,7 +61,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     {
         var account = new AccountInfo(
             "acc-123",
-            AccountIdHasher.Hash("acc-123"),
+            new HashedAccountId(AccountIdHasher.Hash("acc-123")),
             "test@example.com",
             @"C:\Sync",
             true,
@@ -75,7 +75,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var rootFolder = new OneDriveFolderNode { DriveItemId = "folder1", Name = "Documents", Path = "/Documents", IsFolder = true };
-        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-123", new HashedAccountId(AccountIdHasher.Hash("acc-123")), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([rootFolder]));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
@@ -101,7 +101,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     {
         var account = new AccountInfo(
             "acc-456",
-            AccountIdHasher.Hash("acc-456"),
+            new HashedAccountId(AccountIdHasher.Hash("acc-456")),
             "user@example.com",
             @"C:\Sync2",
             true,
@@ -115,7 +115,7 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var rootFolder = new OneDriveFolderNode { DriveItemId = "folder1", Name = "Photos", Path = "/Photos", IsFolder = true };
-        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-456", Arg.Any<CancellationToken>())
+        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-456", new HashedAccountId(AccountIdHasher.Hash("acc-456")), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([rootFolder]));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
@@ -139,18 +139,18 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task SwitchFoldersWhenDifferentAccountIsSelected()
     {
         var account1 = new AccountInfo("acc-1",
-            AccountIdHasher.Hash("acc-1"), "user1@example.com", @"C:\Sync1", true, null, null, false, false, 3, 50, 0);
+            new HashedAccountId(AccountIdHasher.Hash("acc-1")), "user1@example.com", @"C:\Sync1", true, null, null, false, false, 3, 50, 0);
         var account2 = new AccountInfo("acc-2",
-            AccountIdHasher.Hash("acc-2"), "user2@example.com", @"C:\Sync2", true, null, null, false, false, 3, 50, 0);
+            new HashedAccountId(AccountIdHasher.Hash("acc-2")), "user2@example.com", @"C:\Sync2", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account1, TestContext.Current.CancellationToken);
         await _accountRepository.AddAsync(account2, TestContext.Current.CancellationToken);
 
         var folder1 = new OneDriveFolderNode { DriveItemId = "f1", Name = "Folder1", Path = "/Folder1", IsFolder = true };
         var folder2 = new OneDriveFolderNode { DriveItemId = "f2", Name = "Folder2", Path = "/Folder2", IsFolder = true };
 
-        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<CancellationToken>())
+        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-1", Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([folder1]));
-        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-2", Arg.Any<CancellationToken>())
+        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-2", Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([folder2]));
 
         var accountVm = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
@@ -178,10 +178,10 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task HandleErrorsGracefullyWhenFolderLoadingFails()
     {
         var account = new AccountInfo("acc-999",
-            AccountIdHasher.Hash("acc-999"), "error@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
+            new HashedAccountId(AccountIdHasher.Hash("acc-999")), "error@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
-        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-999", Arg.Any<CancellationToken>())
+        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-999", Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<IReadOnlyList<OneDriveFolderNode>>(
                 new InvalidOperationException("Network error")));
 
@@ -204,11 +204,11 @@ public class MainWindowViewModelIntegrationShould : IDisposable
     public async Task LoadFreshFolderInstancesWhenAccountIsReselected()
     {
         var account = new AccountInfo("acc-sel",
-            AccountIdHasher.Hash("acc-sel"), "sel@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
+            new HashedAccountId(AccountIdHasher.Hash("acc-sel")), "sel@example.com", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         // Create new instances each time to simulate fresh load from API
-        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-sel", Arg.Any<CancellationToken>())
+        _ = _mockFolderTreeService.GetRootFoldersAsync("acc-sel", new HashedAccountId(AccountIdHasher.Hash("acc-sel")), Arg.Any<CancellationToken>())
             .Returns(_ => Task.FromResult<IReadOnlyList<OneDriveFolderNode>>([
                 new OneDriveFolderNode { DriveItemId = "f1", Name = "TestFolder", Path = "/TestFolder", IsFolder = true }
             ]));
@@ -238,5 +238,3 @@ public class MainWindowViewModelIntegrationShould : IDisposable
         initialState.ShouldBe(SelectionState.Checked);
     }
 }
-
-

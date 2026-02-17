@@ -169,7 +169,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         var id = 1;
 
         var accountHash = SelectedAccount is not null
-            ? AccountIdHasher.Hash(SelectedAccount.HashedAccountId)
+            ? AccountIdHasher.Hash(SelectedAccount.Id)
             : string.Empty;
 
         foreach(var file in allFiles.Where(f => f.Contains(accountHash)))

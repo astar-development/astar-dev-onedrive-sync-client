@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using ReactiveUI.Avalonia;
 using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
+[ExcludeFromCodeCoverage]
 internal static class Program
 {
     [STAThread]

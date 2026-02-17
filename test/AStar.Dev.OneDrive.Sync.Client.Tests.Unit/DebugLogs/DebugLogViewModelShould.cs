@@ -83,7 +83,7 @@ public class DebugLogViewModelShould
                 propertyChanged = true;
         };
 
-        var account = new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
+        var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
         sut.SelectedAccount = account;
 
         propertyChanged.ShouldBeTrue();
@@ -97,14 +97,14 @@ public class DebugLogViewModelShould
         var propertyChanged = false;
 
         // Set up account and load initial data - return 51 records to indicate HasMoreRecords
-        var account = new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
+        var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
         _ = _mockAccountRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns([account]);
 
         var logs = new List<DebugLogEntry>();
         for(var i = 0; i < 51; i++)
-            logs.Add(new DebugLogEntry(i, "acc1", DateTime.UtcNow, "Info", "Test", $"Message {i}", null));
+            logs.Add(new DebugLogEntry(i, new HashedAccountId(AccountIdHasher.Hash("acc1")), DateTime.UtcNow, "Info", "Test", $"Message {i}", null));
 
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<string>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
             .Returns(logs);
 
         sut.SelectedAccount = account;

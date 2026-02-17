@@ -53,7 +53,7 @@ public sealed partial class SyncEngine(
 
         if(SyncIsAlreadyRunning())
         {
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Sync already in progress for account {hashedAccountId}, ignoring duplicate request. Exiting", cancellationToken);
+            _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Sync already in progress for account {hashedAccountId}, ignoring duplicate request. Exiting", cancellationToken);
             return;
         }
 
@@ -82,13 +82,11 @@ public sealed partial class SyncEngine(
                     async _ => Unit.Value,
                     async error =>
                     {
-                        // Log error but continue - delta processing errors shouldn't stop the sync
-                        await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", hashedAccountId,
-                            $"Delta processing failed: {error.Message}", error.Exception, cancellationToken);
+                        _ = await DebugLog.LogErrorAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Delta processing failed: {error.Message}", error.Exception, cancellationToken);
                         return Unit.Value;
                     });
 
-            IReadOnlyList<DriveItemEntity> folders = await GetSelectedFoldersAsync(accountId, cancellationToken);
+            IReadOnlyList<DriveItemEntity> folders = await GetSelectedFoldersAsync(hashedAccountId, cancellationToken);
             if(folders.Count == 0)
             {
                 _syncStateCoordinator.UpdateProgress(accountId, hashedAccountId, SyncStatus.Idle);
@@ -97,32 +95,26 @@ public sealed partial class SyncEngine(
 
             var currentSessionId = await _syncStateCoordinator.InitializeSessionAsync(accountId, hashedAccountId, account.EnableDetailedSyncLogging, cancellationToken);
 
-            List<FileMetadata> allLocalFiles = await ScanLocalFilesAsync(accountId, folders, account);
+            List<FileMetadata> allLocalFiles = await ScanLocalFilesAsync(hashedAccountId, folders, account);
             var existingFilesDict = folders.ToDictionary(f => f.RelativePath ?? "", f => f);
             var localFilesDict = allLocalFiles.ToDictionary(f => f.RelativePath ?? "", f => f);
 
             List<FileMetadata> filesToUpload = await DetectFilesToUploadAsync(
-                accountId, allLocalFiles, existingFilesDict, folders, cancellationToken);
+                hashedAccountId, allLocalFiles, existingFilesDict, folders, cancellationToken);
 
             var remotePathsSet = folders.Select(f => f.RelativePath).ToHashSet();
             var localPathsSet = allLocalFiles.Select(f => f.RelativePath).ToHashSet();
 
             (List<FileMetadata> filesToDownload, var conflictCount, HashSet<string> conflictPaths) =
-                await DetectFilesToDownloadAndConflictsAsync(
-                    hashedAccountId, folders, existingFilesDict, localFilesDict, account, cancellationToken);
+                await DetectFilesToDownloadAndConflictsAsync(hashedAccountId, folders, existingFilesDict, localFilesDict, account, cancellationToken);
 
-            await _deletionSyncService.ProcessRemoteToLocalDeletionsAsync(
-                hashedAccountId, folders, remotePathsSet, localPathsSet, cancellationToken);
+            await _deletionSyncService.ProcessRemoteToLocalDeletionsAsync(hashedAccountId, folders, remotePathsSet, localPathsSet, cancellationToken);
 
-            await _deletionSyncService.ProcessLocalToRemoteDeletionsAsync(
-                accountId, hashedAccountId, allLocalFiles, remotePathsSet, localPathsSet, cancellationToken);
+            await _deletionSyncService.ProcessLocalToRemoteDeletionsAsync(accountId, hashedAccountId, allLocalFiles, remotePathsSet, localPathsSet, cancellationToken);
 
-            filesToUpload = FilterUploadsByDeletionsAndConflicts(
-                filesToUpload, folders, remotePathsSet, conflictPaths);
+            filesToUpload = FilterUploadsByDeletionsAndConflicts(filesToUpload, folders, remotePathsSet, conflictPaths);
 
-            (filesToDownload, var totalFiles, var totalBytes, var uploadBytes, var downloadBytes) =
-                await CalculateSyncSummaryAsync(
-                    accountId, filesToUpload, filesToDownload, cancellationToken);
+            (filesToDownload, var totalFiles, var totalBytes, var uploadBytes, var downloadBytes) = await CalculateSyncSummaryAsync(hashedAccountId, filesToUpload, filesToDownload, cancellationToken);
 
             var filesDeleted = 0;
             _syncStateCoordinator.UpdateProgress(accountId, hashedAccountId, SyncStatus.Running, totalFiles, 0, totalBytes,
@@ -146,12 +138,10 @@ public sealed partial class SyncEngine(
             _syncStateCoordinator.UpdateProgress(accountId, hashedAccountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes,
                 completedBytes, filesDeleted: filesDeleted, conflictsDetected: conflictCount);
 
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId,
-                $"Sync completed: {totalFiles} files, {completedBytes} bytes", cancellationToken);
+            _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Sync completed: {totalFiles} files, {completedBytes} bytes", cancellationToken);
             await DebugLog.ExitAsync("SyncEngine.StartSyncAsync", hashedAccountId, cancellationToken);
 
-            await _syncStateCoordinator.RecordCompletionAsync(filesToUpload.Count,
-                filesToDownload.Count, filesDeleted, conflictCount, completedBytes, cancellationToken);
+            await _syncStateCoordinator.RecordCompletionAsync(filesToUpload.Count, filesToDownload.Count, filesDeleted, conflictCount, completedBytes, cancellationToken);
 
             await UpdateLastAccountSyncAsync(account, cancellationToken);
         }
@@ -163,8 +153,7 @@ public sealed partial class SyncEngine(
         }
         catch(Exception ex)
         {
-            await DebugLog.ErrorAsync("SyncEngine.StartSyncAsync", hashedAccountId,
-                $"Sync failed: {ex.Message}", ex, cancellationToken);
+            _ = await DebugLog.LogErrorAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Sync failed: {ex.Message}", ex, cancellationToken);
             await _syncStateCoordinator.RecordFailureAsync(cancellationToken);
             _syncStateCoordinator.UpdateProgress(accountId, hashedAccountId, SyncStatus.Failed);
             throw;
@@ -205,7 +194,7 @@ public sealed partial class SyncEngine(
     internal async Task<Result<Unit, SyncError>> ProcessDeltaChangesAsync(string accountId, HashedAccountId hashedAccountId, CancellationToken cancellationToken)
         => await Try.RunAsync(async () =>
                     {
-                        DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, cancellationToken);
+                        DeltaToken? token = await _deltaProcessingService.GetDeltaTokenAsync(accountId, hashedAccountId, cancellationToken);
                         (DeltaToken? finalDelta, var pageCount, var totalItemsProcessed) =
                             await _deltaProcessingService.ProcessDeltaPagesAsync(
                                 accountId,
@@ -215,7 +204,7 @@ public sealed partial class SyncEngine(
                                     state.TotalBytes, state.CompletedBytes, state.FilesDownloading, state.FilesUploading,
                                     state.FilesDeleted, state.ConflictsDetected, state.CurrentStatusMessage, null),
                                 cancellationToken);
-                        await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, cancellationToken);
+                        await _deltaProcessingService.SaveDeltaTokenAsync(finalDelta, hashedAccountId, cancellationToken);
                         await DebugLog.EntryAsync("SyncEngine.ProcessDeltaChangesAsync", hashedAccountId, cancellationToken);
 
                         return Unit.Value;
@@ -227,7 +216,7 @@ public sealed partial class SyncEngine(
         IReadOnlyList<DriveItemEntity> folders = await _syncConfigurationRepository
             .GetSelectedItemsByAccountIdAsync(hashedAccountId, cancellationToken);
 
-        await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Starting sync with {folders.Count} selected folders: {string.Join(", ", folders)}", cancellationToken);
+        _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Starting sync with {folders.Count} selected folders: {string.Join(", ", folders)}", cancellationToken);
 
         return folders;
     }
@@ -261,18 +250,8 @@ public sealed partial class SyncEngine(
             {
                 if(existingFile.SyncStatus is FileSyncStatus.PendingUpload or FileSyncStatus.Failed)
                 {
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId,
-                        $"File needs upload (status={existingFile.SyncStatus}): {localFile.Name}", cancellationToken);
-                    var fileToUpload = new FileMetadata(
-                        existingFile.DriveItemId,
-                        hashedAccountId,
-                        existingFile.Name ?? string.Empty,
-                        existingFile.RelativePath ?? string.Empty,
-                        existingFile.Size,
-                        existingFile.LastModifiedUtc,
-                        existingFile.LocalPath ?? string.Empty,
-                        IsFolder: false,
-                        IsDeleted: false);
+                    _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"File needs upload (status={existingFile.SyncStatus}): {localFile.Name}", cancellationToken);
+                    var fileToUpload = new FileMetadata(existingFile.DriveItemId,hashedAccountId,existingFile.Name ?? string.Empty,existingFile.RelativePath ?? string.Empty,existingFile.Size,existingFile.LastModifiedUtc,existingFile.LocalPath ?? string.Empty,IsFolder: false,IsDeleted: false);
                     filesToUpload.Add(fileToUpload);
                 }
                 else
@@ -286,9 +265,7 @@ public sealed partial class SyncEngine(
                         hasChanged = existingFile.LocalHash != localFile.LocalHash;
                         if(hasChanged)
                         {
-                            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId,
-                                $"File marked as changed: {localFile.Name} - Hash changed (DB: {existingFile.LocalHash}, Local: {localFile.LocalHash})",
-                                cancellationToken);
+                            _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"File marked as changed: {localFile.Name} - Hash changed (DB: {existingFile.LocalHash}, Local: {localFile.LocalHash})", cancellationToken);
                         }
                     }
                     else
@@ -296,9 +273,7 @@ public sealed partial class SyncEngine(
                         hasChanged = existingFile.Size != localFile.Size;
                         if(hasChanged)
                         {
-                            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId,
-                                $"File marked as changed: {localFile.Name} - Size changed (DB: {existingFile.Size}, Local: {localFile.Size})",
-                                cancellationToken);
+                            _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"File marked as changed: {localFile.Name} - Size changed (DB: {existingFile.Size}, Local: {localFile.Size})", cancellationToken);
                         }
                     }
 
@@ -308,8 +283,7 @@ public sealed partial class SyncEngine(
             }
             else if(folders.FirstOrDefault(f => f.RelativePath == localFile.RelativePath) is null)
             {
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId,
-                    $"New local file to upload: {localFile.Name}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"New local file to upload: {localFile.Name}", cancellationToken);
                 filesToUpload.Add(localFile);
             }
         }
@@ -379,25 +353,14 @@ public sealed partial class SyncEngine(
             !conflictPaths.Contains(f.RelativePath))];
     }
 
-    private static async Task<(
-        List<FileMetadata> FilesToDownload,
-        int TotalFiles,
-        long TotalBytes,
-        long UploadBytes,
-        long DownloadBytes)> CalculateSyncSummaryAsync(
-            HashedAccountId hashedAccountId,
-            List<FileMetadata> filesToUpload,
-            List<FileMetadata> filesToDownload,
-            CancellationToken cancellationToken)
+    private static async Task<(List<FileMetadata> FilesToDownload,int TotalFiles,long TotalBytes,long UploadBytes,long DownloadBytes)> CalculateSyncSummaryAsync(HashedAccountId hashedAccountId,List<FileMetadata> filesToUpload,List<FileMetadata> filesToDownload,CancellationToken cancellationToken)
     {
         var totalFiles = filesToUpload.Count + filesToDownload.Count;
         var totalBytes = filesToUpload.Sum(f => f.Size) + filesToDownload.Sum(f => f.Size);
         var uploadBytes = filesToUpload.Sum(f => f.Size);
         var downloadBytes = filesToDownload.Sum(f => f.Size);
 
-        await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId,
-            $"Sync summary: {filesToDownload.Count} to download, {filesToUpload.Count} to upload",
-            cancellationToken);
+        _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Sync summary: {filesToDownload.Count} to download, {filesToUpload.Count} to upload", cancellationToken);
 
         (filesToDownload, totalFiles, totalBytes, downloadBytes) =
             await RemoveDuplicatesFromDownloadList(filesToUpload, filesToDownload, totalFiles, totalBytes, downloadBytes, hashedAccountId, cancellationToken);
@@ -423,12 +386,12 @@ public sealed partial class SyncEngine(
         var duplicateDownloads = filesToDownload.GroupBy(f => f.RelativePath).Where(g => g.Count() > 1).ToList();
         if(duplicateDownloads.Count > 0)
         {
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"WARNING: Found {duplicateDownloads.Count} duplicate paths in download list!", cancellationToken);
+            _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"WARNING: Found {duplicateDownloads.Count} duplicate paths in download list!", cancellationToken);
             foreach(IGrouping<string, FileMetadata>? dup in duplicateDownloads)
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"  Duplicate: {dup.Key} appears {dup.Count()} times", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"  Duplicate: {dup.Key} appears {dup.Count()} times", cancellationToken);
 
             filesToDownload = [.. filesToDownload.GroupBy(f => f.RelativePath).Select(g => g.First())];
-            await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"After deduplication: {filesToDownload.Count} files to download", cancellationToken);
+            _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"After deduplication: {filesToDownload.Count} files to download", cancellationToken);
 
             totalFiles = filesToUpload.Count + filesToDownload.Count;
             totalBytes = filesToUpload.Sum(f => f.Size) + filesToDownload.Sum(f => f.Size);
@@ -444,11 +407,7 @@ public sealed partial class SyncEngine(
         foreach(DriveItemEntity driveItem in selectedFolders.Where(f => f.IsFolder))
         {
             var localFolderPath = Path.Combine(account.LocalSyncPath, driveItem.RelativePath.TrimStart('/'));
-            IReadOnlyList<FileMetadata> localFiles = await _localFileScanner.ScanFolderAsync(
-                hashedAccountId,
-                localFolderPath,
-                driveItem.RelativePath,
-                _syncCancellation?.Token ?? CancellationToken.None);
+            IReadOnlyList<FileMetadata> localFiles = await _localFileScanner.ScanFolderAsync(hashedAccountId,localFolderPath,driveItem.RelativePath,_syncCancellation?.Token ?? CancellationToken.None);
             if(localFiles?.Count > 0)
                 allLocalFiles.AddRange(localFiles);
         }

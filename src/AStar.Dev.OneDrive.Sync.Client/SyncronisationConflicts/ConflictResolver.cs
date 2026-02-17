@@ -88,7 +88,7 @@ public sealed class ConflictResolver(
         // Get file metadata to retrieve OneDrive file ID
         FileMetadata metadata = await _metadataRepo.GetByPathAsync(account.HashedAccountId,conflict.FilePath,cancellationToken) ?? throw new InvalidOperationException($"File metadata not found for {conflict.FilePath}");
 
-        _ = await _graphApiClient.UploadFileAsync(account.HashedAccountId, localPath, conflict.FilePath, null, cancellationToken);
+        _ = await _graphApiClient.UploadFileAsync(account.Id,account.HashedAccountId, localPath, conflict.FilePath, null, cancellationToken);
 
         // Update metadata
         var fileInfo = new FileInfo(localPath);
@@ -115,13 +115,13 @@ public sealed class ConflictResolver(
         if(!string.IsNullOrEmpty(localDirectory))
             _ = Directory.CreateDirectory(localDirectory);
 
-        await _graphApiClient.DownloadFileAsync(
+        await _graphApiClient.DownloadFileAsync(account.Id,
             account.HashedAccountId,
             fileId,
             localPath,
             cancellationToken);
 
-        DriveItem? remoteItem = await _graphApiClient.GetDriveItemAsync(account.HashedAccountId, fileId, cancellationToken);
+        DriveItem? remoteItem = await _graphApiClient.GetDriveItemAsync(account.Id,account.HashedAccountId, fileId, cancellationToken);
         if(remoteItem?.LastModifiedDateTime.HasValue == true)
         {
             File.SetLastWriteTimeUtc(localPath, remoteItem.LastModifiedDateTime.Value.UtcDateTime);
@@ -167,13 +167,13 @@ public sealed class ConflictResolver(
         if(!string.IsNullOrEmpty(localDirectory))
             _ = Directory.CreateDirectory(localDirectory);
 
-        await _graphApiClient.DownloadFileAsync(
+        await _graphApiClient.DownloadFileAsync(account.Id,
             account.HashedAccountId,
             fileId,
             localPath,
             cancellationToken);
 
-        DriveItem remoteItem = await _graphApiClient.GetDriveItemAsync(account.HashedAccountId, fileId, cancellationToken) ??
+        DriveItem remoteItem = await _graphApiClient.GetDriveItemAsync(account.Id,account.HashedAccountId, fileId, cancellationToken) ??
                                throw new InvalidOperationException($"Failed to retrieve metadata for remote file {fileId}");
 
         if(remoteItem.LastModifiedDateTime.HasValue)

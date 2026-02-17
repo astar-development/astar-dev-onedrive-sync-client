@@ -21,7 +21,7 @@ public class SyncEngineResultPatternShould
         (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
         var expectedAccount = new AccountInfo(
             "acc1",
-            AccountIdHasher.Hash("acc1"),
+            new HashedAccountId(AccountIdHasher.Hash("acc1")),
             "Test User",
             @"C:\Sync",
             true,
@@ -36,7 +36,7 @@ public class SyncEngineResultPatternShould
             .Returns(expectedAccount);
 
         Result<AccountInfo, SyncError> result = await engine.ValidateAndGetAccountAsync(
-            "acc1",
+            new HashedAccountId(AccountIdHasher.Hash("acc1")),
             TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Result<AccountInfo, SyncError>.Ok>();
@@ -55,7 +55,7 @@ public class SyncEngineResultPatternShould
             .Returns((AccountInfo?)null);
 
         Result<AccountInfo, SyncError> result = await engine.ValidateAndGetAccountAsync(
-            "nonexistent",
+            new HashedAccountId(AccountIdHasher.Hash("nonexistent")),
             TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Result<AccountInfo, SyncError>.Error>();
@@ -71,26 +71,25 @@ public class SyncEngineResultPatternShould
     public async Task ProcessDeltaChangesAsync_ReturnsOk_WhenSuccessful()
     {
         (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
-        var deltaToken = new DeltaToken("acc1", "", "", "delta-token-123", DateTimeOffset.UtcNow);
-        _ = mocks.DeltaProcessingService.GetDeltaTokenAsync("acc1", Arg.Any<CancellationToken>())
+        var deltaToken = new DeltaToken("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "id", "delta-token-123", DateTimeOffset.UtcNow);
+        _ = mocks.DeltaProcessingService.GetDeltaTokenAsync("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), Arg.Any<CancellationToken>())
             .Returns(deltaToken);
         _ = mocks.DeltaProcessingService.ProcessDeltaPagesAsync(
                 "acc1",
-                "", 
+                new HashedAccountId(AccountIdHasher.Hash("acc1")),
                 deltaToken,
                 Arg.Any<Action<SyncState>?>(),
                 Arg.Any<CancellationToken>())
             .Returns((deltaToken, 2, 10));
 
         Result<Functional.Extensions.Unit, SyncError> result = await engine.ProcessDeltaChangesAsync(
-            "acc1","", 
+            "acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")),
             TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Result<Functional.Extensions.Unit, SyncError>.Ok>();
 
-        // Verify delta token was saved
         await mocks.DeltaProcessingService.Received(1).SaveDeltaTokenAsync(
-            Arg.Is<DeltaToken>(t => t != null && t.Token == "delta-token-123"),
+            Arg.Is<DeltaToken>(t => t != null && t.Token == "delta-token-123"), Arg.Any<HashedAccountId>(),
             Arg.Any<CancellationToken>());
     }
 
@@ -98,20 +97,18 @@ public class SyncEngineResultPatternShould
     public async Task ProcessDeltaChangesAsync_ReturnsError_WhenDeltaProcessingFails()
     {
         (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
-        _ = mocks.DeltaProcessingService.GetDeltaTokenAsync("acc1", Arg.Any<CancellationToken>())
+        _ = mocks.DeltaProcessingService.GetDeltaTokenAsync("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), Arg.Any<CancellationToken>())
             .Returns((DeltaToken?)null);
         var exception = new InvalidOperationException("Delta processing failed");
         _ = mocks.DeltaProcessingService.ProcessDeltaPagesAsync(
                 Arg.Any<string>(),
-                Arg.Any<string>(),
+                new HashedAccountId(AccountIdHasher.Hash("acc1")),
                 Arg.Any<DeltaToken?>(),
                 Arg.Any<Action<SyncState>?>(),
                 Arg.Any<CancellationToken>())
             .Returns(Task.FromException<(DeltaToken, int, int)>(exception));
 
-        Result<Functional.Extensions.Unit, SyncError> result = await engine.ProcessDeltaChangesAsync(
-            "acc1","id", 
-             TestContext.Current.CancellationToken);    
+        Result<Functional.Extensions.Unit, SyncError> result = await engine.ProcessDeltaChangesAsync("acc1",new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
 
         _ = result.ShouldBeOfType<Result<Functional.Extensions.Unit, SyncError>.Error>();
         SyncError error = result.Match(
@@ -126,18 +123,18 @@ public class SyncEngineResultPatternShould
     public async Task StartSyncAsync_UsesResultChaining_WhenAllOperationsSucceed()
     {
         (SyncEngine engine, TestMocks mocks) = CreateTestEngine();
-        var account = new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
+        var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Sync", true, null, null, false, false, 3, 50, 0);
         _ = mocks.AccountRepo.GetByIdAsync("acc1", Arg.Any<CancellationToken>())
             .Returns(account);
-        _ = mocks.SyncConfigRepo.GetSelectedItemsByAccountIdAsync("acc1", Arg.Any<CancellationToken>())
+        _ = mocks.SyncConfigRepo.GetSelectedItemsByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), Arg.Any<CancellationToken>())
             .Returns(new List<DriveItemEntity>().AsReadOnly());
 
-        await engine.StartSyncAsync("acc1", AccountIdHasher.Hash("acc1"), TestContext.Current.CancellationToken);
+        await engine.StartSyncAsync("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
 
         _ = await mocks.AccountRepo.Received(1).GetByIdAsync("acc1", Arg.Any<CancellationToken>());
         _ = await mocks.DeltaProcessingService.Received(1).ProcessDeltaPagesAsync(
             Arg.Any<string>(),
-            Arg.Any<string>(),
+                new HashedAccountId(AccountIdHasher.Hash("acc1")),
             Arg.Any<DeltaToken?>(),
             Arg.Any<Action<SyncState>?>(),
             Arg.Any<CancellationToken>());
@@ -152,11 +149,11 @@ public class SyncEngineResultPatternShould
         var progressStates = new List<SyncState>();
         _ = engine.Progress.Subscribe(progressStates.Add);
 
-        await engine.StartSyncAsync("acc1", AccountIdHasher.Hash("acc1"), TestContext.Current.CancellationToken);
+        await engine.StartSyncAsync("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
 
         _ = await mocks.DeltaProcessingService.DidNotReceive().ProcessDeltaPagesAsync(
             Arg.Any<string>(),
-            Arg.Any<string>(),
+            Arg.Any<HashedAccountId>(),
             Arg.Any<DeltaToken?>(),
             Arg.Any<Action<SyncState>?>(),
             Arg.Any<CancellationToken>());
@@ -177,7 +174,7 @@ public class SyncEngineResultPatternShould
         Arg.Any<CancellationToken>())
     .Returns((SyncConflict?)null);
 
-        _ = deltaProcessingService.GetDeltaTokenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = deltaProcessingService.GetDeltaTokenAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns((DeltaToken?)null);
         _ = deltaProcessingService.ProcessDeltaPagesAsync(
                 Arg.Any<string>(),
@@ -185,7 +182,7 @@ public class SyncEngineResultPatternShould
                 Arg.Any<DeltaToken?>(),
                 Arg.Any<Action<SyncState>?>(),
                 Arg.Any<CancellationToken>())
-            .Returns((new DeltaToken("acc1", AccountIdHasher.Hash("acc1"), "id", "delta-token", DateTimeOffset.UtcNow), 1, 0));
+            .Returns((new DeltaToken("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "id", "delta-token", DateTimeOffset.UtcNow), 1, 0));
 
         IFileTransferService fileTransferService = Substitute.For<IFileTransferService>();
         IDeletionSyncService deletionSyncService = Substitute.For<IDeletionSyncService>();
@@ -213,7 +210,7 @@ public class SyncEngineResultPatternShould
             .Returns((false, null, null));
 
         var progressSubject = new System.Reactive.Subjects.BehaviorSubject<SyncState>(
-            SyncState.CreateInitial(string.Empty,string.Empty));
+            SyncState.CreateInitial(string.Empty, new HashedAccountId(AccountIdHasher.Hash(string.Empty))));
         _ = syncStateCoordinator.Progress.Returns(progressSubject);
         _ = syncStateCoordinator.InitializeSessionAsync(
                 Arg.Any<string>(),

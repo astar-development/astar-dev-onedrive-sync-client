@@ -44,8 +44,20 @@ public static class DebugLog
     /// <param name="hashedAccountId">The hashed account ID associated with the log.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A result indicating success or failure.</returns>
-    public static Task<Result<Unit, ErrorResponse>> LogInfoAsync(string source, string message, HashedAccountId  hashedAccountId, CancellationToken cancellationToken = default)
-        => LogMessage(source, hashedAccountId, message, LogLevel.Information, cancellationToken);
+    public static Task<Result<Unit, ErrorResponse>> LogInfoAsync(string source, HashedAccountId hashedAccountId, string message, CancellationToken cancellationToken = default)
+        => LogMessage(source, hashedAccountId, message, LogLevel.Information, null, cancellationToken);
+
+    /// <summary>
+    ///    Logs an error message.
+    /// </summary>
+    /// <param name="source">The source of the log (typically class or method name).</param>
+    /// <param name="hashedAccountId">The hashed account ID associated with the log.</param>
+    /// <param name="message">The log message.</param>
+    /// <param name="exception">Optional exception details.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A result indicating success or failure.</returns>
+    public static Task<Result<Unit, ErrorResponse>> LogErrorAsync(string source, HashedAccountId hashedAccountId, string message, Exception? exception = null, CancellationToken cancellationToken = default)
+        => LogMessage(source, hashedAccountId, message, LogLevel.Error, exception, cancellationToken);
 
     /// <summary>
     ///     Logs an error message.
@@ -54,7 +66,8 @@ public static class DebugLog
     /// <param name="message">The log message.</param>
     /// <param name="exception">Optional exception details.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public static Task ErrorAsync(string source, HashedAccountId hashedAccountId, string message, Exception? exception = null, CancellationToken cancellationToken = default) => _instance?.LogErrorAsync(source, hashedAccountId, message, exception, cancellationToken) ?? Task.CompletedTask;
+    public static Task ErrorAsync(string source, HashedAccountId hashedAccountId, string message, Exception? exception = null, CancellationToken cancellationToken = default)
+        => _instance?.LogErrorAsync(source, hashedAccountId, message, exception, cancellationToken) ?? Task.CompletedTask;
 
     /// <summary>
     ///     Logs a method entry.
@@ -72,7 +85,7 @@ public static class DebugLog
     /// <param name="cancellationToken">Cancellation token.</param>
     public static Task ExitAsync(string source, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default) => _instance?.LogExitAsync(source, hashedAccountId, cancellationToken) ?? Task.CompletedTask;
 
-    private static async Task<Result<Unit, ErrorResponse>> LogMessage(string source, HashedAccountId hashedAccountId, string message, LogLevel logLevel, CancellationToken cancellationToken)
+    private static async Task<Result<Unit, ErrorResponse>> LogMessage(string source, HashedAccountId hashedAccountId, string message, LogLevel logLevel, Exception? exception = null, CancellationToken cancellationToken = default)
         => await Try.RunAsync<Result<Unit, ErrorResponse>>(async () =>
             {
                 AccountInfo? account = await _accountRepository!.GetByIdAsync(hashedAccountId, cancellationToken);
@@ -81,7 +94,7 @@ public static class DebugLog
                     return new ErrorResponse($"Account with ID {hashedAccountId} not found");
 
                 if(account.EnableDebugLogging)
-                    await _debugRepository!.AddAsync(DebugLogEntry.Create(hashedAccountId, source, message, logLevel.ToString()), cancellationToken);
+                    await _debugRepository!.AddAsync(DebugLogEntry.Create(hashedAccountId, source, message, logLevel.ToString(), exception), cancellationToken);
 
                 return Unit.Value;
             })

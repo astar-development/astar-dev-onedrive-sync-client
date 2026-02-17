@@ -15,16 +15,16 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 public sealed class DebugLoggerService(IDbContextFactory<SyncDbContext> contextFactory, IAccountRepository accountRepository) : IDebugLogger
 {
     /// <inheritdoc />
-    public async Task LogInfoAsync(string source, string accountId, string message, CancellationToken cancellationToken = default) => await LogAsync("Info", source, message, null, accountId, cancellationToken);
+    public async Task LogInfoAsync(string source, HashedAccountId hashedAccountId, string message, CancellationToken cancellationToken = default) => await LogAsync("Info", source, message, null, hashedAccountId, cancellationToken);
 
     /// <inheritdoc />
-    public async Task LogErrorAsync(string source, string accountId, string message, Exception? exception = null, CancellationToken cancellationToken = default) => await LogAsync("Error", source, message, exception, accountId, cancellationToken);
+    public async Task LogErrorAsync(string source, HashedAccountId hashedAccountId, string message, Exception? exception = null, CancellationToken cancellationToken = default) => await LogAsync("Error", source, message, exception, hashedAccountId, cancellationToken);
 
     /// <inheritdoc />
-    public async Task LogEntryAsync(string source, string accountId, CancellationToken cancellationToken = default) => await LogAsync("Entry", source, "Method entry", null, accountId, cancellationToken);
+    public async Task LogEntryAsync(string source, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default) => await LogAsync("Entry", source, "Method entry", null, hashedAccountId, cancellationToken);
 
     /// <inheritdoc />
-    public async Task LogExitAsync(string source, string accountId, CancellationToken cancellationToken = default) => await LogAsync("Exit", source, "Method exit", null, accountId, cancellationToken);
+    public async Task LogExitAsync(string source, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default) => await LogAsync("Exit", source, "Method exit", null, hashedAccountId, cancellationToken);
 
     private async Task LogAsync(string logLevel, string source, string message, Exception? exception, HashedAccountId hashedAccountId, CancellationToken cancellationToken)
     {

@@ -79,13 +79,13 @@ public sealed class FileTransferService : IFileTransferService
                 DriveItemEntity? existingFile = existingItems.FirstOrDefault(ie => ie.RelativePath == file.RelativePath && (ie.SyncStatus != FileSyncStatus.Failed || ie.SyncStatus == FileSyncStatus.PendingUpload));
                 var isExistingFile = existingFile is not null;
 
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Uploading {file.Name}: Path={file.RelativePath}, IsExisting={isExistingFile}, LocalPath={file.LocalPath}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Uploading {file.Name}: Path={file.RelativePath}, IsExisting={isExistingFile}, LocalPath={file.LocalPath}", cancellationToken);
 
                 if(!isExistingFile)
                 {
                     FileMetadata pendingFile = file with { SyncStatus = FileSyncStatus.PendingUpload };
                     await _driveItemsRepository.AddAsync(pendingFile, cancellationToken);
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Added pending upload record to database: {file.Name}", cancellationToken);
+                    _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Added pending upload record to database: {file.Name}", cancellationToken);
                 }
 
                 if(sessionId is not null)
@@ -107,12 +107,12 @@ public sealed class FileTransferService : IFileTransferService
                     progressReporter(accountId, hashedAccountId, SyncStatus.Running, totalFiles, currentCompleted, totalBytes, currentCompletedBytes, 0, currentActiveUploads, 0, conflictCount, null, uploadBytes);
                 });
 
-                DriveItem uploadedItem = await _graphApiClient.UploadFileAsync(accountId, file.LocalPath, file.RelativePath, uploadProgress, cancellationSource.Token);
+                DriveItem uploadedItem = await _graphApiClient.UploadFileAsync(accountId, hashedAccountId, file.LocalPath, file.RelativePath, uploadProgress, cancellationSource.Token);
 
                 if(uploadedItem.LastModifiedDateTime.HasValue && File.Exists(file.LocalPath))
                 {
                     File.SetLastWriteTimeUtc(file.LocalPath, uploadedItem.LastModifiedDateTime.Value.UtcDateTime);
-                    await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId,
+                    _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId,
                         $"Synchronized local timestamp to OneDrive: {file.Name}, OldTime={file.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, NewTime={uploadedItem.LastModifiedDateTime.Value.UtcDateTime:yyyy-MM-dd HH:mm:ss}",
                         cancellationToken);
                 }
@@ -131,7 +131,7 @@ public sealed class FileTransferService : IFileTransferService
                         LastSyncDirection = SyncDirection.Upload
                     };
 
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Upload successful: {file.Name}, OneDrive ID={uploadedFile.DriveItemId}, CTag={uploadedFile.CTag}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Upload successful: {file.Name}, OneDrive ID={uploadedFile.DriveItemId}, CTag={uploadedFile.CTag}", cancellationToken);
 
                 batch.Add(uploadedFile);
                 await SaveBatchIfNeededAsync(batch, BatchSize, cancellationToken);
@@ -145,7 +145,7 @@ public sealed class FileTransferService : IFileTransferService
             }
             catch(Exception ex)
             {
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Upload failed for {file.Name}: {ex.Message}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Upload failed for {file.Name}: {ex.Message}", cancellationToken);
 
                 FileMetadata failedFile = file with { SyncStatus = FileSyncStatus.Failed };
 
@@ -192,13 +192,13 @@ public sealed class FileTransferService : IFileTransferService
             {
                 cancellationSource.Token.ThrowIfCancellationRequested();
 
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Starting download: {file.Name} (ID: {file.DriveItemId}) to {file.LocalPath}", cancellationToken);
-                await DebugLog.InfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Starting download: {file.Name} (ID: {file.DriveItemId}) to {file.LocalPath}", cancellationSource.Token);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Starting download: {file.Name} (ID: {file.DriveItemId}) to {file.LocalPath}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Starting download: {file.Name} (ID: {file.DriveItemId}) to {file.LocalPath}", cancellationSource.Token);
 
                 var directory = Path.GetDirectoryName(file.LocalPath);
                 if(!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
                 {
-                    await DebugLog.InfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Creating directory: {directory}", cancellationSource.Token);
+                    _ = await DebugLog.LogInfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Creating directory: {directory}", cancellationSource.Token);
                     _ = Directory.CreateDirectory(directory);
                 }
 
@@ -213,21 +213,21 @@ public sealed class FileTransferService : IFileTransferService
                     await _driveItemsRepository.SaveBatchAsync([file with { SyncStatus = FileSyncStatus.PendingDownload }], cancellationToken);
                 }
 
-                await _graphApiClient.DownloadFileAsync(accountId, file.DriveItemId, file.LocalPath, cancellationSource.Token);
+                await _graphApiClient.DownloadFileAsync(accountId, hashedAccountId, file.DriveItemId, file.LocalPath, cancellationSource.Token);
 
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Download complete: {file.Name}, computing hash...", cancellationToken);
-                await DebugLog.InfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Download complete: {file.Name}, computing hash...", cancellationSource.Token);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Download complete: {file.Name}, computing hash...", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Download complete: {file.Name}, computing hash...", cancellationSource.Token);
 
                 var downloadedHash = await _localFileScanner.ComputeFileHashAsync(file.LocalPath, cancellationSource.Token);
 
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Hash computed for {file.Name}: {downloadedHash}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Hash computed for {file.Name}: {downloadedHash}", cancellationToken);
 
                 FileMetadata downloadedFile = file with { SyncStatus = FileSyncStatus.Synced, LastSyncDirection = SyncDirection.Download, LocalHash = downloadedHash };
 
                 batch.Add(downloadedFile);
                 await SaveBatchIfNeededAsync(batch, BatchSize, cancellationToken);
 
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Successfully synced: {file.Name}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Successfully synced: {file.Name}", cancellationToken);
 
                 _ = Interlocked.Increment(ref completedFiles);
                 _ = Interlocked.Add(ref completedBytes, file.Size);
@@ -238,9 +238,9 @@ public sealed class FileTransferService : IFileTransferService
             }
             catch(Exception ex)
             {
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"ERROR downloading {file.Name}: {ex.GetType().Name} - {ex.Message}", cancellationToken);
-                await DebugLog.InfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Stack trace: {ex.StackTrace}", cancellationToken);
-                await DebugLog.ErrorAsync("SyncEngine.DownloadFile", hashedAccountId, $"ERROR downloading {file.Name}: {ex.Message}", ex, cancellationSource.Token);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"ERROR downloading {file.Name}: {ex.GetType().Name} - {ex.Message}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Stack trace: {ex.StackTrace}", cancellationToken);
+                _ = await DebugLog.LogErrorAsync("SyncEngine.DownloadFile", hashedAccountId, $"ERROR downloading {file.Name}: {ex.Message}", ex, cancellationSource.Token);
 
                 FileMetadata failedFile = file with { SyncStatus = FileSyncStatus.Failed };
                 batch.Add(failedFile);

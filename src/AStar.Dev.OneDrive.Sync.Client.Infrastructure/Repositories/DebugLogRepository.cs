@@ -106,7 +106,7 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
         => new()
         {
             Id = debugLogEntry.Id,
-            HashedAccountId = debugLogEntry.AccountId,
+            HashedAccountId = debugLogEntry.HashedAccountId,
             TimestampUtc = debugLogEntry.Timestamp,
             LogLevel = debugLogEntry.LogLevel,
             Source = debugLogEntry.Source,

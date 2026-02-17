@@ -12,14 +12,14 @@ public class DeltaProcessingServiceShould
     public async Task GetDeltaTokenAsync_ShouldReturnTokenFromRepository()
     {
         const string accountId = "test-account-id";
-        var expectedToken = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "token-123", DateTimeOffset.UtcNow);
+        var expectedToken = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "drive-id", "token-123", DateTimeOffset.UtcNow);
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         _ = syncRepo.GetDeltaTokenAsync(accountId, Arg.Any<CancellationToken>())
             .Returns(expectedToken);
         var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
 
-        DeltaToken? result = await service.GetDeltaTokenAsync(accountId, CancellationToken.None);
+        DeltaToken? result = await service.GetDeltaTokenAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), CancellationToken.None);
 
         _ = result.ShouldNotBeNull();
         result.AccountId.ShouldBe(expectedToken.AccountId);
@@ -37,7 +37,7 @@ public class DeltaProcessingServiceShould
             .Returns((DeltaToken?)null);
         var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
 
-        DeltaToken? result = await service.GetDeltaTokenAsync(accountId, CancellationToken.None);
+        DeltaToken? result = await service.GetDeltaTokenAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), CancellationToken.None);
 
         result.ShouldBeNull();
     }
@@ -46,12 +46,12 @@ public class DeltaProcessingServiceShould
     public async Task SaveDeltaTokenAsync_ShouldPersistTokenToRepository()
     {
         const string accountId = "test-account-id";
-        var tokenToSave = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "token-123", DateTimeOffset.UtcNow);
+        var tokenToSave = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "drive-id", "token-123", DateTimeOffset.UtcNow);
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
 
-        await service.SaveDeltaTokenAsync(tokenToSave, CancellationToken.None);
+        await service.SaveDeltaTokenAsync(tokenToSave, new HashedAccountId(AccountIdHasher.Hash(accountId)), CancellationToken.None);
 
         await syncRepo.Received(1).SaveOrUpdateDeltaTokenAsync(
             Arg.Is<DeltaToken>(t => t.AccountId == accountId && t.Token == "token-123"),
@@ -62,13 +62,13 @@ public class DeltaProcessingServiceShould
     public async Task ProcessDeltaPagesAsync_ShouldFetchAndProcessAllPages()
     {
         const string accountId = "test-account-id";
-        var deltaToken = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "initial-token", DateTimeOffset.UtcNow);
-        var finalToken = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "final-token", DateTimeOffset.UtcNow);
+        var deltaToken = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "drive-id", "initial-token", DateTimeOffset.UtcNow);
+        var finalToken = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "drive-id", "final-token", DateTimeOffset.UtcNow);
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         _ = deltaPageProcessor.ProcessAllDeltaPagesAsync(
                 accountId,
-                AccountIdHasher.Hash("test-account"),
+                new HashedAccountId(AccountIdHasher.Hash(accountId)),
                 Arg.Any<DeltaToken>(),
                 Arg.Any<Action<SyncState>>(),
                 Arg.Any<CancellationToken>())
@@ -77,7 +77,7 @@ public class DeltaProcessingServiceShould
 
         (DeltaToken resultToken, var pageCount, var itemCount) = await service.ProcessDeltaPagesAsync(
             accountId,
-            AccountIdHasher.Hash("test-account"),
+            new HashedAccountId(AccountIdHasher.Hash(accountId)),
             deltaToken,
             null,
             CancellationToken.None);
@@ -87,7 +87,7 @@ public class DeltaProcessingServiceShould
         itemCount.ShouldBe(150);
         _ = await deltaPageProcessor.Received(1).ProcessAllDeltaPagesAsync(
             accountId,
-            AccountIdHasher.Hash("test-account"),
+            new HashedAccountId(AccountIdHasher.Hash(accountId)),
             Arg.Is<DeltaToken>(t => t.Token == "initial-token"),
             Arg.Any<Action<SyncState>>(),
             Arg.Any<CancellationToken>());
@@ -97,7 +97,7 @@ public class DeltaProcessingServiceShould
     public async Task ProcessDeltaPagesAsync_ShouldHandleNullDeltaToken()
     {
         const string accountId = "test-account-id";
-        var finalToken = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "final-token", DateTimeOffset.UtcNow);
+        var finalToken = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "drive-id", "final-token", DateTimeOffset.UtcNow);
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         _ = deltaPageProcessor.ProcessAllDeltaPagesAsync(
@@ -111,7 +111,7 @@ public class DeltaProcessingServiceShould
 
         (DeltaToken resultToken, var pageCount, var itemCount) = await service.ProcessDeltaPagesAsync(
             accountId,
-            AccountIdHasher.Hash("test-account"),
+            new HashedAccountId(AccountIdHasher.Hash(accountId)),
             null,
             null,
             CancellationToken.None);
@@ -121,7 +121,7 @@ public class DeltaProcessingServiceShould
         itemCount.ShouldBe(50);
         _ = await deltaPageProcessor.Received(1).ProcessAllDeltaPagesAsync(
             accountId,
-            Arg.Is<HashedAccountId>(h => h.Id == "test-account"),
+            Arg.Is<HashedAccountId>(h => h.Value == accountId),
             Arg.Is<DeltaToken>(t => t.AccountId == accountId && string.IsNullOrEmpty(t.Token)),
             Arg.Any<Action<SyncState>>(),
             Arg.Any<CancellationToken>());
@@ -131,8 +131,8 @@ public class DeltaProcessingServiceShould
     public async Task ProcessDeltaPagesAsync_ShouldInvokeProgressCallback()
     {
         const string accountId = "test-account-id";
-        var deltaToken = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "initial-token", DateTimeOffset.UtcNow);
-        var finalToken = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "final-token", DateTimeOffset.UtcNow);
+        var deltaToken = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "drive-id", "initial-token", DateTimeOffset.UtcNow);
+        var finalToken = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "drive-id", "final-token", DateTimeOffset.UtcNow);
         var progressStates = new List<SyncState>();
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
@@ -145,14 +145,14 @@ public class DeltaProcessingServiceShould
             .Returns(callInfo =>
             {
                 Action<SyncState>? callback = callInfo.ArgAt<Action<SyncState>?>(2);
-                callback?.Invoke(SyncState.Create(accountId, AccountIdHasher.Hash("test-account"), SyncStatus.InitialDeltaSync, "Processing..."));
+                callback?.Invoke(SyncState.Create(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), SyncStatus.InitialDeltaSync, "Processing..."));
                 return Task.FromResult((finalToken, 1, 50));
             });
         var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
 
         _ = await service.ProcessDeltaPagesAsync(
             accountId,
-            AccountIdHasher.Hash("test-account"),
+            new HashedAccountId(AccountIdHasher.Hash(accountId)),
             deltaToken,
             progressStates.Add,
             CancellationToken.None);
@@ -163,7 +163,7 @@ public class DeltaProcessingServiceShould
     public async Task ProcessDeltaPagesAsync_ShouldHandleCancellation()
     {
         const string accountId = "test-account-id";
-        var deltaToken = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "initial-token", DateTimeOffset.UtcNow);
+        var deltaToken = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "drive-id", "initial-token", DateTimeOffset.UtcNow);
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         var cts = new CancellationTokenSource();
@@ -178,14 +178,14 @@ public class DeltaProcessingServiceShould
 
         var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
         _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
-            await service.ProcessDeltaPagesAsync(accountId, AccountIdHasher.Hash("test-account"), deltaToken, null, cts.Token));
+            await service.ProcessDeltaPagesAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), deltaToken, null, cts.Token));
     }
 
     [Fact]
     public async Task ProcessDeltaPagesAsync_ShouldPropagateExceptions()
     {
         const string accountId = "test-account-id";
-        var deltaToken = new DeltaToken(accountId, AccountIdHasher.Hash("test-account"), "drive-id", "initial-token", DateTimeOffset.UtcNow);
+        var deltaToken = new DeltaToken(accountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), "drive-id", "initial-token", DateTimeOffset.UtcNow);
         ISyncRepository syncRepo = Substitute.For<ISyncRepository>();
         IDeltaPageProcessor deltaPageProcessor = Substitute.For<IDeltaPageProcessor>();
         _ = deltaPageProcessor.ProcessAllDeltaPagesAsync(
@@ -199,6 +199,6 @@ public class DeltaProcessingServiceShould
         var service = new DeltaProcessingService(syncRepo, deltaPageProcessor);
 
         _ = await Should.ThrowAsync<IOException>(async () =>
-            await service.ProcessDeltaPagesAsync(accountId, AccountIdHasher.Hash("test-account"), deltaToken, null, CancellationToken.None));
+            await service.ProcessDeltaPagesAsync(accountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), deltaToken, null, CancellationToken.None));
     }
 }

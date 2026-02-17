@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -18,10 +19,10 @@ public class SyncSelectionServicePersistenceShould
 
         sut.SetSelection(folder1, true);
 
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        await sut.SaveSelectionsToDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), rootFolders, TestContext.Current.CancellationToken);
 
         await mockRepo.Received(1).SaveBatchAsync(
-            "acc-123",
+            new HashedAccountId(AccountIdHasher.Hash("acc-123")),
             Arg.Is<IEnumerable<FileMetadata>>(configs => configs.Count() == 1 &&
                                                               configs.First().RelativePath == "/Folder1" &&
                                                               configs.First().IsSelected),
@@ -41,10 +42,10 @@ public class SyncSelectionServicePersistenceShould
         sut.SetSelection(folder1, true);
         sut.SetSelection(folder2, true);
 
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        await sut.SaveSelectionsToDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), rootFolders, TestContext.Current.CancellationToken);
 
         await mockRepo.Received(1).SaveBatchAsync(
-            "acc-123",
+            new HashedAccountId(AccountIdHasher.Hash("acc-123")),
             Arg.Is<IEnumerable<FileMetadata>>(configs => configs.Count() == 2),
             Arg.Any<CancellationToken>());
     }
@@ -61,10 +62,10 @@ public class SyncSelectionServicePersistenceShould
 
         // Don't select any folders
 
-        await sut.SaveSelectionsToDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        await sut.SaveSelectionsToDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), rootFolders, TestContext.Current.CancellationToken);
 
         await mockRepo.Received(1).SaveBatchAsync(
-            "acc-123",
+            new HashedAccountId(AccountIdHasher.Hash("acc-123")),
             Arg.Any<IEnumerable<FileMetadata>>(),
             Arg.Any<CancellationToken>());
     }
@@ -73,7 +74,7 @@ public class SyncSelectionServicePersistenceShould
     public async Task LoadSelectionsFromDatabaseAndApplyToTree()
     {
         ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        _ = mockRepo.GetSelectedFoldersAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>(["/Folder1"]));
 
         var sut = new SyncSelectionService(mockRepo);
@@ -82,7 +83,7 @@ public class SyncSelectionServicePersistenceShould
         OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        await sut.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), rootFolders, TestContext.Current.CancellationToken);
 
         folder1.SelectionState.ShouldBe(SelectionState.Checked);
         folder2.SelectionState.ShouldBe(SelectionState.Unchecked);
@@ -92,7 +93,7 @@ public class SyncSelectionServicePersistenceShould
     public async Task HandleEmptyDatabaseGracefully()
     {
         ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        _ = mockRepo.GetSelectedFoldersAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>([]));
 
         var sut = new SyncSelectionService(mockRepo);
@@ -100,7 +101,7 @@ public class SyncSelectionServicePersistenceShould
         OneDriveFolderNode folder = CreateFolder("1", "Folder1", "/Folder1");
         var rootFolders = new List<OneDriveFolderNode> { folder };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        await sut.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), rootFolders, TestContext.Current.CancellationToken);
 
         folder.SelectionState.ShouldBe(SelectionState.Unchecked);
     }
@@ -109,7 +110,7 @@ public class SyncSelectionServicePersistenceShould
     public async Task IgnoreFoldersInDatabaseThatNoLongerExist()
     {
         ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        _ = mockRepo.GetSelectedFoldersAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>([
                 "/Folder1",
                 "/DeletedFolder",
@@ -122,7 +123,7 @@ public class SyncSelectionServicePersistenceShould
         OneDriveFolderNode folder2 = CreateFolder("2", "Folder2", "/Folder2");
         var rootFolders = new List<OneDriveFolderNode> { folder1, folder2 };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        await sut.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), rootFolders, TestContext.Current.CancellationToken);
 
         folder1.SelectionState.ShouldBe(SelectionState.Checked);
         folder2.SelectionState.ShouldBe(SelectionState.Checked);
@@ -133,7 +134,7 @@ public class SyncSelectionServicePersistenceShould
     public async Task RecalculateIndeterminateStatesAfterLoading()
     {
         ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        _ = mockRepo.GetSelectedFoldersAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>(["/Parent/Child1"]));
 
         var sut = new SyncSelectionService(mockRepo);
@@ -148,7 +149,7 @@ public class SyncSelectionServicePersistenceShould
 
         var rootFolders = new List<OneDriveFolderNode> { parent };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        await sut.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), rootFolders, TestContext.Current.CancellationToken);
 
         child1.SelectionState.ShouldBe(SelectionState.Checked);
         child2.SelectionState.ShouldBe(SelectionState.Unchecked);
@@ -159,7 +160,7 @@ public class SyncSelectionServicePersistenceShould
     public async Task WorkWithNestedFolderStructures()
     {
         ISyncConfigurationRepository mockRepo = Substitute.For<ISyncConfigurationRepository>();
-        _ = mockRepo.GetSelectedFoldersAsync("acc-123", Arg.Any<CancellationToken>())
+        _ = mockRepo.GetSelectedFoldersAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<IReadOnlyList<string>>([
                 "/Parent/Child/Grandchild"
             ]));
@@ -177,7 +178,7 @@ public class SyncSelectionServicePersistenceShould
 
         var rootFolders = new List<OneDriveFolderNode> { parent };
 
-        await sut.LoadSelectionsFromDatabaseAsync("acc-123", rootFolders, TestContext.Current.CancellationToken);
+        await sut.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash("acc-123")), rootFolders, TestContext.Current.CancellationToken);
         grandchild.SelectionState.ShouldBe(SelectionState.Checked);
         child.SelectionState.ShouldBe(SelectionState.Unchecked);
         parent.SelectionState.ShouldBe(SelectionState.Indeterminate);

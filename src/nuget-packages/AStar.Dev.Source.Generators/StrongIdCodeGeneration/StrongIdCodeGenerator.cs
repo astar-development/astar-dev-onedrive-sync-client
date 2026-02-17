@@ -24,11 +24,7 @@ internal static class StrongIdCodeGenerator
             .AppendLine()
             .AppendLine(string.IsNullOrEmpty(ns) ? string.Empty : ns)
             .AppendLine()
-            .AppendLine($"{accessibility} readonly partial record struct {model.ModelName}({underlying} Id)")
-            .AppendLine("{")
-            .AppendLine($"    public static implicit operator {underlying}({model.ModelName} strongId) => strongId.Id;")
-            .AppendLine($"    public static implicit operator {model.ModelName}({underlying} id) => new {model.ModelName}(id);")
-            .AppendLine("}")
+            .AppendLine($"{accessibility} readonly partial record struct {model.ModelName}({underlying} Value);")
             .AppendLine().ToString();
 
     private static string GetRequiredUnderlyingIdType(StrongIdModel model)

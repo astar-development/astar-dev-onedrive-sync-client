@@ -7,9 +7,9 @@ public sealed class HashedAccountIdShould
     [Fact]
     public void ConvertImplicitlyToAndFromString()
     {
-        HashedAccountId id = "acc-123";
+        var id = new HashedAccountId("acc-123");
 
-        string value = id;
+        var value = id.Value;
 
         value.ShouldBe("acc-123");
     }

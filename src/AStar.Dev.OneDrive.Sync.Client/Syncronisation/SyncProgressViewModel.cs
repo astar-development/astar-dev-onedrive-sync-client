@@ -2,6 +2,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -303,7 +304,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         if(CurrentProgress is null)
             return;
 
-        IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(AccountId, cancellationToken);
+        IReadOnlyList<SyncConflict> conflicts = await _syncEngine.GetConflictsAsync(new HashedAccountId(AccountIdHasher.Hash(AccountId ?? AdminAccountMetadata.HashedAccountId)), cancellationToken);
         var conflictCount = conflicts.Count;
 
         CurrentProgress = CurrentProgress with { ConflictsDetected = conflictCount };

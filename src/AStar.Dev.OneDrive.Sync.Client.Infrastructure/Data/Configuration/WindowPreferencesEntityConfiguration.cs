@@ -13,3 +13,4 @@ public sealed class WindowPreferencesEntityConfiguration : IEntityTypeConfigurat
         _ = builder.Property(e => e.Height).HasDefaultValue(600);
     }
 }
+

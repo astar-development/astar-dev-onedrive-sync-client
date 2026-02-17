@@ -11,16 +11,18 @@ public interface IDeltaProcessingService
     ///     Retrieves the last saved delta token for the specified account.
     /// </summary>
     /// <param name="accountId">The account ID for which to retrieve the delta token.</param>
+    /// <param name="hashedAccountId">The hashed account ID for which to retrieve the delta token.</param>  
     /// <param name="cancellationToken">The cancellation token to monitor for cancellation requests.</param>
     /// <returns>The delta token if it exists, otherwise null.</returns>
-    Task<DeltaToken?> GetDeltaTokenAsync(string accountId, CancellationToken cancellationToken);
+    Task<DeltaToken?> GetDeltaTokenAsync(string accountId, HashedAccountId hashedAccountId, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Saves or updates the delta token for the specified account.
     /// </summary>
     /// <param name="token">The delta token to save or update.</param>
+    /// <param name="hashedAccountId">The hashed account ID for which to save the delta token.</param>  
     /// <param name="cancellationToken">The cancellation token to monitor for cancellation requests.</param>
-    Task SaveDeltaTokenAsync(DeltaToken token, CancellationToken cancellationToken);
+    Task SaveDeltaTokenAsync(DeltaToken token, HashedAccountId hashedAccountId, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Processes all delta pages from OneDrive starting from the provided delta token.
