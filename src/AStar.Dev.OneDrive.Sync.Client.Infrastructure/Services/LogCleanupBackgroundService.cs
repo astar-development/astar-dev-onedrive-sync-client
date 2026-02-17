@@ -11,8 +11,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 /// </summary>
 public sealed class LogCleanupBackgroundService(IServiceProvider serviceProvider, ILogger<LogCleanupBackgroundService> logger) : BackgroundService
 {
-    private static readonly TimeSpan CleanupInterval = TimeSpan.FromHours(12); // Run twice a day
-    private static readonly TimeSpan RetentionPeriod = TimeSpan.FromDays(14);
+    private static readonly TimeSpan CleanupInterval = TimeSpan.FromHours(12);
+    private static readonly TimeSpan RetentionPeriod = TimeSpan.FromDays(7);
     private readonly IServiceScopeFactory _scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -46,7 +46,6 @@ public sealed class LogCleanupBackgroundService(IServiceProvider serviceProvider
             }
             catch(TaskCanceledException)
             {
-                // Service is stopping
                 break;
             }
         }

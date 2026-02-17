@@ -17,6 +17,7 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
             .HasConversion(SqliteTypeConverters.HashedAccountIdToString)
             .HasColumnType("TEXT");
 
-        _ = builder.HasData(AccountEntity.CreateSystemAccount());
+        var systemAccount = AccountEntity.CreateSystemAccount();
+        _ = builder.HasData(systemAccount);
     }
 }

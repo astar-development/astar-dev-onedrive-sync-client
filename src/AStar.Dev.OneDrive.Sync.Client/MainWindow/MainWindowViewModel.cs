@@ -57,7 +57,8 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings);
         ViewConflictsCommand = ReactiveCommand.Create(ViewConflicts, this.WhenAnyValue(x => x.HasUnresolvedConflicts));
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
-        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount!.HashedAccountId!, CancellationToken.None);
+        HashedAccountId acc =  AccountManagement.SelectedAccount?.HashedAccountId ?? new HashedAccountId(AdminAccountMetadata.Id);
+        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, acc, CancellationToken.None);
     }
 
     public SyncProgressViewModel? SyncProgress
@@ -248,7 +249,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         _ = accountManagementViewModel
             .WhenAnyValue(x => x.SelectedAccount)
-            .Select(account => account?.HashedAccountId)
+            .Select(account => account?.Id)
             .BindTo(syncTreeViewModel, x => x.SelectedAccountId)
             .DisposeWith(_disposables);
 

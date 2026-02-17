@@ -78,7 +78,9 @@
                         <Run Text="Page " />
                         <Run Text="{Binding CurrentPage}" FontWeight="Bold" />
                         <Run Text=" • Showing " />
-                        <Run Text="{Binding DebugLogs.Count}" FontWeight="Bold" />
+                        <Run Text="{Binding StartingCountOfItemsDisplayed}" FontWeight="Bold" />
+                        <Run Text=" to " />
+                        <Run Text="{Binding EndingCountOfItemsDisplayed}" FontWeight="Bold" />
                         <Run Text=" of " />
                         <Run Text="{Binding TotalRecordCount}" FontWeight="Bold" />
                         <Run Text=" records" />

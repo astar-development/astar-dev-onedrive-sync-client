@@ -20,6 +20,6 @@ public static class AccountInfoExtensions
         ///  The local directory path for synchronization.
         /// </param>
         /// <returns>A standard <see cref="AccountInfo"/> instance with default settings.</returns>
-        public static AccountInfo Standard(HashedAccountId hashedAccountId, string displayName, string localSyncPath) => new(Guid.CreateVersion7().ToString(), hashedAccountId, displayName, localSyncPath, true, null, null, false, false, 3, 20, null);
+        public static AccountInfo Standard(string accountId, HashedAccountId hashedAccountId, string displayName, string localSyncPath) => new(accountId, hashedAccountId, displayName, localSyncPath, true, null, null, false, false, 3, 20, null);
     }
 }

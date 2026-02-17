@@ -150,7 +150,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             {
                 var localSyncPath = CreateTheLocalSyncPath(result);
 
-                var newAccount = AccountInfo.Standard(result.HashedAccountId, result.DisplayName, localSyncPath);
+                var newAccount = AccountInfo.Standard(result.AccountId, result.HashedAccountId, result.DisplayName, localSyncPath);
 
                 await _accountRepository.AddAsync(newAccount);
                 Accounts.Add(newAccount);

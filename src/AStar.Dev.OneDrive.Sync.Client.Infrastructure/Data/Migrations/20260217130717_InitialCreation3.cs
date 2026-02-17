@@ -1,17 +1,16 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreation2 : Migration
+    public partial class InitialCreation3 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            _ = migrationBuilder.CreateTable(
+            migrationBuilder.CreateTable(
                 name: "Accounts",
                 columns: table => new
                 {
@@ -30,10 +29,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    _ = table.PrimaryKey("PK_Accounts", x => x.HashedAccountId);
+                    table.PrimaryKey("PK_Accounts", x => x.HashedAccountId);
                 });
 
-            _ = migrationBuilder.CreateTable(
+            migrationBuilder.CreateTable(
                 name: "WindowPreferences",
                 columns: table => new
                 {
@@ -48,10 +47,10 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    _ = table.PrimaryKey("PK_WindowPreferences", x => x.Id);
+                    table.PrimaryKey("PK_WindowPreferences", x => x.Id);
                 });
 
-            _ = migrationBuilder.CreateTable(
+            migrationBuilder.CreateTable(
                 name: "DebugLogs",
                 columns: table => new
                 {
@@ -66,8 +65,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    _ = table.PrimaryKey("PK_DebugLogs", x => x.Id);
-                    _ = table.ForeignKey(
+                    table.PrimaryKey("PK_DebugLogs", x => x.Id);
+                    table.ForeignKey(
                         name: "FK_DebugLogs_Accounts_HashedAccountId",
                         column: x => x.HashedAccountId,
                         principalTable: "Accounts",
@@ -75,7 +74,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            _ = migrationBuilder.CreateTable(
+            migrationBuilder.CreateTable(
                 name: "DeltaTokens",
                 columns: table => new
                 {
@@ -87,8 +86,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    _ = table.PrimaryKey("PK_DeltaTokens", x => x.Id);
-                    _ = table.ForeignKey(
+                    table.PrimaryKey("PK_DeltaTokens", x => x.Id);
+                    table.ForeignKey(
                         name: "FK_DeltaTokens_Accounts_HashedAccountId",
                         column: x => x.HashedAccountId,
                         principalTable: "Accounts",
@@ -96,7 +95,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            _ = migrationBuilder.CreateTable(
+            migrationBuilder.CreateTable(
                 name: "DriveItems",
                 columns: table => new
                 {
@@ -119,8 +118,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    _ = table.PrimaryKey("PK_DriveItems", x => x.DriveItemId);
-                    _ = table.ForeignKey(
+                    table.PrimaryKey("PK_DriveItems", x => x.DriveItemId);
+                    table.ForeignKey(
                         name: "FK_DriveItems_Accounts_HashedAccountId",
                         column: x => x.HashedAccountId,
                         principalTable: "Accounts",
@@ -128,7 +127,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            _ = migrationBuilder.CreateTable(
+            migrationBuilder.CreateTable(
                 name: "FileOperationLogs",
                 columns: table => new
                 {
@@ -148,8 +147,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    _ = table.PrimaryKey("PK_FileOperationLogs", x => x.Id);
-                    _ = table.ForeignKey(
+                    table.PrimaryKey("PK_FileOperationLogs", x => x.Id);
+                    table.ForeignKey(
                         name: "FK_FileOperationLogs_Accounts_HashedAccountId",
                         column: x => x.HashedAccountId,
                         principalTable: "Accounts",
@@ -157,7 +156,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            _ = migrationBuilder.CreateTable(
+            migrationBuilder.CreateTable(
                 name: "SyncConflicts",
                 columns: table => new
                 {
@@ -175,8 +174,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    _ = table.PrimaryKey("PK_SyncConflicts", x => x.Id);
-                    _ = table.ForeignKey(
+                    table.PrimaryKey("PK_SyncConflicts", x => x.Id);
+                    table.ForeignKey(
                         name: "FK_SyncConflicts_Accounts_HashedAccountId",
                         column: x => x.HashedAccountId,
                         principalTable: "Accounts",
@@ -184,7 +183,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            _ = migrationBuilder.CreateTable(
+            migrationBuilder.CreateTable(
                 name: "SyncSessionLogs",
                 columns: table => new
                 {
@@ -201,8 +200,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                 },
                 constraints: table =>
                 {
-                    _ = table.PrimaryKey("PK_SyncSessionLogs", x => x.Id);
-                    _ = table.ForeignKey(
+                    table.PrimaryKey("PK_SyncSessionLogs", x => x.Id);
+                    table.ForeignKey(
                         name: "FK_SyncSessionLogs_Accounts_HashedAccountId",
                         column: x => x.HashedAccountId,
                         principalTable: "Accounts",
@@ -210,63 +209,63 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            _ = migrationBuilder.InsertData(
+            migrationBuilder.InsertData(
                 table: "Accounts",
                 columns: new[] { "HashedAccountId", "AutoSyncIntervalMinutes", "DeltaToken", "DisplayName", "EnableDebugLogging", "EnableDetailedSyncLogging", "Id", "IsAuthenticated", "LastSyncUtc", "LocalSyncPath", "MaxItemsInBatch", "MaxParallelUpDownloads" },
-                values: new object[] { "HashedAccountId { Id = C856527B9EAF27E26FD89183D1E4F2AEF3CEB5C8040D87A012A3F8F50DC55BB9 }", 0, null, "System Admin", true, true, "C856527B9EAF27E26FD89183D1E4F2AEF3CEB5C8040D87A012A3F8F50DC55BB9", true, null, ".", 1, 1 });
+                values: new object[] { "C856527B9EAF27E26FD89183D1E4F2AEF3CEB5C8040D87A012A3F8F50DC55BB9", 0, null, "System Admin", true, true, "e29a2798-c836-4854-ac90-a3f2d37aae26", true, null, ".", 1, 1 });
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_Accounts_LocalSyncPath",
                 table: "Accounts",
                 column: "LocalSyncPath",
                 unique: true);
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_DebugLogs_HashedAccountId",
                 table: "DebugLogs",
                 column: "HashedAccountId");
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_DebugLogs_TimestampUtc_Ticks",
                 table: "DebugLogs",
                 column: "TimestampUtc_Ticks");
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_DeltaTokens_HashedAccountId",
                 table: "DeltaTokens",
                 column: "HashedAccountId");
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_HashedAccountId_RelativePath",
                 table: "DriveItems",
                 columns: new[] { "HashedAccountId", "RelativePath" });
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_IsFolder",
                 table: "DriveItems",
                 column: "IsFolder");
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_DriveItems_IsSelected",
                 table: "DriveItems",
                 column: "IsSelected");
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_FileOperationLogs_HashedAccountId",
                 table: "FileOperationLogs",
                 column: "HashedAccountId");
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_SyncConflicts_HashedAccountId",
                 table: "SyncConflicts",
                 column: "HashedAccountId");
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_SyncConflicts_HashedAccountId_IsResolved",
                 table: "SyncConflicts",
                 columns: new[] { "HashedAccountId", "IsResolved" });
 
-            _ = migrationBuilder.CreateIndex(
+            migrationBuilder.CreateIndex(
                 name: "IX_SyncSessionLogs_HashedAccountId",
                 table: "SyncSessionLogs",
                 column: "HashedAccountId");
@@ -275,28 +274,28 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            _ = migrationBuilder.DropTable(
+            migrationBuilder.DropTable(
                 name: "DebugLogs");
 
-            _ = migrationBuilder.DropTable(
+            migrationBuilder.DropTable(
                 name: "DeltaTokens");
 
-            _ = migrationBuilder.DropTable(
+            migrationBuilder.DropTable(
                 name: "DriveItems");
 
-            _ = migrationBuilder.DropTable(
+            migrationBuilder.DropTable(
                 name: "FileOperationLogs");
 
-            _ = migrationBuilder.DropTable(
+            migrationBuilder.DropTable(
                 name: "SyncConflicts");
 
-            _ = migrationBuilder.DropTable(
+            migrationBuilder.DropTable(
                 name: "SyncSessionLogs");
 
-            _ = migrationBuilder.DropTable(
+            migrationBuilder.DropTable(
                 name: "WindowPreferences");
 
-            _ = migrationBuilder.DropTable(
+            migrationBuilder.DropTable(
                 name: "Accounts");
         }
     }

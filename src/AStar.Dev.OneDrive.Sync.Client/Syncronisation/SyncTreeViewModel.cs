@@ -3,7 +3,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Security.Policy;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
@@ -75,10 +74,10 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             })
             .DisposeWith(_disposables);
 
-        var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? string.Empty);
-        using(Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
+        var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id);
+        using(Serilog.Context.LogContext.PushProperty("HashedAccountId", accountHash))
         {
-            _ = _debugLogger.LogInfoAsync("SyncTreeViewModel",  new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), "Starting sync for account");
+            _ = _debugLogger.LogInfoAsync("SyncTreeViewModel",  new HashedAccountId(accountHash), "Starting sync for account");
         }
 
         SyncTooltip = "This will perform the initial sync, which will retrieve details of all files and folders from OneDrive. This may take some time depending on the number of files. Subsequent syncs will be faster as only changes (and your selections) are processed.";
@@ -166,7 +165,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     {
         get;
         private set => this.RaiseAndSetIfChanged(ref field, value);
-    } = SyncState.CreateInitial(string.Empty, new HashedAccountId(AccountIdHasher.Hash(AdminAccountMetadata.HashedAccountId))  );
+    } = SyncState.CreateInitial(string.Empty, new HashedAccountId(AdminAccountMetadata.HashedAccountId));
 
     /// <summary>
     ///     Gets a value indicating whether sync is currently running.
@@ -274,7 +273,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 SyncButtonText = "Start Sync";
             }
 
-            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), cancellationToken);
+            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id)), cancellationToken);
 
             Folders.Clear();
 
@@ -385,7 +384,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             {
                 try
                 {
-                    await _selectionService.SaveSelectionsToDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), [.. Folders]);
+                    await _selectionService.SaveSelectionsToDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id)), [.. Folders]);
                 }
                 catch
                 {
