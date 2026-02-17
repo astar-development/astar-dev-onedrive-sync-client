@@ -146,11 +146,11 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if(result.Success)
+            if(result.Success && result.DisplayName is not null)
             {
                 var localSyncPath = CreateTheLocalSyncPath(result);
 
-                var newAccount = AccountInfo.Standard(result.HashedAccountId, result.DisplayName, localSyncPath);
+                var newAccount = AccountInfo.Standard(result.AccountId, result.HashedAccountId, result.DisplayName, localSyncPath);
 
                 await _accountRepository.AddAsync(newAccount);
                 Accounts.Add(newAccount);
@@ -178,7 +178,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            await _accountRepository.DeleteAsync(SelectedAccount.HashedAccountId);
+            await _accountRepository.DeleteAsync(SelectedAccount.Id);
             _ = Accounts.Remove(SelectedAccount);
             SelectedAccount = null;
         }
@@ -201,7 +201,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if(result.Success)
+            if(result.Success && result.DisplayName is not null)
             {
                 AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = true };
                 await _accountRepository.UpdateAsync(updatedAccount);
@@ -261,7 +261,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            var success = await _authService.LogoutAsync(SelectedAccount.HashedAccountId);
+            var success = await _authService.LogoutAsync(SelectedAccount.Id);
             if(success)
             {
                 AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };

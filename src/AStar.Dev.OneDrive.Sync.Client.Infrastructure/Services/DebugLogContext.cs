@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Core;
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 
@@ -20,7 +21,7 @@ public static class DebugLogContext
     ///     This flows through all async operations in the current execution context.
     /// </summary>
     /// <param name="accountId">The account ID to set.</param>
-    public static void SetAccountId(string? accountId) => _currentAccountId.Value = accountId;
+    public static void SetAccountId(HashedAccountId? accountId) => _currentAccountId.Value = accountId?.Value;
 
     /// <summary>
     ///     Clears the current account ID from the ambient context.

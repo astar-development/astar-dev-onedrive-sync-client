@@ -20,7 +20,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     public SyncStateCoordinator(ISyncSessionLogRepository syncSessionLogRepository)
     {
         _syncSessionLogRepository = syncSessionLogRepository ?? throw new ArgumentNullException(nameof(syncSessionLogRepository));
-        var initialState = SyncState.CreateInitial(string.Empty,string.Empty);
+        var initialState = SyncState.CreateInitial(string.Empty, new HashedAccountId(string.Empty));
         _progressSubject = new BehaviorSubject<SyncState>(initialState);
     }
 

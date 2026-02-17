@@ -15,6 +15,11 @@ public static class AccountIdHasher
     /// <returns>The hashed account ID as a hexadecimal string.</returns>
     public static string Hash(string accountId)
     {
+        if(!accountId.Contains('-') && accountId.Length > 0)
+        {
+            return accountId;
+        }
+
         using var hmac = new System.Security.Cryptography.HMACSHA256(Key);
         var bytes = System.Text.Encoding.UTF8.GetBytes(accountId);
         var hash = hmac.ComputeHash(bytes);

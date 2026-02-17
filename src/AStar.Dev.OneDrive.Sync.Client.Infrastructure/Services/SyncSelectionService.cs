@@ -84,10 +84,9 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
             }
         }
 
-        if(indeterminateCount > 0)
-            return SelectionState.Indeterminate;
-
-        return checkedCount == folder.Children.Count
+        return indeterminateCount > 0
+            ? SelectionState.Indeterminate
+            : checkedCount == folder.Children.Count
             ? SelectionState.Checked
             : uncheckedCount == folder.Children.Count && folder.IsSelected == false
             ? SelectionState.Unchecked
@@ -109,16 +108,16 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
 
         IReadOnlyList<string> savedFolderPaths = await configurationRepository.GetSelectedFoldersAsync(hashedAccountId, cancellationToken);
 
-        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Loading selections for account {hashedAccountId}", hashedAccountId, cancellationToken);
-        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Found {savedFolderPaths.Count} saved paths in database", hashedAccountId, cancellationToken);
+        _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Loading selections for account {hashedAccountId}", cancellationToken);
+        _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Found {savedFolderPaths.Count} saved paths in database", cancellationToken);
 
         var normalizedSavedPaths = savedFolderPaths
             .Select(NormalizePathForComparison)
             .ToList();
 
-        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", "Normalized paths:", hashedAccountId, cancellationToken);
+        _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, "Normalized paths:", cancellationToken);
         foreach(var path in normalizedSavedPaths)
-            await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Normalized: {path}", hashedAccountId, cancellationToken);
+            _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Normalized: {path}", cancellationToken);
 
         var pathToNodeMap = new Dictionary<string, OneDriveFolderNode>(StringComparer.OrdinalIgnoreCase);
         BuildPathLookup(rootFolders, pathToNodeMap);
@@ -146,32 +145,31 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
                     SetSelection(folder, true);
             }
 
-            await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", "Checking root folders for selected descendants", hashedAccountId, cancellationToken);
+            _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, "Checking root folders for selected descendants", cancellationToken);
             foreach(OneDriveFolderNode rootFolder in rootFolders)
             {
-                await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Checking root: {rootFolder.Path} (State: {rootFolder.SelectionState})", hashedAccountId, cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Checking root: {rootFolder.Path} (State: {rootFolder.SelectionState})", cancellationToken);
 
                 if(rootFolder.SelectionState == SelectionState.Checked)
                 {
-                    await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", "Already checked, skipping", hashedAccountId, cancellationToken);
+                    _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, "Already checked, skipping", cancellationToken);
                     continue;
                 }
 
                 var normalizedRootPath = NormalizePathForComparison(rootFolder.Path);
-                await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Root normalized to: {normalizedRootPath}", hashedAccountId, cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Root normalized to: {normalizedRootPath}", cancellationToken);
 
                 var hasSelectedDescendants = normalizedSavedPaths.Any(path => path.StartsWith(normalizedRootPath + "/", StringComparison.OrdinalIgnoreCase) ||
                                                                               (normalizedRootPath == "/" && path.StartsWith("/", StringComparison.OrdinalIgnoreCase) && path != "/"));
 
-                await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Has selected descendants: {hasSelectedDescendants}", hashedAccountId, cancellationToken);
+                _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Has selected descendants: {hasSelectedDescendants}", cancellationToken);
 
                 if(hasSelectedDescendants)
                 {
-                    await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Setting {rootFolder.Path} to Indeterminate", hashedAccountId, cancellationToken);
+                    _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Setting {rootFolder.Path} to Indeterminate", cancellationToken);
                     rootFolder.SelectionState = SelectionState.Indeterminate;
                     rootFolder.IsSelected = null;
-                    await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"After setting - State: {rootFolder.SelectionState}, IsSelected: {rootFolder.IsSelected}",
-                        hashedAccountId, cancellationToken);
+                    _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"After setting - State: {rootFolder.SelectionState}, IsSelected: {rootFolder.IsSelected}", cancellationToken);
                 }
             }
         }
@@ -184,8 +182,8 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
         IList<OneDriveFolderNode>folders = [];
         IReadOnlyList<DriveItemEntity> savedFolders = await configurationRepository.GetFoldersByAccountIdAsync(hashedAccountId, cancellationToken);
 
-        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Loading selections for account {hashedAccountId}", hashedAccountId, cancellationToken);
-        await DebugLog.InfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", $"Found {savedFolders.Count} saved folders in database", hashedAccountId, cancellationToken);
+        _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Loading selections for account {hashedAccountId}", cancellationToken);
+        _ = await DebugLog.LogInfoAsync("SyncSelectionService.LoadSelectionsFromDatabaseAsync", hashedAccountId, $"Found {savedFolders.Count} saved folders in database", cancellationToken);
 
         foreach(DriveItemEntity entity in savedFolders)
         {

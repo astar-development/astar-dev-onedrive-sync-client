@@ -30,7 +30,7 @@ public sealed record SyncConflict(
     bool IsResolved
 )
 {
-    public static SyncConflict CreateUnresolvedConflict(string accountId,HashedAccountId hashedAccountId, string filePath, DateTimeOffset localModifiedUtc, DateTimeOffset remoteModifiedUtc, long localSize, long remoteSize) => new(
+    public static SyncConflict CreateUnresolvedConflict(string accountId, HashedAccountId hashedAccountId, string filePath, DateTimeOffset localModifiedUtc, DateTimeOffset remoteModifiedUtc, long localSize, long remoteSize) => new(
         Guid.CreateVersion7().ToString(),
         accountId,
         hashedAccountId,

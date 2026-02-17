@@ -3,7 +3,6 @@ using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using Microsoft.Extensions.Logging;
-using Microsoft.Graph.Models.Security;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Tests.Unit.Services;
 
@@ -32,21 +31,12 @@ public class FileWatcherServiceShould : IDisposable
 
         GC.SuppressFinalize(this);
     }
-
-    [Fact]
-    public void ThrowArgumentNullExceptionWhenAccountIdIsNull()
-    {
-        Exception? exception = Record.Exception(() => _sut.StartWatching(null!, _testDirectory));
-
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
-    }
-
     [Fact]
     public void ThrowDirectoryNotFoundExceptionWhenPathDoesNotExist()
     {
         var nonExistentPath = Path.Combine(_testDirectory, "NonExistent");
 
-        Exception? exception = Record.Exception(() => _sut.StartWatching("account1", nonExistentPath));
+        Exception? exception = Record.Exception(() => _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), nonExistentPath));
 
         _ = exception.ShouldBeOfType<DirectoryNotFoundException>();
     }
@@ -57,7 +47,7 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching(AccountIdHasher.Hash("account1"), _testDirectory);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
 
         // Give watcher time to initialize
         await Task.Delay(200, TestContext.Current.CancellationToken);
@@ -74,7 +64,7 @@ public class FileWatcherServiceShould : IDisposable
 
         // Verify at least one event is for our test file
         FileChangeEvent? fileEvent = events.FirstOrDefault(e => e.RelativePath == "test.txt");
-        fileEvent?.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("account1"));
+        fileEvent?.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("account1"));
     }
 
     [Fact(Skip = "Fails on CI - likely due to timing issues with FileSystemWatcher. Works locally. Needs investigation or refactor to be more testable without relying on real file system events.")]
@@ -87,7 +77,7 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching("account1", _testDirectory);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Modify the file
@@ -101,7 +91,7 @@ public class FileWatcherServiceShould : IDisposable
         FileChangeEvent? modifiedEvent = events.FirstOrDefault(e => e is { ChangeType: FileChangeType.Modified, RelativePath: "modify.txt" });
 
         _ = modifiedEvent.ShouldNotBeNull();
-        modifiedEvent.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("account1"));
+        modifiedEvent.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("account1"));
     }
 
     [Fact]
@@ -114,7 +104,7 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching(AccountIdHasher.Hash("account1"), _testDirectory);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Delete the file
@@ -128,7 +118,7 @@ public class FileWatcherServiceShould : IDisposable
         FileChangeEvent? deletedEvent = events.FirstOrDefault(e => e is { ChangeType: FileChangeType.Deleted, RelativePath: "delete.txt" });
 
         _ = deletedEvent.ShouldNotBeNull();
-        deletedEvent.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("account1"));
+        deletedEvent.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("account1"));
     }
 
     [Fact]
@@ -140,7 +130,7 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching(AccountIdHasher.Hash("account1"), _testDirectory);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Create file in subdirectory
@@ -154,7 +144,7 @@ public class FileWatcherServiceShould : IDisposable
         FileChangeEvent? nestedEvent = events.FirstOrDefault(e => e.RelativePath == Path.Combine("SubFolder", "nested.txt"));
 
         _ = nestedEvent.ShouldNotBeNull();
-        nestedEvent.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("account1"));
+        nestedEvent.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("account1"));
     }
 
     [Fact]
@@ -168,8 +158,8 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching(AccountIdHasher.Hash("account1"), dir1);
-        _sut.StartWatching(AccountIdHasher.Hash("account2"), dir2);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), dir1);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account2")), dir2);
         await Task.Delay(200, TestContext.Current.CancellationToken);
 
         // Create files in both directories
@@ -181,8 +171,8 @@ public class FileWatcherServiceShould : IDisposable
         // Verify events were captured for both accounts
         events.ShouldNotBeEmpty();
 
-        var account1Events = events.Where(e => e.HashedAccountId == AccountIdHasher.Hash("account1")).ToList();
-        var account2Events = events.Where(e => e.HashedAccountId == AccountIdHasher.Hash("account2")).ToList();
+        var account1Events = events.Where(e => e.HashedAccountId == new HashedAccountId(AccountIdHasher.Hash("account1"))).ToList();
+        var account2Events = events.Where(e => e.HashedAccountId == new HashedAccountId(AccountIdHasher.Hash("account2"))).ToList();
 
         // At least one of the accounts should have events
         (account1Events.Count + account2Events.Count).ShouldBeGreaterThan(0);
@@ -191,13 +181,13 @@ public class FileWatcherServiceShould : IDisposable
     [Fact]
     public void StopWatchingRemovesWatcher()
     {
-        _sut.StartWatching("account1", _testDirectory);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
 
         // Shouldn't throw
-        _sut.StopWatching("account1");
+        _sut.StopWatching(new HashedAccountId(AccountIdHasher.Hash("account1")));
 
         // Stopping non-existent watcher shouldn't throw
-        _sut.StopWatching("nonExistent");
+        _sut.StopWatching(new HashedAccountId(AccountIdHasher.Hash("nonExistent")));
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -206,8 +196,8 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching("account1", _testDirectory);
-        _sut.StopWatching("account1");
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
+        _sut.StopWatching(new HashedAccountId(AccountIdHasher.Hash("account1")));
 
         // File changes after stopping should not be detected
         var testFile = Path.Combine(_testDirectory, "after_stop.txt");
@@ -222,20 +212,12 @@ public class FileWatcherServiceShould : IDisposable
     [Fact]
     public void ReplaceExistingWatcherWhenStartingWatchingSameAccount()
     {
-        _sut.StartWatching("account1", _testDirectory);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
 
         // Start watching again for same account - should stop existing watcher
-        Exception? exception = Record.Exception(() => _sut.StartWatching("account1", _testDirectory));
+        Exception? exception = Record.Exception(() => _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory));
 
         exception.ShouldBeNull();
-    }
-
-    [Fact]
-    public void ThrowArgumentNullExceptionWhenStoppingNullAccountId()
-    {
-        Exception? exception = Record.Exception(() => _sut.StopWatching(null!));
-
-        _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
 
     [Fact]
@@ -244,8 +226,8 @@ public class FileWatcherServiceShould : IDisposable
         var subFolder = Path.Combine(_testDirectory, "SubFolder");
         _ = Directory.CreateDirectory(subFolder);
 
-        _sut.StartWatching("account1", _testDirectory);
-        _sut.StartWatching("account2", subFolder);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account2")), subFolder);
 
         Exception? exception = Record.Exception(_sut.Dispose);
 
@@ -261,24 +243,20 @@ public class FileWatcherServiceShould : IDisposable
         var events = new List<FileChangeEvent>();
         using IDisposable subscription = _sut.FileChanges.Subscribe(events.Add);
 
-        _sut.StartWatching("account1", _testDirectory);
+        _sut.StartWatching(new HashedAccountId(AccountIdHasher.Hash("account1")), _testDirectory);
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         // Make rapid changes to the same file
         for(var i = 0; i < 5; i++)
         {
             await File.AppendAllTextAsync(testFile, $"update{i}", TestContext.Current.CancellationToken);
-            await Task.Delay(50, TestContext.Current.CancellationToken); // 50ms between writes (within 500ms debounce window)
+            await Task.Delay(50, TestContext.Current.CancellationToken);
         }
 
-        // Wait for debounce period
         await Task.Delay(700, TestContext.Current.CancellationToken);
 
-        // Should have received events, but likely fewer than 5 due to debouncing
         var rapidEvents = events.Where(e => e.RelativePath == "rapid.txt").ToList();
 
-        // Due to debouncing, we expect fewer events than the number of writes
-        // Exact count depends on timing, but should be significantly less than 5
         rapidEvents.Count.ShouldBeLessThan(5);
         rapidEvents.ShouldNotBeEmpty();
     }

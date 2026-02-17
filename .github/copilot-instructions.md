@@ -633,8 +633,8 @@ dotnet ef database update \
 
 ```csharp
 await DebugLog.EntryAsync(DebugLogMetadata.Services.MyService.MyMethod, accountId, cancellationToken);
-await DebugLog.InfoAsync("Source", accountId, "Message", cancellationToken);
-await DebugLog.ErrorAsync("Source", accountId, exception, "Message", cancellationToken);
+await DebugLog.LogInfoAsync("Source", accountId, "Message", cancellationToken);
+await DebugLog.LogErrorAsync("Source", accountId, exception, "Message", cancellationToken);
 ```
 
 ### Common Issues

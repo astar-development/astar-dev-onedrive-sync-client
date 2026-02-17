@@ -4,20 +4,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 ///     Represents a debug log entry.
 /// </summary>
 /// <param name="Id">Unique identifier for the log entry.</param>
-/// <param name="AccountId">Account ID associated with the log entry.</param>
+/// <param name="HashedAccountId">Hashed account ID associated with the log entry.</param>
 /// <param name="Timestamp">When the log entry was created.</param>
 /// <param name="LogLevel">Severity level (Info, Error, Entry, Exit).</param>
 /// <param name="Source">Source of the log (typically ClassName.MethodName).</param>
 /// <param name="Message">Log message content.</param>
 /// <param name="Exception">Exception details if applicable.</param>
-public sealed record DebugLogEntry(
-    int Id,
-    HashedAccountId AccountId,
-    DateTimeOffset Timestamp,
-    string LogLevel,
-    string Source,
-    string Message,
-    string? Exception
+public sealed record DebugLogEntry(int Id, HashedAccountId HashedAccountId, DateTimeOffset Timestamp, string LogLevel, string Source, string Message, string? Exception
 );
 
 public static class DebugLogEntryFactory

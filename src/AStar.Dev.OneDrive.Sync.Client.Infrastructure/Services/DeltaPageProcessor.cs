@@ -11,7 +11,7 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
     public async Task<(DeltaToken finalDelta, int pageCount, int totalItemsProcessed)> ProcessAllDeltaPagesAsync(string accountId, HashedAccountId hashedAccountId, DeltaToken deltaToken, Action<SyncState>? progressReporter,
         CancellationToken cancellationToken)
     {
-        await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId, cancellationToken);
+        await DebugLog.EntryAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, hashedAccountId, cancellationToken);
         var nextOrDelta = deltaToken.Token;
         DeltaToken finalToken = deltaToken;
         int pageCount = 0, totalItemsProcessed = 0;
@@ -21,30 +21,30 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
         {
             do
             {
-                DeltaPage page = await graphApiClient.GetDriveDeltaPageAsync(accountId, nextOrDelta, cancellationToken);
+                DeltaPage page = await graphApiClient.GetDriveDeltaPageAsync(accountId, hashedAccountId, nextOrDelta, cancellationToken);
                 DriveItemEntity? driveItemRecord = page.Items.FirstOrDefault();
                 if(driveItemRecord is not null)
                     deltaToken = new DeltaToken(accountId, hashedAccountId, driveItemRecord.DriveItemId.Split('!')[0], page.DeltaLink ?? string.Empty, DateTimeOffset.UtcNow);
 
                 totalItemsProcessed += page.Items.Count();
-                await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId, $"Received page: {pageCount} items={page.Items.Count()}", cancellationToken);
+                _ = await DebugLog.LogInfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, hashedAccountId, $"Received page: {pageCount} items={page.Items.Count()}", cancellationToken);
                 await repo.ApplyDriveItemsAsync(accountId, page.Items, cancellationToken);
                 nextOrDelta = page.NextLink;
                 if(page.DeltaLink is not null)
                     finalToken = new DeltaToken(accountId, hashedAccountId, deltaToken.Id, page.DeltaLink, DateTimeOffset.UtcNow);
 
                 pageCount++;
-                await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId,
+                _ = await DebugLog.LogInfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, hashedAccountId,
                     $"Applied page {pageCount:N0}: items={page.Items.Count():N0} totalItems={totalItemsProcessed:N0} next={page.NextLink is not null}", cancellationToken);
-                progressReporter?.Invoke(CreateSyncProgressMessage(accountId, hashedAccountId,   pageCount, totalItemsProcessed, page.NextLink is not null));
+                progressReporter?.Invoke(CreateSyncProgressMessage(accountId, hashedAccountId, pageCount, totalItemsProcessed, page.NextLink is not null));
             } while(!string.IsNullOrEmpty(nextOrDelta) && !cancellationToken.IsCancellationRequested);
 
-            await DebugLog.InfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId,
+            _ = await DebugLog.LogInfoAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, hashedAccountId,
                 $"Delta processing complete: finalToken='***REDACTED***' pageCount={pageCount:N0} totalItems={totalItemsProcessed:N0}", cancellationToken);
         }
         catch(Exception ex)
         {
-            await DebugLog.ErrorAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, accountId, $"Exception during delta processing: {ex.Message}", ex, cancellationToken);
+            _ = await DebugLog.LogErrorAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, hashedAccountId, $"Exception during delta processing: {ex.Message}", ex, cancellationToken);
             progressReporter?.Invoke(CreateErrorSyncProgress(accountId, hashedAccountId, totalItemsProcessed, ex.GetBaseException()?.Message ?? "Unknown error"));
             throw new IOException("Error processing delta pages", ex);
         }

@@ -12,13 +12,13 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.OneDriveService
 public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthService authService, ISyncConfigurationRepository syncConfigurationRepository) : IFolderTreeService
 {
     /// <inheritdoc />
-    public async Task<IReadOnlyList<OneDriveFolderNode>> GetRootFoldersAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<OneDriveFolderNode>> GetRootFoldersAsync(string accountId, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated)
             return [];
 
-        IEnumerable<DriveItem> driveItems = await graphApiClient.GetRootChildrenAsync(accountId, cancellationToken);
+        IEnumerable<DriveItem> driveItems = await graphApiClient.GetRootChildrenAsync(accountId, hashedAccountId, cancellationToken);
         IEnumerable<DriveItem> folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
@@ -40,7 +40,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
 
             nodes.Add(node);
             var possibleParentPath = SyncEngine.FormatScanningFolderForDisplay(item.Name)!.Replace("OneDrive: ", string.Empty);
-            FileMetadata configuration = await UpdateParentPathIfExistsAsync(accountId, node, possibleParentPath, cancellationToken);
+            FileMetadata configuration = await UpdateParentPathIfExistsAsync(hashedAccountId, node, possibleParentPath, cancellationToken);
 
             _ = await syncConfigurationRepository.AddAsync(configuration, cancellationToken);
         }
@@ -49,18 +49,18 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<OneDriveFolderNode>> GetChildFoldersAsync(string accountId, string parentFolderId, bool? parentIsSelected = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<OneDriveFolderNode>> GetChildFoldersAsync(string accountId, HashedAccountId hashedAccountId, string parentFolderId, bool? parentIsSelected = null, CancellationToken cancellationToken = default)
     {
         var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated)
             return [];
 
-        DriveItem? parentItem = await graphApiClient.GetDriveItemAsync(accountId, parentFolderId, cancellationToken);
+        DriveItem? parentItem = await graphApiClient.GetDriveItemAsync(accountId, hashedAccountId, parentFolderId, cancellationToken);
         var parentPath = parentItem?.ParentReference?.Path is not null
             ? $"{parentItem.ParentReference.Path}/{parentItem.Name}"
             : $"/{parentItem?.Name}";
 
-        IEnumerable<DriveItem> driveItems = await graphApiClient.GetDriveItemChildrenAsync(accountId, parentFolderId, cancellationToken);
+        IEnumerable<DriveItem> driveItems = await graphApiClient.GetDriveItemChildrenAsync(accountId, hashedAccountId, parentFolderId, cancellationToken);
         IEnumerable<DriveItem> folders = driveItems.Where(item => item.Folder is not null);
 
         var nodes = new List<OneDriveFolderNode>();
@@ -69,23 +69,13 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
             if(item.Id is null || item.Name is null)
                 continue;
 
-            var node = new OneDriveFolderNode(
-                item.Id,
-                item.Name,
-                $"{parentPath}/{item.Name}",
-                parentFolderId,
-                true);
+            var node = new OneDriveFolderNode(item.Id,item.Name,$"{parentPath}/{item.Name}",parentFolderId,true);
 
             var possibleParentPath = SyncEngine.FormatScanningFolderForDisplay(item.Name)!.Replace("OneDrive: ", string.Empty);
-            FileMetadata updatedSyncConfiguration = await UpdateParentPathIfExistsAsync(accountId, node, possibleParentPath, cancellationToken);
+            FileMetadata updatedSyncConfiguration = await UpdateParentPathIfExistsAsync(hashedAccountId, node, possibleParentPath, cancellationToken);
             var isSelected = parentIsSelected == true || updatedSyncConfiguration.IsSelected;
 
-            node = new OneDriveFolderNode(
-                item.Id,
-                item.Name,
-                $"{parentPath}/{item.Name}",
-                parentFolderId,
-                true)
+            node = new OneDriveFolderNode(item.Id, item.Name, $"{parentPath}/{item.Name}", parentFolderId, true)
             { IsSelected = isSelected };
 
             // Add placeholder child so expansion toggle appears
@@ -98,32 +88,32 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<OneDriveFolderNode>> GetFolderHierarchyAsync(string accountId, int? maxDepth = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<OneDriveFolderNode>> GetFolderHierarchyAsync(string accountId, HashedAccountId hashedAccountId, int? maxDepth = null, CancellationToken cancellationToken = default)
     {
         var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated)
             return [];
 
-        IReadOnlyList<OneDriveFolderNode> rootFolders = await GetRootFoldersAsync(accountId, cancellationToken);
+        IReadOnlyList<OneDriveFolderNode> rootFolders = await GetRootFoldersAsync(accountId, hashedAccountId, cancellationToken);
         var rootList = rootFolders.ToList();
 
         if(maxDepth is not (null or > 0))
             return rootList;
         foreach(OneDriveFolderNode? folder in rootList)
-            await LoadChildrenRecursiveAsync(accountId, folder, maxDepth, 1, cancellationToken);
+            await LoadChildrenRecursiveAsync(accountId, hashedAccountId, folder, maxDepth, 1, cancellationToken);
 
         return rootList;
     }
 
-    private async Task<FileMetadata> UpdateParentPathIfExistsAsync(string accountId, OneDriveFolderNode node, string possibleParentPath, CancellationToken cancellationToken)
+    private async Task<FileMetadata> UpdateParentPathIfExistsAsync(HashedAccountId hashedAccountId, OneDriveFolderNode node, string possibleParentPath, CancellationToken cancellationToken)
     {
-        var configuration = new FileMetadata(node.DriveItemId, accountId, node.Name, node.Path, 0, DateTime.UtcNow, "", true, false, true);
+        var configuration = new FileMetadata(node.DriveItemId, hashedAccountId, node.Name, node.Path, 0, DateTime.UtcNow, "", true, false, true);
 
         var lastIndexOf = node.Path.LastIndexOf('/');
         if(lastIndexOf > 0)
         {
             var parentPath = configuration.RelativePath[..lastIndexOf];
-            DriveItemEntity? parentEntity = await syncConfigurationRepository.GetParentFolderAsync(accountId, parentPath, possibleParentPath, cancellationToken);
+            DriveItemEntity? parentEntity = await syncConfigurationRepository.GetParentFolderAsync(hashedAccountId, parentPath, possibleParentPath, cancellationToken);
 
             if(parentEntity is not null)
             {
@@ -135,21 +125,16 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
         return configuration;
     }
 
-    private async Task LoadChildrenRecursiveAsync(
-        string accountId,
-        OneDriveFolderNode parentNode,
-        int? maxDepth,
-        int currentDepth,
-        CancellationToken cancellationToken)
+    private async Task LoadChildrenRecursiveAsync(string accountId, HashedAccountId hashedAccountId, OneDriveFolderNode parentNode, int? maxDepth, int currentDepth, CancellationToken cancellationToken)
     {
         if(maxDepth.HasValue && currentDepth >= maxDepth.Value)
             return;
 
-        IReadOnlyList<OneDriveFolderNode> children = await GetChildFoldersAsync(accountId, parentNode.DriveItemId, parentNode.IsSelected, cancellationToken);
+        IReadOnlyList<OneDriveFolderNode> children = await GetChildFoldersAsync(accountId, hashedAccountId, parentNode.DriveItemId, parentNode.IsSelected, cancellationToken);
         foreach(OneDriveFolderNode child in children)
         {
             parentNode.Children.Add(child);
-            await LoadChildrenRecursiveAsync(accountId, child, maxDepth, currentDepth + 1, cancellationToken);
+            await LoadChildrenRecursiveAsync(accountId, hashedAccountId, child, maxDepth, currentDepth + 1, cancellationToken);
         }
 
         parentNode.ChildrenLoaded = true;

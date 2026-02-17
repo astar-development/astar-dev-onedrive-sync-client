@@ -19,7 +19,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 public sealed class FileWatcherService(ILogger<FileWatcherService> logger) : IFileWatcherService
 {
     private readonly Subject<FileChangeEvent> _fileChanges = new();
-    private readonly Dictionary<string, WatcherContext> _watchers = [];
+    private readonly Dictionary<HashedAccountId, WatcherContext> _watchers = [];
     private bool _disposed;
 
     /// <inheritdoc />

@@ -3,7 +3,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using System.Security.Policy;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
@@ -75,10 +74,10 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             })
             .DisposeWith(_disposables);
 
-        var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? string.Empty);
-        using(Serilog.Context.LogContext.PushProperty("AccountHash", accountHash))
+        var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id);
+        using(Serilog.Context.LogContext.PushProperty("HashedAccountId", accountHash))
         {
-            _ = _debugLogger.LogInfoAsync("SyncTreeViewModel", SelectedAccountId ?? string.Empty, "Starting sync for account");
+            _ = _debugLogger.LogInfoAsync("SyncTreeViewModel", new HashedAccountId(accountHash), "Starting sync for account");
         }
 
         SyncTooltip = "This will perform the initial sync, which will retrieve details of all files and folders from OneDrive. This may take some time depending on the number of files. Subsequent syncs will be faster as only changes (and your selections) are processed.";
@@ -118,7 +117,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
-    public HashedAccountId SelectedHashedAccountId => string.IsNullOrEmpty(SelectedAccountId) ? null : AccountIdHasher.Hash(SelectedAccountId);
+    public HashedAccountId? SelectedHashedAccountId => new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId));
 
     /// <summary>
     ///     Gets the root-level folders for the selected account.
@@ -166,7 +165,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     {
         get;
         private set => this.RaiseAndSetIfChanged(ref field, value);
-    } = SyncState.CreateInitial(string.Empty, string.Empty);
+    } = SyncState.CreateInitial(string.Empty, new HashedAccountId(AdminAccountMetadata.HashedAccountId));
 
     /// <summary>
     ///     Gets a value indicating whether sync is currently running.
@@ -274,7 +273,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 SyncButtonText = "Start Sync";
             }
 
-            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, cancellationToken);
+            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id)), cancellationToken);
 
             Folders.Clear();
 
@@ -305,7 +304,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         catch(Exception ex)
         {
             ErrorMessage = $"Failed to load folders: {ex.GetBaseException().Message}";
-            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", SelectedAccountId, $"Loading folders for account {SelectedAccountId}. {ErrorMessage}", cancellationToken: cancellationToken);
+            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), $"Loading folders for account {SelectedAccountId}. {ErrorMessage}", cancellationToken: cancellationToken);
         }
         finally
         {
@@ -323,11 +322,11 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             folder.IsLoading = true;
             folder.Children.Clear();
 
-            IReadOnlyList<OneDriveFolderNode> children = await _folderTreeService.GetChildFoldersAsync(SelectedAccountId, folder.DriveItemId, folder.IsSelected, cancellationToken);
+            IReadOnlyList<OneDriveFolderNode> children = await _folderTreeService.GetChildFoldersAsync(SelectedAccountId, new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), folder.DriveItemId, folder.IsSelected, cancellationToken);
             foreach(OneDriveFolderNode child in children)
                 folder.Children.Add(child);
 
-            await _selectionService.LoadSelectionsFromDatabaseAsync(SelectedAccountId, [.. folder.Children], cancellationToken);
+            await _selectionService.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), [.. folder.Children], cancellationToken);
 
             _selectionService.UpdateParentState(folder);
 
@@ -336,6 +335,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         catch(Exception ex)
         {
             ErrorMessage = $"Failed to load child folders: {ex.Message}";
+            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadChildrenAsync", new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), $"Loading child folders for account {SelectedAccountId}. {ErrorMessage}", ex, cancellationToken);
         }
         finally
         {
@@ -362,11 +362,11 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             {
                 try
                 {
-                    await _selectionService.SaveSelectionsToDatabaseAsync(SelectedAccountId, [.. Folders]);
+                    await _selectionService.SaveSelectionsToDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), [.. Folders]);
                 }
                 catch(Exception ex)
                 {
-                    await _debugLogger.LogErrorAsync("SyncTreeViewModel.ToggleSelection", SelectedAccountId, $"Saving selections for account {SelectedAccountId}. {ex.Message}", ex);
+                    await _debugLogger.LogErrorAsync("SyncTreeViewModel.ToggleSelection", new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), $"Saving selections for account {SelectedAccountId}. {ex.Message}", ex);
                 }
             });
         }
@@ -384,7 +384,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             {
                 try
                 {
-                    await _selectionService.SaveSelectionsToDatabaseAsync(SelectedAccountId, [.. Folders]);
+                    await _selectionService.SaveSelectionsToDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id)), [.. Folders]);
                 }
                 catch
                 {
@@ -396,14 +396,14 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
     private async Task StartSyncAsync(CancellationToken cancellationToken = default)
     {
-        await DebugLog.EntryAsync(ApplicationMetadata.UI.SyncTreeViewModel.StartSync, SelectedAccountId ?? AdminAccountMetadata.HashedAccountId, cancellationToken);
+        await DebugLog.EntryAsync(ApplicationMetadata.UI.SyncTreeViewModel.StartSync, new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), cancellationToken);
         if(string.IsNullOrEmpty(SelectedAccountId))
             return;
 
         try
         {
             LastSyncResult = null;
-            await _syncEngine.StartSyncAsync(SelectedAccountId, SelectedHashedAccountId, cancellationToken);
+            await _syncEngine.StartSyncAsync(SelectedAccountId, new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), cancellationToken);
 
             if(SyncState.Status == SyncStatus.Completed)
             {

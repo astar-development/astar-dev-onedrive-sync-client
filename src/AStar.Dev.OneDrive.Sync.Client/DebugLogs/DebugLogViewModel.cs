@@ -1,10 +1,9 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
-using AStar.Dev.Logging.Extensions.Serilog;
-using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
+using AStar.Dev.Utilities;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Sync.Client.DebugLogs;
@@ -14,7 +13,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.DebugLogs;
 /// </summary>
 public sealed class DebugLogViewModel : ReactiveObject
 {
-    private const int _pageSize = 50;
     private readonly IAccountRepository _accountRepository;
     private readonly IDebugLogRepository _debugLogRepository;
     private readonly IDebugLogger _debugLogger;
@@ -63,7 +61,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             if(value is not null)
             {
                 CurrentPage = 1;
-                _ = LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
+                _ = LoadLogsAsync();
             }
         }
     }
@@ -118,6 +116,33 @@ public sealed class DebugLogViewModel : ReactiveObject
     }
 
     /// <summary>
+    ///    Gets the number of records to load per page. Default is 50.
+    /// </summary>
+    public int PageSize
+    {
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    } = 50;
+
+    /// <summary>
+    ///    Gets the number of records to load per page. Default is 50.
+    /// </summary>
+    public int StartingCountOfItemsDisplayed
+    {
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    } = 50;
+
+    /// <summary>
+    ///   Gets the number of records to load per page. Default is 50.
+    /// </summary>
+    public int EndingCountOfItemsDisplayed
+    {
+        get;
+        private set => this.RaiseAndSetIfChanged(ref field, value);
+    } = 50;
+
+    /// <summary>
     ///     Gets a value indicating whether the user can navigate to the next page.
     /// </summary>
     public bool CanGoToNextPage => HasMoreRecords && !IsLoading;
@@ -147,7 +172,9 @@ public sealed class DebugLogViewModel : ReactiveObject
         try
         {
             IReadOnlyList<AccountInfo> accounts = await _accountRepository.GetAllAsync();
+
             Accounts.Clear();
+
             foreach(AccountInfo account in accounts)
                 Accounts.Add(account);
         }
@@ -157,32 +184,16 @@ public sealed class DebugLogViewModel : ReactiveObject
         }
     }
 
-    public async Task LoadAllLogsAsync(string applicationFolder)
+    public async Task LoadLogsAsync()
     {
-        var logDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            applicationFolder, "logs");
-        IEnumerable<string> allFiles = SerilogLogFileLocator.GetAllLogFiles(logDir);
-
         DebugLogs.Clear();
+        IReadOnlyList<DebugLogEntry> debugLogs = await _debugLogRepository.GetByAccountIdAsync(SelectedAccount!.HashedAccountId, PageSize, (CurrentPage - 1) * PageSize);
 
-        var id = 1;
+        debugLogs.ForEach(DebugLogs.Add);
 
-        var accountHash = SelectedAccount is not null
-            ? AccountIdHasher.Hash(SelectedAccount.HashedAccountId)
-            : string.Empty;
-
-        foreach(var file in allFiles.Where(f => f.Contains(accountHash)))
-        {
-            var lines = await File.ReadAllLinesAsync(file);
-
-            foreach(var line in lines)
-            {
-                DebugLogEntry? entry = SerilogLogParser.Parse(line, id++);
-                if(entry is not null)
-                    DebugLogs.Add(entry);
-            }
-        }
+        TotalRecordCount = await _debugLogRepository.GetDebugLogCountByAccountIdAsync(SelectedAccount!.HashedAccountId);
+        StartingCountOfItemsDisplayed = ((CurrentPage - 1) * PageSize) + 1;
+        EndingCountOfItemsDisplayed = StartingCountOfItemsDisplayed + PageSize - 1;
     }
 
     private async Task LoadNextPageAsync()
@@ -191,7 +202,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             return;
 
         CurrentPage++;
-        await LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
+        await LoadLogsAsync();
     }
 
     private async Task LoadPreviousPageAsync()
@@ -200,7 +211,7 @@ public sealed class DebugLogViewModel : ReactiveObject
             return;
 
         CurrentPage--;
-        await LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
+        await LoadLogsAsync();
     }
 
     private async Task ClearLogsAsync()
@@ -213,7 +224,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         {
             await _debugLogRepository.DeleteByAccountIdAsync(SelectedAccount.HashedAccountId);
             CurrentPage = 1;
-            await LoadAllLogsAsync(ApplicationMetadata.ApplicationFolder);
+            await LoadLogsAsync();
         }
         catch(Exception)
         {

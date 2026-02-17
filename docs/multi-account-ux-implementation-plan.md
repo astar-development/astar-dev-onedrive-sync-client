@@ -1,7 +1,7 @@
 # Multi-Account OneDrive Sync - UX Implementation Plan
 
-**Project**: AStar Dev - OneDrive Client V3  
-**Date**: January 5, 2026  
+**Project**: AStar Dev - OneDrive Client V3
+**Date**: January 5, 2026
 **Status**: Planning Phase
 
 ---
@@ -15,6 +15,7 @@ This document outlines the implementation plan for rewriting the OneDrive sync s
 ## Requirements Overview
 
 ### Core Features
+
 1. **Multi-Account Support**: Support up to 3 OneDrive accounts simultaneously
 2. **Per-Account Sync Directories**: Each account syncs to a separate local directory
 3. **Dynamic Account Management UI**: Login/logout buttons that adapt based on number of active accounts
@@ -22,6 +23,7 @@ This document outlines the implementation plan for rewriting the OneDrive sync s
 5. **Default Selection**: All folders checked by default for sync
 
 ### User Flow
+
 1. Initial screen shows single Login/Logout button pair
 2. After first login, "Add Account" button appears
 3. Subsequent accounts show account-specific Login/Logout buttons
@@ -35,7 +37,7 @@ This document outlines the implementation plan for rewriting the OneDrive sync s
 
 ### Project Structure
 
-```
+``` text
 src/
 ├── Authentication/
 │   ├── IAuthService.cs
@@ -183,6 +185,7 @@ public enum SyncDirection
 ```
 
 **Implementation Notes**:
+
 - Use **SQLite database** for all persistent storage (settings, sync state, delta tokens)
 - Database location: `AppData\Local\AStarOneDriveClient\sync.db`
 - Use **Entity Framework Core** with SQLite provider for data access
@@ -236,6 +239,7 @@ public interface IMultiAccountManager
 ```
 
 **Key Responsibilities**:
+
 - Coordinate with existing `IAuthService` for MSAL operations
 - Manage MSAL token cache per account (using persistent cache serialization to disk)
 - Enforce 3-account limit
@@ -255,6 +259,7 @@ public interface IMultiAccountManager
 #### 2.1 AccountManagementView (AXAML)
 
 **UI Components**:
+
 - `ItemsControl` bound to `Accounts` collection
 - Each item contains:
   - `TextBlock` showing account email/name
@@ -265,6 +270,7 @@ public interface IMultiAccountManager
 - `Button` for "Add Account" (visible when `Accounts.Count < 3`)
 
 **Layout Considerations**:
+
 - Stack accounts vertically
 - Use `IsVisible` binding for conditional button display
 - Consider `DataTemplate` for account items
@@ -395,6 +401,7 @@ public sealed class AccountViewModel : ReactiveObject
 **Testing Priority**: HIGH (property notifications, command execution)
 
 **Specific Tests**:
+
 - Verify `CanAddAccount` updates when accounts added/removed
 - Test `ShowLoginButton` / `ShowLogoutButton` visibility logic
 - Verify commands fire and propagate to `IMultiAccountManager`
@@ -606,6 +613,7 @@ public sealed class FolderTreeService : IFolderTreeService
 ```
 
 **Microsoft Graph API Notes**:
+
 - Special folders endpoint: `/me/drive/special/{folderName}`
 - Children endpoint: `/me/drive/items/{itemId}/children`
 - Use `$filter=folder ne null` to get only folders
@@ -622,6 +630,7 @@ public sealed class FolderTreeService : IFolderTreeService
 #### 4.1 SyncTreeView (AXAML)
 
 **UI Components**:
+
 - `TreeView` control bound to `RootFolders` collection
 - Each `TreeViewItem` contains:
   - `CheckBox` bound to `IsSelected`
@@ -631,6 +640,7 @@ public sealed class FolderTreeService : IFolderTreeService
 - "Start Sync" button
 
 **Avalonia TreeView Pattern**:
+
 ```xml
 <TreeView ItemsSource="{Binding RootFolders}">
     <TreeView.ItemTemplate>
@@ -645,6 +655,7 @@ public sealed class FolderTreeService : IFolderTreeService
 ```
 
 **Lazy Loading**:
+
 - Listen to `TreeViewItem.Expanded` event
 - Load children on first expansion
 - Cache loaded children
@@ -828,6 +839,7 @@ public sealed class SyncTreeViewModel : ReactiveObject
 ```
 
 **Checkbox Behavior** (Tri-State Implemented):
+
 - **Checked (✓)**: All children selected (or leaf node explicitly checked)
 - **Unchecked (☐)**: All children unselected (or leaf node explicitly unchecked)
 - **Indeterminate (⊟)**: Some children selected, some unselected (mixed state)
@@ -838,6 +850,7 @@ public sealed class SyncTreeViewModel : ReactiveObject
 **Testing Priority**: HIGH (tree traversal logic, selection state management)
 
 **Specific Tests**:
+
 - Verify lazy loading doesn't load children until expanded
 - Test `CollectSelectedPaths` includes all nested selections correctly
 - Verify saved configuration is restored correctly
@@ -929,6 +942,7 @@ public sealed class MainWindowViewModel : ReactiveObject
 ```
 
 **Navigation Pattern**:
+
 - Use `CurrentView` property with `ContentControl`
 - DataTemplates map ViewModels to Views
 - ViewModels raise events/commands to trigger navigation (or use interaction messaging)
@@ -1204,6 +1218,7 @@ public sealed class FileWatcherService : IFileWatcherService, IDisposable
 ```
 
 **Key Features**:
+
 - Monitors local sync directory for file changes
 - Debounces rapid changes (500ms) to avoid processing partial writes
 - Publishes observable stream of changes
@@ -1220,11 +1235,12 @@ public sealed class FileWatcherService : IFileWatcherService, IDisposable
 
 The [Delta Query](https://learn.microsoft.com/en-us/graph/delta-query-overview) allows efficient sync by only fetching changes since last sync:
 
-```
+``` text
 GET /me/drive/root/delta?token={deltaToken}
 ```
 
 Response includes:
+
 - `@odata.deltaLink` - Token for next delta query
 - `value[]` - Changed items (added, modified, deleted)
 
@@ -1507,6 +1523,7 @@ public sealed class DeltaSyncEngine : IDeltaSyncEngine
 ```
 
 **Key Delta Sync Features**:
+
 - **Bidirectional**: Downloads from OneDrive + uploads local changes
 - Uses Graph API delta token to fetch only remote changes
 - Uses `FileSystemWatcher` to detect local changes
@@ -1518,11 +1535,13 @@ public sealed class DeltaSyncEngine : IDeltaSyncEngine
 - Handles file additions, modifications, and deletions (both directions)
 
 **Change Detection Strategy**:
+
 1. **Remote changes**: Use OneDrive's `cTag` (change tag) + `lastModifiedDateTime` + `size`
 2. **Local changes**: Detect via `FileSystemWatcher`, compute SHA256 hash on upload
 3. **Conflict detection**: If both remote cTag changed AND local file modified since last sync
 
 **Why cTag over SHA256?**
+
 - OneDrive provides `cTag` - it changes whenever content changes
 - No need to compute SHA256 for downloaded files (saves CPU)
 - SHA256 only computed for local files being uploaded
@@ -1638,6 +1657,7 @@ public sealed class ConflictResolver : IConflictResolver
 #### 8.1 SyncProgressView
 
 **UI Components**:
+
 - Progress bar (percentage complete)
 - File counter: "Syncing 45 of 200 files"
 - Transfer rate: "5.2 MB/sec"
@@ -1747,6 +1767,7 @@ public sealed class SyncProgressViewModel : ReactiveObject
 **Purpose**: Allow user to resolve detected conflicts
 
 **UI Components**:
+
 - List of conflicts with file paths
 - For each conflict:
   - Local modified date vs Remote modified date
@@ -1934,7 +1955,8 @@ public sealed class AccountRepository : IAccountRepository
 ```
 
 **Storage Structure**:
-```
+
+``` text
 %LocalAppData%\AStarOneDriveClient\
 ├── sync.db                          # SQLite database (all settings, sync state, metadata)
 └── token_cache.bin                  # MSAL token cache (encrypted, persistent)
@@ -1945,6 +1967,7 @@ public sealed class AccountRepository : IAccountRepository
 **Testing Priority**: HIGH (file I/O, serialization)
 
 **Testing with MockFileSystem**:
+
 ```csharp
 public class AccountConfigServiceShould
 {
@@ -2017,6 +2040,7 @@ public class AccountConfigServiceShould
 **Challenge**: MSAL token cache management for multiple accounts with persistent disk cache
 
 **Solution**:
+
 ```csharp
 // Use MSAL's built-in token cache serialization with PERSISTENT disk storage
 var app = PublicClientApplicationBuilder
@@ -2066,6 +2090,7 @@ if (account is not null)
 ```
 
 **Key Points**:
+
 - **MSAL token cache MUST be persisted to disk** to avoid repeated login prompts
 - Use `MsalCacheHelper` with `token_cache.bin` file for cross-session persistence
 - MSAL manages multiple accounts natively
@@ -2077,6 +2102,7 @@ if (account is not null)
 ### Graph API Folder Hierarchy
 
 **Efficient Folder Traversal**:
+
 ```csharp
 // Avoid: Loading entire tree upfront (can be 1000s of folders)
 // Instead: Lazy load on expand
@@ -2089,6 +2115,7 @@ if (account is not null)
 ```
 
 **Performance Optimization**:
+
 - Cache loaded nodes to avoid re-fetching
 - Use `$select` to minimize payload
 - Implement cancellation for expand operations
@@ -2114,6 +2141,7 @@ private static string GenerateSyncPath(string email, string rootPath)
 ```
 
 **Benefits**:
+
 - Unique per account
 - Short path length
 - No special character issues
@@ -2122,6 +2150,7 @@ private static string GenerateSyncPath(string email, string rootPath)
 ### Checkbox Tree Patterns
 
 **Tri-State Checkbox Implementation**:
+
 - **Checked (✓)**: All children selected
 - **Unchecked (☐)**: No children selected
 - **Indeterminate (⊟)**: Some children selected (mixed state)
@@ -2129,12 +2158,14 @@ private static string GenerateSyncPath(string email, string rootPath)
 **Complete Implementation** (see `OneDriveFolderNode` above):
 
 **Key Features**:
+
 1. **Automatic Tri-State Computation**: Parent nodes compute state from children
 2. **Cascading Selection**: Setting parent to true/false cascades to all descendants
 3. **Upward Propagation**: Child changes trigger parent state recalculation
 4. **Indeterminate Handling**: Null state indicates mixed selection
 
 **Usage in ViewModel**:
+
 ```csharp
 private void AttachExpandHandler(OneDriveFolderNode node)
 {
@@ -2171,6 +2202,7 @@ private async Task LoadChildrenAsync(
 ```
 
 **Avalonia XAML Binding**:
+
 ```xml
 <TreeView ItemsSource="{Binding RootFolders}">
     <TreeView.ItemTemplate>
@@ -2190,6 +2222,7 @@ private async Task LoadChildrenAsync(
 ```
 
 **Testing Scenarios**:
+
 1. Check parent → all children become checked
 2. Uncheck parent → all children become unchecked
 3. Check some children → parent becomes indeterminate
@@ -2202,7 +2235,7 @@ private async Task LoadChildrenAsync(
 
 ### Account Management View Mockup
 
-```
+``` text
 ┌──────────────────────────────────────────────────────┐
 │  OneDrive Multi-Account Sync                         │
 ├──────────────────────────────────────────────────────┤
@@ -2222,7 +2255,7 @@ private async Task LoadChildrenAsync(
 
 ### Sync Tree View Mockup (Tri-State Checkboxes)
 
-```
+``` text
 ┌──────────────────────────────────────────────────────┐
 │  Sync Folders - john.doe@example.com                 │
 ├──────────────────────────────────────────────────────┤
@@ -2248,6 +2281,7 @@ private async Task LoadChildrenAsync(
 ```
 
 **Tri-State Behavior Examples**:
+
 - Clicking **Documents** (currently indeterminate) → toggles to checked → all children checked
 - Clicking **Documents** again → toggles to unchecked → all children unchecked
 - Clicking **Documents** again → toggles back to checked
@@ -2259,44 +2293,54 @@ private async Task LoadChildrenAsync(
 ## Design Decisions (Resolved)
 
 ### 1. Sync Directory Selection ✅
+
 **Decision**: User chooses sync directory per account via folder picker
 
 **Requirements**:
+
 - Each account must have a unique, non-overlapping sync directory
 - Validate path uniqueness and writeability
 - No nested sync directories allowed (e.g., Account2 sync path cannot be inside Account1's path)
 - Path validation performed before account creation
 
 ### 2. Folder Selection Persistence ✅
+
 **Decision**: Auto-save folder selections
 
 **Implementation**:
+
 - Use ReactiveUI's observable pattern to detect checkbox changes
 - Debounce changes by 500ms to avoid excessive database writes
 - Save to SQLite database automatically (no "Save" button needed)
 - User sees folder selection immediately reflected in database
 
 ### 3. Sync Initiation ✅
+
 **Decision**: Manual trigger via "Start Sync" button
 
 **Rationale**:
+
 - User may want to make multiple folder selections before starting
 - Clear, explicit control over when sync begins
 - Future: Add scheduled/automatic sync option
 
 ### 4. Account Removal ✅
+
 **Decision**: Prompt user with dialog: "Keep synced files" or "Delete synced files"
 
 **Implementation**:
+
 - Show confirmation dialog with two options
 - Default: Keep files (safer)
 - If "Delete" chosen, recursively remove LocalSyncPath directory
 - Always remove account from database and clear MSAL cache
 
 ### 5. Storage Mechanism ✅
+
 **Decision**: SQLite database for all persistent data
 
 **Data Stored**:
+
 - Account settings and credentials
 - Folder selection preferences per account
 - Delta tokens for resuming sync
@@ -2304,30 +2348,36 @@ private async Task LoadChildrenAsync(
 - File metadata for change detection
 
 **Rationale**:
+
 - Structured queries (filter by account, path, status)
 - ACID transactions (atomic updates)
 - Better performance than JSON files
 - Native support for concurrent access
 
 ### 6. Sync Approach ✅
+
 **Decision**: Microsoft Graph Delta Sync
 
 **Implementation**:
+
 - Use `/delta` endpoint to fetch only changes since last sync
 - Persist delta token to database for resume capability
 - Support pause/resume even after app restart
 - Track progress: files, bytes, transfer rate, ETA
 
 ### 7. Token Caching ✅
+
 **Decision**: MSAL token cache persisted to disk
 
 **Implementation**:
+
 - Use `MsalCacheHelper` with `token_cache.bin` file
 - Tokens cached across app sessions
 - Silent token acquisition to avoid repeated login prompts
 - Only prompt for interactive login if token expired and refresh fails
 
 ### 8. Conflict Handling (Future)
+
 **Question**: How to handle conflicts when file changed in both places?
 
 **Recommendation**: Address in future sprint after core sync working
@@ -2337,6 +2387,7 @@ private async Task LoadChildrenAsync(
 ## Implementation Timeline
 
 ### Sprint 1 (Week 1-2): Foundation
+
 - [x] **Step 1.1**: Create solution & projects
 - [x] **Step 1.2**: Add NuGet packages & dependencies
 - [x] **Step 1.3**: Setup database context & migrations (include WindowPreferences table)
@@ -2347,6 +2398,7 @@ private async Task LoadChildrenAsync(
 - [x] **Step 1.7**: Setup dependency injection
 
 ### Sprint 2 (Week 3-4): Account Management UI
+
 - [x] **Step 2.1**: Create `AccountManagementViewModel` with ReactiveUI properties (account list, selected account, commands)
 - [x] **Step 2.2**: Add ViewModel tests for property notifications and command execution
 - [x] **Step 2.3**: Create `IAuthService` interface for MSAL authentication
@@ -2357,6 +2409,7 @@ private async Task LoadChildrenAsync(
 - [x] **Step 2.8**: Register services in DI and update MainWindow to show account management (AuthService registered as singleton with factory, MainWindow now displays AccountManagementView)
 
 ### Sprint 3 (Week 5-6): Folder Tree Service & Graph API Integration
+
 - [x] **Step 3.1**: Create `OneDriveFolderNode` model with properties (Id, Name, Path, ParentId, IsFolder, Children collection)
 - [x] **Step 3.2**: Create `IFolderTreeService` interface with methods (GetRootFoldersAsync, GetChildFoldersAsync, GetFolderHierarchyAsync)
 - [x] **Step 3.3**: Create `IGraphApiClient` wrapper interface (similar to IAuthenticationClient pattern) with methods for testability
@@ -2367,6 +2420,7 @@ private async Task LoadChildrenAsync(
 - [x] **Step 3.8**: Manual testing against real OneDrive account (verify folder structure loads correctly) - Verified working with real OneDrive account
 
 ### Sprint 4 (Week 7-8): Sync Tree UI (Tri-State Checkboxes)
+
 - [x] **Step 4.1**: Add tri-state selection properties to OneDriveFolderNode (IsSelected nullable bool, SelectionState enum: Unchecked/Checked/Indeterminate) - Created SelectionState enum, updated OneDriveFolderNode to inherit from ReactiveObject with SelectionState and IsSelected properties using RaiseAndSetIfChanged + 14 unit tests covering property change notifications, all selection states, and observable collection behavior
 - [x] **Step 4.2**: Create ISyncSelectionService interface for managing folder selection state - Created interface with SetSelection, UpdateParentStates, GetSelectedFolders, ClearAllSelections, and CalculateStateFromChildren methods
 - [x] **Step 4.3**: Implement SyncSelectionService with cascading selection logic (parent→children) + unit tests - Implemented service with cascading logic, indeterminate state calculation + 22 unit tests covering selection cascading, parent state updates, upward propagation, state calculation, and argument validation
@@ -2377,6 +2431,7 @@ private async Task LoadChildrenAsync(
 - [x] **Step 4.8**: Integration tests with AccountManagementView and manual testing of selection behavior - Integration tests created (SyncTreeViewModelPersistenceIntegrationShould), manual testing completed, folder selection persistence working
 
 ### Sprint 5 (Week 9-10): Database & Persistence
+
 - [x] Design SQLite database schema - Schema designed with AccountInfo, SyncConfigurations, WindowPreferences, FileMetadata tables
 - [x] Setup EF Core with migrations - EF Core 9.0 configured, InitialCreate migration created (20260105204114), database stored in LocalApplicationData
 - [x] Implement repository interfaces - IAccountRepository, ISyncConfigRepository implemented with full CRUD operations
@@ -2384,6 +2439,7 @@ private async Task LoadChildrenAsync(
 - [x] Migrate from in-memory to database storage - Fully migrated to SQLite database at %LocalAppData%\AStarOneDriveClient\sync.db
 
 ### Sprint 6 (Week 11-13): Delta Sync Engine (Bidirectional)
+
 - [ ] Implement `IFileWatcherService` for local change detection - NOT YET IMPLEMENTED (future work - on-demand scanning via LocalFileScanner works for now)
 - [x] Implement `ISyncEngine` interface - ✅ COMPLETE: ISyncEngine with downloads, uploads, and deletions working
 - [x] Integrate Graph API for downloads - ✅ COMPLETE: Real file downloads with IGraphApiClient.DownloadFileAsync, streaming, SHA256 verification
@@ -2396,6 +2452,7 @@ private async Task LoadChildrenAsync(
 - [x] Test conflict scenarios - ✅ COMPLETE: Manual testing completed with all conflict resolution strategies
 
 ### Sprint 7 (Week 14-15): Sync Progress & Conflict Resolution UI
+
 - [x] Create `ConflictResolutionView.axaml` - ✅ COMPLETE: View with DataGrid showing all conflicts, columns for file path, local/remote timestamps and sizes, resolution strategy dropdown
 - [x] Implement `ConflictResolutionViewModel` - ✅ COMPLETE: ViewModel with ConflictItems observable collection, ResolveConflictsCommand, CancelCommand, full ReactiveUI integration
 - [x] Implement conflict resolution strategies - ✅ COMPLETE: KeepLocal, KeepRemote, KeepBoth (with rename), Skip - all strategies implemented in ConflictResolver service
@@ -2412,6 +2469,7 @@ private async Task LoadChildrenAsync(
 - [x] Ensure UI updates don't block sync - ✅ COMPLETE: All async operations with CancellationToken, ReactiveUI scheduling ensures UI responsiveness
 
 ### Sprint 8 (Week 16-17): Integration & Navigation
+
 - [x] Update `MainWindowViewModel` for navigation - MainWindowViewModel implemented with coordination between AccountManagementViewModel and SyncTreeViewModel, reactive binding wires selected account to sync tree
 - [x] Wire up all views in `MainWindow.axaml` - MainWindow.axaml implemented with 2-column grid layout: AccountManagementView (left) and SyncTreeView (right)
 - [x] Integrate sync engine with folder selection - SyncEngine integrated with database folder selection loading, selected folders retrieved from SyncConfigurations table, sync operates on selected folders only
@@ -2420,6 +2478,7 @@ private async Task LoadChildrenAsync(
 - [x] Fix any integration issues - Major integration issues resolved: authentication accountId parameter refactoring, Graph API Root property handling, folder selection persistence (empty string filtering), LocalPath population, upload ID preservation
 
 ### Sprint 9 (Week 18-19): Polish & Testing
+
 - [ ] End-to-end testing (full bidirectional sync workflows)
 - [ ] Test pause/resume across app restarts
 - [ ] Test conflict resolution with various strategies
@@ -2451,6 +2510,7 @@ private async Task LoadChildrenAsync(
 ## Dependencies & Libraries
 
 ### Required NuGet Packages
+
 - **Microsoft.Identity.Client** (MSAL): ^4.60+
 - **Microsoft.Identity.Client.Extensions.Msal**: ^4.60+ (for token cache persistence)
 - **Microsoft.Graph** (Graph SDK): ^5.50+
@@ -2464,6 +2524,7 @@ private async Task LoadChildrenAsync(
 - **Microsoft.Extensions.DependencyInjection**: Built-in
 
 ### Development/Testing
+
 - **xUnit**: ^3.0+
 - **Shouldly**: ^4.2+
 - **NSubstitute**: ^5.1+
@@ -2474,6 +2535,7 @@ private async Task LoadChildrenAsync(
 ## Success Criteria
 
 ### Functional Requirements
+
 - [x] User can add up to 3 OneDrive accounts
 - [x] Each account has independent login/logout with persistent token cache
 - [x] User selects unique sync directory per account
@@ -2492,6 +2554,7 @@ private async Task LoadChildrenAsync(
 - [x] EF Core migrations for database schema versioning
 
 ### Non-Functional Requirements
+
 - **Performance**: Folder tree loads in <2 seconds for typical user
 - **Reliability**: No crashes on network errors or API failures
 - **Usability**: Intuitive UI, no user training required
@@ -2518,12 +2581,14 @@ private async Task LoadChildrenAsync(
 This implementation plan provides a structured approach to building the multi-account OneDrive sync solution with improved UX. The phased approach allows for incremental development and testing, ensuring each component is solid before integration.
 
 **Next Steps**:
+
 1. Review and approve this plan
 2. Clarify open questions (Sections "Open Questions & Decisions Needed")
 3. Set up project tracking (Jira/Azure DevOps/GitHub Projects)
 4. Begin Sprint 1 implementation
 
 **Questions? Clarifications?**
+
 - How should we handle existing accounts from V2 (if any)?
 - Do we need data migration from previous version?
 - Any specific Graph API permissions constraints?
@@ -2531,6 +2596,6 @@ This implementation plan provides a structured approach to building the multi-ac
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: January 5, 2026  
+**Document Version**: 1.0
+**Last Updated**: January 5, 2026
 **Status**: Awaiting Approval

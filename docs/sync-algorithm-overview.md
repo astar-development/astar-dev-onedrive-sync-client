@@ -1,7 +1,7 @@
 # Bidirectional Sync Algorithm - Technical Overview
 
-**Project**: AStar Dev - OneDrive Client V3  
-**Date**: January 5, 2026  
+**Project**: AStar Dev - OneDrive Client V3
+**Date**: January 5, 2026
 **Related**: [Implementation Plan](./multi-account-ux-implementation-plan.md)
 
 ---
@@ -22,7 +22,7 @@ This document provides a technical overview of the bidirectional synchronization
 
 ## Architecture Components
 
-```
+``` text
 ┌─────────────────────────────────────────────────────────┐
 │                   DeltaSyncEngine                       │
 │  (Orchestrates bidirectional sync)                      │
@@ -62,7 +62,7 @@ This document provides a technical overview of the bidirectional synchronization
 
 ### High-Level Process
 
-```
+``` text
 1. START SYNC
    ├─► Phase 1: Process Remote Changes (OneDrive → Local)
    │   ├─► Fetch delta changes from Graph API
@@ -154,15 +154,18 @@ GET https://graph.microsoft.com/v1.0/me/drive/root/delta?token={deltaToken}
 ```
 
 **Response**:
+
 - `value[]`: Array of changed items (files/folders)
 - `@odata.deltaLink`: URL with new delta token for next query
 
 **Delta Token**:
+
 - First sync: No token (fetches all items)
 - Subsequent syncs: Use saved token (only returns changes)
 - Persisted in database for resume capability
 
 **Advantages**:
+
 - ✅ Efficient: Only fetches changes, not entire file tree
 - ✅ Server-side: OneDrive tracks changes, no client scanning
 - ✅ Comprehensive: Captures all change types (add, modify, delete, rename)
@@ -187,12 +190,14 @@ watcher.Renamed += OnFileRenamed;
 ```
 
 **Change Processing**:
+
 1. File watcher detects change event
 2. Debounce 500ms to avoid partial writes
 3. Mark file as `PendingUpload` in database
 4. Next sync processes all pending uploads
 
 **Advantages**:
+
 - ✅ Real-time: Detects changes immediately
 - ✅ Reliable: OS-level file system notifications
 - ✅ Efficient: No polling required
@@ -204,6 +209,7 @@ watcher.Renamed += OnFileRenamed;
 ### Definition
 
 A **conflict** occurs when:
+
 - Remote file changed (cTag differs from saved cTag) **AND**
 - Local file changed (modification time > last sync time)
 
@@ -235,6 +241,7 @@ bool BothSidesChanged(FileMetadata? localMetadata, RemoteChange remoteChange)
 | **OneDrive cTag** | Fast, accurate, provided by OneDrive | Requires API metadata |
 
 **Chosen Strategy**: **cTag + Timestamp**
+
 - Remote: Use OneDrive's `cTag` (changes with content)
 - Local: Compare file modification timestamp
 - Only compute SHA256 for local files being uploaded (not for conflict detection)
@@ -259,6 +266,7 @@ public enum ConflictResolutionStrategy
 ### Strategy Implementation
 
 #### KeepLocal
+
 ```csharp
 // Upload local version to OneDrive
 await UploadFile(localPath, remotePath);
@@ -266,6 +274,7 @@ await UploadFile(localPath, remotePath);
 ```
 
 #### KeepRemote
+
 ```csharp
 // Download remote version to local
 await DownloadFile(remoteFileId, localPath);
@@ -273,6 +282,7 @@ await DownloadFile(remoteFileId, localPath);
 ```
 
 #### KeepBoth
+
 ```csharp
 // Rename local file with timestamp
 var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
@@ -285,6 +295,7 @@ await DownloadFile(remoteFileId, localPath);
 ```
 
 #### Skip
+
 ```csharp
 // Do nothing - leave both versions as-is
 // File remains in conflict state for future resolution
@@ -322,7 +333,7 @@ public enum FileSyncStatus
 
 ### State Transitions
 
-```
+``` text
 ┌──────────┐  Start Sync   ┌─────────┐
 │   Idle   ├──────────────►│ Running │
 └──────────┘               └────┬────┘
@@ -341,12 +352,14 @@ public enum FileSyncStatus
 ### Persistence
 
 **Database Tables**:
+
 1. **Accounts**: Stores delta tokens per account
 2. **FileMetadata**: Tracks every synced file's cTag, timestamp, size
 3. **SyncStates**: Current progress (files completed, bytes transferred, ETA)
 4. **Conflicts**: Unresolved conflicts awaiting user input
 
 **Resume Capability**:
+
 ```csharp
 // On app restart or resume
 var savedState = await LoadSyncState(accountId);
@@ -549,7 +562,8 @@ string GetDeltaToken(string accountId)
 ## Key Algorithms Summary
 
 ### 1. Delta Query Loop
-```
+
+``` text
 WHILE syncInProgress:
     remoteChanges = FetchDelta(deltaToken)
     FOR EACH change IN remoteChanges:
@@ -562,7 +576,8 @@ WHILE syncInProgress:
 ```
 
 ### 2. Conflict Detection
-```
+
+``` text
 FUNCTION IsConflict(localMeta, remoteChange):
     remoteDifferent = remoteChange.cTag != localMeta.cTag
     localFile = GetFileInfo(localMeta.path)
@@ -571,7 +586,8 @@ FUNCTION IsConflict(localMeta, remoteChange):
 ```
 
 ### 3. Tri-State Checkbox Sync
-```
+
+``` text
 FUNCTION GetSelectedFolders(rootNodes):
     selected = []
     FOR EACH node IN rootNodes:
@@ -588,7 +604,7 @@ FUNCTION GetSelectedFolders(rootNodes):
 
 ### Initial Sync (First Time)
 
-```
+``` text
 User               SyncEngine         Graph API         Database
  |                     |                  |                 |
  |-- Start Sync ------>|                  |                 |
@@ -605,7 +621,7 @@ User               SyncEngine         Graph API         Database
 
 ### Incremental Sync (Subsequent)
 
-```
+``` text
 User               SyncEngine         Graph API         Database
  |                     |                  |                 |
  |-- Start Sync ------>|                  |                 |
@@ -621,7 +637,7 @@ User               SyncEngine         Graph API         Database
 
 ### Conflict Detection & Resolution
 
-```
+``` text
 User              SyncEngine        Graph API       Database       UI
  |                    |                 |               |           |
  |-- Start Sync ----->|                 |               |           |
@@ -646,16 +662,18 @@ User              SyncEngine        Graph API       Database       UI
 ## References
 
 ### Microsoft Graph API Documentation
+
 - [Delta Query Overview](https://learn.microsoft.com/en-us/graph/delta-query-overview)
 - [OneDrive Sync](https://learn.microsoft.com/en-us/graph/api/driveitem-delta)
 - [Upload Large Files](https://learn.microsoft.com/en-us/graph/api/driveitem-createuploadsession)
 
 ### Related Design Documents
+
 - [Implementation Plan](./multi-account-ux-implementation-plan.md)
 - Project Coding Standards: `.github/copilot-instructions.md`
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: January 5, 2026  
+**Document Version**: 1.0
+**Last Updated**: January 5, 2026
 **Status**: Ready for Implementation

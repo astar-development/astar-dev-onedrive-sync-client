@@ -31,7 +31,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     /// <inheritdoc />
     public async Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken)
     {
-        await DebugLog.InfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync", hashedAccountId,
+        _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync", hashedAccountId,
             $"Found file in DB: {remoteFile.RelativePath}, DB Status={existingFile.SyncStatus}", cancellationToken);
 
         var timeDiff = Math.Abs((existingFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
@@ -40,7 +40,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
                                     existingFile.Size != remoteFile.Size) && (existingFile.CTag != remoteFile.CTag)) ||
                                     remoteFile.SyncStatus == FileSyncStatus.SyncOnly;
 
-        await DebugLog.InfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync",
+        _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync",
             hashedAccountId,
             $"Remote file check: {remoteFile.RelativePath} - DB CTag={existingFile.CTag}, Remote CTag={remoteFile.CTag}, " +
             $"DB Time={existingFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote Time={remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, " +
@@ -66,13 +66,13 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     /// <inheritdoc />
     public async Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken)
     {
-        await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
+        _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
             $"File not in DB: {remoteFile.RelativePath} - first sync or new file", cancellationToken);
 
         if(!localFilesDict.TryGetValue(remoteFile.RelativePath ?? "", out FileMetadata? localFile))
         {
             FileMetadata fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, hashedAccountId, localSyncPath);
-            await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
+            _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
                 $"New remote file to download: {remoteFile.RelativePath}", cancellationToken);
             return (false, fileToDownload, null);
         }
@@ -80,7 +80,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         var timeDiff = Math.Abs((localFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
         var filesMatch = localFile.Size == remoteFile.Size && timeDiff <= AllowedTimeDifference;
 
-        await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync",
+        _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync",
             hashedAccountId,
             $"First sync compare: {remoteFile.RelativePath} - Local: Size={localFile.Size}, Time={localFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, " +
             $"Remote: Size={remoteFile.Size}, Time={remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, TimeDiff={timeDiff:F1}s, Match={filesMatch}",
@@ -88,7 +88,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
 
         if(filesMatch)
         {
-            await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
+            _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
                 $"File exists both places and matches: {remoteFile.RelativePath} - recording in DB", cancellationToken);
             FileMetadata matchedFile = localFile with
             {
@@ -101,7 +101,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
             return (false, null, matchedFile);
         }
 
-        await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
+        _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
             $"First sync CONFLICT: {remoteFile.RelativePath} - files differ (TimeDiff={timeDiff:F1}s, SizeMatch={localFile.Size == remoteFile.Size})",
             cancellationToken);
         await RecordSyncConflictAsync(accountId, hashedAccountId, remoteFile, localFile, sessionId, cancellationToken);
@@ -133,7 +133,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
             await _syncConflictRepository.AddAsync(conflict, cancellationToken);
         }
 
-        await DebugLog.InfoAsync("ConflictDetectionService.RecordSyncConflictAsync", hashedAccountId,
+        _ = await DebugLog.LogInfoAsync("ConflictDetectionService.RecordSyncConflictAsync", hashedAccountId,
             $"CONFLICT detected for {remoteFile.RelativePath}: local and remote both changed", cancellationToken);
 
         if(sessionId is not null)

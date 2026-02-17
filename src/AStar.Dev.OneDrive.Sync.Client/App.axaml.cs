@@ -42,7 +42,7 @@ public sealed class App : Application
         {
             desktop.MainWindow = new MainWindow.MainWindow();
 
-            desktop.Startup += async (_, _) => await DebugLog.LogInfoAsync("App Startup", "Application has started", AdminAccountMetadata.HashedAccountId, CancellationToken.None);
+            desktop.Startup += async (_, _) => await DebugLog.LogInfoAsync("App Startup", new Core.Models.HashedAccountId(AdminAccountMetadata.HashedAccountId), "Application has started", CancellationToken.None);
 
             desktop.Exit += (_, _) => scheduler.Dispose();
         }

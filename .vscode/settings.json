@@ -10,6 +10,7 @@
         "Avalonia",
         "avares",
         "axaml",
+        "Barden",
         "branchcoverage",
         "Colourful",
         "Consolas",
@@ -48,6 +49,7 @@
         "targetdir",
         "Testably",
         "toolability",
+        "unhashed",
         "Unmockable",
         "WCAG",
         "Wireframes"

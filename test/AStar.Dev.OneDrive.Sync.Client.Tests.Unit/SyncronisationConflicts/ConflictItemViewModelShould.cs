@@ -13,7 +13,7 @@ public class ConflictItemViewModelShould
         var conflict = new SyncConflict(
             Guid.CreateVersion7().ToString(),
             "test-account-id",
-            AccountIdHasher.Hash("test-account-id"),
+            new HashedAccountId(AccountIdHasher.Hash("test-account-id")),
             "Documents/test.txt",
             new DateTime(2026, 1, 5, 10, 30, 0, DateTimeKind.Utc),
             new DateTime(2026, 1, 6, 14, 45, 0, DateTimeKind.Utc),
@@ -114,7 +114,7 @@ public class ConflictItemViewModelShould
     private static SyncConflict CreateTestConflict() => new(
         Guid.CreateVersion7().ToString(),
         "test-account",
-        AccountIdHasher.Hash("test-account"),
+        new HashedAccountId(AccountIdHasher.Hash("test-account")),
         "test.txt",
         DateTime.UtcNow,
         DateTime.UtcNow,

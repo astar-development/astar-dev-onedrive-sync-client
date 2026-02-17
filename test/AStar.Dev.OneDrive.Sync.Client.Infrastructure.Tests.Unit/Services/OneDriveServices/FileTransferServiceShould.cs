@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
@@ -19,25 +20,25 @@ public class FileTransferServiceShould
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
         var filesToUpload = new List<FileMetadata>
         {
-            new("", accountId, "test.txt", "/Documents/test.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\test.txt",
+            new("", new HashedAccountId(AccountIdHasher.Hash(accountId)), "test.txt", "/Documents/test.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\test.txt",
                 false, false, false, null, null, null, "hash1", FileSyncStatus.PendingUpload, SyncDirection.None)
         };
 
         var uploadedItem = new DriveItem { Id = "item-123", Name = "test.txt", CTag = "ctag-1", ETag = "etag-1", LastModifiedDateTime = DateTimeOffset.UtcNow };
-        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult(uploadedItem));
 
         var progressCalled = false;
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => progressCalled = true;
 
         using var cts = new CancellationTokenSource();
-        (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, accountId, existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1,
+        (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1,
             totalBytes: 100, uploadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(1);
         completedBytes.ShouldBe(100);
         progressCalled.ShouldBeTrue();
-        _ = await mocks.GraphApiClient.Received(1).UploadFileAsync(accountId, @"C:\Sync\Documents\test.txt", "/Documents/test.txt", Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>());
+        _ = await mocks.GraphApiClient.Received(1).UploadFileAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), @"C:\Sync\Documents\test.txt", "/Documents/test.txt", Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>());
         await mocks.DriveItemsRepository.Received().AddAsync(Arg.Is<FileMetadata>(f => f.Name == "test.txt" && f.SyncStatus == FileSyncStatus.PendingUpload), Arg.Any<CancellationToken>());
     }
 
@@ -47,18 +48,18 @@ public class FileTransferServiceShould
         (FileTransferService? service, TestMocks? mocks) = CreateTestService();
         var accountId = "test-account";
         var existingFile = new DriveItemEntity(
-            hashedAccountId: accountId, driveItemId: "existing-id", relativePath: "/Documents/test.txt", eTag: "etag-old", cTag: "ctag-old",
+            hashedAccountId: new HashedAccountId(AccountIdHasher.Hash(accountId)), driveItemId: "existing-id", relativePath: "/Documents/test.txt", eTag: "etag-old", cTag: "ctag-old",
             size: 90, lastModifiedUtc: DateTime.UtcNow.AddDays(-1), isFolder: false, isDeleted: false, isSelected: false,
             remoteHash: null, name: "test.txt", localPath: @"C:\Sync\Documents\test.txt", localHash: "old-hash",
             syncStatus: FileSyncStatus.Synced, lastSyncDirection: SyncDirection.Upload);
         ReadOnlyCollection<DriveItemEntity> existingItems = new List<DriveItemEntity> { existingFile }.AsReadOnly();
 
         var filesToUpload = Enumerable.Range(1, 10).Select(i => new FileMetadata(
-            i <= 1 ? "existing-id" : "", accountId, $"file{i}.txt", $"/Documents/file{i}.txt", 100,
+            i <= 1 ? "existing-id" : "", new HashedAccountId(AccountIdHasher.Hash(accountId)), $"file{i}.txt", $"/Documents/file{i}.txt", 100,
             DateTime.UtcNow, $@"C:\Sync\Documents\file{i}.txt", false, false, false, null, null, null, $"hash{i}",
             FileSyncStatus.PendingUpload, SyncDirection.None)).ToList();
 
-        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo => Task.FromResult(new DriveItem
             {
                 Id = $"uploaded-{Guid.CreateVersion7():N0}",
@@ -68,13 +69,14 @@ public class FileTransferServiceShould
                 LastModifiedDateTime = DateTimeOffset.UtcNow
             }));
 
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+
         using var cts = new CancellationTokenSource();
-        (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, accountId, existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 10,
+        (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 10,
             totalBytes: 1000, uploadBytes: 1000, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(10);
-        _ = await mocks.GraphApiClient.Received(10).UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>());
+        _ = await mocks.GraphApiClient.Received(10).UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact(Skip = "Requires additional investigation - marked as skipped during refactor/refactor-the-logging-approach branch cleanup")]
@@ -85,16 +87,17 @@ public class FileTransferServiceShould
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
         var filesToUpload = new List<FileMetadata>
         {
-            new("", accountId, "fail.txt", "/Documents/fail.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\fail.txt",
+            new("", new HashedAccountId(AccountIdHasher.Hash(accountId)), "fail.txt", "/Documents/fail.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\fail.txt",
                 false, false, false, null, null, null, "hash1", FileSyncStatus.PendingUpload, SyncDirection.None)
         };
 
-        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns<DriveItem>(_ => throw new Exception("Upload failed"));
 
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+
         using var cts = new CancellationTokenSource();
-        (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, accountId, existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1,
+        (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1,
             totalBytes: 100, uploadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(1);
@@ -110,11 +113,11 @@ public class FileTransferServiceShould
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
         var filesToDownload = new List<FileMetadata>
         {
-            new("item-123", accountId, "test.txt", "/Documents/test.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\test.txt",
+            new("item-123", new HashedAccountId(AccountIdHasher.Hash(accountId)), "test.txt", "/Documents/test.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\test.txt",
                 false, false, false, "remote-hash", "ctag-1", "etag-1", null, FileSyncStatus.PendingDownload, SyncDirection.None)
         };
 
-        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         _ = mocks.LocalFileScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult("downloaded-hash"));
@@ -123,13 +126,13 @@ public class FileTransferServiceShould
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => progressCalled = true;
 
         using var cts = new CancellationTokenSource();
-        (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, accountId, existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 1,
+        (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 1,
             totalBytes: 100, uploadBytes: 0, downloadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(1);
         completedBytes.ShouldBe(100);
         progressCalled.ShouldBeTrue();
-        await mocks.GraphApiClient.Received(1).DownloadFileAsync(accountId, "item-123", @"C:\Sync\Documents\test.txt", Arg.Any<CancellationToken>());
+        await mocks.GraphApiClient.Received(1).DownloadFileAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "item-123", @"C:\Sync\Documents\test.txt", Arg.Any<CancellationToken>());
         _ = await mocks.LocalFileScanner.Received(1).ComputeFileHashAsync(@"C:\Sync\Documents\test.txt", Arg.Any<CancellationToken>());
     }
 
@@ -140,23 +143,24 @@ public class FileTransferServiceShould
         var accountId = "test-account";
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
         var filesToDownload = Enumerable.Range(1, 10).Select(i => new FileMetadata(
-            $"item-{i}", accountId, $"file{i}.txt", $"/Documents/file{i}.txt", 100, DateTime.UtcNow,
+            $"item-{i}", new HashedAccountId(AccountIdHasher.Hash(accountId)), $"file{i}.txt", $"/Documents/file{i}.txt", 100, DateTime.UtcNow,
             $@"C:\Sync\Documents\file{i}.txt", false, false, false, "remote-hash", "ctag", "etag", null,
             FileSyncStatus.PendingDownload, SyncDirection.None)).ToList();
 
-        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
         _ = mocks.LocalFileScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult("downloaded-hash"));
 
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+
         using var cts = new CancellationTokenSource();
-        (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, accountId, existingItems, filesToDownload, maxParallelDownloads: 5, conflictCount: 0,
+        (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToDownload, maxParallelDownloads: 5, conflictCount: 0,
             totalFiles: 10, totalBytes: 1000, uploadBytes: 0, downloadBytes: 1000, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts,
             TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(10);
-        await mocks.GraphApiClient.Received(10).DownloadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        await mocks.GraphApiClient.Received(10).DownloadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact(Skip = "Requires additional investigation - marked as skipped during refactor/refactor-the-logging-approach branch cleanup")]
@@ -167,16 +171,17 @@ public class FileTransferServiceShould
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
         var filesToDownload = new List<FileMetadata>
         {
-            new("item-fail", accountId, "fail.txt", "/Documents/fail.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\fail.txt",
+            new("item-fail", new HashedAccountId(AccountIdHasher.Hash(accountId)), "fail.txt", "/Documents/fail.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\fail.txt",
                 false, false, false, "remote-hash", "ctag-1", "etag-1", null, FileSyncStatus.PendingDownload, SyncDirection.None)
         };
 
-        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new Exception("Download failed"));
 
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+
         using var cts = new CancellationTokenSource();
-        (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, accountId, existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 1,
+        (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 1,
             totalBytes: 100, uploadBytes: 0, downloadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(1);
@@ -189,9 +194,10 @@ public class FileTransferServiceShould
     {
         (FileTransferService? service, TestMocks? mocks) = CreateTestService();
         var accountId = "test-account";
+        var hashedAccountId = new HashedAccountId(AccountIdHasher.Hash(accountId));
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
         var filesToUpload = Enumerable.Range(1, 10).Select(i => new FileMetadata(
-            "", accountId, $"file{i}.txt", $"/Documents/file{i}.txt", 100, DateTime.UtcNow,
+            "", hashedAccountId, $"file{i}.txt", $"/Documents/file{i}.txt", 100, DateTime.UtcNow,
             $@"C:\Sync\Documents\file{i}.txt", false, false, false, null, null, null, $"hash{i}",
             FileSyncStatus.PendingUpload, SyncDirection.None)).ToList();
 
@@ -199,7 +205,7 @@ public class FileTransferServiceShould
         var currentConcurrent = 0;
         var lockObj = new object();
 
-        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(async callInfo =>
             {
                 lock(lockObj)
@@ -217,8 +223,9 @@ public class FileTransferServiceShould
             });
 
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+
         using var cts = new CancellationTokenSource();
-        _ = await service.ExecuteUploadsAsync(accountId, accountId, existingItems, filesToUpload, maxParallelUploads: 2, conflictCount: 0, totalFiles: 10, totalBytes: 1000,
+        _ = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 2, conflictCount: 0, totalFiles: 10, totalBytes: 1000,
             uploadBytes: 1000, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
 
         maxConcurrent.ShouldBeLessThanOrEqualTo(2);
@@ -230,8 +237,9 @@ public class FileTransferServiceShould
         (FileTransferService? service, TestMocks? mocks) = CreateTestService();
         var accountId = "test-account";
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
+        var hashedAccountId = new HashedAccountId(AccountIdHasher.Hash(accountId));
         var filesToDownload = Enumerable.Range(1, 10).Select(i => new FileMetadata(
-            $"item-{i}", accountId, $"file{i}.txt", $"/Documents/file{i}.txt", 100, DateTime.UtcNow,
+            $"item-{i}", hashedAccountId, $"file{i}.txt", $"/Documents/file{i}.txt", 100, DateTime.UtcNow,
             $@"C:\Sync\Documents\file{i}.txt", false, false, false, "remote-hash", "ctag", "etag", null,
             FileSyncStatus.PendingDownload, SyncDirection.None)).ToList();
 
@@ -239,7 +247,7 @@ public class FileTransferServiceShould
         var currentConcurrent = 0;
         var lockObj = new object();
 
-        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(async callInfo =>
             {
                 lock(lockObj)
@@ -258,8 +266,9 @@ public class FileTransferServiceShould
             .Returns(Task.FromResult("hash"));
 
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+
         using var cts = new CancellationTokenSource();
-        _ = await service.ExecuteDownloadsAsync(accountId, accountId, existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 10, totalBytes: 1000,
+        _ = await service.ExecuteDownloadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 10, totalBytes: 1000,
             uploadBytes: 0, downloadBytes: 1000, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
 
         maxConcurrent.ShouldBeLessThanOrEqualTo(3);
@@ -273,14 +282,14 @@ public class FileTransferServiceShould
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
         var filesToUpload = new List<FileMetadata>
         {
-            new("", accountId, "test.txt", "/Documents/test.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\test.txt",
+            new("", new HashedAccountId(AccountIdHasher.Hash(accountId)), "test.txt", "/Documents/test.txt", 100, DateTime.UtcNow, @"C:\Sync\Documents\test.txt",
                 false, false, false, null, null, null, "hash1", FileSyncStatus.PendingUpload, SyncDirection.None)
         };
 
-        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
-                IProgress<long>? progress = callInfo.ArgAt<IProgress<long>?>(3);
+                IProgress<long>? progress = callInfo.ArgAt<IProgress<long>?>(4);
                 progress?.Report(50);
                 progress?.Report(100);
                 return Task.FromResult(new DriveItem { Id = "item-123", Name = "test.txt", CTag = "ctag-1", ETag = "etag-1", LastModifiedDateTime = DateTimeOffset.UtcNow });
@@ -289,7 +298,7 @@ public class FileTransferServiceShould
         var progressCallCount = 0;
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => progressCallCount++;
         using var cts = new CancellationTokenSource();
-        _ = await service.ExecuteUploadsAsync(accountId, accountId, existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1, totalBytes: 100,
+        _ = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1, totalBytes: 100,
             uploadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
 
         progressCallCount.ShouldBeGreaterThan(0);
@@ -302,27 +311,27 @@ public class FileTransferServiceShould
         var accountId = "test-account";
         ReadOnlyCollection<DriveItemEntity> existingItems = Array.Empty<DriveItemEntity>().ToList().AsReadOnly();
         var filesToUpload = Enumerable.Range(1, 5).Select(i => new FileMetadata(
-            "", accountId, $"file{i}.txt", $"/Documents/file{i}.txt", 100, DateTime.UtcNow,
+            "", new HashedAccountId(AccountIdHasher.Hash(accountId)), $"file{i}.txt", $"/Documents/file{i}.txt", 100, DateTime.UtcNow,
             $@"C:\Sync\Documents\file{i}.txt", false, false, false, null, null, null, $"hash{i}",
             FileSyncStatus.PendingUpload, SyncDirection.None)).ToList();
 
         using var cts = new CancellationTokenSource();
         var uploadCount = 0;
 
-        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
+        _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns(async callInfo =>
             {
                 if(Interlocked.Increment(ref uploadCount) == 2)
                     await cts.CancelAsync();
 
-                await Task.Delay(100, callInfo.ArgAt<CancellationToken>(4));
+                await Task.Delay(100, callInfo.ArgAt<CancellationToken>(5));
                 return new DriveItem { Id = Guid.CreateVersion7().ToString(), Name = "test.txt", CTag = "ctag", ETag = "etag", LastModifiedDateTime = DateTimeOffset.UtcNow };
             });
 
         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
 
         _ = await Should.ThrowAsync<TaskCanceledException>(async () =>
-            await service.ExecuteUploadsAsync(accountId, accountId, existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 5, totalBytes: 500,
+            await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 5, totalBytes: 500,
                 uploadBytes: 500, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken));
     }
 
@@ -387,7 +396,7 @@ public class FileTransferServiceShould
             .Returns(Task.CompletedTask);
         _ = driveItemsRepository.GetByIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((FileMetadata?)null);
-        _ = driveItemsRepository.GetByPathAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = driveItemsRepository.GetByPathAsync(Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns((FileMetadata?)null);
         _ = fileOperationLogRepository.AddAsync(Arg.Any<FileOperationLog>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);

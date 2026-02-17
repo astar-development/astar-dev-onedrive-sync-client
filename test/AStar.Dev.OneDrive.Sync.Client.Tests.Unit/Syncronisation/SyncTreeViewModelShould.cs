@@ -46,7 +46,7 @@ public class SyncTreeViewModelShould : IDisposable
     {
         var syncState = new SyncState(
             "acc1",
-            AccountIdHasher.Hash("acc1"),
+            new HashedAccountId(AccountIdHasher.Hash("acc1")),
             SyncStatus.Running,
             10,
             5,
@@ -68,7 +68,7 @@ public class SyncTreeViewModelShould : IDisposable
     {
         var syncState = new SyncState(
             "acc1",
-            AccountIdHasher.Hash("acc1"),
+            new HashedAccountId(AccountIdHasher.Hash("acc1")),
             SyncStatus.Running,
             10,
             5,
@@ -99,7 +99,7 @@ public class SyncTreeViewModelShould : IDisposable
     {
         var folders = new List<OneDriveFolderNode> { new() { DriveItemId = "folder1", Name = "Folder 1", IsFolder = true }, new() { DriveItemId = "folder2", Name = "Folder 2", IsFolder = true } };
 
-        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(folders);
 
         _viewModel.SelectedAccountId = "account123";
@@ -126,7 +126,7 @@ public class SyncTreeViewModelShould : IDisposable
     public async Task SetIsLoadingDuringFolderLoad()
     {
         var tcs = new TaskCompletionSource<IReadOnlyList<OneDriveFolderNode>>();
-        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(info => tcs.Task);
 
         var isLoadingValues = new List<bool>();
@@ -150,7 +150,7 @@ public class SyncTreeViewModelShould : IDisposable
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
     public async Task SetErrorMessageWhenLoadFails()
     {
-        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetRootFoldersAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<IReadOnlyList<OneDriveFolderNode>>(new InvalidOperationException("Test error")));
 
         _viewModel.SelectedAccountId = "account123";
@@ -167,7 +167,7 @@ public class SyncTreeViewModelShould : IDisposable
         var parent = new OneDriveFolderNode { DriveItemId = "parent", Name = "Parent", IsFolder = true };
         var children = new List<OneDriveFolderNode> { new() { DriveItemId = "child1", Name = "Child 1", ParentId = "parent", IsFolder = true } };
 
-        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<bool?>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetChildFoldersAsync("account123", new HashedAccountId(AccountIdHasher.Hash("account123")), "parent", Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns(children);
 
         _viewModel.SelectedAccountId = "account123";
@@ -190,7 +190,7 @@ public class SyncTreeViewModelShould : IDisposable
         _ = _viewModel.LoadChildrenCommand.Execute(parent).Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        _ = await _mockFolderService.DidNotReceive().GetChildFoldersAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>());
+        _ = await _mockFolderService.DidNotReceive().GetChildFoldersAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<bool?>(), Arg.Any<CancellationToken>());
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -200,7 +200,7 @@ public class SyncTreeViewModelShould : IDisposable
 
         var children = new List<OneDriveFolderNode> { new() { DriveItemId = "child1", Name = "Child 1", ParentId = "parent", IsFolder = true } };
 
-        _ = _mockFolderService.GetChildFoldersAsync("account123", "parent", Arg.Any<bool?>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetChildFoldersAsync("account123", new HashedAccountId(AccountIdHasher.Hash("account123")), "parent", Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns(children);
 
         _viewModel.SelectedAccountId = "account123";

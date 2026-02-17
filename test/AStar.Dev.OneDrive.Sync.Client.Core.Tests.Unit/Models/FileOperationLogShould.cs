@@ -22,7 +22,7 @@ public class FileOperationLogShould
 
         var fileOperationLog = FileOperationLog.CreateSyncConflictLog(
             sessionId,
-            accountId,
+            new HashedAccountId(accountId),
             filePath,
             localPath,
             oneDriveId,
@@ -32,7 +32,7 @@ public class FileOperationLogShould
             remoteLastModifiedUtc);
 
         _ = fileOperationLog.Id.ShouldNotBeNull();
-        fileOperationLog.HashedAccountId.Id.ShouldBe(accountId);
+        fileOperationLog.HashedAccountId.Value.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);
         fileOperationLog.Operation.ShouldBe(operationType);
@@ -59,7 +59,7 @@ public class FileOperationLogShould
 
         var fileOperationLog = FileOperationLog.CreateDownloadLog(
             sessionId,
-            accountId,
+            new HashedAccountId(accountId),
             filePath,
             localPath,
             oneDriveId,
@@ -69,7 +69,7 @@ public class FileOperationLogShould
             reason);
 
         _ = fileOperationLog.Id.ShouldNotBeNull();
-        fileOperationLog.HashedAccountId.Id.ShouldBe(accountId);
+        fileOperationLog.HashedAccountId.Value.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);
         fileOperationLog.Operation.ShouldBe(operationType);
@@ -96,7 +96,7 @@ public class FileOperationLogShould
 
         var fileOperationLog = FileOperationLog.CreateUploadLog(
             sessionId,
-            accountId,
+            new HashedAccountId(accountId),
             filePath,
             localPath,
             oneDriveId,
@@ -106,7 +106,7 @@ public class FileOperationLogShould
             reason);
 
         _ = fileOperationLog.Id.ShouldNotBeNull();
-        fileOperationLog.HashedAccountId.Id.ShouldBe(accountId);
+        fileOperationLog.HashedAccountId.Value.ShouldBe(accountId);
         fileOperationLog.SyncSessionId.ShouldBe(sessionId);
         fileOperationLog.FilePath.ShouldBe(filePath);
         fileOperationLog.Operation.ShouldBe(operationType);

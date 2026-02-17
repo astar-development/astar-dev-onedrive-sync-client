@@ -22,8 +22,8 @@ public sealed class AccountEntity
 
     public static AccountEntity CreateSystemAccount() => new()
     {
-        Id = Guid.CreateVersion7().ToString(),
-        HashedAccountId = AdminAccountMetadata.HashedAccountId,
+        Id = AdminAccountMetadata.Id,
+        HashedAccountId = new HashedAccountId(AccountIdHasher.Hash(AdminAccountMetadata.Id)),
         DisplayName = "System Admin",
         LocalSyncPath = ".",
         AutoSyncIntervalMinutes = 0,

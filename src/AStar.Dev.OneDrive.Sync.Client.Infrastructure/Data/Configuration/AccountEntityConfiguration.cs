@@ -1,5 +1,4 @@
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
-using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,6 +17,7 @@ public class AccountEntityConfiguration : IEntityTypeConfiguration<AccountEntity
             .HasConversion(SqliteTypeConverters.HashedAccountIdToString)
             .HasColumnType("TEXT");
 
-        _ = builder.HasData(AccountEntity.CreateSystemAccount());
+        var systemAccount = AccountEntity.CreateSystemAccount();
+        _ = builder.HasData(systemAccount);
     }
 }

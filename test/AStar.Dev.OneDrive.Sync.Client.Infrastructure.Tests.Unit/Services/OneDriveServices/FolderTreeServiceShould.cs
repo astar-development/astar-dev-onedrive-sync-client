@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
@@ -17,10 +18,10 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
-        IReadOnlyList<OneDriveFolderNode> result = await service.GetRootFoldersAsync("account1", TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> result = await service.GetRootFoldersAsync("account1", new HashedAccountId(AccountIdHasher.Hash("account1")), TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
-        _ = await mockGraph.DidNotReceive().GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = await mockGraph.DidNotReceive().GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>());
     }
 
     // Skipped: Fails due to NullReferenceException, cannot fix without production code changes
@@ -37,11 +38,11 @@ public class FolderTreeServiceShould
             new() { Id = "folder2", Name = "Pictures", Folder = new Folder() },
             new() { Id = "file1", Name = "File.txt" } // Files don't have Folder property
         };
-        _ = mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(driveItems));
+        _ = mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(driveItems));
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
-        IReadOnlyList<OneDriveFolderNode> result = await service.GetRootFoldersAsync("account1", TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> result = await service.GetRootFoldersAsync("account1", new HashedAccountId(AccountIdHasher.Hash("account1")), TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result[0].DriveItemId.ShouldBe("folder1");
@@ -64,11 +65,11 @@ public class FolderTreeServiceShould
         {
             new() { Id = "folder1", Name = "Documents", Folder = new Folder() }, new() { Id = "file1", Name = "File1.txt" }, new() { Id = "file2", Name = "File2.docx" }
         };
-        _ = mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(driveItems));
+        _ = mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(driveItems));
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
-        IReadOnlyList<OneDriveFolderNode> result = await service.GetRootFoldersAsync("account1", TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> result = await service.GetRootFoldersAsync("account1", new HashedAccountId(AccountIdHasher.Hash("account1")), TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
         result[0].Name.ShouldBe("Documents");
@@ -83,14 +84,14 @@ public class FolderTreeServiceShould
         _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
 
         var parentItem = new DriveItem { Id = "parent1", Name = "Documents", ParentReference = new ItemReference { Path = "/drive/root:" } };
-        _ = mockGraph.GetDriveItemAsync(Arg.Any<string>(), "parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<DriveItem?>(parentItem));
+        _ = mockGraph.GetDriveItemAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), "parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<DriveItem?>(parentItem));
 
         var childItems = new List<DriveItem> { new() { Id = "child1", Name = "Work", Folder = new Folder() }, new() { Id = "child2", Name = "Personal", Folder = new Folder() } };
-        _ = mockGraph.GetDriveItemChildrenAsync(Arg.Any<string>(), "parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(childItems));
+        _ = mockGraph.GetDriveItemChildrenAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), "parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(childItems));
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
-        IReadOnlyList<OneDriveFolderNode> result = await service.GetChildFoldersAsync("account1", "parent1", Arg.Any<bool?>(), TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> result = await service.GetChildFoldersAsync("account1", new HashedAccountId(AccountIdHasher.Hash("account1")), "parent1", Arg.Any<bool?>(), TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result[0].DriveItemId.ShouldBe("child1");
@@ -109,10 +110,10 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
-        IReadOnlyList<OneDriveFolderNode> result = await service.GetChildFoldersAsync("account1", "parent1", Arg.Any<bool?>(), TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> result = await service.GetChildFoldersAsync("account1", new HashedAccountId(AccountIdHasher.Hash("account1")), "parent1", Arg.Any<bool?>(), TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
-        _ = await mockGraph.DidNotReceive().GetDriveItemChildrenAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = await mockGraph.DidNotReceive().GetDriveItemChildrenAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     // Skipped: Fails due to NSubstitute RedundantArgumentMatcherException, cannot fix without production code changes
@@ -125,7 +126,7 @@ public class FolderTreeServiceShould
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
-        IReadOnlyList<OneDriveFolderNode> result = await service.GetFolderHierarchyAsync("account1", 1, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> result = await service.GetFolderHierarchyAsync("account1", new HashedAccountId(AccountIdHasher.Hash("account1")), 1, TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -139,11 +140,11 @@ public class FolderTreeServiceShould
         _ = mockAuth.IsAuthenticatedAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
 
         var rootItems = new List<DriveItem> { new() { Id = "root1", Name = "Documents", Folder = new Folder() } };
-        _ = mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(rootItems));
+        _ = mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(rootItems));
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
-        IReadOnlyList<OneDriveFolderNode> result = await service.GetFolderHierarchyAsync("account1", 0, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> result = await service.GetFolderHierarchyAsync("account1", new HashedAccountId(AccountIdHasher.Hash("account1")), 0, TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(1);
         result[0].Name.ShouldBe("Documents");

@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
@@ -21,11 +22,11 @@ public class DriveItemsRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc1.txt"), TestContext.Current.CancellationToken);
-        await repository.AddAsync(CreateFileMetadata("file2", "acc1", "/doc2.txt"), TestContext.Current.CancellationToken);
-        await repository.AddAsync(CreateFileMetadata("file3", "acc2", "/doc3.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/doc1.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file2", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/doc2.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file3", new HashedAccountId(AccountIdHasher.Hash("acc2")), "/doc3.txt"), TestContext.Current.CancellationToken);
 
-        IReadOnlyList<FileMetadata> result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
+        IReadOnlyList<FileMetadata> result = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(2);
         result.ShouldContain(f => f.DriveItemId == "file1");
@@ -37,7 +38,7 @@ public class DriveItemsRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/doc.txt"), TestContext.Current.CancellationToken);
 
         FileMetadata? result = await repository.GetByIdAsync("file1", TestContext.Current.CancellationToken);
 
@@ -62,9 +63,9 @@ public class DriveItemsRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/docs/file.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/docs/file.txt"), TestContext.Current.CancellationToken);
 
-        FileMetadata? result = await repository.GetByPathAsync("acc1", "/docs/file.txt", TestContext.Current.CancellationToken);
+        FileMetadata? result = await repository.GetByPathAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), "/docs/file.txt", TestContext.Current.CancellationToken);
 
         _ = result.ShouldNotBeNull();
         result.DriveItemId.ShouldBe("file1");
@@ -76,7 +77,7 @@ public class DriveItemsRepositoryShould
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
 
-        FileMetadata? result = await repository.GetByPathAsync("acc1", "/nonexistent.txt", TestContext.Current.CancellationToken);
+        FileMetadata? result = await repository.GetByPathAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), "/nonexistent.txt", TestContext.Current.CancellationToken);
 
         result.ShouldBeNull();
     }
@@ -86,7 +87,7 @@ public class DriveItemsRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
-        FileMetadata file = CreateFileMetadata("file1", "acc1", "/doc.txt");
+        FileMetadata file = CreateFileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/doc.txt");
 
         await repository.AddAsync(file, TestContext.Current.CancellationToken);
 
@@ -100,9 +101,9 @@ public class DriveItemsRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt", FileSyncStatus.PendingUpload), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/doc.txt", FileSyncStatus.PendingUpload), TestContext.Current.CancellationToken);
 
-        var updated = new FileMetadata("file1", "acc1", "doc.txt", "/doc.txt", 2048, DateTime.UtcNow, @"C:\local\doc.txt", false,false,false, "newtag", "newetag", "newhash", null,FileSyncStatus.Synced, SyncDirection.Upload);
+        var updated = new FileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "doc.txt", "/doc.txt", 2048, DateTime.UtcNow, @"C:\local\doc.txt", false,false,false, "newtag", "newetag", "newhash", null,FileSyncStatus.Synced, SyncDirection.Upload);
         await repository.UpdateAsync(updated, TestContext.Current.CancellationToken);
 
         FileMetadata? result = await repository.GetByIdAsync("file1", TestContext.Current.CancellationToken);
@@ -117,7 +118,7 @@ public class DriveItemsRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
-        FileMetadata file = CreateFileMetadata("nonexistent", "acc1", "/doc.txt");
+        FileMetadata file = CreateFileMetadata("nonexistent", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/doc.txt");
 
         InvalidOperationException exception = await Should.ThrowAsync<InvalidOperationException>(async () => await repository.UpdateAsync(file)
         );
@@ -130,7 +131,7 @@ public class DriveItemsRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/doc.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/doc.txt"), TestContext.Current.CancellationToken);
 
         await repository.DeleteAsync("file1", TestContext.Current.CancellationToken);
 
@@ -143,15 +144,15 @@ public class DriveItemsRepositoryShould
     {
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DriveItemsRepository(_contextFactory);
-        await repository.AddAsync(CreateFileMetadata("file1", "acc1", "/old.txt"), TestContext.Current.CancellationToken);
+        await repository.AddAsync(CreateFileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/old.txt"), TestContext.Current.CancellationToken);
 
         FileMetadata[] batchFiles =
         [
-            CreateFileMetadata("file1", "acc1", "/old.txt", FileSyncStatus.PendingUpload), CreateFileMetadata("file2", "acc1", "/new.txt", FileSyncStatus.PendingDownload)
+            CreateFileMetadata("file1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/old.txt", FileSyncStatus.PendingUpload), CreateFileMetadata("file2", new HashedAccountId(AccountIdHasher.Hash("acc1")), "/new.txt", FileSyncStatus.PendingDownload)
         ];
         await repository.SaveBatchAsync(batchFiles, TestContext.Current.CancellationToken);
 
-        IReadOnlyList<FileMetadata> allFiles = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
+        IReadOnlyList<FileMetadata> allFiles = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
         allFiles.Count.ShouldBe(2);
 
         FileMetadata? file1 = await repository.GetByIdAsync("file1", TestContext.Current.CancellationToken);

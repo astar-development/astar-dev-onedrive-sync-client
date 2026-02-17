@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
@@ -58,7 +59,7 @@ public class FolderTreeServiceIntegrationShould
         var graphApiClient = new GraphApiClient(authService, null!, null!);
         var service = new FolderTreeService(graphApiClient, authService, null!);
 
-        IReadOnlyList<OneDriveFolderNode> folders = await service.GetRootFoldersAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> folders = await service.GetRootFoldersAsync(loginResult.AccountId, new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)), TestContext.Current.CancellationToken);
 
         folders.ShouldNotBeEmpty();
         folders.All(f => f.IsFolder).ShouldBeTrue();
@@ -82,12 +83,12 @@ public class FolderTreeServiceIntegrationShould
         var service = new FolderTreeService(graphApiClient, authService, null!);
 
         // First get root folders to find one with children
-        IReadOnlyList<OneDriveFolderNode> rootFolders = await service.GetRootFoldersAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId, new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)), TestContext.Current.CancellationToken);
         rootFolders.ShouldNotBeEmpty();
 
         OneDriveFolderNode parentFolder = rootFolders[0];
 
-        IReadOnlyList<OneDriveFolderNode> childFolders = await service.GetChildFoldersAsync(loginResult.HashedAccountId, parentFolder.DriveItemId, Arg.Any<bool?>(), TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> childFolders = await service.GetChildFoldersAsync(loginResult.AccountId, new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)), parentFolder.DriveItemId, Arg.Any<bool?>(), TestContext.Current.CancellationToken);
 
         _ = childFolders.ShouldNotBeNull();
         if(childFolders.Count > 0)
@@ -112,7 +113,7 @@ public class FolderTreeServiceIntegrationShould
         var graphApiClient = new GraphApiClient(authService, null!, null!);
         var service = new FolderTreeService(graphApiClient, authService, null!);
 
-        IReadOnlyList<OneDriveFolderNode> hierarchy = await service.GetFolderHierarchyAsync(loginResult.HashedAccountId, 2, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> hierarchy = await service.GetFolderHierarchyAsync(loginResult.AccountId,new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)), 2, TestContext.Current.CancellationToken);
 
         hierarchy.ShouldNotBeEmpty();
         hierarchy.All(f => f.IsFolder).ShouldBeTrue();
@@ -139,18 +140,18 @@ public class FolderTreeServiceIntegrationShould
         if(!loginResult.Success)
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
-        _ = await authService.GetAccessTokenAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
+        _ = await authService.GetAccessTokenAsync(loginResult.AccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
         var service = new FolderTreeService(graphApiClient, authService, null!);
 
         // Get root folders
-        IReadOnlyList<OneDriveFolderNode> rootFolders = await service.GetRootFoldersAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken);
+        IReadOnlyList<OneDriveFolderNode> rootFolders = await service.GetRootFoldersAsync(loginResult.AccountId,new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)), TestContext.Current.CancellationToken);
         rootFolders.ShouldNotBeEmpty();
 
         foreach(OneDriveFolderNode folder in rootFolders)
         {
-            IReadOnlyList<OneDriveFolderNode> children = await service.GetChildFoldersAsync(loginResult.HashedAccountId, folder.DriveItemId, Arg.Any<bool?>(), TestContext.Current.CancellationToken);
+            IReadOnlyList<OneDriveFolderNode> children = await service.GetChildFoldersAsync(loginResult.AccountId,new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)), folder.DriveItemId, Arg.Any<bool?>(), TestContext.Current.CancellationToken);
 
             _ = children.ShouldNotBeNull();
         }
@@ -166,13 +167,13 @@ public class FolderTreeServiceIntegrationShould
         if(!loginResult.Success)
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
-        _ = await authService.GetAccessTokenAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
+        _ = await authService.GetAccessTokenAsync(loginResult.AccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
 
-        Drive? drive = await graphApiClient.GetMyDriveAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken);
-        DriveItem? root = await graphApiClient.GetDriveRootAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken);
-        IEnumerable<DriveItem> rootChildren = await graphApiClient.GetRootChildrenAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken);
+        Drive? drive = await graphApiClient.GetMyDriveAsync(loginResult.AccountId, new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)), TestContext.Current.CancellationToken);
+        DriveItem? root = await graphApiClient.GetDriveRootAsync(loginResult.AccountId, new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)),TestContext.Current.CancellationToken);
+        IEnumerable<DriveItem> rootChildren = await graphApiClient.GetRootChildrenAsync(loginResult.AccountId,new HashedAccountId(AccountIdHasher.Hash(loginResult.AccountId)),TestContext.Current.CancellationToken);
 
         _ = drive.ShouldNotBeNull();
         drive.Id.ShouldNotBeNullOrEmpty();

@@ -35,5 +35,5 @@ public static class SqliteTypeConverters
         new(h => h.HasValue ? h.Value.ToString() : null, s => s != null ? new HashedAccountId(s) : null);
 
     public static ValueConverter<HashedAccountId, string> HashedAccountIdToString { get; } =
-        new(h => h.ToString(), s => new HashedAccountId(s));
+        new(h => h.Value, s => new HashedAccountId(s));
 }

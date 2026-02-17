@@ -73,7 +73,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Running,
             10,
             5,
@@ -103,7 +103,7 @@ AccountIdHasher.Hash("test-account"),
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Running,
             100,
             25,
@@ -131,7 +131,7 @@ AccountIdHasher.Hash("test-account"),
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Idle,
             0,
             0,
@@ -159,7 +159,7 @@ AccountIdHasher.Hash("test-account"),
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Running,
             10,
             8,
@@ -188,7 +188,7 @@ AccountIdHasher.Hash("test-account"),
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Running,
             10,
             8,
@@ -217,7 +217,7 @@ AccountIdHasher.Hash("test-account"),
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Running,
             10,
             8,
@@ -249,8 +249,8 @@ AccountIdHasher.Hash("test-account"),
 
         _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
 
-          await syncEngine.Received(1).StartSyncAsync("test-account",
-      default, Arg.Any<CancellationToken>());
+        await syncEngine.Received(1).StartSyncAsync("test-account",
+    default, Arg.Any<CancellationToken>());
         viewModel.IsSyncing.ShouldBeFalse();
         viewModel.StatusMessage.ShouldBe("Sync completed successfully");
     }
@@ -365,7 +365,7 @@ AccountIdHasher.Hash("test-account"),
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Running,
             10,
             5,
@@ -393,7 +393,7 @@ AccountIdHasher.Hash("test-account"),
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Running,
             10,
             5,
@@ -428,7 +428,7 @@ AccountIdHasher.Hash("test-account"),
 
         var progress = new SyncState(
             "test-account",
-AccountIdHasher.Hash("test-account"),
+new HashedAccountId(AccountIdHasher.Hash("test-account")),
             SyncStatus.Running,
             10,
             5,
@@ -474,6 +474,3 @@ AccountIdHasher.Hash("test-account"),
         return (viewModel, syncEngine, progressSubject);
     }
 }
-
-
-

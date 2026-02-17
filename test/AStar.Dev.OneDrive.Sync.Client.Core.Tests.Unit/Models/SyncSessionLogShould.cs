@@ -8,10 +8,10 @@ public class SyncSessionLogShould
     [Fact]
     public void CreateTheInitialInstanceCorrectly()
     {
-        var syncSessionLog = SyncSessionLog.CreateInitialRunning("test-account-id", AccountIdHasher.Hash("test-account-id"));
+        var syncSessionLog = SyncSessionLog.CreateInitialRunning("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account-id")));
 
         _ = syncSessionLog.Id.ShouldNotBeNull();
-        syncSessionLog.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("test-account-id"));
+        syncSessionLog.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("test-account-id"));
         syncSessionLog.StartedUtc.ShouldBe(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         syncSessionLog.CompletedUtc.ShouldBeNull();
         syncSessionLog.Status.ShouldBe(SyncStatus.Running);

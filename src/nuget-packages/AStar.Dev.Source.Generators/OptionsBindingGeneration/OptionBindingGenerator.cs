@@ -72,12 +72,13 @@ public sealed partial class OptionsBindingGenerator : IIncrementalGenerator
             if(attrSyntax?.ArgumentList?.Arguments.Count > 0)
             {
                 ExpressionSyntax expr = attrSyntax.ArgumentList.Arguments[0].Expression;
-                if(expr is LiteralExpressionSyntax { Token.Value: string literalValue }) sectionName = literalValue;
+                if(expr is LiteralExpressionSyntax { Token.Value: string literalValue })
+                    sectionName = literalValue;
             }
         }
 
-        return !string.IsNullOrWhiteSpace(sectionName) 
-            ? new OptionsTypeInfo(typeName, fullTypeName, sectionName!, ctx.TargetNode.GetLocation()) 
+        return !string.IsNullOrWhiteSpace(sectionName)
+            ? new OptionsTypeInfo(typeName, fullTypeName, sectionName!, ctx.TargetNode.GetLocation())
             : ExtractSectionNameFromMembers(ctx, typeSymbol, sectionName, typeName, fullTypeName);
     }
 

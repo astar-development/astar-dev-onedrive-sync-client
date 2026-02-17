@@ -19,24 +19,24 @@ public class ConflictDetectionServiceShould
         IDriveItemsRepository driveItemsRepo = Substitute.For<IDriveItemsRepository>();
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         var remoteFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "newETag", "newCTag", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "newETag", "newCTag", 200,
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var existingFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "oldETag", "oldCTag", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "oldETag", "oldCTag", 200,
             DateTimeOffset.UtcNow.AddHours(-2), false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var localFile = new FileMetadata(
-            "item1", AccountId, "test.txt", "/test.txt", 200,
+            "item1", new HashedAccountId(AccountIdHasher.Hash(AccountId)), "test.txt", "/test.txt", 200,
             DateTimeOffset.UtcNow.AddMinutes(-5), @"C:\Sync\test.txt");
         var localFilesDict = new Dictionary<string, FileMetadata>
         {
             ["/test.txt"] = localFile
         };
-        _ = syncConflictRepo.GetByFilePathAsync(AccountIdHasher.Hash(AccountId), "/test.txt", Arg.Any<CancellationToken>())
+        _ = syncConflictRepo.GetByFilePathAsync(new HashedAccountId(AccountIdHasher.Hash(AccountId)), "/test.txt", Arg.Any<CancellationToken>())
             .Returns((SyncConflict?)null);
 
-        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, AccountIdHasher.Hash("test-account"), remoteFile, existingFile, localFilesDict, null, null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, null, null, CancellationToken.None);
 
         hasConflict.ShouldBeTrue();
         fileToDownload.ShouldBeNull();
@@ -51,22 +51,22 @@ public class ConflictDetectionServiceShould
         IDriveItemsRepository driveItemsRepo = Substitute.For<IDriveItemsRepository>();
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         var remoteFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "newETag", "newCTag", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "newETag", "newCTag", 200,
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var existingFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "oldETag", "oldCTag", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "oldETag", "oldCTag", 200,
             DateTimeOffset.UtcNow.AddHours(-2), false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var localFile = new FileMetadata(
-            "item1", AccountId, "test.txt", "/test.txt", 200,
+            "item1", new HashedAccountId(AccountIdHasher.Hash(AccountId)), "test.txt", "/test.txt", 200,
             existingFile.LastModifiedUtc, @"C:\Sync\test.txt");
         var localFilesDict = new Dictionary<string, FileMetadata>
         {
             ["/test.txt"] = localFile
         };
 
-        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, AccountIdHasher.Hash("test-account"), remoteFile, existingFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         _ = fileToDownload.ShouldNotBeNull();
@@ -82,16 +82,16 @@ public class ConflictDetectionServiceShould
         IDriveItemsRepository driveItemsRepo = Substitute.For<IDriveItemsRepository>();
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         var remoteFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "sameETag", "sameCTag", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "sameETag", "sameCTag", 200,
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var existingFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "sameETag", "sameCTag", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "sameETag", "sameCTag", 200,
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var localFilesDict = new Dictionary<string, FileMetadata>();
 
-        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId,AccountIdHasher.Hash("test-account"),  remoteFile, existingFile, localFilesDict, null, null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, null, null, CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         fileToDownload.ShouldBeNull();
@@ -106,20 +106,20 @@ public class ConflictDetectionServiceShould
         IDriveItemsRepository driveItemsRepo = Substitute.For<IDriveItemsRepository>();
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         var remoteFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "etag1", "ctag1", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "etag1", "ctag1", 200,
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             null, null, FileSyncStatus.SyncOnly, SyncDirection.None);
         var localFile = new FileMetadata(
-            "", AccountId, "test.txt", "/test.txt", 150, // Different size
+            "", new HashedAccountId(AccountIdHasher.Hash(AccountId)), "test.txt", "/test.txt", 150, // Different size
             DateTimeOffset.UtcNow.AddMinutes(-10), @"C:\Sync\test.txt");
         var localFilesDict = new Dictionary<string, FileMetadata>
         {
             ["/test.txt"] = localFile
         };
-        _ = syncConflictRepo.GetByFilePathAsync(AccountIdHasher.Hash(AccountId), "/test.txt", Arg.Any<CancellationToken>())
+        _ = syncConflictRepo.GetByFilePathAsync(new HashedAccountId(AccountIdHasher.Hash(AccountId)), "/test.txt", Arg.Any<CancellationToken>())
             .Returns((SyncConflict?)null);
 
-        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, AccountIdHasher.Hash("test-account"), remoteFile, localFilesDict, null, null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, null, null, CancellationToken.None);
 
         hasConflict.ShouldBeTrue();
         fileToDownload.ShouldBeNull();
@@ -136,11 +136,11 @@ public class ConflictDetectionServiceShould
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
         var remoteFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "etag1", "ctag1", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "etag1", "ctag1", 200,
             timestamp, false, false, true, null, "test.txt",
             null, null, FileSyncStatus.SyncOnly, SyncDirection.None);
         var localFile = new FileMetadata(
-            "", AccountId, "test.txt", "/test.txt", 200,
+            "", new HashedAccountId(AccountIdHasher.Hash(AccountId)), "test.txt", "/test.txt", 200,
             timestamp.AddSeconds(30), @"C:\Sync\test.txt"); // Within 60 second threshold
         var localFilesDict = new Dictionary<string, FileMetadata>
         {
@@ -148,7 +148,7 @@ public class ConflictDetectionServiceShould
         };
 
         (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(
-            AccountId, AccountIdHasher.Hash("test-account"), remoteFile, localFilesDict, null, null, CancellationToken.None);
+            AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, null, null, CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         fileToDownload.ShouldBeNull();
@@ -167,11 +167,11 @@ public class ConflictDetectionServiceShould
         IDriveItemsRepository driveItemsRepo = Substitute.For<IDriveItemsRepository>();
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         var remoteFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "etag1", "ctag1", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "etag1", "ctag1", 200,
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             null, null, FileSyncStatus.SyncOnly, SyncDirection.None);
         var localFilesDict = new Dictionary<string, FileMetadata>();
-        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId,AccountIdHasher.Hash("test-account"),  remoteFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         _ = fileToDownload.ShouldNotBeNull();
@@ -189,11 +189,11 @@ public class ConflictDetectionServiceShould
         IDriveItemsRepository driveItemsRepo = Substitute.For<IDriveItemsRepository>();
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         var existingFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "etag1", "ctag1", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "etag1", "ctag1", 200,
             DateTimeOffset.UtcNow.AddHours(-1), false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var localFile = new FileMetadata(
-            "item1", AccountId, "test.txt", "/test.txt", 200,
+            "item1", new HashedAccountId(AccountIdHasher.Hash(AccountId)), "test.txt", "/test.txt", 200,
             DateTimeOffset.UtcNow, @"C:\Sync\test.txt"); // Different timestamp
         var localFilesDict = new Dictionary<string, FileMetadata>
         {
@@ -214,11 +214,11 @@ public class ConflictDetectionServiceShould
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         DateTimeOffset timestamp = DateTimeOffset.UtcNow;
         var existingFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "etag1", "ctag1", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "etag1", "ctag1", 200,
             timestamp, false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var localFile = new FileMetadata(
-            "item1", AccountId, "test.txt", "/test.txt", 250, // Different size
+            "item1", new HashedAccountId(AccountIdHasher.Hash(AccountId)), "test.txt", "/test.txt", 250, // Different size
             timestamp, @"C:\Sync\test.txt");
         var localFilesDict = new Dictionary<string, FileMetadata>
         {
@@ -238,7 +238,7 @@ public class ConflictDetectionServiceShould
         IDriveItemsRepository driveItemsRepo = Substitute.For<IDriveItemsRepository>();
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         var existingFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "etag1", "ctag1", 200,
+            new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "etag1", "ctag1", 200,
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var localFilesDict = new Dictionary<string, FileMetadata>();
@@ -256,16 +256,16 @@ public class ConflictDetectionServiceShould
         IDriveItemsRepository driveItemsRepo = Substitute.For<IDriveItemsRepository>();
         var service = new ConflictDetectionService(syncConflictRepo, fileOperationLogRepo, driveItemsRepo);
         var remoteFile = new DriveItemEntity(
-            AccountId, "item1", "/test.txt", "etag1", "ctag1", 200,
+           new HashedAccountId(AccountIdHasher.Hash(AccountId)), "item1", "/test.txt", "etag1", "ctag1", 200,
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             null, null, FileSyncStatus.SyncOnly, SyncDirection.None);
         var localFile = new FileMetadata(
-            "item1", AccountId, "test.txt", "/test.txt", 150,
+            "item1", new HashedAccountId(AccountIdHasher.Hash(AccountId)), "test.txt", "/test.txt", 150,
             DateTimeOffset.UtcNow.AddMinutes(-5), @"C:\Sync\test.txt");
-        _ = syncConflictRepo.GetByFilePathAsync(AccountIdHasher.Hash(AccountId), "/test.txt", Arg.Any<CancellationToken>())
+        _ = syncConflictRepo.GetByFilePathAsync(new HashedAccountId(AccountIdHasher.Hash(AccountId)), "/test.txt", Arg.Any<CancellationToken>())
             .Returns((SyncConflict?)null);
 
-        await service.RecordSyncConflictAsync(AccountId, AccountIdHasher.Hash("test-account"), remoteFile, localFile, "session1", CancellationToken.None);
+        await service.RecordSyncConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFile, "session1", CancellationToken.None);
 
         await syncConflictRepo.Received(1).AddAsync(
             Arg.Is<SyncConflict>(c =>

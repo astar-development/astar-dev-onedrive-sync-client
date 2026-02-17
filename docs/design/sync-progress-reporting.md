@@ -8,7 +8,7 @@ Progress reporting during sync must carry both the external account identifier a
 
 The progress callback signature used by `IFileTransferService` includes both identifiers:
 
-```
+``` text
 Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?>
 ```
 

@@ -21,7 +21,7 @@ public sealed class SyncConflictEntity
     /// <summary>
     ///     Gets or sets the hashed account identifier.
     /// </summary>
-    public HashedAccountId HashedAccountId { get; set; } = string.Empty;
+    public HashedAccountId HashedAccountId { get; set; }
 
     /// <summary>
     ///     Gets or sets the path to the conflicted file.

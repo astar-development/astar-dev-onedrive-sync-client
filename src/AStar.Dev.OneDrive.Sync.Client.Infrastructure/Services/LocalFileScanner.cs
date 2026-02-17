@@ -30,7 +30,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
         if(!fileSystem.Directory.Exists(localFolderPath))
             return [];
 
-        await DebugLog.InfoAsync("LocalFileScanner.ScanFolderAsync", $"Scanning folder: {localFolderPath}", hashedAccountId, cancellationToken);
+        _ = await DebugLog.LogInfoAsync("LocalFileScanner.ScanFolderAsync", hashedAccountId, $"Scanning folder: {localFolderPath}", cancellationToken);
         var fileMetadataList = new List<FileMetadata>();
         await ScanDirectoryRecursiveAsync(
             hashedAccountId,

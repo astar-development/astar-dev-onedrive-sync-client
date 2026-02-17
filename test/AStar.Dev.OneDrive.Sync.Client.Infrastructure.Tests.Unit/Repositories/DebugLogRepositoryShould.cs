@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
@@ -23,7 +24,7 @@ public class DebugLogRepositoryShould
         var repository = new DebugLogRepository(_contextFactory);
         await SeedDebugLogsAsync(context, "acc1", 10);
 
-        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("acc1", 5, 0, TestContext.Current.CancellationToken);
+        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), 5, 0, TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(5);
     }
@@ -35,7 +36,7 @@ public class DebugLogRepositoryShould
         var repository = new DebugLogRepository(_contextFactory);
         await SeedDebugLogsAsync(context, "acc1", 10);
 
-        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("acc1", 5, 5, TestContext.Current.CancellationToken);
+        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), 5, 5, TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(5);
     }
@@ -48,10 +49,10 @@ public class DebugLogRepositoryShould
         await SeedDebugLogsAsync(context, "acc1", 15);
         await SeedDebugLogsAsync(context, "acc2", 5);
 
-        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
+        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
 
         result.Count.ShouldBe(15);
-        result.All(log => log.AccountId == "acc1").ShouldBeTrue();
+        result.All(log => log.HashedAccountId == new HashedAccountId(AccountIdHasher.Hash("acc1"))).ShouldBeTrue();
     }
 
     [Fact(Skip = "Requires refactor to support new production code structure")]
@@ -63,7 +64,7 @@ public class DebugLogRepositoryShould
         // Add logs with different timestamps
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            HashedAccountId = "acc1",
+            HashedAccountId = new HashedAccountId(AccountIdHasher.Hash("acc1")),
             TimestampUtc = DateTime.UtcNow.AddHours(-2),
             LogLevel = "Info",
             Source = "Test",
@@ -71,7 +72,7 @@ public class DebugLogRepositoryShould
         });
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            HashedAccountId = "acc1",
+            HashedAccountId = new HashedAccountId(AccountIdHasher.Hash("acc1")),
             TimestampUtc = DateTime.UtcNow,
             LogLevel = "Info",
             Source = "Test",
@@ -79,7 +80,7 @@ public class DebugLogRepositoryShould
         });
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            HashedAccountId = "acc1",
+            HashedAccountId = new HashedAccountId(AccountIdHasher.Hash("acc1")),
             TimestampUtc = DateTime.UtcNow.AddHours(-1),
             LogLevel = "Info",
             Source = "Test",
@@ -87,7 +88,7 @@ public class DebugLogRepositoryShould
         });
         _ = await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
+        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
 
         result[0].Message.ShouldBe("Newest");
         result[1].Message.ShouldBe("Middle");
@@ -102,10 +103,10 @@ public class DebugLogRepositoryShould
         await SeedDebugLogsAsync(context, "acc1", 5);
         await SeedDebugLogsAsync(context, "acc2", 3);
 
-        await repository.DeleteByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
+        await repository.DeleteByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
 
-        IReadOnlyList<DebugLogEntry> acc1Logs = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
-        IReadOnlyList<DebugLogEntry> acc2Logs = await repository.GetByAccountIdAsync("acc2", TestContext.Current.CancellationToken);
+        IReadOnlyList<DebugLogEntry> acc1Logs = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
+        IReadOnlyList<DebugLogEntry> acc2Logs = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc2")), TestContext.Current.CancellationToken);
         acc1Logs.ShouldBeEmpty();
         acc2Logs.Count.ShouldBe(3);
     }
@@ -120,7 +121,7 @@ public class DebugLogRepositoryShould
 
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            HashedAccountId = "acc1",
+            HashedAccountId = new HashedAccountId(AccountIdHasher.Hash("acc1")),
             TimestampUtc = cutoff.AddDays(-1),
             LogLevel = "Info",
             Source = "Test",
@@ -128,7 +129,7 @@ public class DebugLogRepositoryShould
         });
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            HashedAccountId = "acc1",
+            HashedAccountId = new HashedAccountId(AccountIdHasher.Hash("acc1")),
             TimestampUtc = cutoff.AddDays(1),
             LogLevel = "Info",
             Source = "Test",
@@ -138,7 +139,7 @@ public class DebugLogRepositoryShould
 
         await repository.DeleteOlderThanAsync(cutoff, TestContext.Current.CancellationToken);
 
-        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("acc1", TestContext.Current.CancellationToken);
+        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), TestContext.Current.CancellationToken);
         result.Count.ShouldBe(1);
         result[0].Message.ShouldBe("Recent");
     }
@@ -149,7 +150,7 @@ public class DebugLogRepositoryShould
         using SyncDbContext context = CreateInMemoryContext();
         var repository = new DebugLogRepository(_contextFactory );
 
-        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync("nonexistent", TestContext.Current.CancellationToken);
+        IReadOnlyList<DebugLogEntry> result = await repository.GetByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash("nonexistent")), TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -169,7 +170,7 @@ public class DebugLogRepositoryShould
         {
             _ = context.DebugLogs.Add(new DebugLogEntity
             {
-                HashedAccountId = accountId,
+                HashedAccountId = new HashedAccountId(AccountIdHasher.Hash(accountId)),
                 TimestampUtc = DateTime.UtcNow.AddMinutes(-i),
                 LogLevel = "Info",
                 Source = $"Test.Method{i}",

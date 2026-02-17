@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
@@ -16,7 +17,7 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
     public async Task<IReadOnlyList<AccountInfo>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
-        List<AccountEntity> entities = await context.Accounts.Where(account => account.DisplayName != "System Admin").ToListAsync(cancellationToken);
+        List<AccountEntity> entities = await context.Accounts.Where(account => account.Id != AdminAccountMetadata.Id).ToListAsync(cancellationToken);
         return [.. entities.Select(MapToModel)];
     }
 
@@ -49,10 +50,6 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
         _ = context.Accounts.Add(entity);
         _ = await context.SaveChangesAsync(cancellationToken);
     }
-
-    private static bool IsOneOfMyAccounts(AccountInfo account) => (account.DisplayName.StartsWith("jason.", StringComparison.OrdinalIgnoreCase) && account.DisplayName.EndsWith("@outlook.com", StringComparison.OrdinalIgnoreCase))
-            || account.DisplayName.Equals("astar-development@outlook.com", StringComparison.OrdinalIgnoreCase);
-
     /// <inheritdoc />
     public async Task UpdateAsync(AccountInfo account, CancellationToken cancellationToken = default)
     {
@@ -93,19 +90,8 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
         return await context.Accounts.AnyAsync(a => a.Id == accountId, cancellationToken);
     }
 
-    private static AccountInfo MapToModel(AccountEntity account) => new(
-                account.Id,
-                account.HashedAccountId,
-                account.DisplayName,
-                account.LocalSyncPath,
-                account.IsAuthenticated,
-                account.LastSyncUtc,
-                account.DeltaToken,
-                account.EnableDetailedSyncLogging,
-                account.EnableDebugLogging,
-                account.MaxParallelUpDownloads,
-                account.MaxItemsInBatch,
-                account.AutoSyncIntervalMinutes
+    private static AccountInfo MapToModel(AccountEntity account) => new(account.Id, account.HashedAccountId, account.DisplayName, account.LocalSyncPath, account.IsAuthenticated, account.LastSyncUtc, account.DeltaToken, account.EnableDetailedSyncLogging, account.EnableDebugLogging,
+                                                                        account.MaxParallelUpDownloads, account.MaxItemsInBatch, account.AutoSyncIntervalMinutes
             );
 
     private static AccountEntity MapToEntity(AccountInfo model) => new()
@@ -123,4 +109,8 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
         MaxItemsInBatch = model.MaxItemsInBatch,
         AutoSyncIntervalMinutes = model.AutoSyncIntervalMinutes ?? -1
     };
+
+    private static bool IsOneOfMyAccounts(AccountInfo account) => (account.DisplayName.StartsWith("jason.", StringComparison.OrdinalIgnoreCase) && account.DisplayName.EndsWith("@outlook.com", StringComparison.OrdinalIgnoreCase))
+            || account.DisplayName.Equals("astar-development@outlook.com", StringComparison.OrdinalIgnoreCase);
+
 }

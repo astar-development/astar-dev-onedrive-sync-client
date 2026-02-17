@@ -105,7 +105,7 @@ public class ConflictResolutionViewModelShould
 
         viewModel.Conflicts.Count.ShouldBe(2);
         viewModel.HasConflicts.ShouldBeTrue();
-        _ = await syncEngine.Received(1).GetConflictsAsync(AccountIdHasher.Hash("test-account"), Arg.Any<CancellationToken>());
+        _ = await syncEngine.Received(1).GetConflictsAsync(new HashedAccountId(AccountIdHasher.Hash("test-account")), Arg.Any<CancellationToken>());
     }
 
     [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
@@ -283,7 +283,7 @@ public class ConflictResolutionViewModelShould
     private static SyncConflict CreateTestConflict(string filePath) => new(
         Guid.CreateVersion7().ToString(),
         "test-account",
-        AccountIdHasher.Hash("test-account"),
+        new HashedAccountId(AccountIdHasher.Hash("test-account")),
         filePath,
         DateTime.UtcNow.AddHours(-1),
         DateTime.UtcNow,

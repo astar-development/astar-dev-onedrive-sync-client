@@ -37,10 +37,11 @@
    ```
 
 4. Build and run:
-   ```bash
+
+```bash
    dotnet build
    dotnet run --project src/AStar.Dev.OneDrive.Sync.Client
-   ```
+```
 
 ## That's it! 🎉
 

@@ -11,13 +11,13 @@ public class SyncConfigurationShould
 
         var sut = new SyncConfiguration(
             1,
-            "acc-123",
+            new HashedAccountId("acc-123"),
             "/Documents/Work",
             true,
             timestamp);
 
         sut.Id.ShouldBe(1);
-        sut.HashedAccountId.Id.ShouldBe("acc-123");
+        sut.HashedAccountId.Value.ShouldBe("acc-123");
         sut.FolderPath.ShouldBe("/Documents/Work");
         sut.IsSelected.ShouldBeTrue();
         sut.LastModifiedUtc.ShouldBe(timestamp);
@@ -27,8 +27,8 @@ public class SyncConfigurationShould
     public void SupportRecordEqualityByValue()
     {
         var timestamp = new DateTime(2026, 1, 6, 12, 0, 0, DateTimeKind.Utc);
-        var config1 = new SyncConfiguration(1, "acc-1", "/Folder", true, timestamp);
-        var config2 = new SyncConfiguration(1, "acc-1", "/Folder", true, timestamp);
+        var config1 = new SyncConfiguration(1, new HashedAccountId(AccountIdHasher.Hash("acc-1")), "/Folder", true, timestamp);
+        var config2 = new SyncConfiguration(1, new HashedAccountId(AccountIdHasher.Hash("acc-1")), "/Folder", true, timestamp);
 
         config1.ShouldBe(config2);
         (config1 == config2).ShouldBeTrue();
@@ -38,8 +38,8 @@ public class SyncConfigurationShould
     public void DifferentiateRecordsWithDifferentValues()
     {
         DateTimeOffset timestamp = DateTime.UtcNow;
-        var config1 = new SyncConfiguration(1, "acc-1", "/Folder1", true, timestamp);
-        var config2 = new SyncConfiguration(2, "acc-1", "/Folder2", true, timestamp);
+        var config1 = new SyncConfiguration(1, new HashedAccountId(AccountIdHasher.Hash("acc-1")), "/Folder1", true, timestamp);
+        var config2 = new SyncConfiguration(2, new HashedAccountId(AccountIdHasher.Hash("acc-1")), "/Folder2", true, timestamp);
 
         config1.ShouldNotBe(config2);
         (config1 == config2).ShouldBeFalse();

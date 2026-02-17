@@ -2,13 +2,13 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
+using AStar.Dev.OneDrive.Sync.Client.DebugLogs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.DebugLogs;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Syncronisation;
 using AStar.Dev.OneDrive.Sync.Client.SyncronisationConflicts;
@@ -57,7 +57,8 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
         OpenSettingsCommand = ReactiveCommand.Create(OpenSettings);
         ViewConflictsCommand = ReactiveCommand.Create(ViewConflicts, this.WhenAnyValue(x => x.HasUnresolvedConflicts));
         CloseApplicationCommand = ReactiveCommand.Create(CloseApplication);
-        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, AccountManagement.SelectedAccount?.HashedAccountId ?? AdminAccountMetadata.HashedAccountId, CancellationToken.None);
+        HashedAccountId acc =  AccountManagement.SelectedAccount?.HashedAccountId ?? new HashedAccountId(AdminAccountMetadata.Id);
+        _ = DebugLog.EntryAsync(ApplicationMetadata.UI.MainWindowViewModel.Constructor, acc, CancellationToken.None);
     }
 
     public SyncProgressViewModel? SyncProgress
@@ -139,7 +140,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
         // Update main window conflict status
         if(AccountManagement.SelectedAccount is not null)
-            await UpdateConflictStatusAsync(AccountManagement.SelectedAccount.HashedAccountId);
+            await UpdateConflictStatusAsync(AccountManagement.SelectedAccount!.Id!);
     }
 
     /// <inheritdoc />
@@ -155,7 +156,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
     private async Task UpdateConflictStatusAsync(string accountId)
     {
-        IReadOnlyList<SyncConflict> conflicts = await _conflictRepository.GetUnresolvedByAccountIdAsync(accountId);
+        IReadOnlyList<SyncConflict> conflicts = await _conflictRepository.GetUnresolvedByAccountIdAsync(new HashedAccountId(AccountIdHasher.Hash(accountId)));
         HasUnresolvedConflicts = conflicts.Any();
     }
 
@@ -165,7 +166,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     private void ViewConflicts()
     {
         if(AccountManagement.SelectedAccount is not null)
-            ShowConflictResolutionView(AccountManagement.SelectedAccount.HashedAccountId);
+            ShowConflictResolutionView(AccountManagement.SelectedAccount.Id);
     }
 
     /// <summary>
@@ -248,7 +249,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
     {
         _ = accountManagementViewModel
             .WhenAnyValue(x => x.SelectedAccount)
-            .Select(account => account?.HashedAccountId)
+            .Select(account => account?.Id)
             .BindTo(syncTreeViewModel, x => x.SelectedAccountId)
             .DisposeWith(_disposables);
 
@@ -260,7 +261,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                 .Subscribe(async account =>
                 {
                     if(account is not null)
-                        await UpdateConflictStatusAsync(account.HashedAccountId);
+                        await UpdateConflictStatusAsync(account.Id);
                     else
                         HasUnresolvedConflicts = false;
                 })
@@ -367,7 +368,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                                     .Subscribe(_ => CloseSyncProgressView())
                                     .DisposeWith(_disposables); private void WireUpSyncCompletion(SyncTreeViewModel syncTreeViewModel) => _ = syncTreeViewModel
                 .WhenAnyValue(x => x.SyncState)
-                .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.HashedAccountId))
+                .Where(state => state.Status == SyncStatus.Completed && !string.IsNullOrEmpty(state.AccountId))
                 .Subscribe(async state =>
                 {
                     try
