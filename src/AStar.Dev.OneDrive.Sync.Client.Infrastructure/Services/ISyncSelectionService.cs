@@ -79,35 +79,35 @@ public interface ISyncSelectionService
     /// <summary>
     ///     Saves the current selection state to the database for persistence.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="rootFolders">The root-level folders containing current selections.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <remarks>
     ///     Only explicitly checked folders are persisted. Indeterminate states are recalculated on load.
     /// </remarks>
-    Task SaveSelectionsToDatabaseAsync(string accountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default);
+    Task SaveSelectionsToDatabaseAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Loads saved selection state from the database and applies it to the folder tree.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="rootFolders">The root-level folders to apply selections to.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <remarks>
     ///     After loading, parent states are automatically recalculated to reflect indeterminate states.
     /// </remarks>
-    Task LoadSelectionsFromDatabaseAsync(string accountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default);
+    Task LoadSelectionsFromDatabaseAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Loads saved selection state from the database and applies it to the folder tree.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of folders with SelectionState.Checked.</returns>
     /// <remarks>
     ///     After loading, parent states are automatically recalculated to reflect indeterminate states.
     /// </remarks>
-    Task<IList<OneDriveFolderNode>> LoadSelectionsFromDatabaseAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<IList<OneDriveFolderNode>> LoadSelectionsFromDatabaseAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 }

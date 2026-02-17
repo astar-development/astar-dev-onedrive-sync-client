@@ -17,28 +17,19 @@ public interface IDeletionSyncService
     /// <param name="remotePathsSet">Set of paths that exist on OneDrive.</param>
     /// <param name="localPathsSet">Set of paths that exist locally.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task ProcessRemoteToLocalDeletionsAsync(
-        string accountId,
-        IReadOnlyList<DriveItemEntity> existingFiles,
-        HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet,
-        CancellationToken cancellationToken);
+    Task ProcessRemoteToLocalDeletionsAsync(string accountId, IReadOnlyList<DriveItemEntity> existingFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Processes files that were deleted locally but still exist on OneDrive.
     ///     Deletes remote copies and removes records from the database.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="allLocalFiles">List of all local files tracked in the database.</param>
     /// <param name="remotePathsSet">Set of paths that exist on OneDrive.</param>
     /// <param name="localPathsSet">Set of paths that exist locally.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task ProcessLocalToRemoteDeletionsAsync(
-        string accountId,
-        List<FileMetadata> allLocalFiles,
-        HashSet<string> remotePathsSet,
-        HashSet<string> localPathsSet,
-        CancellationToken cancellationToken);
+    Task ProcessLocalToRemoteDeletionsAsync(string accountId, HashedAccountId hashedAccountId, List<FileMetadata> allLocalFiles, HashSet<string> remotePathsSet, HashSet<string> localPathsSet, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Removes deleted file records from the database.
@@ -46,8 +37,5 @@ public interface IDeletionSyncService
     /// <param name="accountId">The account identifier.</param>
     /// <param name="itemsToDelete">List of items to delete from the database.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task CleanupDatabaseRecordsAsync(
-        string accountId,
-        IEnumerable<DriveItemEntity> itemsToDelete,
-        CancellationToken cancellationToken);
+    Task CleanupDatabaseRecordsAsync(string accountId, IEnumerable<DriveItemEntity> itemsToDelete, CancellationToken cancellationToken);
 }

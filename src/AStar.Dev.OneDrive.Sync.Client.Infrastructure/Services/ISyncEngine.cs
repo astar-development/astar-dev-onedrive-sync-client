@@ -16,8 +16,9 @@ public interface ISyncEngine
     ///     Starts synchronization for the specified account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    Task StartSyncAsync(string accountId, CancellationToken cancellationToken = default);
+        /// <param name="hashedAccountId">The hashed account ID.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+    Task StartSyncAsync(string accountId, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Stops any ongoing synchronization.
@@ -27,8 +28,8 @@ public interface ISyncEngine
     /// <summary>
     ///     Gets all detected conflicts for the specified account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of unresolved conflicts.</returns>
-    Task<IReadOnlyList<SyncConflict>> GetConflictsAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<SyncConflict>> GetConflictsAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 }

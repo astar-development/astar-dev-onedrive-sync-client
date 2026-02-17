@@ -3,6 +3,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <summary>
 ///     Represents account information for a OneDrive account.
 /// </summary>
+/// <param name="Id">The unique identifier for the account from OneDrive.</param>
 /// <param name="HashedAccountId">The hashed unique identifier for the account.</param>
 /// <param name="DisplayName">Display the name of the account holder.</param>
 /// <param name="LocalSyncPath">Local directory path for synchronization.</param>
@@ -14,6 +15,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <param name="MaxParallelUpDownloads">Maximum number of parallel upload/download operations (1-10).</param>
 /// <param name="MaxItemsInBatch">Maximum number of items to process in a single batch (1-100).</param>
 /// <param name="AutoSyncIntervalMinutes">Interval in minutes for automatic remote sync checks (null = disabled, 60-1440).</param>
-public sealed record AccountInfo(string HashedAccountId, string DisplayName, string LocalSyncPath, bool IsAuthenticated, DateTimeOffset? LastSyncUtc, string? DeltaToken, bool EnableDetailedSyncLogging,
+public sealed record AccountInfo(string Id, HashedAccountId HashedAccountId, string DisplayName, string LocalSyncPath, bool IsAuthenticated, DateTimeOffset? LastSyncUtc, string? DeltaToken, bool EnableDetailedSyncLogging,
                                  bool EnableDebugLogging, int MaxParallelUpDownloads, int MaxItemsInBatch, int? AutoSyncIntervalMinutes
 );

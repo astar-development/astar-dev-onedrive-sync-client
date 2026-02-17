@@ -1,4 +1,5 @@
 using System.Reactive.Subjects;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
@@ -45,6 +46,7 @@ public class SyncTreeViewModelShould : IDisposable
     {
         var syncState = new SyncState(
             "acc1",
+            AccountIdHasher.Hash("acc1"),
             SyncStatus.Running,
             10,
             5,
@@ -66,6 +68,7 @@ public class SyncTreeViewModelShould : IDisposable
     {
         var syncState = new SyncState(
             "acc1",
+            AccountIdHasher.Hash("acc1"),
             SyncStatus.Running,
             10,
             5,

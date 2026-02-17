@@ -6,7 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 ///     Represents a summary of a sync session.
 /// </summary>
 /// <param name="Id">Unique identifier for the sync session.</param>
-/// <param name="AccountId">The account identifier.</param>
+/// <param name="HashedAccountId">The hashed account identifier.</param>
 /// <param name="StartedUtc">When the sync started.</param>
 /// <param name="CompletedUtc">When the sync completed (null if still running).</param>
 /// <param name="Status">Final status of the sync.</param>
@@ -17,7 +17,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <param name="TotalBytes">Total bytes transferred.</param>
 public record SyncSessionLog(
     string Id,
-    string AccountId,
+    HashedAccountId HashedAccountId,
     DateTimeOffset StartedUtc,
     DateTimeOffset? CompletedUtc,
     SyncStatus Status,
@@ -27,9 +27,9 @@ public record SyncSessionLog(
     int ConflictsDetected,
     long TotalBytes)
 {
-    public static SyncSessionLog CreateInitialRunning(string accountId) => new(
-        Guid.CreateVersion7().ToString(),
+    public static SyncSessionLog CreateInitialRunning(string accountId, HashedAccountId hashedAccountId) => new(
         accountId,
+        hashedAccountId,
         DateTime.UtcNow,
         null,
         SyncStatus.Running,

@@ -15,11 +15,15 @@ public sealed class DriveItemRecordConfiguration : IEntityTypeConfiguration<Driv
 
         _ = builder.HasIndex(e => e.IsFolder);
         _ = builder.HasIndex(e => e.IsSelected);
-        _ = builder.HasIndex(e => new { e.AccountId, e.RelativePath });
+        _ = builder.HasIndex(e => new { e.HashedAccountId, e.RelativePath });
 
         _ = builder.HasOne<AccountEntity>()
             .WithMany()
-            .HasForeignKey(e => e.AccountId)
+            .HasForeignKey(e => e.HashedAccountId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        _ = builder.Property(e => e.HashedAccountId).IsRequired()
+            .HasConversion(SqliteTypeConverters.HashedAccountIdToString)
+            .HasColumnType("TEXT");
     }
 }

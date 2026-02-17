@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using Microsoft.Identity.Client;
 using AuthenticationResult = AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication.AuthenticationResult;
@@ -23,7 +24,8 @@ public class AuthServiceShould
         AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
         result.Success.ShouldBeTrue();
-        result.HashedAccountId.ShouldBe("3567EAB1B59A4D7A962B47B57203582A72E1FD46CE2B8C0A9414C8161C62CA96");
+        result.AccountId.ShouldBe("acc1");
+        result.HashedAccountId.Id.ShouldBe(AccountIdHasher.Hash("acc1"));
         result.DisplayName.ShouldBe("user@example.com");
         result.ErrorMessage.ShouldBeNull();
     }
@@ -39,8 +41,7 @@ public class AuthServiceShould
 
         AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
-        result.Success.ShouldBeFalse();
-        result.HashedAccountId.ShouldBeEmpty();
+        result.Success.ShouldBeFalse();        result.AccountId.ShouldBeEmpty();        result.HashedAccountId.Id.ShouldBeEmpty();
         result.DisplayName.ShouldBeEmpty();
         _ = result.ErrorMessage.ShouldNotBeNull();
     }
@@ -101,7 +102,7 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        IReadOnlyList<(string AccountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<(string accountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
 
         result.ShouldBeEmpty();
     }
@@ -117,11 +118,11 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        IReadOnlyList<(string AccountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<(string accountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
         result.Count.ShouldBe(2);
-        result[0].AccountId.ShouldBe("acc1");
+        result[0].accountId.ShouldBe("acc1");
         result[0].DisplayName.ShouldBe("user1@example.com");
-        result[1].AccountId.ShouldBe("acc2");
+        result[1].accountId.ShouldBe("acc2");
         result[1].DisplayName.ShouldBe("user2@example.com");
     }
 

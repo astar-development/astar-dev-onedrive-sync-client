@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Security.Policy;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
@@ -117,6 +118,8 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
+    public HashedAccountId SelectedHashedAccountId => string.IsNullOrEmpty(SelectedAccountId) ? null : AccountIdHasher.Hash(SelectedAccountId);
+
     /// <summary>
     ///     Gets the root-level folders for the selected account.
     /// </summary>
@@ -163,7 +166,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     {
         get;
         private set => this.RaiseAndSetIfChanged(ref field, value);
-    } = SyncState.CreateInitial("");
+    } = SyncState.CreateInitial(string.Empty, string.Empty);
 
     /// <summary>
     ///     Gets a value indicating whether sync is currently running.
@@ -393,14 +396,14 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
     private async Task StartSyncAsync(CancellationToken cancellationToken = default)
     {
-        await DebugLog.EntryAsync(ApplicationMetadata.UI.SyncTreeViewModel.StartSync, SelectedAccountId ?? AdminAccountMetadata.AccountId, CancellationToken.None);
+        await DebugLog.EntryAsync(ApplicationMetadata.UI.SyncTreeViewModel.StartSync, SelectedAccountId ?? AdminAccountMetadata.HashedAccountId, cancellationToken);
         if(string.IsNullOrEmpty(SelectedAccountId))
             return;
 
         try
         {
             LastSyncResult = null;
-            await _syncEngine.StartSyncAsync(SelectedAccountId);
+            await _syncEngine.StartSyncAsync(SelectedAccountId, SelectedHashedAccountId, cancellationToken);
 
             if(SyncState.Status == SyncStatus.Completed)
             {

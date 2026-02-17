@@ -13,11 +13,11 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
     private readonly IDbContextFactory<SyncDbContext> _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<DebugLogEntry>> GetByAccountIdAsync(string accountId, int pageSize, int skip, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<DebugLogEntry>> GetByAccountIdAsync(HashedAccountId hashedAccountId, int pageSize, int skip, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<DebugLogEntity> entities = await context.DebugLogs
-            .Where(log => log.AccountId == accountId)
+            .Where(log => log.HashedAccountId == hashedAccountId)
             .OrderByDescending(log => log.TimestampUtc)
             .Skip(skip)
             .Take(pageSize)
@@ -27,7 +27,7 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
         [
             .. entities.Select(debugLog => new DebugLogEntry(
                 debugLog.Id,
-                debugLog.AccountId,
+                debugLog.HashedAccountId,
                 debugLog.TimestampUtc,
                 debugLog.LogLevel,
                 debugLog.Source,
@@ -38,11 +38,11 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<DebugLogEntry>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<DebugLogEntry>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<DebugLogEntity> entities = await context.DebugLogs
-            .Where(log => log.AccountId == accountId)
+            .Where(log => log.HashedAccountId == hashedAccountId)
             .OrderByDescending(log => log.TimestampUtc)
             .ToListAsync(cancellationToken);
 
@@ -50,7 +50,7 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
         [
             .. entities.Select(debugLog => new DebugLogEntry(
                 debugLog.Id,
-                debugLog.AccountId,
+                debugLog.HashedAccountId,
                 debugLog.TimestampUtc,
                 debugLog.LogLevel,
                 debugLog.Source,
@@ -61,11 +61,11 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
     }
 
     /// <inheritdoc />
-    public async Task DeleteByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task DeleteByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<DebugLogEntity> entities = await context.DebugLogs
-            .Where(log => log.AccountId == accountId)
+            .Where(log => log.HashedAccountId == hashedAccountId)
             .ToListAsync(cancellationToken);
 
         context.DebugLogs.RemoveRange(entities);
@@ -85,11 +85,32 @@ public sealed class DebugLogRepository(IDbContextFactory<SyncDbContext> contextF
     }
 
     /// <inheritdoc />
-    public async Task<int> GetDebugLogCountByAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<int> GetDebugLogCountByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         return await context.DebugLogs
-                .Where(log => log.AccountId == accountId)
+                .Where(log => log.HashedAccountId == hashedAccountId)
                 .CountAsync(cancellationToken);
     }
+
+    /// <inheritdoc />
+    public async Task AddAsync(DebugLogEntry debugLogEntry, CancellationToken cancellationToken)
+    {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        DebugLogEntity entity = MapToEntity(debugLogEntry);
+        _ = await context.DebugLogs.AddAsync(entity, cancellationToken);
+        _ = await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private static DebugLogEntity MapToEntity(DebugLogEntry debugLogEntry)
+        => new()
+        {
+            Id = debugLogEntry.Id,
+            HashedAccountId = debugLogEntry.AccountId,
+            TimestampUtc = debugLogEntry.Timestamp,
+            LogLevel = debugLogEntry.LogLevel,
+            Source = debugLogEntry.Source,
+            Message = debugLogEntry.Message,
+            Exception = debugLogEntry.Exception
+        };
 }

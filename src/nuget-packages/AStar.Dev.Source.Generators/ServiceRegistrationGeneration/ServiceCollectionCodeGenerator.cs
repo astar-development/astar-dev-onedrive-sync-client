@@ -10,6 +10,8 @@ internal static class ServiceCollectionCodeGenerator
 {
     public static string Generate(IReadOnlyList<ServiceModel> items)
     {
+        if(items.Count == 0)
+            return string.Empty;
         IEnumerable<string> registrations = BuildServiceRegistrations(items);
         ServiceModel? item = items.FirstOrDefault();
         return BuildSourceFile(registrations, item?.Namespace ?? "AStar.Dev");

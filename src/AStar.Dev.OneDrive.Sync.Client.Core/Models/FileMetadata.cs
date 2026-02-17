@@ -6,7 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 ///     Represents metadata for a synchronized file.
 /// </summary>
 /// <param name="DriveItemId">Unique identifier.</param>
-/// <param name="AccountId">Account identifier.</param>
+/// <param name="HashedAccountId">Account identifier.</param>
 /// <param name="Name">File name.</param>
 /// <param name="RelativePath">OneDrive path to the file.</param>
 /// <param name="Size">File size in bytes.</param>
@@ -19,7 +19,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <param name="LastSyncDirection">Direction of last synchronization operation.</param>
 public sealed record FileMetadata(
     string DriveItemId,
-    string AccountId,
+    HashedAccountId HashedAccountId,
     string Name,
     string RelativePath,
     long Size,

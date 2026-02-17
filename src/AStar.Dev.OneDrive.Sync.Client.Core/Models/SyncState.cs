@@ -5,7 +5,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <summary>
 ///     Represents the current state of synchronization for an account.
 /// </summary>
-/// <param name="AccountId">Account identifier.</param>
+/// <param name="AccountId">The account identifier.</param>
+/// <param name="HashedAccountId">The hashed account identifier.</param>
 /// <param name="Status">Current synchronization status.</param>
 /// <param name="TotalFiles">Total number of files to synchronize.</param>
 /// <param name="CompletedFiles">Number of files already synchronized.</param>
@@ -21,6 +22,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <param name="LastUpdateUtc">Timestamp of the last state update.</param>
 public sealed record SyncState(
     string AccountId,
+    HashedAccountId HashedAccountId,
     SyncStatus Status,
     int TotalFiles,
     int CompletedFiles,
@@ -36,9 +38,9 @@ public sealed record SyncState(
     DateTimeOffset? LastUpdateUtc = null
 )
 {
-    public static SyncState CreateInitial(string accountId) => new(accountId, SyncStatus.Idle, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    public static SyncState CreateInitial(string accountId, HashedAccountId hashedAccountId) => new(accountId, hashedAccountId, SyncStatus.Idle, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", DateTimeOffset.UtcNow);
 
-    public static SyncState Create(string accountId, SyncStatus syncStatus, string message) => new(accountId, syncStatus, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, message, DateTimeOffset.UtcNow);
+    public static SyncState Create(string accountId, HashedAccountId hashedAccountId, SyncStatus syncStatus, string message) => new(accountId, hashedAccountId, syncStatus, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, message, DateTimeOffset.UtcNow);
 
-    public static SyncState CreateFailed(string accountId, int totalItemsProcessed, string message) => new(accountId, SyncStatus.Failed, totalItemsProcessed, 0, 0, 0, 0, 0, 0, 0, 0, 0, message, DateTimeOffset.UtcNow);
+    public static SyncState CreateFailed(string accountId, HashedAccountId hashedAccountId, int totalItemsProcessed, string message) => new(accountId, hashedAccountId, SyncStatus.Failed, totalItemsProcessed, 0, 0, 0, 0, 0, 0, 0, 0, 0, message, DateTimeOffset.UtcNow);
 }

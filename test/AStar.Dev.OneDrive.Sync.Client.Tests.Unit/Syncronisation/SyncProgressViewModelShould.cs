@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -72,6 +73,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Running,
             10,
             5,
@@ -101,6 +103,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Running,
             100,
             25,
@@ -128,6 +131,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Idle,
             0,
             0,
@@ -155,6 +159,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Running,
             10,
             8,
@@ -183,6 +188,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Running,
             10,
             8,
@@ -211,6 +217,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Running,
             10,
             8,
@@ -237,12 +244,13 @@ public class SyncProgressViewModelShould
     {
         (SyncProgressViewModel? viewModel, ISyncEngine? syncEngine, Subject<SyncState> _) = CreateTestViewModel();
 
-        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
         _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
 
-        await syncEngine.Received(1).StartSyncAsync("test-account", Arg.Any<CancellationToken>());
+          await syncEngine.Received(1).StartSyncAsync("test-account",
+      default, Arg.Any<CancellationToken>());
         viewModel.IsSyncing.ShouldBeFalse();
         viewModel.StatusMessage.ShouldBe("Sync completed successfully");
     }
@@ -259,7 +267,7 @@ public class SyncProgressViewModelShould
                 isSyncingValues.Add(viewModel.IsSyncing);
         };
 
-        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(async _ => await Task.Delay(50));
 
         _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
@@ -287,7 +295,7 @@ public class SyncProgressViewModelShould
     {
         (SyncProgressViewModel? viewModel, ISyncEngine? syncEngine, Subject<SyncState> _) = CreateTestViewModel();
 
-        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new OperationCanceledException());
 
         _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
@@ -301,7 +309,7 @@ public class SyncProgressViewModelShould
     {
         (SyncProgressViewModel? viewModel, ISyncEngine? syncEngine, Subject<SyncState> _) = CreateTestViewModel();
 
-        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new InvalidOperationException("Test error"));
 
         _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
@@ -357,6 +365,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Running,
             10,
             5,
@@ -384,6 +393,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Running,
             10,
             5,
@@ -418,6 +428,7 @@ public class SyncProgressViewModelShould
 
         var progress = new SyncState(
             "test-account",
+AccountIdHasher.Hash("test-account"),
             SyncStatus.Running,
             10,
             5,
@@ -452,7 +463,7 @@ public class SyncProgressViewModelShould
         var progressSubject = new Subject<SyncState>();
         _ = syncEngine.Progress.Returns(progressSubject);
 
-        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = syncEngine.StartSyncAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
 
         _ = syncEngine.StopSyncAsync()
@@ -463,3 +474,6 @@ public class SyncProgressViewModelShould
         return (viewModel, syncEngine, progressSubject);
     }
 }
+
+
+

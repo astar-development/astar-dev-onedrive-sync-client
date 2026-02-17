@@ -18,20 +18,20 @@ public interface IFileOperationLogRepository
     /// <summary>
     ///     Gets all file operations for an account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of file operations.</returns>
-    Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets file operations for an account with paging support.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="pageSize">Number of records to return.</param>
     /// <param name="skip">Number of records to skip.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of file operations.</returns>
-    Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(string accountId, int pageSize, int skip, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FileOperationLog>> GetByAccountIdAsync(HashedAccountId hashedAccountId, int pageSize, int skip, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Adds a new file operation log.
@@ -43,8 +43,8 @@ public interface IFileOperationLogRepository
     /// <summary>
     ///     Deletes old file operation logs for an account.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="olderThan">Delete operations older than this date.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task DeleteOldOperationsAsync(string accountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default);
+    Task DeleteOldOperationsAsync(HashedAccountId hashedAccountId, DateTimeOffset olderThan, CancellationToken cancellationToken = default);
 }

@@ -26,12 +26,14 @@ public interface IDeltaProcessingService
     ///     Processes all delta pages from OneDrive starting from the provided delta token.
     /// </summary>
     /// <param name="accountId">The account ID for which to process delta pages.</param>
+    /// <param name="hashedAccountId">The hashed account ID for which to process delta pages.</param>
     /// <param name="deltaToken">The delta token to start from. If null, starts from the beginning.</param>
     /// <param name="progressCallback">Optional callback to report progress during processing.</param>
     /// <param name="cancellationToken">The cancellation token to monitor for cancellation requests.</param>
     /// <returns>Tuple containing the final delta token, page count, and total items processed.</returns>
     Task<(DeltaToken finalToken, int pageCount, int totalItemsProcessed)> ProcessDeltaPagesAsync(
         string accountId,
+        HashedAccountId hashedAccountId,
         DeltaToken? deltaToken,
         Action<SyncState>? progressCallback,
         CancellationToken cancellationToken);

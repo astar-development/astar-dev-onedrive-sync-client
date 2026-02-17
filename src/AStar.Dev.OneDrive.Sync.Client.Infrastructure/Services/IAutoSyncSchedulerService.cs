@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 
 /// <summary>
@@ -19,8 +21,9 @@ public interface IAutoSyncSchedulerService : IDisposable
     ///     Updates the sync schedule for a specific account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account ID.</param>
     /// <param name="intervalMinutes">The interval in minutes (null to disable auto-sync).</param>
-    void UpdateSchedule(string accountId, int? intervalMinutes);
+    void UpdateSchedule(string accountId, HashedAccountId hashedAccountId, int? intervalMinutes);
 
     /// <summary>
     ///     Removes the sync schedule for a specific account.

@@ -91,12 +91,12 @@ public interface IGraphApiClient
     /// <summary>
     ///     Deletes a file from OneDrive.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="itemId">The OneDrive item ID to delete.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>A task representing the asynchronous delete operation.</returns>
     /// <remarks>
     ///     This permanently deletes the file from OneDrive (moves to recycle bin if available).
     /// </remarks>
-    Task DeleteFileAsync(string accountId, string itemId, CancellationToken cancellationToken = default);
+    Task DeleteFileAsync(string accountId, HashedAccountId hashedAccountId, string itemId, CancellationToken cancellationToken = default);
 }

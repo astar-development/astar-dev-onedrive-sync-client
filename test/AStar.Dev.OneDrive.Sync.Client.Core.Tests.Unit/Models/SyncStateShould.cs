@@ -10,7 +10,7 @@ public class SyncStateShould
     {
         var accountId = "test-account-id";
 
-        var syncState = SyncState.CreateInitial(accountId);
+        var syncState = SyncState.CreateInitial(accountId, AccountIdHasher.Hash("test-account-id"));
 
         Assert.Equal(accountId, syncState.AccountId);
         Assert.Equal(SyncStatus.Idle, syncState.Status);
@@ -25,6 +25,6 @@ public class SyncStateShould
         Assert.Equal(0.0, syncState.MegabytesPerSecond);
         syncState.EstimatedSecondsRemaining.ShouldBe(0);
         syncState.CurrentStatusMessage.ShouldBe(string.Empty);
-        Assert.Null(syncState.LastUpdateUtc);
+        Assert.NotNull(syncState.LastUpdateUtc);
     }
 }

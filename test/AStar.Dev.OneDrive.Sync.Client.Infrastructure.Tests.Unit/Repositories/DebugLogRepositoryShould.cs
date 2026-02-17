@@ -63,7 +63,7 @@ public class DebugLogRepositoryShould
         // Add logs with different timestamps
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            AccountId = "acc1",
+            HashedAccountId = "acc1",
             TimestampUtc = DateTime.UtcNow.AddHours(-2),
             LogLevel = "Info",
             Source = "Test",
@@ -71,7 +71,7 @@ public class DebugLogRepositoryShould
         });
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            AccountId = "acc1",
+            HashedAccountId = "acc1",
             TimestampUtc = DateTime.UtcNow,
             LogLevel = "Info",
             Source = "Test",
@@ -79,7 +79,7 @@ public class DebugLogRepositoryShould
         });
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            AccountId = "acc1",
+            HashedAccountId = "acc1",
             TimestampUtc = DateTime.UtcNow.AddHours(-1),
             LogLevel = "Info",
             Source = "Test",
@@ -120,7 +120,7 @@ public class DebugLogRepositoryShould
 
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            AccountId = "acc1",
+            HashedAccountId = "acc1",
             TimestampUtc = cutoff.AddDays(-1),
             LogLevel = "Info",
             Source = "Test",
@@ -128,7 +128,7 @@ public class DebugLogRepositoryShould
         });
         _ = context.DebugLogs.Add(new DebugLogEntity
         {
-            AccountId = "acc1",
+            HashedAccountId = "acc1",
             TimestampUtc = cutoff.AddDays(1),
             LogLevel = "Info",
             Source = "Test",
@@ -169,7 +169,7 @@ public class DebugLogRepositoryShould
         {
             _ = context.DebugLogs.Add(new DebugLogEntity
             {
-                AccountId = accountId,
+                HashedAccountId = accountId,
                 TimestampUtc = DateTime.UtcNow.AddMinutes(-i),
                 LogLevel = "Info",
                 Source = $"Test.Method{i}",

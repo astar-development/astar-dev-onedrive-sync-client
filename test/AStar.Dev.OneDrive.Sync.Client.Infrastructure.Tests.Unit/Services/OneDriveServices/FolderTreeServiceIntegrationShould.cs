@@ -52,7 +52,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if(!loginResult.Success || loginResult.HashedAccountId is null)
+        if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Id))
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
@@ -75,7 +75,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if(!loginResult.Success || loginResult.HashedAccountId is null)
+        if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Id))
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
@@ -105,7 +105,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if(!loginResult.Success || loginResult.HashedAccountId is null)
+        if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Id))
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
@@ -135,7 +135,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if(!loginResult.Success || loginResult.HashedAccountId is null)
+        if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Id))
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
         _ = await authService.GetAccessTokenAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
@@ -161,7 +161,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-        if(!loginResult.Success || loginResult.HashedAccountId is null)
+        if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Id))
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
         _ = await authService.GetAccessTokenAsync(loginResult.HashedAccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");

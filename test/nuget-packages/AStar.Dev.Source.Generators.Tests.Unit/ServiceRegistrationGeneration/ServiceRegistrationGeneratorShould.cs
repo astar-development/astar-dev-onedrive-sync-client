@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -260,12 +260,7 @@ namespace TestNamespace
         driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
         GeneratorDriverRunResult result = driver.GetRunResult();
         GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions"));
-        generated.Equals(default(GeneratedSourceResult)).ShouldBeFalse();
-        var text = generated.SourceText.ToString();
-
-        text.ShouldNotContain("AbstractFoo");
-        text.ShouldNotContain("InternalFoo");
-        text.ShouldNotContain("GenericFoo");
+        generated.Equals(default(GeneratedSourceResult)).ShouldBeTrue();
     }
 
     [Fact]
@@ -320,4 +315,25 @@ namespace TestNamespace
             text.ShouldNotContain("Foo");
         }
     }
+
+    [Fact]
+    public void DoesNotGenerateExtensionWhenNoServicesAnnotated()
+    {
+        const string input = @"namespace TestNamespace
+{
+    public interface IFoo { }
+
+    public class Foo : IFoo { }
+}";
+        CSharpCompilation compilation = CreateCompilation(input);
+        var generator = new ServiceRegistrationGenerator();
+        var driver = CSharpGeneratorDriver.Create(generator);
+        driver = (CSharpGeneratorDriver)driver.RunGenerators(compilation, TestContext.Current.CancellationToken);
+
+        GeneratorDriverRunResult result = driver.GetRunResult();
+        GeneratedSourceResult generated = result.Results.SelectMany(r => r.GeneratedSources).FirstOrDefault(x => x.HintName.Contains("ServiceCollectionExtensions"));
+
+        generated.Equals(default(GeneratedSourceResult)).ShouldBeTrue();
+    }
 }
+

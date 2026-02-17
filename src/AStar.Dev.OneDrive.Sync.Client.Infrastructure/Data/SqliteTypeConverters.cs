@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
@@ -29,4 +30,10 @@ public static class SqliteTypeConverters
 
     public static ValueConverter<decimal?, long?> NullableDecimalToCents { get; } =
         new(d => d.HasValue ? (long?)Math.Round(d.Value * 100m) : null, l => l.HasValue ? l.Value / 100m : null);
+
+    public static ValueConverter<HashedAccountId?, string?> NullableHashedAccountIdToString { get; } =
+        new(h => h.HasValue ? h.Value.ToString() : null, s => s != null ? new HashedAccountId(s) : null);
+
+    public static ValueConverter<HashedAccountId, string> HashedAccountIdToString { get; } =
+        new(h => h.ToString(), s => new HashedAccountId(s));
 }

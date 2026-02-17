@@ -64,7 +64,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                     b.HasData(
                         new
                         {
-                            AccountId = "e29a2798-c836-4854-ac90-a3f2d37aae26",
+                            AccountId = "C856527B9EAF27E26FD89183D1E4F2AEF3CEB5C8040D87A012A3F8F50DC55BB9",
                             AutoSyncIntervalMinutes = 0,
                             DisplayName = "System Admin",
                             EnableDebugLogging = true,

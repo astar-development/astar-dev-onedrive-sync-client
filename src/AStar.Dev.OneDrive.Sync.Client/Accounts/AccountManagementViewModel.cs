@@ -3,7 +3,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
-using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
@@ -147,7 +146,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
 
             AuthenticationResult result = await _authService.LoginAsync();
-            if(result is { Success: true, HashedAccountId: not null, DisplayName: not null })
+            if(result.Success)
             {
                 var localSyncPath = CreateTheLocalSyncPath(result);
 
@@ -157,7 +156,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                 Accounts.Add(newAccount);
                 SelectedAccount = newAccount;
             }
-            else if(result is { Success: false, ErrorMessage: not null })
+            else if(!result.Success && result.ErrorMessage is not null)
             {
                 _ = ShowToastAsync(result.ErrorMessage);
             }

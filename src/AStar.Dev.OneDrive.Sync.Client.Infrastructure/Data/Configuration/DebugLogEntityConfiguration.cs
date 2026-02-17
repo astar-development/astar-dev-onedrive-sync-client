@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -11,12 +12,15 @@ public sealed class DebugLogEntityConfiguration : IEntityTypeConfiguration<Debug
         _ = builder.ToTable("DebugLogs");
         _ = builder.HasKey(d => d.Id);
 
-        _ = builder.HasIndex(e => e.AccountId);
         _ = builder.HasIndex(e => e.TimestampUtc);
 
         _ = builder.HasOne<AccountEntity>()
             .WithMany()
-            .HasForeignKey(e => e.AccountId)
+            .HasForeignKey(e => e.HashedAccountId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        _ = builder.Property(e => e.HashedAccountId).IsRequired()
+            .HasConversion(SqliteTypeConverters.HashedAccountIdToString)
+            .HasColumnType("TEXT");
     }
 }

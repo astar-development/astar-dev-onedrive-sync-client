@@ -29,16 +29,9 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     }
 
     /// <inheritdoc />
-    public async Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(
-        string accountId,
-        DriveItemEntity remoteFile,
-        DriveItemEntity existingFile,
-        Dictionary<string, FileMetadata> localFilesDict,
-        string? localSyncPath,
-        string? sessionId,
-        CancellationToken cancellationToken)
+    public async Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken)
     {
-        await DebugLog.InfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync", accountId,
+        await DebugLog.InfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync", hashedAccountId,
             $"Found file in DB: {remoteFile.RelativePath}, DB Status={existingFile.SyncStatus}", cancellationToken);
 
         var timeDiff = Math.Abs((existingFile.LastModifiedUtc - remoteFile.LastModifiedUtc).TotalSeconds);
@@ -48,7 +41,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
                                     remoteFile.SyncStatus == FileSyncStatus.SyncOnly;
 
         await DebugLog.InfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync",
-            accountId,
+            hashedAccountId,
             $"Remote file check: {remoteFile.RelativePath} - DB CTag={existingFile.CTag}, Remote CTag={remoteFile.CTag}, " +
             $"DB Time={existingFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote Time={remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, " +
             $"Diff={timeDiff:F1}s, DB Size={existingFile.Size}, Remote Size={remoteFile.Size}, RemoteHasChanged={remoteHasChanged}",
@@ -62,30 +55,24 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         if(localFileHasChanged)
         {
             FileMetadata localFile = localFilesDict[remoteFile.RelativePath ?? ""];
-            await RecordSyncConflictAsync(accountId, remoteFile, localFile, sessionId, cancellationToken);
+            await RecordSyncConflictAsync(accountId, hashedAccountId, remoteFile, localFile, sessionId, cancellationToken);
             return (true, null);
         }
 
-        FileMetadata fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, accountId, localSyncPath);
+        FileMetadata fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, hashedAccountId, localSyncPath);
         return (false, fileToDownload);
     }
 
     /// <inheritdoc />
-    public async Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(
-        string accountId,
-        DriveItemEntity remoteFile,
-        Dictionary<string, FileMetadata> localFilesDict,
-        string? localSyncPath,
-        string? sessionId,
-        CancellationToken cancellationToken)
+    public async Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken)
     {
-        await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", accountId,
+        await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
             $"File not in DB: {remoteFile.RelativePath} - first sync or new file", cancellationToken);
 
         if(!localFilesDict.TryGetValue(remoteFile.RelativePath ?? "", out FileMetadata? localFile))
         {
-            FileMetadata fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, accountId, localSyncPath);
-            await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", accountId,
+            FileMetadata fileToDownload = CreateFileMetadataWithLocalPath(remoteFile, hashedAccountId, localSyncPath);
+            await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
                 $"New remote file to download: {remoteFile.RelativePath}", cancellationToken);
             return (false, fileToDownload, null);
         }
@@ -94,14 +81,14 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         var filesMatch = localFile.Size == remoteFile.Size && timeDiff <= AllowedTimeDifference;
 
         await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync",
-            accountId,
+            hashedAccountId,
             $"First sync compare: {remoteFile.RelativePath} - Local: Size={localFile.Size}, Time={localFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, " +
             $"Remote: Size={remoteFile.Size}, Time={remoteFile.LastModifiedUtc:yyyy-MM-dd HH:mm:ss}, TimeDiff={timeDiff:F1}s, Match={filesMatch}",
             cancellationToken);
 
         if(filesMatch)
         {
-            await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", accountId,
+            await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
                 $"File exists both places and matches: {remoteFile.RelativePath} - recording in DB", cancellationToken);
             FileMetadata matchedFile = localFile with
             {
@@ -114,18 +101,15 @@ public sealed class ConflictDetectionService : IConflictDetectionService
             return (false, null, matchedFile);
         }
 
-        await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", accountId,
+        await DebugLog.InfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
             $"First sync CONFLICT: {remoteFile.RelativePath} - files differ (TimeDiff={timeDiff:F1}s, SizeMatch={localFile.Size == remoteFile.Size})",
             cancellationToken);
-        await RecordSyncConflictAsync(accountId, remoteFile, localFile, sessionId, cancellationToken);
+        await RecordSyncConflictAsync(accountId, hashedAccountId, remoteFile, localFile, sessionId, cancellationToken);
         return (true, null, null);
     }
 
     /// <inheritdoc />
-    public bool CheckIfLocalFileHasChanged(
-        string relativePath,
-        DriveItemEntity existingFile,
-        Dictionary<string, FileMetadata> localFilesDict)
+    public bool CheckIfLocalFileHasChanged(string relativePath, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict)
     {
         if(!localFilesDict.TryGetValue(relativePath, out FileMetadata? localFile))
             return false;
@@ -135,23 +119,12 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     }
 
     /// <inheritdoc />
-    public async Task RecordSyncConflictAsync(
-        string accountId,
-        DriveItemEntity remoteFile,
-        FileMetadata localFile,
-        string? sessionId,
-        CancellationToken cancellationToken)
+    public async Task RecordSyncConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, FileMetadata localFile, string? sessionId, CancellationToken cancellationToken)
     {
-        var conflict = SyncConflict.CreateUnresolvedConflict(
-            accountId,
-            remoteFile.RelativePath ?? "",
-            localFile.LastModifiedUtc,
-            remoteFile.LastModifiedUtc,
-            localFile.Size,
-            remoteFile.Size);
+        var conflict = SyncConflict.CreateUnresolvedConflict(accountId,hashedAccountId,remoteFile.RelativePath ?? "",localFile.LastModifiedUtc,remoteFile.LastModifiedUtc,localFile.Size,remoteFile.Size);
 
         SyncConflict? existingConflict = await _syncConflictRepository.GetByFilePathAsync(
-            accountId,
+            hashedAccountId,
             remoteFile.RelativePath ?? "",
             cancellationToken);
 
@@ -160,14 +133,14 @@ public sealed class ConflictDetectionService : IConflictDetectionService
             await _syncConflictRepository.AddAsync(conflict, cancellationToken);
         }
 
-        await DebugLog.InfoAsync("ConflictDetectionService.RecordSyncConflictAsync", accountId,
+        await DebugLog.InfoAsync("ConflictDetectionService.RecordSyncConflictAsync", hashedAccountId,
             $"CONFLICT detected for {remoteFile.RelativePath}: local and remote both changed", cancellationToken);
 
         if(sessionId is not null)
         {
             var operationLog = FileOperationLog.CreateSyncConflictLog(
                 sessionId,
-                accountId,
+                hashedAccountId,
                 remoteFile.RelativePath ?? "",
                 localFile.LocalPath,
                 remoteFile.DriveItemId,
@@ -184,7 +157,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
             cancellationToken);
     }
 
-    private static FileMetadata CreateFileMetadataWithLocalPath(DriveItemEntity remoteFile, string accountId, string? localSyncPath)
+    private static FileMetadata CreateFileMetadataWithLocalPath(DriveItemEntity remoteFile, HashedAccountId hashedAccountId, string? localSyncPath)
     {
         if(string.IsNullOrWhiteSpace(localSyncPath))
         {
@@ -193,22 +166,6 @@ public sealed class ConflictDetectionService : IConflictDetectionService
 
         var localFilePath = Path.Combine(localSyncPath, remoteFile.RelativePath?.TrimStart('/') ?? string.Empty);
 
-        return new FileMetadata(
-            remoteFile.DriveItemId,
-            accountId,
-            remoteFile.Name ?? string.Empty,
-            remoteFile.RelativePath ?? string.Empty,
-            remoteFile.Size,
-            remoteFile.LastModifiedUtc,
-            localFilePath,
-            remoteFile.IsFolder,
-            remoteFile.IsDeleted,
-            remoteFile.IsSelected ?? false,
-            remoteFile.RemoteHash,
-            remoteFile.CTag,
-            remoteFile.ETag,
-            null,
-            FileSyncStatus.PendingDownload,
-            null);
+        return new FileMetadata(remoteFile.DriveItemId, hashedAccountId, remoteFile.Name ?? string.Empty, remoteFile.RelativePath ?? string.Empty, remoteFile.Size, remoteFile.LastModifiedUtc, localFilePath, remoteFile.IsFolder, remoteFile.IsDeleted, remoteFile.IsSelected ?? false, remoteFile.RemoteHash, remoteFile.CTag, remoteFile.ETag, null, FileSyncStatus.PendingDownload, null);
     }
 }

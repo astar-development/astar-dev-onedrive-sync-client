@@ -26,12 +26,9 @@ public sealed class DebugLoggerService(IDbContextFactory<SyncDbContext> contextF
     /// <inheritdoc />
     public async Task LogExitAsync(string source, string accountId, CancellationToken cancellationToken = default) => await LogAsync("Exit", source, "Method exit", null, accountId, cancellationToken);
 
-    private async Task LogAsync(string logLevel, string source, string message, Exception? exception, string accountId, CancellationToken cancellationToken)
+    private async Task LogAsync(string logLevel, string source, string message, Exception? exception, HashedAccountId hashedAccountId, CancellationToken cancellationToken)
     {
-        if(string.IsNullOrEmpty(accountId))
-            return;
-
-        AccountInfo? account = await accountRepository.GetByIdAsync(accountId, cancellationToken);
+        AccountInfo? account = await accountRepository.GetByIdAsync(hashedAccountId, cancellationToken);
         if(account is null || !account.EnableDebugLogging)
             return;
 
@@ -43,11 +40,10 @@ public sealed class DebugLoggerService(IDbContextFactory<SyncDbContext> contextF
                 exceptionString = exceptionString[..4000] + " [truncated]";
         }
 
-        // Create a fresh DbContext instance isolated from other operations
         await using SyncDbContext context = contextFactory.CreateDbContext();
         var logEntry = new DebugLogEntity
         {
-            AccountId = accountId,
+            HashedAccountId = hashedAccountId,
             TimestampUtc = DateTimeOffset.UtcNow,
             LogLevel = logLevel,
             Source = source,

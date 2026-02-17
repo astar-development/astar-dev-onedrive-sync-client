@@ -4,7 +4,8 @@ This directory contains design documents that explain how the system is structur
 
 ## Index
 
-- (replace with links to design docs)
+- [AutoRegisterOptions readonly record struct rule](auto-register-options-readonly-analyzer.md)
+- [Sync progress reporting](sync-progress-reporting.md)
 
 ## Design Documents
 
@@ -12,7 +13,8 @@ Design docs that affect this repository's code should live here. If your organiz
 
 ### In-repository Design documents
 
-- (Add links to design documents in this repository)
+- [AutoRegisterOptions readonly record struct rule](auto-register-options-readonly-analyzer.md)
+- [Sync progress reporting](sync-progress-reporting.md)
 
 ### External Design documents
 

@@ -16,7 +16,11 @@ public sealed class DeltaTokenConfiguration : IEntityTypeConfiguration<DeltaToke
 
         _ = builder.HasOne<AccountEntity>()
             .WithMany()
-            .HasForeignKey(e => e.AccountId)
+            .HasForeignKey(e => e.HashedAccountId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        _ = builder.Property(e => e.HashedAccountId).IsRequired()
+            .HasConversion(SqliteTypeConverters.HashedAccountIdToString)
+            .HasColumnType("TEXT");
     }
 }

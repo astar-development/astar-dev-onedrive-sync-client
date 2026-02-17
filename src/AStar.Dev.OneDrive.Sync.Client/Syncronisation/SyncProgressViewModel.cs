@@ -82,6 +82,11 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     public string AccountId { get; }
 
     /// <summary>
+    ///     Gets the hashed account ID for this sync progress.
+    /// </summary>
+    public HashedAccountId HashedAccountId { get; }
+
+    /// <summary>
     ///     Gets or sets the current sync progress state.
     /// </summary>
     public SyncState? CurrentProgress { get; set => this.RaiseAndSetIfChanged(ref field, value); }
@@ -202,7 +207,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
             StatusMessage = "Starting sync...";
             _logger.LogInformation("Starting sync for account {AccountId}", AccountId);
 
-            await _syncEngine.StartSyncAsync(AccountId, cancellationToken);
+            await _syncEngine.StartSyncAsync(AccountId, HashedAccountId, cancellationToken);
 
             StatusMessage = "Sync completed successfully";
             _logger.LogInformation("Sync completed for account {AccountId}", AccountId);

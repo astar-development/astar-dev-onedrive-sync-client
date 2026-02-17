@@ -224,7 +224,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
             await _accountRepository.UpdateAsync(updatedAccount);
 
             // Update the scheduler with new auto-sync interval
-            _schedulerService.UpdateSchedule(updatedAccount.HashedAccountId, updatedAccount.AutoSyncIntervalMinutes);
+            _schedulerService.UpdateSchedule(updatedAccount.Id, updatedAccount.HashedAccountId, updatedAccount.AutoSyncIntervalMinutes);
 
             // Update the account in the collection
             var index = Accounts.IndexOf(SelectedAccount);

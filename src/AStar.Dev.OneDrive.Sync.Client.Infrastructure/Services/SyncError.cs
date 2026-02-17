@@ -1,3 +1,5 @@
+using AStar.Dev.OneDrive.Sync.Client.Core.Models;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 
 /// <summary>
@@ -8,7 +10,7 @@ public sealed record SyncError(string Message, Exception? Exception = null)
     /// <summary>
     ///     Creates a SyncError for when account validation fails.
     /// </summary>
-    public static SyncError AccountNotFound(string accountId) => new($"Account '{accountId}' not found");
+    public static SyncError AccountNotFound(HashedAccountId hashedAccountId) => new($"Account '{hashedAccountId}' not found");
 
     /// <summary>
     ///     Creates a SyncError for delta processing failures.

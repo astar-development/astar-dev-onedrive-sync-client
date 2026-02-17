@@ -25,7 +25,7 @@ public interface IAuthService
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of account identifiers and display names.</returns>
-    Task<IReadOnlyList<(string AccountId, string DisplayName)>> GetAuthenticatedAccountsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<(string accountId, string DisplayName)>> GetAuthenticatedAccountsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Acquires an access token for Microsoft Graph API calls.

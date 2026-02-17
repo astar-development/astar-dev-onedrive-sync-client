@@ -20,7 +20,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     public SyncStateCoordinator(ISyncSessionLogRepository syncSessionLogRepository)
     {
         _syncSessionLogRepository = syncSessionLogRepository ?? throw new ArgumentNullException(nameof(syncSessionLogRepository));
-        var initialState = SyncState.CreateInitial(string.Empty);
+        var initialState = SyncState.CreateInitial(string.Empty,string.Empty);
         _progressSubject = new BehaviorSubject<SyncState>(initialState);
     }
 
@@ -30,11 +30,11 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     public IObservable<SyncState> Progress => _progressSubject;
 
     /// <inheritdoc />
-    public async Task<string?> InitializeSessionAsync(string accountId, bool enableDetailedLogging, CancellationToken cancellationToken = default)
+    public async Task<string?> InitializeSessionAsync(string accountId, HashedAccountId hashedAccountId, bool enableDetailedLogging, CancellationToken cancellationToken = default)
     {
         if(enableDetailedLogging)
         {
-            var sessionLog = SyncSessionLog.CreateInitialRunning(accountId);
+            var sessionLog = SyncSessionLog.CreateInitialRunning(accountId, hashedAccountId);
             await _syncSessionLogRepository.AddAsync(sessionLog, cancellationToken);
             _currentSessionId = sessionLog.Id;
             return sessionLog.Id;
@@ -47,6 +47,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     /// <inheritdoc />
     public void UpdateProgress(
         string accountId,
+        HashedAccountId hashedAccountId,
         SyncStatus status,
         int totalFiles = 0,
         int completedFiles = 0,
@@ -99,6 +100,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
 
         var progress = new SyncState(
             accountId,
+            hashedAccountId,
             status,
             totalFiles,
             completedFiles,

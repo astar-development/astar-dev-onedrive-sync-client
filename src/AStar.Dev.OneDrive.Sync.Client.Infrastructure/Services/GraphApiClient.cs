@@ -239,33 +239,33 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     }
 
     /// <inheritdoc />
-    public async Task DeleteFileAsync(string accountId, string itemId, CancellationToken cancellationToken = default)
+    public async Task DeleteFileAsync(string accountId, HashedAccountId hashedAccountId, string itemId, CancellationToken cancellationToken = default)
     {
-        await DebugLog.EntryAsync("GraphApiClient.DeleteFileAsync", accountId, cancellationToken);
-        await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", accountId, $"Attempting to delete remote file. AccountId: {accountId}, ItemId: {itemId}", cancellationToken);
+        await DebugLog.EntryAsync("GraphApiClient.DeleteFileAsync", hashedAccountId, cancellationToken);
+        await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", hashedAccountId, $"Attempting to delete remote file. HashedAccountId: {hashedAccountId}, ItemId: {itemId}", cancellationToken);
 
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
         if(drive?.Id is null)
         {
-            await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", accountId, "Drive ID is null. Cannot delete file.", null, cancellationToken);
-            await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", accountId, cancellationToken);
+            await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", hashedAccountId, "Drive ID is null. Cannot delete file.", null, cancellationToken);
+            await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", hashedAccountId, cancellationToken);
             throw new InvalidOperationException("Unable to access user's drive");
         }
 
         try
         {
             await graphClient.Drives[drive.Id].Items[itemId].DeleteAsync(cancellationToken: cancellationToken);
-            await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", accountId, $"Successfully deleted remote file. AccountId: {accountId}, ItemId: {itemId}", cancellationToken);
+            await DebugLog.InfoAsync("GraphApiClient.DeleteFileAsync", hashedAccountId, $"Successfully deleted remote file. HashedAccountId: {hashedAccountId}, ItemId: {itemId}", cancellationToken);
         }
         catch(Exception ex)
         {
-            await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", accountId, $"Exception during remote file deletion. AccountId: {accountId}, ItemId: {itemId}", ex, cancellationToken);
+            await DebugLog.ErrorAsync("GraphApiClient.DeleteFileAsync", hashedAccountId, $"Exception during remote file deletion. HashedAccountId: {hashedAccountId}, ItemId: {itemId}", ex, cancellationToken);
             throw;
         }
         finally
         {
-            await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", accountId, cancellationToken);
+            await DebugLog.ExitAsync("GraphApiClient.DeleteFileAsync", hashedAccountId, cancellationToken);
         }
     }
 

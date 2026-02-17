@@ -17,7 +17,7 @@ public class SyncConfigurationShould
             timestamp);
 
         sut.Id.ShouldBe(1);
-        sut.AccountId.ShouldBe("acc-123");
+        sut.HashedAccountId.Id.ShouldBe("acc-123");
         sut.FolderPath.ShouldBe("/Documents/Work");
         sut.IsSelected.ShouldBeTrue();
         sut.LastModifiedUtc.ShouldBe(timestamp);

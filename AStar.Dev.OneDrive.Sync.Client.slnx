@@ -23,9 +23,11 @@
   </Folder>
   <Folder Name="/docs/architecture/">
     <File Path="docs/architecture/README.md" />
+    <File Path="docs/architecture/analyzers.md" />
   </Folder>
   <Folder Name="/docs/design/">
     <File Path="docs/design/colorful-theme-guide.md" />
+    <File Path="docs/design/auto-register-options-readonly-analyzer.md" />
     <File Path="docs/design/options-for-ui-changes.md" />
     <File Path="docs/design/QUICK-START-COLORFUL.md" />
     <File Path="docs/design/README.md" />
@@ -43,6 +45,9 @@
   </Folder>
   <Folder Name="/docs/plans/">
     <File Path="docs/plans/new-themes.md" />
+  </Folder>
+  <Folder Name="/plans/">
+    <File Path="plans/todo.md" />
   </Folder>
   <Folder Name="/docs/PRDs/">
     <File Path="docs/PRDs/prd-template.md" />
@@ -70,6 +75,7 @@
   <Folder Name="/test/nuget-packages/">
     <Project Path="test/nuget-packages/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj" />
     <Project Path="test/nuget-packages/AStar.Dev.Logging.Extensions.Tests.Unit/AStar.Dev.Logging.Extensions.Tests.Unit.csproj" />
+    <Project Path="test/nuget-packages/AStar.Dev.Source.Analyzers.Tests.Unit/AStar.Dev.Source.Analyzers.Tests.Unit.csproj" />
     <Project Path="test/nuget-packages/AStar.Dev.Source.Generators.Attributes.Tests.Unit/AStar.Dev.Source.Generators.Attributes.Tests.Unit.csproj" />
     <Project Path="test/nuget-packages/AStar.Dev.Source.Generators.Tests.Unit/AStar.Dev.Source.Generators.Tests.Unit.csproj" />
     <Project Path="test/nuget-packages/AStar.Dev.Utilities.Tests.Unit/AStar.Dev.Utilities.Tests.Unit.csproj" />

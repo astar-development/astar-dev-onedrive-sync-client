@@ -104,7 +104,7 @@ public sealed record WindowPreferences
 /// </summary>
 public sealed record AccountInfo
 {
-    public required string AccountId { get; init; }      // Unique identifier (MSAL HomeAccountId)
+    public required string accountId { get; init; }      // Unique identifier (MSAL HomeAccountId)
     public required string DisplayName { get; init; }    // User-friendly name (email)
     public required string LocalSyncPath { get; init; }  // User-selected local directory for this account
     public bool IsAuthenticated { get; init; }           // Current auth status
@@ -117,7 +117,7 @@ public sealed record AccountInfo
 /// </summary>
 public sealed record SyncConfiguration
 {
-    public required string AccountId { get; init; }
+    public required string accountId { get; init; }
     public required IReadOnlyList<string> SelectedFolderIds { get; init; }  // OneDrive folder IDs to sync
     public required IReadOnlyDictionary<string, bool> FolderSelections { get; init; } // Path -> IsSelected
     public DateTimeOffset LastModifiedUtc { get; init; } = DateTime.UtcNow;
@@ -128,7 +128,7 @@ public sealed record SyncConfiguration
 /// </summary>
 public sealed record SyncState
 {
-    public required string AccountId { get; init; }
+    public required string accountId { get; init; }
     public SyncStatus Status { get; init; }              // Running, Paused, Completed, Failed
     public int TotalFiles { get; init; }
     public int CompletedFiles { get; init; }
@@ -367,7 +367,7 @@ public sealed class AccountViewModel : ReactiveObject
 {
     private bool _isAuthenticated;
     
-    public string AccountId { get; }
+    public string accountId { get; }
     public string DisplayName { get; }
     public string LocalSyncPath { get; }
     
@@ -1093,7 +1093,7 @@ public interface IFileWatcherService
 
 public sealed record FileChangeEvent
 {
-    public required string AccountId { get; init; }
+    public required string accountId { get; init; }
     public required string LocalPath { get; init; }
     public required string RelativePath { get; init; }
     public FileChangeType ChangeType { get; init; }

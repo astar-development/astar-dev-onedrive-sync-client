@@ -23,6 +23,14 @@ public interface IAccountRepository
     Task<AccountInfo?> GetByIdAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
+    ///     Gets an account by its hashed ID.
+    /// </summary>
+    /// <param name="hashedAccountId">The hashed account identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The account if found, otherwise null.</returns>
+    Task<AccountInfo?> GetByIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     ///     Adds a new account.
     /// </summary>
     /// <param name="account">The account to add.</param>

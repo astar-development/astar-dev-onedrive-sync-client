@@ -13,7 +13,7 @@ public static class DebugLogContext
     /// <summary>
     ///     Gets the current account ID from the ambient context.
     /// </summary>
-    public static string CurrentAccountId => _currentAccountId.Value ?? AdminAccountMetadata.AccountId;
+    public static string CurrentAccountId => _currentAccountId.Value ?? AdminAccountMetadata.HashedAccountId;
 
     /// <summary>
     ///     Sets the current account ID for the ambient context.

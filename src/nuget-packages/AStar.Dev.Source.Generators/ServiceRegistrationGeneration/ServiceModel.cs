@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
 
-internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, string? serviceFqn, bool alsoAsSelf, string @namespace)
+internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, string? serviceFqn, bool alsoAsSelf, string? @namespace)
 {
     public ServiceLifetime Lifetime { get; } = lifetime;
     public string ImplFqn { get; } = implFqn;
@@ -22,7 +22,9 @@ internal sealed class ServiceModel(ServiceLifetime lifetime, string implFqn, str
         INamedTypeSymbol? asType = ExtractAsType(attr);
         var asSelf = ExtractAsSelf(attr);
         INamedTypeSymbol? service = asType ?? InferServiceType(impl);
-        var ns = impl.ContainingNamespace.IsGlobalNamespace ? null : impl.ContainingNamespace.ToDisplayString();
+        var ns = impl.ContainingNamespace.IsGlobalNamespace
+            ? "AStar.Dev"
+            : impl.ContainingNamespace.ToDisplayString();
 
         // Only skip if no service and not alsoAsSelf
         return service is null && !asSelf

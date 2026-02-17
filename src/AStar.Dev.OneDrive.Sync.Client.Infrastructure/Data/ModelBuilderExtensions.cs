@@ -20,6 +20,7 @@ public static class ModelBuilderExtensions
             typeof(DebugLogEntity),
             typeof(FileOperationLogEntity),
             typeof(SyncSessionLogEntity),
+            typeof(HashedAccountId),
         ];
 
         foreach(IMutableEntityType? et in mb.Model.GetEntityTypes().Where(e => targetEntities.Contains(e.ClrType)))
@@ -65,6 +66,10 @@ public static class ModelBuilderExtensions
             else if(Nullable.GetUnderlyingType(propertyType) == typeof(decimal))
             {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableDecimalToCents).HasColumnType("INTEGER");
+            }
+            else if(Nullable.GetUnderlyingType(propertyType) == typeof(HashedAccountId))
+            {
+                _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.HashedAccountIdToString).HasColumnType("TEXT");
             }
             else if(propertyType.IsEnum)
             {

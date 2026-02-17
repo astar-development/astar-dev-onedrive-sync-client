@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.DebugLogs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
@@ -82,7 +83,7 @@ public class DebugLogViewModelShould
                 propertyChanged = true;
         };
 
-        var account = new AccountInfo("acc1", "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
+        var account = new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
         sut.SelectedAccount = account;
 
         propertyChanged.ShouldBeTrue();
@@ -96,7 +97,7 @@ public class DebugLogViewModelShould
         var propertyChanged = false;
 
         // Set up account and load initial data - return 51 records to indicate HasMoreRecords
-        var account = new AccountInfo("acc1", "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
+        var account = new AccountInfo("acc1", AccountIdHasher.Hash("acc1"), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
         _ = _mockAccountRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns([account]);
 
         var logs = new List<DebugLogEntry>();
