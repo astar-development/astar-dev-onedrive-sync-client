@@ -563,7 +563,7 @@ string GetDeltaToken(string accountId)
 
 ### 1. Delta Query Loop
 
-```
+``` text
 WHILE syncInProgress:
     remoteChanges = FetchDelta(deltaToken)
     FOR EACH change IN remoteChanges:

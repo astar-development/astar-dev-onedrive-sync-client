@@ -1235,7 +1235,7 @@ public sealed class FileWatcherService : IFileWatcherService, IDisposable
 
 The [Delta Query](https://learn.microsoft.com/en-us/graph/delta-query-overview) allows efficient sync by only fetching changes since last sync:
 
-```
+``` text
 GET /me/drive/root/delta?token={deltaToken}
 ```
 
@@ -1956,7 +1956,7 @@ public sealed class AccountRepository : IAccountRepository
 
 **Storage Structure**:
 
-```
+``` text
 %LocalAppData%\AStarOneDriveClient\
 ├── sync.db                          # SQLite database (all settings, sync state, metadata)
 └── token_cache.bin                  # MSAL token cache (encrypted, persistent)
