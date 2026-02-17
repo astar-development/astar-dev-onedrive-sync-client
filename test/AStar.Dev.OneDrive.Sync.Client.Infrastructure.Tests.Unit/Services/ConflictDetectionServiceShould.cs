@@ -171,7 +171,7 @@ public class ConflictDetectionServiceShould
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             null, null, FileSyncStatus.SyncOnly, SyncDirection.None);
         var localFilesDict = new Dictionary<string, FileMetadata>();
-        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")),  remoteFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         _ = fileToDownload.ShouldNotBeNull();

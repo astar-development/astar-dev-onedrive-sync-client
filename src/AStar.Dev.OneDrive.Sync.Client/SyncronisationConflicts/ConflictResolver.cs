@@ -34,7 +34,7 @@ public sealed class ConflictResolver(
     {
         if(_logger.IsEnabled(LogLevel.Information))
         {
-            _logger.LogInformation("Resolving conflict for file {FilePath} in account {AccountId} with strategy {Strategy}",conflict.FilePath,conflict.Id,strategy);
+            _logger.LogInformation("Resolving conflict for file {FilePath} in account {AccountId} with strategy {Strategy}", conflict.FilePath, conflict.Id, strategy);
         }
 
         AccountInfo account = await _accountRepo.GetByIdAsync(conflict.AccountId, cancellationToken) ?? throw new InvalidOperationException($"Account not found: {conflict.HashedAccountId}");
@@ -73,7 +73,7 @@ public sealed class ConflictResolver(
 
         if(_logger.IsEnabled(LogLevel.Information))
         {
-            _logger.LogInformation("Successfully resolved conflict for {FilePath} with strategy {Strategy}",conflict.FilePath,strategy);
+            _logger.LogInformation("Successfully resolved conflict for {FilePath} with strategy {Strategy}", conflict.FilePath, strategy);
         }
     }
 
@@ -88,7 +88,7 @@ public sealed class ConflictResolver(
         // Get file metadata to retrieve OneDrive file ID
         FileMetadata metadata = await _metadataRepo.GetByPathAsync(account.HashedAccountId,conflict.FilePath,cancellationToken) ?? throw new InvalidOperationException($"File metadata not found for {conflict.FilePath}");
 
-        _ = await _graphApiClient.UploadFileAsync(account.Id,account.HashedAccountId, localPath, conflict.FilePath, null, cancellationToken);
+        _ = await _graphApiClient.UploadFileAsync(account.Id, account.HashedAccountId, localPath, conflict.FilePath, null, cancellationToken);
 
         // Update metadata
         var fileInfo = new FileInfo(localPath);

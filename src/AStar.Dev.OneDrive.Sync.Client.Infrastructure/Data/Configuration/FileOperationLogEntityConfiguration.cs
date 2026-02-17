@@ -10,7 +10,7 @@ public sealed class FileOperationLogEntityConfiguration : IEntityTypeConfigurati
     {
         _ = builder.ToTable("FileOperationLogs");
         _ = builder.HasKey(e => e.Id);
-        
+
         _ = builder.HasOne<AccountEntity>()
             .WithMany()
             .HasForeignKey(e => e.HashedAccountId)

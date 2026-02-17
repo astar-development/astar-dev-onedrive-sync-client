@@ -77,7 +77,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         var accountHash = AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id);
         using(Serilog.Context.LogContext.PushProperty("HashedAccountId", accountHash))
         {
-            _ = _debugLogger.LogInfoAsync("SyncTreeViewModel",  new HashedAccountId(accountHash), "Starting sync for account");
+            _ = _debugLogger.LogInfoAsync("SyncTreeViewModel", new HashedAccountId(accountHash), "Starting sync for account");
         }
 
         SyncTooltip = "This will perform the initial sync, which will retrieve details of all files and folders from OneDrive. This may take some time depending on the number of files. Subsequent syncs will be faster as only changes (and your selections) are processed.";
@@ -117,7 +117,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         set => this.RaiseAndSetIfChanged(ref field, value);
     }
 
-    public HashedAccountId? SelectedHashedAccountId =>  new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId));
+    public HashedAccountId? SelectedHashedAccountId => new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId));
 
     /// <summary>
     ///     Gets the root-level folders for the selected account.

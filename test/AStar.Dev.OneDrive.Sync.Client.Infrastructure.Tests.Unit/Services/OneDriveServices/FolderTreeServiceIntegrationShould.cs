@@ -67,7 +67,7 @@ public class FolderTreeServiceIntegrationShould
         AuthService authService = await AuthService.CreateAsync(config);
         AuthenticationResult loginResult = await authService.LoginAsync(TestContext.Current.CancellationToken);
 
-                    if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Value))
+        if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Value))
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
@@ -130,7 +130,7 @@ public class FolderTreeServiceIntegrationShould
         if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Value))
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
-        _ = await authService.GetAccessTokenAsync(loginResult.AccountId,  TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
+        _ = await authService.GetAccessTokenAsync(loginResult.AccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
         var service = new FolderTreeService(graphApiClient, authService, null!);
@@ -156,7 +156,7 @@ public class FolderTreeServiceIntegrationShould
         if(!loginResult.Success || string.IsNullOrWhiteSpace(loginResult.HashedAccountId.Value))
             throw new InvalidOperationException("Failed to authenticate with OneDrive");
 
-        _ = await authService.GetAccessTokenAsync(loginResult.AccountId,  TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
+        _ = await authService.GetAccessTokenAsync(loginResult.AccountId, TestContext.Current.CancellationToken) ?? throw new InvalidOperationException("Failed to get access token");
 
         var graphApiClient = new GraphApiClient(authService, null!, null!);
 

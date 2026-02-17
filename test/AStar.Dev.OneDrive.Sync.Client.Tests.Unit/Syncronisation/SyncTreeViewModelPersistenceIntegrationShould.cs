@@ -179,7 +179,7 @@ public class SyncTreeViewModelPersistenceIntegrationShould : IDisposable
         loadedChild1.SelectionState.ShouldBe(SelectionState.Checked);
         loadedChild2.SelectionState.ShouldBe(SelectionState.Unchecked);
         loadedParent.SelectionState.ShouldBe(SelectionState.Indeterminate);
-        }
+    }
 
     private static List<OneDriveFolderNode> CreateTestFolders() => [
                 CreateFolder("1", "Folder1", "/Folder1"),

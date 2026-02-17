@@ -33,7 +33,7 @@ public static class SqliteTypeConverters
 
     public static ValueConverter<HashedAccountId?, string?> NullableHashedAccountIdToString { get; } =
         new(h => h.HasValue ? h.Value.ToString() : null, s => s != null ? new HashedAccountId(s) : null);
-    
+
     public static ValueConverter<HashedAccountId, string> HashedAccountIdToString { get; } =
         new(h => h.Value, s => new HashedAccountId(s));
 }

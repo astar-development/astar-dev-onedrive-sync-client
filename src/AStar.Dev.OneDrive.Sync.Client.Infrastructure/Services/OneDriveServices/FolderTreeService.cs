@@ -75,7 +75,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
             FileMetadata updatedSyncConfiguration = await UpdateParentPathIfExistsAsync(hashedAccountId, node, possibleParentPath, cancellationToken);
             var isSelected = parentIsSelected == true || updatedSyncConfiguration.IsSelected;
 
-            node = new OneDriveFolderNode(item.Id,item.Name,$"{parentPath}/{item.Name}",parentFolderId,true)
+            node = new OneDriveFolderNode(item.Id, item.Name, $"{parentPath}/{item.Name}", parentFolderId, true)
             { IsSelected = isSelected };
 
             // Add placeholder child so expansion toggle appears
@@ -125,7 +125,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
         return configuration;
     }
 
-    private async Task LoadChildrenRecursiveAsync(string accountId,HashedAccountId hashedAccountId,OneDriveFolderNode parentNode,int? maxDepth,int currentDepth,CancellationToken cancellationToken)
+    private async Task LoadChildrenRecursiveAsync(string accountId, HashedAccountId hashedAccountId, OneDriveFolderNode parentNode, int? maxDepth, int currentDepth, CancellationToken cancellationToken)
     {
         if(maxDepth.HasValue && currentDepth >= maxDepth.Value)
             return;

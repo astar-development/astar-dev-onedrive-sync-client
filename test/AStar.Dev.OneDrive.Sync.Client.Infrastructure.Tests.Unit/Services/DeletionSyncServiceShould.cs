@@ -26,7 +26,7 @@ public class DeletionSyncServiceShould
         var remotePathsSet = new HashSet<string>();
         var localPathsSet = new HashSet<string> { "/Documents/file1.txt" };
 
-        await service.ProcessRemoteToLocalDeletionsAsync(            new HashedAccountId(AccountIdHasher.Hash(accountId)), existingFiles, remotePathsSet, localPathsSet, CancellationToken.None);
+        await service.ProcessRemoteToLocalDeletionsAsync(new HashedAccountId(AccountIdHasher.Hash(accountId)), existingFiles, remotePathsSet, localPathsSet, CancellationToken.None);
 
         await driveItemsRepo.Received(1).DeleteAsync("file1", Arg.Any<CancellationToken>());
     }
@@ -53,7 +53,7 @@ public class DeletionSyncServiceShould
         _ = driveItemsRepo.DeleteAsync("file1", Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("Database error")));
 
-        await service.ProcessRemoteToLocalDeletionsAsync(            new HashedAccountId(AccountIdHasher.Hash(accountId)), existingFiles, remotePathsSet, localPathsSet, CancellationToken.None);
+        await service.ProcessRemoteToLocalDeletionsAsync(new HashedAccountId(AccountIdHasher.Hash(accountId)), existingFiles, remotePathsSet, localPathsSet, CancellationToken.None);
         await driveItemsRepo.Received(1).DeleteAsync("file1", Arg.Any<CancellationToken>());
         await driveItemsRepo.Received(1).DeleteAsync("file2", Arg.Any<CancellationToken>());
     }
@@ -94,7 +94,7 @@ public class DeletionSyncServiceShould
         var remotePathsSet = new HashSet<string> { "/Documents/file1.txt" };
         var localPathsSet = new HashSet<string>();
 
-        await service.ProcessLocalToRemoteDeletionsAsync(accountId,new HashedAccountId(AccountIdHasher.Hash(accountId)), allLocalFiles, remotePathsSet, localPathsSet, CancellationToken.None);
+        await service.ProcessLocalToRemoteDeletionsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), allLocalFiles, remotePathsSet, localPathsSet, CancellationToken.None);
 
         await graphApiClient.Received(1).DeleteFileAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "file1", Arg.Any<CancellationToken>());
 
@@ -119,7 +119,7 @@ public class DeletionSyncServiceShould
         };
         var remotePathsSet = new HashSet<string> { "/Documents/file1.txt", "/Documents/file2.txt" };
         var localPathsSet = new HashSet<string>();
-        _ = graphApiClient.DeleteFileAsync(accountId,new HashedAccountId(AccountIdHasher.Hash(accountId)), "file1", Arg.Any<CancellationToken>())
+        _ = graphApiClient.DeleteFileAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), "file1", Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("Network error")));
 
         await service.ProcessLocalToRemoteDeletionsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), allLocalFiles, remotePathsSet, localPathsSet, CancellationToken.None);

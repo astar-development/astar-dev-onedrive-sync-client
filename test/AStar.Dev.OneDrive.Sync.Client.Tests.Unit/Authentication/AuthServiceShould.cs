@@ -41,7 +41,9 @@ public class AuthServiceShould
 
         AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
-        result.Success.ShouldBeFalse();        result.AccountId.ShouldBeEmpty();        result.HashedAccountId.Value.ShouldBeEmpty();
+        result.Success.ShouldBeFalse();
+        result.AccountId.ShouldBeEmpty();
+        result.HashedAccountId.Value.ShouldBeEmpty();
         result.DisplayName.ShouldBeEmpty();
         _ = result.ErrorMessage.ShouldNotBeNull();
     }

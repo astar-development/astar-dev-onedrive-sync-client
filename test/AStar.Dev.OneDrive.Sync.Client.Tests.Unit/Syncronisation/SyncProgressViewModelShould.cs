@@ -249,8 +249,8 @@ new HashedAccountId(AccountIdHasher.Hash("test-account")),
 
         _ = await viewModel.StartSyncCommand.Execute().FirstAsync();
 
-          await syncEngine.Received(1).StartSyncAsync("test-account",
-      default, Arg.Any<CancellationToken>());
+        await syncEngine.Received(1).StartSyncAsync("test-account",
+    default, Arg.Any<CancellationToken>());
         viewModel.IsSyncing.ShouldBeFalse();
         viewModel.StatusMessage.ShouldBe("Sync completed successfully");
     }

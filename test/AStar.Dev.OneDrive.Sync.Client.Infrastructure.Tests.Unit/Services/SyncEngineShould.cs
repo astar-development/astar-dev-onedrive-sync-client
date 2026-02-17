@@ -23,6 +23,7 @@ public class SyncEngineShould
                 DateTime.UtcNow, $"C:\\Sync\\Documents\\file_{i}.txt", false, false, false, null, null, $"hash_{i}", null,
                 FileSyncStatus.PendingUpload, 0));
         }
+
         _ = mocks.SyncConfigRepo.GetSelectedFoldersAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), Arg.Any<CancellationToken>())
             .Returns(["/Documents"]);
         _ = mocks.AccountRepo.GetByIdAsync(new HashedAccountId(AccountIdHasher.Hash("acc1")), Arg.Any<CancellationToken>())
@@ -1174,6 +1175,6 @@ public class SyncEngineShould
         return (engine, mocks);
     }
 
-    private sealed record TestMocks(ILocalFileScanner LocalScanner,IRemoteChangeDetector RemoteDetector,IDriveItemsRepository FileMetadataRepo,ISyncConfigurationRepository SyncConfigRepo,IAccountRepository AccountRepo,IGraphApiClient GraphApiClient,ISyncConflictRepository SyncConflictRepo,
-        IConflictDetectionService ConflictDetectionService,IDeltaProcessingService DeltaProcessingService,IFileTransferService FileTransferService,IDeletionSyncService DeletionSyncService,ISyncStateCoordinator SyncStateCoordinator);
+    private sealed record TestMocks(ILocalFileScanner LocalScanner, IRemoteChangeDetector RemoteDetector, IDriveItemsRepository FileMetadataRepo, ISyncConfigurationRepository SyncConfigRepo, IAccountRepository AccountRepo, IGraphApiClient GraphApiClient, ISyncConflictRepository SyncConflictRepo,
+        IConflictDetectionService ConflictDetectionService, IDeltaProcessingService DeltaProcessingService, IFileTransferService FileTransferService, IDeletionSyncService DeletionSyncService, ISyncStateCoordinator SyncStateCoordinator);
 }

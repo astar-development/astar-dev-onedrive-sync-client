@@ -16,8 +16,8 @@ public interface ISyncEngine
     ///     Starts synchronization for the specified account.
     /// </summary>
     /// <param name="accountId">The account identifier.</param>
-        /// <param name="hashedAccountId">The hashed account ID.</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
+    /// <param name="hashedAccountId">The hashed account ID.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     Task StartSyncAsync(string accountId, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
     /// <summary>

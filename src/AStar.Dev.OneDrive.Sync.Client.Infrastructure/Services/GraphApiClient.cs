@@ -126,7 +126,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     }
 
     /// <inheritdoc />
-    public async Task DownloadFileAsync(string accountId,  HashedAccountId hashedAccountId,string itemId, string localFilePath, CancellationToken cancellationToken = default)
+    public async Task DownloadFileAsync(string accountId, HashedAccountId hashedAccountId, string itemId, string localFilePath, CancellationToken cancellationToken = default)
     {
         GraphServiceClient graphClient = CreateGraphClientAsync(accountId, hashedAccountId);
         Drive? drive = await graphClient.Me.Drive.GetAsync(cancellationToken: cancellationToken);
@@ -265,7 +265,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         }
     }
 
-    private GraphServiceClient CreateGraphClientAsync(string accountId,HashedAccountId hashedAccountId)
+    private GraphServiceClient CreateGraphClientAsync(string accountId, HashedAccountId hashedAccountId)
     {
         var authProvider = new BaseBearerTokenAuthenticationProvider(new GraphTokenProvider(authService, accountId, hashedAccountId));
 

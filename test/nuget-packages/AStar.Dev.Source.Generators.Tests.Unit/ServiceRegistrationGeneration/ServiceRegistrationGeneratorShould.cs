@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
+using AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using AStar.Dev.Source.Generators.ServiceRegistrationGeneration;
 
 namespace AStar.Dev.Source.Generators.Tests.Unit.ServiceRegistrationGeneration;
 

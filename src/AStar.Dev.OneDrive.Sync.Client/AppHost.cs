@@ -1,5 +1,7 @@
 using System.IO.Abstractions;
 using System.Net;
+using AStar.Dev.OneDrive.Sync.Client.Accounts;
+using AStar.Dev.OneDrive.Sync.Client.ConfigurationSettings;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
@@ -7,8 +9,6 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.OneDriveServices;
-using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.ConfigurationSettings;
 using AStar.Dev.OneDrive.Sync.Client.MainWindow;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Syncronisation;
@@ -97,7 +97,9 @@ public static class AppHost
             var msalConfigurationSettings = new MsalConfigurationSettings(entraId.ClientId, appSettings.RedirectUri, appSettings.GraphUri, entraId.Scopes ?? [], appSettings.CachePrefix);
 
             _ = services.AddSingleton(msalConfigurationSettings);
-        };
+        }
+
+        ;
 
         var authConfig = AuthConfiguration.LoadFromConfiguration(configuration);
 

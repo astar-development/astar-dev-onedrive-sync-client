@@ -200,7 +200,7 @@ public class SyncTreeViewModelShould : IDisposable
 
         var children = new List<OneDriveFolderNode> { new() { DriveItemId = "child1", Name = "Child 1", ParentId = "parent", IsFolder = true } };
 
-        _ = _mockFolderService.GetChildFoldersAsync("account123",new HashedAccountId(AccountIdHasher.Hash("account123")), "parent", Arg.Any<bool?>(), Arg.Any<CancellationToken>())
+        _ = _mockFolderService.GetChildFoldersAsync("account123", new HashedAccountId(AccountIdHasher.Hash("account123")), "parent", Arg.Any<bool?>(), Arg.Any<CancellationToken>())
             .Returns(children);
 
         _viewModel.SelectedAccountId = "account123";

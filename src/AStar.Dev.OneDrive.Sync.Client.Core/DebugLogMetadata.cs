@@ -8,7 +8,7 @@ public static partial class DebugLogMetadata
         {
             public const string StartSync = "SyncEngine.StartSyncAsync";
         }
-        
+
         public static class AutoSyncSchedulerService
         {
             public const string StartAsync = "AutoSyncSchedulerService.StartAsync";

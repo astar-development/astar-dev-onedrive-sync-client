@@ -13,6 +13,7 @@ internal static class AnalyzerVerifier<TAnalyzer>
     public static DiagnosticResult Diagnostic(string diagnosticId)
         => new(diagnosticId, DiagnosticSeverity.Error);
 
+    [System.Obsolete]
     public static async Task VerifyAnalyzerAsync(string source, params DiagnosticResult[] expected)
     {
         var test = new CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>

@@ -353,7 +353,7 @@ public sealed partial class SyncEngine(
             !conflictPaths.Contains(f.RelativePath))];
     }
 
-    private static async Task<(List<FileMetadata> FilesToDownload,int TotalFiles,long TotalBytes,long UploadBytes,long DownloadBytes)> CalculateSyncSummaryAsync(HashedAccountId hashedAccountId,List<FileMetadata> filesToUpload,List<FileMetadata> filesToDownload,CancellationToken cancellationToken)
+    private static async Task<(List<FileMetadata> FilesToDownload, int TotalFiles, long TotalBytes, long UploadBytes, long DownloadBytes)> CalculateSyncSummaryAsync(HashedAccountId hashedAccountId, List<FileMetadata> filesToUpload, List<FileMetadata> filesToDownload, CancellationToken cancellationToken)
     {
         var totalFiles = filesToUpload.Count + filesToDownload.Count;
         var totalBytes = filesToUpload.Sum(f => f.Size) + filesToDownload.Sum(f => f.Size);
