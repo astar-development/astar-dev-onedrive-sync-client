@@ -1,4 +1,4 @@
-### AStar.Dev.Functional.Extensions — A friendly, practical guide to Results and Options in .NET (for junior devs) 🎯✨
+# AStar.Dev.Functional.Extensions — A friendly, practical guide to Results and Options in .NET (for junior devs) 🎯✨
 
 Welcome! If you’ve ever written one of these…
 
@@ -40,7 +40,7 @@ All examples are C# 12/13 compatible. The post is pure Markdown (Medium/web frie
 
 ---
 
-### Quick index (bookmark this) 🧭
+## Quick index (bookmark this) 🧭
 
 - Core types: `Result<TSuccess, TError>`, `Option<T>`
 - View-model ergonomics: `Apply`, `ApplyAsync`
@@ -446,19 +446,19 @@ Code review checklist:
 
 ## Part 11 — FAQ
 
-Q: Is this a full functional framework?  
+Q: Is this a full functional framework?
 A: No. It’s pragmatic sugar over patterns you already use.
 
-Q: Do I have to change my architecture?  
+Q: Do I have to change my architecture?
 A: Nope. Use what helps. Ignore the rest.
 
-Q: What about performance?  
+Q: What about performance?
 A: The types are small wrappers. In typical app code (I/O, UI), overhead is negligible compared to clarity gains.
 
-Q: Is it test-friendly?  
+Q: Is it test-friendly?
 A: Extremely. Every helper is deterministic; the repo ships with unit tests.
 
-Q: Can I map exceptions to localized messages?  
+Q: Can I map exceptions to localized messages?
 A: Yes — `ToErrorResponse` centralizes extraction. Localize `ErrorResponse.Message` later.
 
 ---

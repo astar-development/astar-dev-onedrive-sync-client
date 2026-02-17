@@ -2,8 +2,8 @@
 
 **Goal**: Persist folder selection state to the database so selections survive app restarts.
 
-**Date**: January 6, 2026  
-**Status**: Ready to Start  
+**Date**: January 6, 2026
+**Status**: Ready to Start
 **Approach**: Small incremental steps (8 steps like Sprint 3 & 4)
 
 ---
@@ -13,6 +13,7 @@
 Currently, folder selections (checked/unchecked/indeterminate) are stored only in memory. When the app restarts or an account is deselected and reselected, all selections are lost. This sprint adds database persistence so selections are saved and restored automatically.
 
 **Key Features**:
+
 - Save folder selections to database when user toggles checkboxes
 - Load saved selections when account is selected
 - Update selections when they change
@@ -46,12 +47,14 @@ CREATE INDEX IX_SyncConfigurations_AccountId_FolderPath
 ## Sprint 5 Steps Breakdown
 
 ### Step 5.1: Create SyncConfiguration Model
+
 - **File**: `src/AStarOneDriveClient/Models/SyncConfiguration.cs`
 - **Purpose**: Model representing a persisted folder selection
 - **Properties**: `Id`, `AccountId`, `FolderPath`, `IsSelected`, `LastModifiedUtc`
 - **Tests**: Simple property validation tests
 
 ### Step 5.2: Update ISyncConfigurationRepository Interface
+
 - **File**: `src/AStarOneDriveClient/Repositories/ISyncConfigurationRepository.cs` (already exists)
 - **Purpose**: Add methods for folder selection persistence
 - **New Methods**:
@@ -63,6 +66,7 @@ CREATE INDEX IX_SyncConfigurations_AccountId_FolderPath
 - **Tests**: Interface doesn't need tests (implementations do)
 
 ### Step 5.3: Implement SyncConfigurationRepository Methods
+
 - **File**: `src/AStarOneDriveClient/Repositories/SyncConfigurationRepository.cs` (already exists)
 - **Purpose**: Implement the new persistence methods
 - **Database Operations**: CRUD for `SyncConfigurations` table
@@ -76,6 +80,7 @@ CREATE INDEX IX_SyncConfigurations_AccountId_FolderPath
   - Verify foreign key constraints
 
 ### Step 5.4: Update ISyncSelectionService Interface
+
 - **File**: `src/AStarOneDriveClient/Services/ISyncSelectionService.cs`
 - **Purpose**: Add persistence capability to selection service
 - **New Methods**:
@@ -84,6 +89,7 @@ CREATE INDEX IX_SyncConfigurations_AccountId_FolderPath
 - **Tests**: Interface doesn't need tests (implementations do)
 
 ### Step 5.5: Implement SyncSelectionService Persistence Methods
+
 - **File**: `src/AStarOneDriveClient/Services/SyncSelectionService.cs`
 - **Purpose**: Implement database save/load logic
 - **Logic**:
@@ -98,6 +104,7 @@ CREATE INDEX IX_SyncConfigurations_AccountId_FolderPath
   - Verify indeterminate state recalculated after loading
 
 ### Step 5.6: Update SyncTreeViewModel with Auto-Persistence
+
 - **File**: `src/AStarOneDriveClient/ViewModels/SyncTreeViewModel.cs`
 - **Purpose**: Automatically save/load selections when account changes
 - **Changes**:
@@ -112,6 +119,7 @@ CREATE INDEX IX_SyncConfigurations_AccountId_FolderPath
   - Multiple toggles batch correctly (avoid saving on every click - debounce?)
 
 ### Step 5.7: Update ServiceConfiguration DI Registration
+
 - **File**: `src/AStarOneDriveClient/ServiceConfiguration.cs`
 - **Purpose**: Wire up the repository in DI container
 - **Changes**:
@@ -121,6 +129,7 @@ CREATE INDEX IX_SyncConfigurations_AccountId_FolderPath
 - **Tests**: No new tests (verify existing DI tests still pass)
 
 ### Step 5.8: Integration Tests & Manual Testing
+
 - **File**: `test/.../ViewModels/SyncTreeViewModelPersistenceIntegrationShould.cs`
 - **Purpose**: End-to-end tests for persistence
 - **Tests**: 6+ scenarios:
@@ -142,24 +151,28 @@ CREATE INDEX IX_SyncConfigurations_AccountId_FolderPath
 ### Persistence Strategy
 
 **When to Save**:
+
 - After user toggles any checkbox (debounced if needed)
 - After "Clear All" button clicked
 
 **When to Load**:
+
 - After folders loaded for an account (in `LoadFoldersAsync`)
 
 **What to Save**:
+
 - Only **checked** folders (not indeterminate)
 - Store full OneDrive path (e.g., `/Documents/Work/Projects`)
 - Store `LastModifiedUtc` for future conflict resolution
 
 **What NOT to Save**:
+
 - Indeterminate folders (calculated from children)
 - Unchecked folders (absence = unchecked)
 
 ### Data Flow
 
-```
+``` text
 User clicks checkbox
   ↓
 ToggleSelectionCommand executes
@@ -181,7 +194,7 @@ Done ✅
 
 ### Loading Flow
 
-```
+``` text
 User selects account
   ↓
 SyncTreeViewModel.LoadFoldersAsync() executes
@@ -210,7 +223,7 @@ Done ✅
 
 1. **Folder deleted in OneDrive**: Selection exists in DB but folder doesn't exist anymore
    - **Solution**: Ignore silently (don't throw error)
-   
+
 2. **Folder renamed in OneDrive**: Path changed, selection orphaned
    - **Solution**: User must re-select (we use path as key, not ID for now)
    - **Future**: Use OneDrive DriveItem ID instead of path
@@ -229,19 +242,25 @@ Done ✅
 ## Performance Considerations
 
 ### Debouncing Saves
+
 If user clicks multiple checkboxes rapidly, we might save to DB on every click. Consider:
+
 - **Option 1**: Debounce save by 500ms (wait for user to stop clicking)
 - **Option 2**: Save immediately (database is fast enough)
 - **Decision**: Start with immediate save, optimize later if needed
 
 ### Database Size
+
 Each account might have 100-1000 selected folders:
+
 - 100 folders × 20 bytes path = 2 KB per account
 - 10 accounts × 2 KB = 20 KB total
 - **Conclusion**: Size not a concern
 
 ### Load Performance
+
 Loading 1000 selections and applying to tree:
+
 - O(n) database read: ~10ms
 - O(n × m) tree search: n=selections, m=tree size
   - Worst case: 1000 × 5000 = 5M ops (too slow!)
@@ -255,6 +274,7 @@ Loading 1000 selections and applying to tree:
 ## Success Criteria
 
 Sprint 5 is complete when:
+
 - ✅ All 8 steps implemented
 - ✅ All unit tests passing (40+ new tests)
 - ✅ Integration tests passing (6+ tests)
@@ -279,6 +299,7 @@ Sprint 5 is complete when:
 ## Ready to Start?
 
 **Step 5.1** is ready to implement:
+
 - Create `SyncConfiguration` model
 - Simple record with 5 properties
 - 3 basic tests

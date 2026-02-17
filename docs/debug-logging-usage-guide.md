@@ -7,16 +7,19 @@ A flexible debug logging system that writes to the SQLite database when enabled 
 ## Architecture Components
 
 ### 1. Database Layer
+
 - **DebugLogEntity**: Entity for storing logs (Id, AccountId, TimestampUtc, LogLevel, Source, Message, Exception)
 - **Migration**: `20260107202506_AddDebugLogsTable.cs`
 
 ### 2. Service Layer
+
 - **IDebugLogger**: Interface for debug logging operations
 - **DebugLogger**: Implementation that checks EnableDebugLogging and writes to DB
 - **DebugLogContext**: Static AsyncLocal context holder
 - **DebugLog**: Static facade for convenient access
 
 ### 3. Integration
+
 - Registered as Scoped in ServiceConfiguration
 - Initialized in App.axaml.cs startup
 - Context set/cleared in SyncEngine.StartSyncAsync
@@ -32,6 +35,7 @@ A flexible debug logging system that writes to the SQLite database when enabled 
 ## Usage Patterns
 
 ### Pattern 1: Static Access (Recommended for most cases)
+
 ```csharp
 // Entry logging
 await DebugLog.EntryAsync("ClassName.MethodName", cancellationToken);
@@ -55,6 +59,7 @@ await DebugLog.ExitAsync("ClassName.MethodName", cancellationToken);
 ```
 
 ### Pattern 2: Dependency Injection (When testing needed)
+
 ```csharp
 public class MyService
 {
@@ -134,6 +139,7 @@ public async Task ProcessFileAsync(string filePath, CancellationToken cancellati
 ## Querying Debug Logs
 
 Access logs via SQL:
+
 ```sql
 SELECT * FROM DebugLogs 
 WHERE AccountId = 'account-id' 
@@ -142,6 +148,7 @@ LIMIT 100;
 ```
 
 Or create a repository if needed:
+
 ```csharp
 public interface IDebugLogRepository
 {
@@ -162,6 +169,7 @@ public interface IDebugLogRepository
 ## Testing
 
 ### Testing with DI
+
 ```csharp
 [Fact]
 public async Task ProcessFileLogsEntry()
@@ -176,6 +184,7 @@ public async Task ProcessFileLogsEntry()
 ```
 
 ### Testing with Static (Integration)
+
 ```csharp
 [Fact]
 public async Task ProcessFileCreatesDebugLogWhenEnabled()
@@ -200,12 +209,14 @@ public async Task ProcessFileCreatesDebugLogWhenEnabled()
 ## Troubleshooting
 
 **Logs not appearing?**
+
 1. Check account's EnableDebugLogging is true
 2. Verify DebugLogContext.SetAccountId() was called
 3. Ensure migration has been applied
 4. Check for exceptions in log writing (won't fail silently)
 
 **Context is null?**
+
 - Context only flows through async continuations in the same execution tree
 - If you start a new Task/Thread, you must set context again
 - Fire-and-forget tasks won't have context (use await)

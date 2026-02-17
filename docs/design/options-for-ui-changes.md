@@ -1,5 +1,3 @@
-I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each maintains the same functionality but with completely different visual approaches.
-
 # Design Option 1: Modern Professional (Corporate Minimalist)
 
 **Visual Identity:** Clean lines, subtle shadows, monochromatic palette with blue accents, sophisticated typography, ample whitespace
@@ -431,11 +429,11 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 
 ---
 
-# Design Option 2: Modern Informal Colorful (Playful & Vibrant)
+## Design Option 2: Modern Informal Colorful (Playful & Vibrant)
 
 **Visual Identity:** Bold gradients, vibrant colors, soft rounded corners, playful icons, friendly typography, glassmorphism effects
 
-## MainWindow.axaml
+### MainWindow.axaml=2
 
 ```xml
 <Window xmlns="https://github.com/avaloniaui"
@@ -716,11 +714,11 @@ I'll create 3 distinct design alternatives for your OneDrive Sync Client. Each m
 
 ---
 
-# Design Option 3: Random/Anything Goes (Retro Terminal Hacker Theme)
+## Design Option 3: Random/Anything Goes (Retro Terminal Hacker Theme)
 
 **Visual Identity:** Monospace fonts, terminal green, CRT scanlines, retro ASCII art, hacker aesthetic, dark mode with neon accents
 
-## MainWindow.axaml (Terminal Theme)
+### MainWindow.axaml (Terminal Theme)
 
 ```xml
 <Window xmlns="https://github.com/avaloniaui"
