@@ -23,6 +23,6 @@ public static class AuthenticationResultExtensions
         /// </summary>
         /// <param name="errorMessage">The error message describing the failure.</param>
         /// <returns>An <see cref="AuthenticationResult"/> representing a failed authentication.</returns>
-        public static AuthenticationResult Failed(string errorMessage) => new(false, string.Empty, string.Empty, errorMessage);
+        public static AuthenticationResult Failed(string errorMessage) => new(false, string.Empty, string.Empty, string.Empty, errorMessage);
     }
 }
