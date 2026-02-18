@@ -54,7 +54,7 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
     public async Task UpdateAsync(AccountInfo account, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
-        AccountEntity dbAccount = await context.Accounts.FindAsync([account.Id], cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.HashedAccountId}' not found.");
+        AccountEntity dbAccount = await context.Accounts.Where(a => a.Id == account.Id).FirstOrDefaultAsync(cancellationToken) ?? throw new InvalidOperationException($"Account with ID '{account.HashedAccountId}' not found.");
 
         dbAccount.DisplayName = account.DisplayName;
         dbAccount.LocalSyncPath = account.LocalSyncPath;
@@ -74,7 +74,7 @@ public sealed class AccountRepository(IDbContextFactory<SyncDbContext> contextFa
     public async Task DeleteAsync(string accountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
-        AccountEntity? entity = await context.Accounts.FindAsync([accountId], cancellationToken);
+        AccountEntity? entity = await context.Accounts.Where(a => a.Id == accountId).FirstOrDefaultAsync(cancellationToken);
         if(entity is not null)
         {
             _ = context.Accounts.Remove(entity);

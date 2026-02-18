@@ -44,6 +44,7 @@ public static class ApplicationServiceExtensions
 
         return services;
     }
+    
     public static IConfigurationRoot AddApplicationConfiguration(this IServiceCollection services)
     {
         IConfigurationRoot configuration = new ConfigurationBuilder()

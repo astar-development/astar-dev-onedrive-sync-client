@@ -15,39 +15,26 @@ public static class AppHost
         var logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ApplicationMetadata.ApplicationFolder, "logs");
         _ = Directory.CreateDirectory(logDir);
 
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Debug()
-            .Enrich.FromLogContext()
-            .WriteTo.File(
-                    formatter: new Serilog.Formatting.Json.JsonFormatter(),
-                    path: Path.Combine(logDir, "sync.log"),
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 7,
-                    shared: true,
-                    flushToDiskInterval: TimeSpan.FromSeconds(1)
-                )
-            .CreateLogger();
-
         IHost host = Host.CreateDefaultBuilder()
             .UseSerilog()
             .ConfigureServices((context, services) =>
             {
                 IConfigurationRoot configuration = services.AddApplicationConfiguration();
 
+                ConfigureLogging(logDir, configuration);
                 _ = services.AddDatabaseServices()
                             .AddAuthenticationServices(configuration)
                             .AddApplicationServices()
                             .AddViewModels()
                             .AddAnnotatedServices()
                             .AddHostedService<LogCleanupBackgroundService>();
-                
+
                 services.AddHttpClientWithRetry();
             })
             .Build();
 
         return host;
     }
-
     /// <summary>
     ///     Ensures the database is created and migrations are applied.
     /// </summary>
@@ -59,4 +46,17 @@ public static class AppHost
 
         context.Database.Migrate();
     }
+
+    private static void ConfigureLogging(string logDir, IConfiguration configuration)
+        => Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .WriteTo.File(
+                    formatter: new Serilog.Formatting.Json.JsonFormatter(),
+                    path: Path.Combine(logDir, "sync.txt"),
+                    rollingInterval: RollingInterval.Hour,
+                    retainedFileCountLimit: 7,
+                    shared: true,
+                    flushToDiskInterval: TimeSpan.FromSeconds(1)
+                )
+                .CreateLogger();
 }
