@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using Avalonia;
@@ -10,6 +11,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.MainWindow;
 /// <summary>
 ///     Main application window.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed partial class MainWindow : Window
 {
     private readonly IWindowPreferencesService _preferencesService;

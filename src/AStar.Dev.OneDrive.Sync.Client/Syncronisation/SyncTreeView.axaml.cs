@@ -1,4 +1,5 @@
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using Avalonia.Controls;
 
@@ -7,6 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Syncronisation;
 /// <summary>
 ///     View for displaying and managing the OneDrive folder sync tree.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public partial class SyncTreeView : UserControl
 {
     /// <summary>
