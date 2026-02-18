@@ -8,7 +8,10 @@ tools:
     "read/problems",
     "search/changes",
     "execute/testFailure",
-    "execute/getTerminalOutput", "execute/runInTerminal", "read/terminalLastCommand", "read/terminalSelection",
+    "execute/getTerminalOutput",
+    "execute/runInTerminal",
+    "read/terminalLastCommand",
+    "read/terminalSelection",
     "web/fetch",
     "search/searchResults",
     "edit/editFiles",
@@ -635,7 +638,7 @@ public async Task<User> GetUserAsync(string email)
 // BAD: Leaks sensitive information
 catch (Exception ex)
 {
-    return StatusCode(500, $"Database error: {ex.Message} at {ex.StackTrace}");
+    return StatusCode(500, $"Database error: {ex.GetBaseException().Message} at {ex.StackTrace}");
 }
 
 // GOOD: Secure error handling

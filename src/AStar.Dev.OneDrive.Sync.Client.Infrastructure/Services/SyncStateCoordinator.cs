@@ -13,7 +13,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     private readonly ISyncSessionLogRepository _syncSessionLogRepository;
     private readonly BehaviorSubject<SyncState> _progressSubject;
     private readonly List<(DateTimeOffset Timestamp, long Bytes)> _transferHistory = [];
-    private string? _currentSessionId;
+    private Guid? _currentSessionId;
     private long _lastCompletedBytes;
     private DateTimeOffset _lastProgressUpdate = DateTimeOffset.UtcNow;
 
@@ -30,18 +30,18 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     public IObservable<SyncState> Progress => _progressSubject;
 
     /// <inheritdoc />
-    public async Task<string?> InitializeSessionAsync(string accountId, HashedAccountId hashedAccountId, bool enableDetailedLogging, CancellationToken cancellationToken = default)
+    public async Task<Guid> InitializeSessionAsync(HashedAccountId hashedAccountId, bool enableDetailedLogging, CancellationToken cancellationToken = default)
     {
         if(enableDetailedLogging)
         {
-            var sessionLog = SyncSessionLog.CreateInitialRunning(accountId, hashedAccountId);
+            var sessionLog = SyncSessionLog.CreateInitialRunning(hashedAccountId);
             await _syncSessionLogRepository.AddAsync(sessionLog, cancellationToken);
             _currentSessionId = sessionLog.Id;
             return sessionLog.Id;
         }
 
-        _currentSessionId = null;
-        return null;
+        _currentSessionId = Guid.CreateVersion7();
+        return _currentSessionId.Value;
     }
 
     /// <inheritdoc />
@@ -58,6 +58,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
         int filesDeleted = 0,
         int conflictsDetected = 0,
         string? currentScanningFolder = null,
+        Guid? sessionId = null,
         long? phaseTotalBytes = null)
     {
         DateTimeOffset now = DateTime.UtcNow;
@@ -119,12 +120,12 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     }
 
     /// <inheritdoc />
-    public async Task RecordCompletionAsync(int uploadCount, int downloadCount, int deleteCount, int conflictCount, long completedBytes, CancellationToken cancellationToken = default)
+    public async Task RecordCompletionAsync(int uploadCount, int downloadCount, int deleteCount, int conflictCount, long completedBytes, Guid? sessionId = null, CancellationToken cancellationToken = default)
     {
-        if(_currentSessionId is null)
+        if(sessionId is null)
             return;
 
-        SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
+        SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId!.Value, cancellationToken);
         if(session is not null)
         {
             SyncSessionLog updatedSession = session with
@@ -147,7 +148,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
         if(_currentSessionId is null)
             return;
 
-        SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
+        SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId!.Value, cancellationToken);
         if(session is not null)
         {
             SyncSessionLog updatedSession = session with { CompletedUtc = DateTime.UtcNow, Status = SyncStatus.Failed };
@@ -161,7 +162,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
         if(_currentSessionId is null)
             return;
 
-        SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId, cancellationToken);
+        SyncSessionLog? session = await _syncSessionLogRepository.GetByIdAsync(_currentSessionId!.Value, cancellationToken);
         if(session is not null)
         {
             SyncSessionLog updatedSession = session with { CompletedUtc = DateTime.UtcNow, Status = SyncStatus.Paused };
@@ -173,7 +174,7 @@ public sealed class SyncStateCoordinator : ISyncStateCoordinator, IDisposable
     public SyncState GetCurrentState() => _progressSubject.Value;
 
     /// <inheritdoc />
-    public string? GetCurrentSessionId() => _currentSessionId;
+    public Guid GetCurrentSessionId() => _currentSessionId ?? Guid.CreateVersion7();
 
     /// <inheritdoc />
     public void ResetTrackingDetails(long completedBytes = 0)

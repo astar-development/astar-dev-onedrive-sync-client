@@ -29,11 +29,11 @@ public class FileTransferServiceShould
             .Returns(Task.FromResult(uploadedItem));
 
         var progressCalled = false;
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => progressCalled = true;
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => progressCalled = true;
 
         using var cts = new CancellationTokenSource();
         (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1,
-            totalBytes: 100, uploadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
+            totalBytes: 100, uploadBytes: 100, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(1);
         completedBytes.ShouldBe(100);
@@ -69,11 +69,11 @@ public class FileTransferServiceShould
                 LastModifiedDateTime = DateTimeOffset.UtcNow
             }));
 
-         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+         Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => { };
 
         using var cts = new CancellationTokenSource();
         (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 10,
-            totalBytes: 1000, uploadBytes: 1000, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
+            totalBytes: 1000, uploadBytes: 1000, completedFiles: 0, completedBytes: 0, "",  Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(10);
         _ = await mocks.GraphApiClient.Received(10).UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>());
@@ -94,11 +94,11 @@ public class FileTransferServiceShould
         _ = mocks.GraphApiClient.UploadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<IProgress<long>?>(), Arg.Any<CancellationToken>())
             .Returns<DriveItem>(_ => throw new Exception("Upload failed"));
 
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => { };
 
         using var cts = new CancellationTokenSource();
         (var completedFiles, var completedBytes) = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1,
-            totalBytes: 100, uploadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
+            totalBytes: 100, uploadBytes: 100, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(1);
         completedBytes.ShouldBe(0);
@@ -123,11 +123,11 @@ public class FileTransferServiceShould
             .Returns(Task.FromResult("downloaded-hash"));
 
         var progressCalled = false;
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => progressCalled = true;
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => progressCalled = true;
 
         using var cts = new CancellationTokenSource();
         (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 1,
-            totalBytes: 100, uploadBytes: 0, downloadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
+            totalBytes: 100, uploadBytes: 0, downloadBytes: 100, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(1);
         completedBytes.ShouldBe(100);
@@ -152,11 +152,11 @@ public class FileTransferServiceShould
         _ = mocks.LocalFileScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult("downloaded-hash"));
 
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => { };
 
         using var cts = new CancellationTokenSource();
         (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToDownload, maxParallelDownloads: 5, conflictCount: 0,
-            totalFiles: 10, totalBytes: 1000, uploadBytes: 0, downloadBytes: 1000, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts,
+            totalFiles: 10, totalBytes: 1000, uploadBytes: 0, downloadBytes: 1000, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts,
             TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(10);
@@ -178,11 +178,11 @@ public class FileTransferServiceShould
         _ = mocks.GraphApiClient.DownloadFileAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(_ => throw new Exception("Download failed"));
 
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => { };
 
         using var cts = new CancellationTokenSource();
         (var completedFiles, var completedBytes) = await service.ExecuteDownloadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 1,
-            totalBytes: 100, uploadBytes: 0, downloadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
+            totalBytes: 100, uploadBytes: 0, downloadBytes: 100, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken);
 
         completedFiles.ShouldBe(1);
         completedBytes.ShouldBe(100);
@@ -222,11 +222,11 @@ public class FileTransferServiceShould
                 return new DriveItem { Id = Guid.CreateVersion7().ToString(), Name = "test.txt", CTag = "ctag", ETag = "etag", LastModifiedDateTime = DateTimeOffset.UtcNow };
             });
 
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => { };
 
         using var cts = new CancellationTokenSource();
         _ = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 2, conflictCount: 0, totalFiles: 10, totalBytes: 1000,
-            uploadBytes: 1000, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
+            uploadBytes: 1000, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken);
 
         maxConcurrent.ShouldBeLessThanOrEqualTo(2);
     }
@@ -265,11 +265,11 @@ public class FileTransferServiceShould
         _ = mocks.LocalFileScanner.ComputeFileHashAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromResult("hash"));
 
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => { };
 
         using var cts = new CancellationTokenSource();
         _ = await service.ExecuteDownloadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToDownload, maxParallelDownloads: 3, conflictCount: 0, totalFiles: 10, totalBytes: 1000,
-            uploadBytes: 0, downloadBytes: 1000, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
+            uploadBytes: 0, downloadBytes: 1000, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken);
 
         maxConcurrent.ShouldBeLessThanOrEqualTo(3);
     }
@@ -296,10 +296,10 @@ public class FileTransferServiceShould
             });
 
         var progressCallCount = 0;
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => progressCallCount++;
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => progressCallCount++;
         using var cts = new CancellationTokenSource();
         _ = await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 1, totalBytes: 100,
-            uploadBytes: 100, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken);
+            uploadBytes: 100, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken);
 
         progressCallCount.ShouldBeGreaterThan(0);
     }
@@ -328,11 +328,11 @@ public class FileTransferServiceShould
                 return new DriveItem { Id = Guid.CreateVersion7().ToString(), Name = "test.txt", CTag = "ctag", ETag = "etag", LastModifiedDateTime = DateTimeOffset.UtcNow };
             });
 
-        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _) => { };
+        Action<string, HashedAccountId, SyncStatus, int, int, long, long, int, int, int, int, string?, Guid?, long?> progressReporter = (_, _, _, _, _, _, _, _, _, _, _, _, _, _) => { };
 
         _ = await Should.ThrowAsync<TaskCanceledException>(async () =>
             await service.ExecuteUploadsAsync(accountId, new HashedAccountId(AccountIdHasher.Hash(accountId)), existingItems, filesToUpload, maxParallelUploads: 3, conflictCount: 0, totalFiles: 5, totalBytes: 500,
-                uploadBytes: 500, completedFiles: 0, completedBytes: 0, sessionId: null, progressReporter, cts, TestContext.Current.CancellationToken));
+                uploadBytes: 500, completedFiles: 0, completedBytes: 0, "", Guid.CreateVersion7(), progressReporter, cts, TestContext.Current.CancellationToken));
     }
 
     [Fact]

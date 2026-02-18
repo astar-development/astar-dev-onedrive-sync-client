@@ -16,7 +16,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Models;
 /// <param name="ConflictsDetected">Number of conflicts detected.</param>
 /// <param name="TotalBytes">Total bytes transferred.</param>
 public record SyncSessionLog(
-    string Id,
+    Guid Id,
     HashedAccountId HashedAccountId,
     DateTimeOffset StartedUtc,
     DateTimeOffset? CompletedUtc,
@@ -27,8 +27,7 @@ public record SyncSessionLog(
     int ConflictsDetected,
     long TotalBytes)
 {
-    public static SyncSessionLog CreateInitialRunning(string accountId, HashedAccountId hashedAccountId) => new(
-        accountId,
+    public static SyncSessionLog CreateInitialRunning(HashedAccountId hashedAccountId) => new(Guid.CreateVersion7(),
         hashedAccountId,
         DateTime.UtcNow,
         null,

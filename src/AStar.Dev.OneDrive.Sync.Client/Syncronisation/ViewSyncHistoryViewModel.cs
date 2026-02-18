@@ -157,7 +157,7 @@ public sealed class ViewSyncHistoryViewModel : ReactiveObject
         catch(Exception ex)
         {
             await _debugLogger.LogErrorAsync("ViewSyncHistoryViewModel", SelectedAccount.HashedAccountId, "", ex, cancellationToken: default);
-            Console.WriteLine($"Error loading sync history: {ex.Message}");
+            Console.WriteLine($"Error loading sync history: {ex.GetBaseException().Message}");
             // Silently fail - display will remain empty
         }
         finally

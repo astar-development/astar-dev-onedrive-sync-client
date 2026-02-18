@@ -14,7 +14,7 @@ public sealed class FileOperationLogRepository(IDbContextFactory<SyncDbContext> 
     private readonly IDbContextFactory<SyncDbContext> _contextFactory = contextFactory ?? throw new ArgumentNullException(nameof(contextFactory));
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FileOperationLog>> GetBySessionIdAsync(string syncSessionId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FileOperationLog>> GetBySessionIdAsync(Guid syncSessionId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
         List<FileOperationLogEntity> entities = await context.FileOperationLogs

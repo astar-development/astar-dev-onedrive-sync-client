@@ -18,7 +18,7 @@ public static class HttpClientExtension
 
     private static AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy() => Policy<HttpResponseMessage>
                 .Handle<HttpRequestException>()
-                .Or<IOException>(ex => ex.Message.Contains("forcibly closed") || ex.Message.Contains("transport connection"))
+                .Or<IOException>(ex => ex.GetBaseException().Message.Contains("forcibly closed") || ex.GetBaseException().Message.Contains("transport connection"))
                 .OrResult(msg => (int)msg.StatusCode >= 500 || msg.StatusCode == HttpStatusCode.TooManyRequests || msg.StatusCode == HttpStatusCode.RequestTimeout)
                 .WaitAndRetryAsync(
                     3,

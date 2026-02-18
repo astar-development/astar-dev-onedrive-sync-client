@@ -13,7 +13,7 @@ public interface IFileOperationLogRepository
     /// <param name="syncSessionId">The sync session identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of file operations.</returns>
-    Task<IReadOnlyList<FileOperationLog>> GetBySessionIdAsync(string syncSessionId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<FileOperationLog>> GetBySessionIdAsync(Guid sessionId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets all file operations for an account.

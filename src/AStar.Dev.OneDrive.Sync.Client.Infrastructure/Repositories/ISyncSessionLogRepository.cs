@@ -21,7 +21,7 @@ public interface ISyncSessionLogRepository
     /// <param name="id">The session identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The sync session if found, otherwise null.</returns>
-    Task<SyncSessionLog?> GetByIdAsync(string id, CancellationToken cancellationToken = default);
+    Task<SyncSessionLog?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Adds a new sync session log.

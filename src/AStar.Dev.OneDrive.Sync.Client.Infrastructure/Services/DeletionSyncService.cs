@@ -32,7 +32,7 @@ public sealed class DeletionSyncService(IDriveItemsRepository driveItemsReposito
             }
             catch(Exception ex)
             {
-                _ = await DebugLog.LogErrorAsync("DeletionSyncService.ProcessRemoteToLocalDeletionsAsync", hashedAccountId, $"Failed to delete local file {file.RelativePath}: {ex.Message}. Continuing with other deletions.", ex, cancellationToken);
+                _ = await DebugLog.LogErrorAsync("DeletionSyncService.ProcessRemoteToLocalDeletionsAsync", hashedAccountId, $"Failed to delete local file {file.RelativePath}: {ex.GetBaseException().Message}. Continuing with other deletions.", ex, cancellationToken);
             }
         }
 
@@ -64,7 +64,7 @@ public sealed class DeletionSyncService(IDriveItemsRepository driveItemsReposito
             }
             catch(Exception ex)
             {
-                _ = await DebugLog.LogErrorAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", hashedAccountId, $"Failed to delete from OneDrive {file.RelativePath}: {ex.Message}, continuing the sync...", ex, cancellationToken);
+                _ = await DebugLog.LogErrorAsync("DeletionSyncService.ProcessLocalToRemoteDeletionsAsync", hashedAccountId, $"Failed to delete from OneDrive {file.RelativePath}: {ex.GetBaseException().Message}, continuing the sync...", ex, cancellationToken);
             }
         }
 

@@ -265,8 +265,8 @@ public class TryShould
         Result<string, Exception> success = Try.Run(() => "done");
         Result<string, Exception> failure = Try.Run<string>(() => throw new InvalidOperationException("fail"));
 
-        var a = success.Match(x => $"OK: {x}", ex => $"ERR: {ex.Message}");
-        var b = failure.Match(x => $"OK: {x}", ex => $"ERR: {ex.Message}");
+        var a = success.Match(x => $"OK: {x}", ex => $"ERR: {ex.GetBaseException().Message}");
+        var b = failure.Match(x => $"OK: {x}", ex => $"ERR: {ex.GetBaseException().Message}");
 
         a.ShouldBe("OK: done");
         b.ShouldBe("ERR: fail");

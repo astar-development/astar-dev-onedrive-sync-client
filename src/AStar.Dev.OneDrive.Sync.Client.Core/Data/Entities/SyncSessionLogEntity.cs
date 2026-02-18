@@ -7,7 +7,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 /// </summary>
 public class SyncSessionLogEntity
 {
-    public string Id { get; set; } = string.Empty;
+    public Guid Id { get; set; }= Guid.CreateVersion7();
     public HashedAccountId HashedAccountId { get; set; }
     public DateTimeOffset StartedUtc { get; set; }
     public DateTimeOffset? CompletedUtc { get; set; }

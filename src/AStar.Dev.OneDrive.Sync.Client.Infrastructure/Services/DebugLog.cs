@@ -100,6 +100,6 @@ public static class DebugLog
             })
             .MatchAsync(
                 success => success,
-                ex => new Result<Unit, ErrorResponse>.Error(new ErrorResponse($"Failed to log debug message: {ex.Message}"))
+                ex => new Result<Unit, ErrorResponse>.Error(new ErrorResponse($"Failed to log debug message: {ex.GetBaseException().Message}"))
             );
 }

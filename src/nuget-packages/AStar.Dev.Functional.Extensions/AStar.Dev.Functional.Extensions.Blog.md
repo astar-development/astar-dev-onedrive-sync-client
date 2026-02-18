@@ -15,7 +15,7 @@ try
 }
 catch (Exception ex)
 {
-    ShowError(ex.Message);
+    ShowError(ex.GetBaseException().Message);
 }
 ```
 
@@ -156,7 +156,7 @@ Result<string, Exception> userName = await TryLoadUserNameAsync();
 
 userName.Apply(
     onSuccess: name => vm.Status = $"Hello, {name}!",
-    onError:   ex   => vm.ErrorMessage = ex.Message
+    onError:   ex   => vm.ErrorMessage = ex.GetBaseException().Message
 );
 ```
 
@@ -171,7 +171,7 @@ Tips:
 Task<Result<int, Exception>> getCountTask = repo.GetUnreadCountAsync();
 await getCountTask.ApplyAsync(
     onSuccess: count => vm.Status = $"{count} unread",
-    onError:   ex     => vm.ErrorMessage = $"Oops: {ex.Message}"
+    onError:   ex     => vm.ErrorMessage = $"Oops: {ex.GetBaseException().Message}"
 );
 ```
 
@@ -187,7 +187,7 @@ await repo.GetProfileAsync().ApplyAsync(
     onErrorAsync: async ex =>
     {
         await telemetry.TrackAsync("profile_load_failed", ex);
-        vm.ErrorMessage = ex.Message;
+        vm.ErrorMessage = ex.GetBaseException().Message;
     }
 );
 ```
@@ -221,7 +221,7 @@ ObservableCollection<FileItem> Items { get; } = new();
 Task<Result<IEnumerable<FileItem>, Exception>> task = fileService.LoadAsync(folderId);
 await task.ApplyToCollectionAsync(
     Items,
-    onError: ex => vm.ErrorMessage = $"Load failed: {ex.Message}"
+    onError: ex => vm.ErrorMessage = $"Load failed: {ex.GetBaseException().Message}"
 );
 ```
 
@@ -231,7 +231,7 @@ Testing tip: Because this method is deterministic, it’s easy to assert that th
 
 Signature: `string ToStatus<T>(this Result<T, Exception> result, Func<T, string> successFormatter, Func<Exception, string>? errorFormatter = null)`
 
-This turns a `Result<T, Exception>` into a friendly string. On success, it runs your `successFormatter(value)`. On failure, it uses `errorFormatter(ex)` or just `ex.Message`.
+This turns a `Result<T, Exception>` into a friendly string. On success, it runs your `successFormatter(value)`. On failure, it uses `errorFormatter(ex)` or just `ex.GetBaseException().Message`.
 
 ```csharp
 Result<int, Exception> r = await stats.CountNewDocsAsync();
@@ -268,7 +268,7 @@ var profile = await repo.GetProfileAsync().GetOrThrowAsync();
 
 ```csharp
 Result<bool, Exception> saved = await repo.SaveAsync(model);
-string message = saved.ToErrorMessage(); // "" on success, ex.Message on failure
+string message = saved.ToErrorMessage(); // "" on success, ex.GetBaseException().Message on failure
 if (!string.IsNullOrEmpty(message))
     vm.ErrorMessage = message;
 ```
@@ -365,7 +365,7 @@ public async Task RefreshAsync()
 {
     await LoadItemsAsync().ApplyToCollectionAsync(
         Items,
-        onError: ex => ErrorMessage = ex.Message
+        onError: ex => ErrorMessage = ex.GetBaseException().Message
     );
 
     var status = (await LoadItemsAsync()).ToStatus(

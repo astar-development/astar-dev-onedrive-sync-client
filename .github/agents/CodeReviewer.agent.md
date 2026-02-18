@@ -134,7 +134,7 @@ public async Task<Result<FileMetadata>> GetFileMetadataAsync(string path)
     }
     catch (Exception ex)
     {
-        return Result<FileMetadata>.Failure($"Failed to read metadata: {ex.Message}");
+        return Result<FileMetadata>.Failure($"Failed to read metadata: {ex.GetBaseException().Message}");
     }
 }
 

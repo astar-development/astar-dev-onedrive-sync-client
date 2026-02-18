@@ -23,7 +23,7 @@ public sealed class AuthService(IAuthenticationClient authClient, AuthConfigurat
         }
         catch(MsalException ex)
         {
-            return AuthenticationResult.Failed(ex.Message);
+            return AuthenticationResult.Failed(ex.GetBaseException().Message);
         }
         catch(OperationCanceledException)
         {

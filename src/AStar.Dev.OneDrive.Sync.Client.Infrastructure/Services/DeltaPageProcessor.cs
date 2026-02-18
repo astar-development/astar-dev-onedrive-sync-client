@@ -44,7 +44,7 @@ public sealed class DeltaPageProcessor(IGraphApiClient graphApiClient, ISyncRepo
         }
         catch(Exception ex)
         {
-            _ = await DebugLog.LogErrorAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, hashedAccountId, $"Exception during delta processing: {ex.Message}", ex, cancellationToken);
+            _ = await DebugLog.LogErrorAsync(DebugLogMetadata.Services.DeltaPageProcessor.ProcessAllDeltaPagesAsync, hashedAccountId, $"Exception during delta processing: {ex.GetBaseException().Message}", ex, cancellationToken);
             progressReporter?.Invoke(CreateErrorSyncProgress(accountId, hashedAccountId, totalItemsProcessed, ex.GetBaseException()?.Message ?? "Unknown error"));
             throw new IOException("Error processing delta pages", ex);
         }

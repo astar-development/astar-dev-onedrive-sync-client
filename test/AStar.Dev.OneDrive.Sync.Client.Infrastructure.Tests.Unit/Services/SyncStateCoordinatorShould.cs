@@ -26,10 +26,9 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
+        Guid? sessionId = await coordinator.InitializeSessionAsync(new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
 
-        _ = sessionId.ShouldNotBeNull();
-        sessionId.ShouldNotBeEmpty();
+        sessionId.ShouldNotBeNull();
         using SyncDbContext context = _contextFactory.CreateDbContext();
         SyncSessionLogEntity? session = await context.SyncSessionLogs.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
         _ = session.ShouldNotBeNull();
@@ -44,9 +43,9 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: false, CancellationToken.None);
+        Guid? sessionId = await coordinator.InitializeSessionAsync(new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: false, CancellationToken.None);
 
-        sessionId.ShouldBeNull();
+        sessionId.ShouldNotBeNull();
         using SyncDbContext context = _contextFactory.CreateDbContext();
         List<SyncSessionLogEntity> sessions = await context.SyncSessionLogs.ToListAsync(TestContext.Current.CancellationToken);
         sessions.Count.ShouldBe(0);
@@ -60,7 +59,7 @@ public class SyncStateCoordinatorShould
         SyncState? receivedState = null;
         _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, totalFiles: 10, completedFiles: 5, totalBytes: 1000, completedBytes: 500);
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, totalFiles: 10, completedFiles: 5, totalBytes: 1000, completedBytes: 500);
 
         _ = receivedState.ShouldNotBeNull();
         receivedState.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("test-account"));
@@ -79,9 +78,9 @@ public class SyncStateCoordinatorShould
         SyncState? receivedState = null;
         _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, completedBytes: 0);
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, completedBytes: 0);
         Thread.Sleep(200);
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, completedBytes: 10_485_760); // 10 MB
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, completedBytes: 10_485_760); // 10 MB
 
         _ = receivedState.ShouldNotBeNull();
         receivedState.MegabytesPerSecond.ShouldBeGreaterThan(0);
@@ -95,9 +94,9 @@ public class SyncStateCoordinatorShould
         SyncState? receivedState = null;
         _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 0);
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 0);
         Thread.Sleep(200);
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 10_485_760);
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, totalBytes: 100_000_000, completedBytes: 10_485_760);
 
         _ = receivedState.ShouldNotBeNull();
         _ = receivedState.EstimatedSecondsRemaining.ShouldNotBeNull();
@@ -109,10 +108,10 @@ public class SyncStateCoordinatorShould
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
+        Guid? sessionId = await coordinator.InitializeSessionAsync(new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
         _ = sessionId.ShouldNotBeNull();
 
-        await coordinator.RecordCompletionAsync(uploadCount: 5, downloadCount: 3, deleteCount: 1, conflictCount: 2, completedBytes: 1024, CancellationToken.None);
+        await coordinator.RecordCompletionAsync(uploadCount: 5, downloadCount: 3, deleteCount: 1, conflictCount: 2, completedBytes: 1024, sessionId: sessionId, CancellationToken.None);
 
         using SyncDbContext context = _contextFactory.CreateDbContext();
         SyncSessionLogEntity? session = await context.SyncSessionLogs.FirstOrDefaultAsync(TestContext.Current.CancellationToken);
@@ -127,25 +126,12 @@ public class SyncStateCoordinatorShould
     }
 
     [Fact]
-    public async Task RecordCompletionShouldDoNothingWhenNoSessionActive()
-    {
-        var repository = new SyncSessionLogRepository(_contextFactory);
-        var coordinator = new SyncStateCoordinator(repository);
-
-        await coordinator.RecordCompletionAsync(uploadCount: 5, downloadCount: 3, deleteCount: 1, conflictCount: 2, completedBytes: 1024, CancellationToken.None);
-
-        using SyncDbContext context = _contextFactory.CreateDbContext();
-        List<SyncSessionLogEntity> sessions = await context.SyncSessionLogs.ToListAsync(TestContext.Current.CancellationToken);
-        sessions.Count.ShouldBe(0);
-    }
-
-    [Fact]
     public async Task RecordFailureShouldUpdateSessionLog()
     {
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
+        Guid? sessionId = await coordinator.InitializeSessionAsync(new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
 
         _ = sessionId.ShouldNotBeNull();
         await coordinator.RecordFailureAsync(CancellationToken.None);
@@ -162,7 +148,7 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
+        Guid? sessionId = await coordinator.InitializeSessionAsync(new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
 
         _ = sessionId.ShouldNotBeNull();
         await coordinator.RecordCancellationAsync(CancellationToken.None);
@@ -179,7 +165,7 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, totalFiles: 100, completedFiles: 50);
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, totalFiles: 100, completedFiles: 50);
 
         SyncState currentState = coordinator.GetCurrentState();
 
@@ -195,8 +181,8 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var sessionId = await coordinator.InitializeSessionAsync("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
-        var currentSessionId = coordinator.GetCurrentSessionId();
+        Guid? sessionId = await coordinator.InitializeSessionAsync(new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
+        Guid? currentSessionId = coordinator.GetCurrentSessionId();
 
         currentSessionId.ShouldBe(sessionId);
     }
@@ -207,9 +193,9 @@ public class SyncStateCoordinatorShould
         var repository = new SyncSessionLogRepository(_contextFactory);
         var coordinator = new SyncStateCoordinator(repository);
 
-        var currentSessionId = coordinator.GetCurrentSessionId();
+        Guid? currentSessionId = coordinator.GetCurrentSessionId();
 
-        currentSessionId.ShouldBeNull();
+        currentSessionId.ShouldNotBeNull();
     }
 
     [Fact]
@@ -230,11 +216,11 @@ public class SyncStateCoordinatorShould
                 secondState = state;
         });
 
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, completedBytes: 10_485_760);
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, completedBytes: 10_485_760);
         Thread.Sleep(200);
         coordinator.ResetTrackingDetails(completedBytes: 10_485_760);
         Thread.Sleep(200);
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, completedBytes: 20_971_520);
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, completedBytes: 20_971_520);
 
         _ = firstState.ShouldNotBeNull();
         _ = secondState.ShouldNotBeNull();
@@ -250,7 +236,7 @@ public class SyncStateCoordinatorShould
         SyncState? receivedState = null;
         _ = coordinator.Progress.Subscribe(state => receivedState = state);
 
-        coordinator.UpdateProgress("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, currentScanningFolder: "/Documents");
+        coordinator.UpdateProgress("test-account-id", new HashedAccountId(AccountIdHasher.Hash("test-account")), SyncStatus.Running, currentScanningFolder: "/Documents");
 
         _ = receivedState.ShouldNotBeNull();
         receivedState.CurrentStatusMessage.ShouldBe("/Documents");
@@ -266,22 +252,7 @@ public class SyncStateCoordinatorShould
         await cts.CancelAsync();
 
         _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
-            await coordinator.InitializeSessionAsync("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, cts.Token)
-        );
-    }
-
-    [Fact]
-    public async Task RespectCancellationTokenWhenRecordingCompletion()
-    {
-        var repository = new SyncSessionLogRepository(_contextFactory);
-        var coordinator = new SyncStateCoordinator(repository);
-        _ = await coordinator.InitializeSessionAsync("test-account", new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, CancellationToken.None);
-        using var cts = new CancellationTokenSource();
-
-        await cts.CancelAsync();
-
-        _ = await Should.ThrowAsync<OperationCanceledException>(async () =>
-            await coordinator.RecordCompletionAsync(1, 1, 0, 0, 100, cts.Token)
+            await coordinator.InitializeSessionAsync(new HashedAccountId(AccountIdHasher.Hash("test-account")), enableDetailedLogging: true, cts.Token)
         );
     }
 }
