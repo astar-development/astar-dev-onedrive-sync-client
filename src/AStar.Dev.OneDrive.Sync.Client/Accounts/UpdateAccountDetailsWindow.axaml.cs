@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -6,6 +7,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 /// <summary>
 ///     Window for updating account details.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed partial class UpdateAccountDetailsWindow : Window
 {
     public UpdateAccountDetailsWindow()

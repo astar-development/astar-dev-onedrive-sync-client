@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using Avalonia.Controls;
@@ -8,6 +9,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Syncronisation;
 /// <summary>
 ///     Window for viewing sync history.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed partial class ViewSyncHistoryWindow : Window
 {
     public ViewSyncHistoryWindow()

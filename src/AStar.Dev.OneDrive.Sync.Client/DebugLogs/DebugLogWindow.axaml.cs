@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using Avalonia.Controls;
@@ -8,6 +9,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.DebugLogs;
 /// <summary>
 ///     Window for viewing debug logs.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public partial class DebugLogWindow : Window
 {
     public DebugLogWindow()

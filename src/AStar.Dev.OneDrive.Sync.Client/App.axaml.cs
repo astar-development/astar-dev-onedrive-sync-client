@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -12,6 +13,7 @@ namespace AStar.Dev.OneDrive.Sync.Client;
 /// <summary>
 ///     Main application class for the OneDrive sync client.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public sealed class App : Application
 {
     public static IHost Host { get; private set; } = null!;
