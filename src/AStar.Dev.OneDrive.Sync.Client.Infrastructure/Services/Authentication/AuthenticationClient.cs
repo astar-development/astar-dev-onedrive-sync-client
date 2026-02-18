@@ -15,32 +15,23 @@ public sealed class AuthenticationClient(IPublicClientApplication publicClientAp
     /// <inheritdoc />
     public async Task<Result<MsalAuthResult, ErrorResponse>> AcquireTokenInteractiveAsync(IEnumerable<string> scopes, CancellationToken cancellationToken)
         => await Try.RunAsync(() => publicClientApp.AcquireTokenInteractive(scopes).ExecuteAsync(cancellationToken))
-            .MatchAsync(
-                result => new Result<MsalAuthResult, ErrorResponse>.Ok(MsalAuthResult.FromMsal(result)),
-                ex => new Result<MsalAuthResult, ErrorResponse>.Error(new ErrorResponse(ex.GetBaseException().Message))
-            );
+            .MapAsync(result => MsalAuthResult.FromMsal(result))
+            .MapFailureAsync(ex => new ErrorResponse(ex.GetBaseException().Message));
 
     /// <inheritdoc />
     public async Task<Result<MsalAuthResult, ErrorResponse>> AcquireTokenSilentAsync(IEnumerable<string> scopes, IAccount account, CancellationToken cancellationToken)
         => await Try.RunAsync(() => publicClientApp.AcquireTokenSilent(scopes, account).ExecuteAsync(cancellationToken))
-            .MatchAsync(
-                result => new Result<MsalAuthResult, ErrorResponse>.Ok(MsalAuthResult.FromMsal(result)),
-                ex => new Result<MsalAuthResult, ErrorResponse>.Error(new ErrorResponse(ex.GetBaseException().Message))
-            );
+            .MapAsync(result => MsalAuthResult.FromMsal(result))
+            .MapFailureAsync(ex => new ErrorResponse(ex.GetBaseException().Message));
 
     /// <inheritdoc />
     public async Task<Result<IEnumerable<IAccount>, ErrorResponse>> GetAccountsAsync(CancellationToken cancellationToken)
         => await Try.RunAsync(publicClientApp.GetAccountsAsync)
-            .MatchAsync(
-                accounts => new Result<IEnumerable<IAccount>, ErrorResponse>.Ok(accounts),
-                ex => new Result<IEnumerable<IAccount>, ErrorResponse>.Error(new ErrorResponse(ex.GetBaseException().Message))
-            );
+            .MapFailureAsync(ex => new ErrorResponse(ex.GetBaseException().Message));
 
     /// <inheritdoc />
     public async Task<Result<Unit, ErrorResponse>> RemoveAsync(IAccount account, CancellationToken cancellationToken)
         => await Try.RunAsync(() => publicClientApp.RemoveAsync(account))
-            .MatchAsync(
-                _ => new Result<Unit, ErrorResponse>.Ok(Unit.Value),
-                ex => new Result<Unit, ErrorResponse>.Error(new ErrorResponse(ex.GetBaseException().Message))
-            );
+            .MapAsync(_ => Unit.Value)
+            .MapFailureAsync(ex => new ErrorResponse(ex.GetBaseException().Message));
 }
