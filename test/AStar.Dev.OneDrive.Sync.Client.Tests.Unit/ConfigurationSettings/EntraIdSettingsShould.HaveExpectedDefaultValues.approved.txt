@@ -1,0 +1,5 @@
+﻿{
+  "clientId": "",
+  "scopes": [],
+  "redirectUri": ""
+}

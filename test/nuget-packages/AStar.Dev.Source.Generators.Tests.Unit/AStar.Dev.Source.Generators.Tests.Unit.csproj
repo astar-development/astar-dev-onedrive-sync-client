@@ -34,5 +34,8 @@
 		<Using Include="Shouldly" />
 	</ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage"/>
+    </ItemGroup>
 
 </Project>
