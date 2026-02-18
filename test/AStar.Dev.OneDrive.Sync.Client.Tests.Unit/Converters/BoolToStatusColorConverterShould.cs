@@ -1,8 +1,6 @@
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Converters;
-using Avalonia.Data.Converters;
 using Avalonia.Media;
-using Shouldly;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Converters;
 

@@ -98,7 +98,7 @@ public sealed class DebugLogViewModel : ReactiveObject
     public bool IsLoading
     {
         get;
-        private set
+        set
         {
             _ = this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(CanGoToNextPage));

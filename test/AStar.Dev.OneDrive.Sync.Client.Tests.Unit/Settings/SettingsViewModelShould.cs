@@ -1,9 +1,6 @@
-using System.Windows.Input;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Settings;
-using NSubstitute;
-using Shouldly;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Settings;
 
@@ -29,6 +26,7 @@ public class SettingsViewModelShould
         var sut = new SettingsViewModel(_mockThemeService);
 
         var availableThemes = sut.AvailableThemes.ToList();
+
         availableThemes.Count.ShouldBe(6);
         availableThemes.ShouldContain(ThemePreference.OriginalAuto);
         availableThemes.ShouldContain(ThemePreference.OriginalLight);
@@ -99,7 +97,7 @@ public class SettingsViewModelShould
 
         if(sut.ApplyThemeCommand.CanExecute(null))
         {
-            ((ICommand)sut.ApplyThemeCommand).Execute(null);
+            sut.ApplyThemeCommand.Execute(null);
         }
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -110,8 +108,7 @@ public class SettingsViewModelShould
     [Fact]
     public async Task SetStatusMessageWhenThemeAppliedSuccessfully()
     {
-        _ = _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
+        _ = _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
 
         var sut = new SettingsViewModel(_mockThemeService)
         {
@@ -122,7 +119,7 @@ public class SettingsViewModelShould
 
         if(sut.ApplyThemeCommand.CanExecute(null))
         {
-            ((ICommand)sut.ApplyThemeCommand).Execute(null);
+            sut.ApplyThemeCommand.Execute(null);
         }
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -133,16 +130,16 @@ public class SettingsViewModelShould
     [Fact]
     public async Task SetStatusMessageToNullWhenThemeApplicationFails()
     {
-        _ = _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(new InvalidOperationException("Theme service error")));
+        _ = _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>()).Returns(Task.FromException(new InvalidOperationException("Theme service error")));
 
-        var sut = new SettingsViewModel(_mockThemeService);
-
-        sut.StatusMessage = "Initial message";
+        var sut = new SettingsViewModel(_mockThemeService)
+        {
+            StatusMessage = "Initial message"
+        };
 
         if(sut.ApplyThemeCommand.CanExecute(null))
         {
-            ((ICommand)sut.ApplyThemeCommand).Execute(null);
+            sut.ApplyThemeCommand.Execute(null);
         }
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -153,8 +150,7 @@ public class SettingsViewModelShould
     [Fact]
     public async Task AutoApplyThemeWhenSelectedThemeChanges()
     {
-        _ = _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
+        _ = _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
 
         var sut = new SettingsViewModel(_mockThemeService);
 
@@ -172,10 +168,9 @@ public class SettingsViewModelShould
     [Fact]
     public async Task NotAutoApplyThemeOnInitialValue()
     {
-        _ = _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
+        _ = _mockThemeService.ApplyThemeAsync(Arg.Any<ThemePreference>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
 
-        var sut = new SettingsViewModel(_mockThemeService);
+        _ = new SettingsViewModel(_mockThemeService);
 
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
@@ -257,7 +252,7 @@ public class SettingsViewModelShould
 
         if(sut.ApplyThemeCommand.CanExecute(null))
         {
-            ((ICommand)sut.ApplyThemeCommand).Execute(null);
+            sut.ApplyThemeCommand.Execute(null);
         }
 
         await Task.Delay(100, TestContext.Current.CancellationToken);

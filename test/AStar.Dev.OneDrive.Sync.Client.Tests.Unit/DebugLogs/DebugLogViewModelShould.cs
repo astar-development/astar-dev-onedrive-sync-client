@@ -4,7 +4,6 @@ using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.DebugLogs;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
-using Shouldly;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.DebugLogs;
 
@@ -142,15 +141,21 @@ public class DebugLogViewModelShould
     [Fact]
     public void ReturnCanGoToNextPageAsFalseWhenIsLoading()
     {
-        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
+        {
+            IsLoading = true
+        };
 
-        sut.CanGoToNextPage.ShouldBeTrue();
+        sut.CanGoToNextPage.ShouldBeFalse();
     }
 
     [Fact]
     public void ReturnCanGoToPreviousPageAsFalseWhenIsLoading()
     {
-        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger);
+        var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
+        {
+            IsLoading = true
+        };
 
         sut.CanGoToPreviousPage.ShouldBeFalse();
     }
@@ -243,7 +248,7 @@ public class DebugLogViewModelShould
     public async Task CalculateStartingCountOfItemsDisplayedCorrectly()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -259,7 +264,7 @@ public class DebugLogViewModelShould
     public async Task CalculateEndingCountOfItemsDisplayedCorrectly()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -276,7 +281,7 @@ public class DebugLogViewModelShould
     {
         var account1 = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test1", @"C:\Path1", true, null, null, false, false, 3, 50, 0);
         var account2 = new AccountInfo("acc2", new HashedAccountId(AccountIdHasher.Hash("acc2")), "Test2", @"C:\Path2", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -298,7 +303,7 @@ public class DebugLogViewModelShould
     public async Task IncrementPageNumberWhenLoadingNextPage()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -318,7 +323,7 @@ public class DebugLogViewModelShould
     public async Task DecrementPageNumberWhenLoadingPreviousPage()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -339,7 +344,7 @@ public class DebugLogViewModelShould
     public async Task NotLoadNextPageWhenHasMoreRecordsIsFalse()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(0);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -417,7 +422,7 @@ public class DebugLogViewModelShould
     public async Task ResetToPageOneAfterClearingLogs()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
         _ = _mockDebugLogRepo.DeleteByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
 
@@ -453,7 +458,7 @@ public class DebugLogViewModelShould
         var clearingStarted = new TaskCompletionSource<bool>();
         var canComplete = new TaskCompletionSource<bool>();
 
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(0);
         _ = _mockDebugLogRepo.DeleteByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(_ =>
         {
@@ -488,7 +493,7 @@ public class DebugLogViewModelShould
     public async Task HandleExceptionDuringClearLogs()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(0);
         _ = _mockDebugLogRepo.DeleteByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromException(new Exception("Delete failed")));
 
@@ -508,7 +513,7 @@ public class DebugLogViewModelShould
     public async Task CallRepositoryWithCorrectPaginationParametersOnFirstPage()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         _ = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -524,7 +529,7 @@ public class DebugLogViewModelShould
     public async Task CallRepositoryWithCorrectPaginationParametersOnSecondPage()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -575,7 +580,7 @@ public class DebugLogViewModelShould
     public async Task ExecuteLoadNextPageCommandSuccessfully()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)
@@ -593,7 +598,7 @@ public class DebugLogViewModelShould
     public async Task ExecuteLoadPreviousPageCommandSuccessfully()
     {
         var account = new AccountInfo("acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "Test", @"C:\Path", true, null, null, false, false, 3, 50, 0);
-        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(new List<DebugLogEntry>());
+        _ = _mockDebugLogRepo.GetByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<int>(), Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns([]);
         _ = _mockDebugLogRepo.GetDebugLogCountByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(100);
 
         var sut = new DebugLogViewModel(_mockAccountRepo, _mockDebugLogRepo, _mockDebugLogger)

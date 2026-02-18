@@ -9,7 +9,6 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.OneDriveServices;
 using AStar.Dev.OneDrive.Sync.Client.MainWindow;
-
 using AStar.Dev.OneDrive.Sync.Client.Syncronisation;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.MainWindow;
@@ -19,20 +18,12 @@ public class MainWindowViewModelShould
     [Fact]
     public void InitializeWithAccountManagementAndSyncTreeViewModels()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut(out AccountManagementViewModel accountVm, out SyncTreeViewModel syncTreeVm, out _);
 
         sut.AccountManagement.ShouldBe(accountVm);
         sut.SyncTree.ShouldBe(syncTreeVm);
     }
 
-    // Skipped: Fails due to ArgumentNullException/param name mismatch, cannot fix without production code changes
     [Fact(Skip = "Fails due to ArgumentNullException/param name mismatch, cannot fix without production code changes")]
     public void ThrowArgumentNullExceptionWhenAccountManagementViewModelIsNull()
     {
@@ -40,7 +31,7 @@ public class MainWindowViewModelShould
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
 
         ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new MainWindowViewModel(null!, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo,
             mockConflictRepo));
@@ -48,7 +39,6 @@ public class MainWindowViewModelShould
         exception.ParamName.ShouldBe("accountManagementViewModel");
     }
 
-    // Skipped: Fails due to ArgumentNullException/param name mismatch, cannot fix without production code changes
     [Fact(Skip = "Fails due to ArgumentNullException/param name mismatch, cannot fix without production code changes")]
     public void ThrowArgumentNullExceptionWhenSyncTreeViewModelIsNull()
     {
@@ -56,7 +46,7 @@ public class MainWindowViewModelShould
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
 
         ArgumentNullException exception = Should.Throw<ArgumentNullException>(() => new MainWindowViewModel(accountVm, null!, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo,
             mockConflictRepo));
@@ -67,28 +57,9 @@ public class MainWindowViewModelShould
     [Fact]
     public void PropagateSelectedAccountIdToSyncTreeWhenAccountIsSelected()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        _ = CreateSut(out AccountManagementViewModel accountVm, out SyncTreeViewModel syncTreeVm, out _);
 
-        _ = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
-
-        var account = new AccountInfo(
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "test@example.com",
-            "Test User",
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
+        var account = new AccountInfo("account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"test@example.com","Test User",true,DateTime.UtcNow,null,false,false,3,50,0);
         accountVm.SelectedAccount = account;
 
         syncTreeVm.SelectedAccountId.ShouldBe(account.Id);
@@ -97,28 +68,9 @@ public class MainWindowViewModelShould
     [Fact]
     public void ClearSyncTreeAccountIdWhenSelectedAccountIsNull()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        _ = CreateSut(out AccountManagementViewModel accountVm, out SyncTreeViewModel syncTreeVm, out _);
 
-        _ = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
-
-        var account = new AccountInfo(
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "test@example.com",
-            "Test User",
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
+        var account = new AccountInfo("account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"test@example.com","Test User",true,DateTime.UtcNow,null,false,false,3,50,0);
         accountVm.SelectedAccount = account;
         accountVm.SelectedAccount = null;
 
@@ -128,13 +80,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void DisposeChildViewModelsWhenDisposed()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         Should.NotThrow(sut.Dispose);
     }
@@ -142,14 +88,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void HaveOpenSettingsCommandInitialized()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         _ = sut.OpenSettingsCommand.ShouldNotBeNull();
     }
@@ -157,14 +96,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void HaveOpenUpdateAccountDetailsCommandInitialized()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         _ = sut.OpenUpdateAccountDetailsCommand.ShouldNotBeNull();
     }
@@ -172,14 +104,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void HaveCloseApplicationCommandInitialized()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         _ = sut.CloseApplicationCommand.ShouldNotBeNull();
     }
@@ -187,14 +112,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void HaveOpenViewSyncHistoryCommandInitialized()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         _ = sut.OpenViewSyncHistoryCommand.ShouldNotBeNull();
     }
@@ -202,14 +120,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void HaveOpenDebugLogViewerCommandInitialized()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         _ = sut.OpenDebugLogViewerCommand.ShouldNotBeNull();
     }
@@ -217,14 +128,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void HaveViewConflictsCommandInitialized()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         _ = sut.ViewConflictsCommand.ShouldNotBeNull();
     }
@@ -232,14 +136,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void InitializeWithHasUnresolvedConflictsAsFalse()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         sut.HasUnresolvedConflicts.ShouldBeFalse();
     }
@@ -247,14 +144,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void InitializeWithShowSyncProgressAsFalse()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         sut.ShowSyncProgress.ShouldBeFalse();
     }
@@ -262,14 +152,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void InitializeWithShowConflictResolutionAsFalse()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         sut.ShowConflictResolution.ShouldBeFalse();
     }
@@ -277,14 +160,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void InitializeWithSyncProgressAsNull()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         sut.SyncProgress.ShouldBeNull();
     }
@@ -292,14 +168,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void InitializeWithConflictResolutionAsNull()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         sut.ConflictResolution.ShouldBeNull();
     }
@@ -307,43 +176,11 @@ public class MainWindowViewModelShould
     [Fact]
     public async Task UpdateHasUnresolvedConflictsWhenAccountWithConflictsIsSelected()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var conflict = new SyncConflict(Guid.CreateVersion7().ToString(),"account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"/test.txt",DateTime.UtcNow.AddHours(-1),DateTime.UtcNow,1024,2048,DateTime.UtcNow,ConflictResolutionStrategy.None,false);
 
-        var conflict = new SyncConflict(
-            Guid.CreateVersion7().ToString(),
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "/test.txt",
-            DateTime.UtcNow.AddHours(-1),
-            DateTime.UtcNow,
-            1024,
-            2048,
-            DateTime.UtcNow,
-            ConflictResolutionStrategy.None,
-            false);
+        MainWindowViewModel sut = CreateSut(out AccountManagementViewModel accountVm, out _, out _, [conflict]);
 
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict> { conflict }));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
-
-        var account = new AccountInfo(
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "test@example.com",
-            "Test User",
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
+        var account = new AccountInfo("account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"test@example.com","Test User",true,DateTime.UtcNow,null,false,false,3,50,0);
 
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -354,30 +191,9 @@ public class MainWindowViewModelShould
     [Fact]
     public async Task UpdateHasUnresolvedConflictsToFalseWhenAccountWithNoConflictsIsSelected()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        MainWindowViewModel sut = CreateSut(out AccountManagementViewModel accountVm, out _, out _);
 
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
-
-        var account = new AccountInfo(
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "test@example.com",
-            "Test User",
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
+        var account = new AccountInfo("account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"test@example.com","Test User",true,DateTime.UtcNow,null,false,false,3,50,0);
 
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -388,43 +204,11 @@ public class MainWindowViewModelShould
     [Fact]
     public async Task SetHasUnresolvedConflictsToFalseWhenNoAccountIsSelected()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var conflict = new SyncConflict(Guid.CreateVersion7().ToString(),"account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"/test.txt",DateTime.UtcNow.AddHours(-1),DateTime.UtcNow,1024,2048,DateTime.UtcNow,ConflictResolutionStrategy.None,false);
 
-        var conflict = new SyncConflict(
-            Guid.CreateVersion7().ToString(),
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "/test.txt",
-            DateTime.UtcNow.AddHours(-1),
-            DateTime.UtcNow,
-            1024,
-            2048,
-            DateTime.UtcNow,
-            ConflictResolutionStrategy.None,
-            false);
+        MainWindowViewModel sut = CreateSut(out AccountManagementViewModel accountVm, out _, out _, [conflict]);
 
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict> { conflict }));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
-
-        var account = new AccountInfo(
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "test@example.com",
-            "Test User",
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
+        var account = new AccountInfo("account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"test@example.com","Test User",true,DateTime.UtcNow,null,false,false,3,50,0);
 
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -443,7 +227,7 @@ public class MainWindowViewModelShould
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
 
         var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
         sut.Dispose();
@@ -459,7 +243,7 @@ public class MainWindowViewModelShould
         IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
         ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
 
         var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
 
@@ -469,14 +253,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void RaisePropertyChangedForShowConflictResolutionWhenConflictResolutionChanges()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         sut.ShowConflictResolution.ShouldBeFalse();
     }
@@ -484,44 +261,11 @@ public class MainWindowViewModelShould
     [Fact]
     public void ViewConflictsCommandCanExecuteWhenHasUnresolvedConflicts()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var conflict = new SyncConflict(Guid.CreateVersion7().ToString(),"account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"/test.txt",DateTime.UtcNow.AddHours(-1),DateTime.UtcNow,1024,2048,DateTime.UtcNow,ConflictResolutionStrategy.None,false);
 
-        var conflict = new SyncConflict(
-            Guid.CreateVersion7().ToString(),
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "/test.txt",
-            DateTime.UtcNow.AddHours(-1),
-            DateTime.UtcNow,
-            1024,
-            2048,
-            DateTime.UtcNow,
-            ConflictResolutionStrategy.None,
-            false);
+        MainWindowViewModel sut = CreateSut(out AccountManagementViewModel accountVm, out _, out _, [conflict]);
 
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict> { conflict }));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
-
-        var account = new AccountInfo(
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "test@example.com",
-            "Test User",
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
-
+        var account = new AccountInfo("account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"test@example.com","Test User",true,DateTime.UtcNow,null,false,false,3,50,0);
         accountVm.SelectedAccount = account;
 
         sut.ViewConflictsCommand.CanExecute.FirstAsync().Wait().ShouldBeTrue();
@@ -530,14 +274,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void ViewConflictsCommandCannotExecuteWhenNoUnresolvedConflicts()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut();
 
         sut.ViewConflictsCommand.CanExecute.FirstAsync().Wait().ShouldBeFalse();
     }
@@ -545,14 +282,7 @@ public class MainWindowViewModelShould
     [Fact]
     public void RaisePropertyChangedForHasUnresolvedConflicts()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+        MainWindowViewModel sut = CreateSut(out AccountManagementViewModel accountVm, out _, out ISyncConflictRepository mockConflictRepo);
 
         var propertyChangedRaised = false;
         sut.PropertyChanged += (_, e) =>
@@ -561,35 +291,12 @@ public class MainWindowViewModelShould
                 propertyChangedRaised = true;
         };
 
-        var conflict = new SyncConflict(
-            Guid.CreateVersion7().ToString(),
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "/test.txt",
-            DateTime.UtcNow.AddHours(-1),
-            DateTime.UtcNow,
-            1024,
-            2048,
-            DateTime.UtcNow,
-            ConflictResolutionStrategy.None,
-            false);
+        var conflict = new SyncConflict(Guid.CreateVersion7().ToString(),"account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"/test.txt",DateTime.UtcNow.AddHours(-1),DateTime.UtcNow,1024,2048,DateTime.UtcNow,ConflictResolutionStrategy.None,false);
 
         _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict> { conflict }));
+            .Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([conflict]));
 
-        var account = new AccountInfo(
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "test@example.com",
-            "Test User",
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
+        var account = new AccountInfo("account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"test@example.com","Test User",true,DateTime.UtcNow,null,false,false,3,50,0);
 
         accountVm.SelectedAccount = account;
 
@@ -599,51 +306,18 @@ public class MainWindowViewModelShould
     [Fact]
     public async Task UpdateHasUnresolvedConflictsWhenConflictStatusChanges()
     {
-        AccountManagementViewModel accountVm = CreateAccountManagementViewModel();
-        SyncTreeViewModel syncTreeVm = CreateSyncTreeViewModel();
-        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        ISyncConflictRepository mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        var conflict = new SyncConflict(Guid.CreateVersion7().ToString(),"account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"/test.txt",DateTime.UtcNow.AddHours(-1),DateTime.UtcNow,1024,2048,DateTime.UtcNow,ConflictResolutionStrategy.None,false);
 
-        var conflict = new SyncConflict(
-            Guid.CreateVersion7().ToString(),
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "/test.txt",
-            DateTime.UtcNow.AddHours(-1),
-            DateTime.UtcNow,
-            1024,
-            2048,
-            DateTime.UtcNow,
-            ConflictResolutionStrategy.None,
-            false);
+        MainWindowViewModel sut = CreateSut(out AccountManagementViewModel accountVm, out _, out ISyncConflictRepository mockConflictRepo, [conflict]);
 
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict> { conflict }));
-
-        var sut = new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
-
-        var account = new AccountInfo(
-            "account-123",
-            new HashedAccountId(AccountIdHasher.Hash("account-123")),
-            "test@example.com",
-            "Test User",
-            true,
-            DateTime.UtcNow,
-            null,
-            false,
-            false,
-            3,
-            50,
-            0);
+        var account = new AccountInfo("account-123",new HashedAccountId(AccountIdHasher.Hash("account-123")),"test@example.com","Test User",true,DateTime.UtcNow,null,false,false,3,50,0);
 
         accountVm.SelectedAccount = account;
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         sut.HasUnresolvedConflicts.ShouldBeTrue();
 
-        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<SyncConflict>>(new List<SyncConflict>()));
+        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SyncConflict>>([]));
 
         accountVm.SelectedAccount = null;
         await Task.Delay(100, TestContext.Current.CancellationToken);
@@ -658,8 +332,7 @@ public class MainWindowViewModelShould
     {
         IAuthService mockAuth = Substitute.For<IAuthService>();
         IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
+        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
         return new AccountManagementViewModel(mockAuth, mockRepo, Substitute.For<Microsoft.Extensions.Logging.ILogger<AccountManagementViewModel>>());
     }
 
@@ -674,5 +347,20 @@ public class MainWindowViewModelShould
 
         return new SyncTreeViewModel(mockFolderService, mockSelectionService, mockSyncEngine, Substitute.For<IDebugLogger>(), Substitute.For<ISyncRepository>());
     }
+
+    private static MainWindowViewModel CreateSut(out AccountManagementViewModel accountVm,out SyncTreeViewModel syncTreeVm,out ISyncConflictRepository mockConflictRepo,IReadOnlyList<SyncConflict>? conflicts = null)
+    {
+        accountVm = CreateAccountManagementViewModel();
+        syncTreeVm = CreateSyncTreeViewModel();
+        IAutoSyncCoordinator mockCoordinator = Substitute.For<IAutoSyncCoordinator>();
+        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
+        mockConflictRepo = Substitute.For<ISyncConflictRepository>();
+        _ = mockConflictRepo.GetUnresolvedByAccountIdAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(conflicts ?? []));
+
+        return new MainWindowViewModel(accountVm, syncTreeVm, Substitute.For<IServiceProvider>(), mockCoordinator, mockRepo, mockConflictRepo);
+    }
+
+    private static MainWindowViewModel CreateSut() => CreateSut(out _, out _, out _);
 }
 

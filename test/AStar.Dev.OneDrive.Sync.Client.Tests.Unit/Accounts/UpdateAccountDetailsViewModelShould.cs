@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;

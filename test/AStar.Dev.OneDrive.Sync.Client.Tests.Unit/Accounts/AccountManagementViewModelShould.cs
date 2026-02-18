@@ -5,14 +5,9 @@ using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using Microsoft.Extensions.Logging;
-using NSubstitute;
-using Shouldly;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
-/// <summary>
-///     Unit tests for <see cref="AccountManagementViewModel" />.
-/// </summary>
 public sealed class AccountManagementViewModelShould : IDisposable
 {
     private readonly IAuthService _authService;
@@ -26,11 +21,8 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _accountRepository = Substitute.For<IAccountRepository>();
         _logger = Substitute.For<ILogger<AccountManagementViewModel>>();
 
-        // Default: return empty list for any cancellation token
         _ = _accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-        // Also set up for LoginAsync with any cancellation token
-        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(
-            new AuthenticationResult(false, string.Empty, new HashedAccountId(string.Empty), string.Empty, "Not configured")));
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(new AuthenticationResult(false, string.Empty, new HashedAccountId(string.Empty), string.Empty, "Not configured")));
 
         _viewModel = new AccountManagementViewModel(_authService, _accountRepository, _logger);
     }
@@ -40,7 +32,6 @@ public sealed class AccountManagementViewModelShould : IDisposable
     [Fact]
     public async Task InitializeWithEmptyAccountsList()
     {
-        // Wait for async initialization
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         _viewModel.Accounts.ShouldBeEmpty();
@@ -54,12 +45,9 @@ public sealed class AccountManagementViewModelShould : IDisposable
         var account1 = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user1@example.com", "/path1");
         var account2 = AccountInfo.Standard("id2", new HashedAccountId(AccountIdHasher.Hash("hash2")), "user2@example.com", "/path2");
         var accounts = new List<AccountInfo> { account1, account2 };
-
-        // Override default mock to return accounts
         _ = _accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>(accounts));
-
-        // Create new viewmodel after setting up the mock
         _viewModel.Dispose();
+
         _viewModel = new AccountManagementViewModel(_authService, _accountRepository, _logger);
         await Task.Delay(150, TestContext.Current.CancellationToken);
 
@@ -78,24 +66,16 @@ public sealed class AccountManagementViewModelShould : IDisposable
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
         _viewModel.IsLoading.ShouldBeTrue();
-
         tcs.SetResult([]);
         await Task.Delay(50, TestContext.Current.CancellationToken);
-
         _viewModel.IsLoading.ShouldBeFalse();
     }
 
     [Fact]
     public async Task AddAccountSuccessfully()
     {
-        var authResult = new AuthenticationResult(
-            Success: true,
-            AccountId: "account123",
-            HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash123")),
-            DisplayName: "test@example.com",
-            ErrorMessage: null
+        var authResult = new AuthenticationResult(Success: true,AccountId: "account123",HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash123")),DisplayName: "test@example.com",ErrorMessage: null
         );
-
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
@@ -104,21 +84,13 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.Accounts.Count.ShouldBe(1);
         _viewModel.Accounts[0].DisplayName.ShouldBe("test@example.com");
         _viewModel.SelectedAccount?.Id.ShouldBe("account123");
-
         await _accountRepository.Received(1).AddAsync(Arg.Is<AccountInfo>(a => a.DisplayName == "test@example.com"), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task CreateLocalSyncPathWithSanitizedDisplayName()
     {
-        var authResult = new AuthenticationResult(
-            Success: true,
-            AccountId: "account123",
-            HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash123")),
-            DisplayName: "user@domain.com",
-            ErrorMessage: null
-        );
-
+        var authResult = new AuthenticationResult(Success: true,AccountId: "account123",HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash123")),DisplayName: "user@domain.com",ErrorMessage: null);
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
@@ -133,14 +105,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
     [Fact]
     public async Task ShowToastOnAddAccountFailure()
     {
-        var authResult = new AuthenticationResult(
-            Success: false,
-            AccountId: string.Empty,
-            HashedAccountId: new HashedAccountId(string.Empty),
-            DisplayName: string.Empty,
-            ErrorMessage: "Authentication failed"
-        );
-
+        var authResult = new AuthenticationResult(Success: false,AccountId: string.Empty,HashedAccountId: new HashedAccountId(string.Empty),DisplayName: string.Empty,ErrorMessage: "Authentication failed");
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
@@ -149,7 +114,6 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.ToastMessage.ShouldBe("Authentication failed");
         _viewModel.ToastVisible.ShouldBeTrue();
         _viewModel.Accounts.ShouldBeEmpty();
-
         await _accountRepository.DidNotReceive().AddAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
     }
 
@@ -165,7 +129,6 @@ public sealed class AccountManagementViewModelShould : IDisposable
 
         _viewModel.Accounts.ShouldBeEmpty();
         _viewModel.SelectedAccount.ShouldBeNull();
-
         await _accountRepository.Received(1).DeleteAsync("id1", Arg.Any<CancellationToken>());
     }
 
@@ -189,26 +152,14 @@ public sealed class AccountManagementViewModelShould : IDisposable
         var account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path");
         _viewModel.Accounts.Add(account);
         _viewModel.SelectedAccount = account;
-
-        var authResult = new AuthenticationResult(
-            Success: true,
-            AccountId: "id1",
-            HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash1")),
-            DisplayName: "user@example.com",
-            ErrorMessage: null
-        );
-
+        var authResult = new AuthenticationResult(Success: true,AccountId: "id1",HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash1")),DisplayName: "user@example.com",ErrorMessage: null);
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         _ = _viewModel.LoginCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         _viewModel.SelectedAccount!.IsAuthenticated.ShouldBeTrue();
-
-        await _accountRepository.Received(1).UpdateAsync(
-            Arg.Is<AccountInfo>(a => a.Id == "id1" && a.IsAuthenticated),
-            Arg.Any<CancellationToken>()
-        );
+        await _accountRepository.Received(1).UpdateAsync(Arg.Is<AccountInfo>(a => a.Id == "id1" && a.IsAuthenticated), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -217,15 +168,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         var account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path");
         _viewModel.Accounts.Add(account);
         _viewModel.SelectedAccount = account;
-
-        var authResult = new AuthenticationResult(
-            Success: false,
-            AccountId: string.Empty,
-            HashedAccountId: new HashedAccountId(string.Empty),
-            DisplayName: string.Empty,
-            ErrorMessage: "Login failed"
-        );
-
+        var authResult = new AuthenticationResult(Success: false,AccountId: string.Empty,HashedAccountId: new HashedAccountId(string.Empty),DisplayName: string.Empty,ErrorMessage: "Login failed");
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         _ = _viewModel.LoginCommand.Execute().Subscribe();
@@ -233,7 +176,6 @@ public sealed class AccountManagementViewModelShould : IDisposable
 
         _viewModel.ToastMessage.ShouldBe("Login failed");
         _viewModel.ToastVisible.ShouldBeTrue();
-
         await _accountRepository.DidNotReceive().UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
     }
 
@@ -243,18 +185,13 @@ public sealed class AccountManagementViewModelShould : IDisposable
         AccountInfo account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path") with { IsAuthenticated = true };
         _viewModel.Accounts.Add(account);
         _viewModel.SelectedAccount = account;
-
         _ = _authService.LogoutAsync("id1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
 
         _ = _viewModel.LogoutCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         _viewModel.SelectedAccount!.IsAuthenticated.ShouldBeFalse();
-
-        await _accountRepository.Received(1).UpdateAsync(
-            Arg.Is<AccountInfo>(a => a.Id == "id1" && !a.IsAuthenticated),
-            Arg.Any<CancellationToken>()
-        );
+        await _accountRepository.Received(1).UpdateAsync(Arg.Is<AccountInfo>(a => a.Id == "id1" && !a.IsAuthenticated), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -263,14 +200,12 @@ public sealed class AccountManagementViewModelShould : IDisposable
         AccountInfo account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path") with { IsAuthenticated = true };
         _viewModel.Accounts.Add(account);
         _viewModel.SelectedAccount = account;
-
         _ = _authService.LogoutAsync("id1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(false));
 
         _ = _viewModel.LogoutCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         _viewModel.SelectedAccount!.IsAuthenticated.ShouldBeTrue();
-
         await _accountRepository.DidNotReceive().UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
     }
 
@@ -280,8 +215,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.SelectedAccount = null;
 
         var canExecute = false;
-        using IDisposable subscription = _viewModel.RemoveAccountCommand.CanExecute
-            .Subscribe(value => canExecute = value);
+        using IDisposable subscription = _viewModel.RemoveAccountCommand.CanExecute.Subscribe(value => canExecute = value);
 
         canExecute.ShouldBeFalse();
     }
@@ -293,8 +227,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.SelectedAccount = account;
 
         var canExecute = false;
-        using IDisposable subscription = _viewModel.RemoveAccountCommand.CanExecute
-            .Subscribe(value => canExecute = value);
+        using IDisposable subscription = _viewModel.RemoveAccountCommand.CanExecute.Subscribe(value => canExecute = value);
 
         canExecute.ShouldBeTrue();
     }
@@ -305,8 +238,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.SelectedAccount = null;
 
         var canExecute = false;
-        using IDisposable subscription = _viewModel.LoginCommand.CanExecute
-            .Subscribe(value => canExecute = value);
+        using IDisposable subscription = _viewModel.LoginCommand.CanExecute.Subscribe(value => canExecute = value);
 
         canExecute.ShouldBeFalse();
     }
@@ -318,8 +250,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.SelectedAccount = account;
 
         var canExecute = false;
-        using IDisposable subscription = _viewModel.LoginCommand.CanExecute
-            .Subscribe(value => canExecute = value);
+        using IDisposable subscription = _viewModel.LoginCommand.CanExecute.Subscribe(value => canExecute = value);
 
         canExecute.ShouldBeFalse();
     }
@@ -331,8 +262,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.SelectedAccount = account;
 
         var canExecute = false;
-        using IDisposable subscription = _viewModel.LoginCommand.CanExecute
-            .Subscribe(value => canExecute = value);
+        using IDisposable subscription = _viewModel.LoginCommand.CanExecute.Subscribe(value => canExecute = value);
 
         canExecute.ShouldBeTrue();
     }
@@ -343,8 +273,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.SelectedAccount = null;
 
         var canExecute = false;
-        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute
-            .Subscribe(value => canExecute = value);
+        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute.Subscribe(value => canExecute = value);
 
         canExecute.ShouldBeFalse();
     }
@@ -356,8 +285,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.SelectedAccount = account;
 
         var canExecute = false;
-        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute
-            .Subscribe(value => canExecute = value);
+        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute.Subscribe(value => canExecute = value);
 
         canExecute.ShouldBeFalse();
     }
@@ -369,8 +297,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _viewModel.SelectedAccount = account;
 
         var canExecute = false;
-        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute
-            .Subscribe(value => canExecute = value);
+        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute.Subscribe(value => canExecute = value);
 
         canExecute.ShouldBeTrue();
     }
@@ -378,14 +305,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
     [Fact]
     public async Task HideToastAfterFiveSeconds()
     {
-        var authResult = new AuthenticationResult(
-            Success: false,
-            AccountId: string.Empty,
-            HashedAccountId: new HashedAccountId(string.Empty),
-            DisplayName: string.Empty,
-            ErrorMessage: "Test error"
-        );
-
+        var authResult = new AuthenticationResult(Success: false,AccountId: string.Empty,HashedAccountId: new HashedAccountId(string.Empty),DisplayName: string.Empty,ErrorMessage: "Test error");
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
 
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
@@ -393,9 +313,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
 
         _viewModel.ToastVisible.ShouldBeTrue();
         _viewModel.ToastMessage.ShouldBe("Test error");
-
         await Task.Delay(5100, TestContext.Current.CancellationToken);
-
         _viewModel.ToastVisible.ShouldBeFalse();
         _viewModel.ToastMessage.ShouldBeNull();
     }
@@ -403,34 +321,17 @@ public sealed class AccountManagementViewModelShould : IDisposable
     [Fact]
     public async Task CancelPreviousToastWhenShowingNewToast()
     {
-        var authResult1 = new AuthenticationResult(
-            Success: false,
-            AccountId: string.Empty,
-            HashedAccountId: new HashedAccountId(string.Empty),
-            DisplayName: string.Empty,
-            ErrorMessage: "First error"
-        );
-
+        var authResult1 = new AuthenticationResult(Success: false,AccountId: string.Empty,HashedAccountId: new HashedAccountId(string.Empty),DisplayName: string.Empty,ErrorMessage: "First error");
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult1));
 
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         _viewModel.ToastMessage.ShouldBe("First error");
-
-        var authResult2 = new AuthenticationResult(
-            Success: false,
-            AccountId: string.Empty,
-            HashedAccountId: new HashedAccountId(string.Empty),
-            DisplayName: string.Empty,
-            ErrorMessage: "Second error"
-        );
-
+        var authResult2 = new AuthenticationResult(Success: false,AccountId: string.Empty,HashedAccountId: new HashedAccountId(string.Empty),DisplayName: string.Empty,ErrorMessage: "Second error");
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult2));
-
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
-
         _viewModel.ToastMessage.ShouldBe("Second error");
     }
 

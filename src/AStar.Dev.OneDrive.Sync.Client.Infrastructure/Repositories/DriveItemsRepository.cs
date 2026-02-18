@@ -116,7 +116,7 @@ public sealed class DriveItemsRepository(IDbContextFactory<SyncDbContext> contex
                 driveItem.CTag,
                 driveItem.ETag,
                 driveItem.LocalHash,
-                (FileSyncStatus)driveItem.SyncStatus,
+                driveItem.SyncStatus,
                 driveItem.LastSyncDirection
             );
 
