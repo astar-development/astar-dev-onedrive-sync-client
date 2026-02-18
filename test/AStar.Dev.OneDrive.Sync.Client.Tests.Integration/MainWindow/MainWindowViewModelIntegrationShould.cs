@@ -14,7 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.MainWindow;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Integration.MainWindow;
 
 /// <summary>
 ///     Integration tests for MainWindowViewModel coordinating AccountManagementViewModel and SyncTreeViewModel.

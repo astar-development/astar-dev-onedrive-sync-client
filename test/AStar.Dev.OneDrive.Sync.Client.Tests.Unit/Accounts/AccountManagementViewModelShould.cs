@@ -5,448 +5,493 @@ using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using Microsoft.Extensions.Logging;
+using NSubstitute;
+using Shouldly;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Accounts;
 
-public class AccountManagementViewModelShould
+/// <summary>
+///     Unit tests for <see cref="AccountManagementViewModel" />.
+/// </summary>
+public sealed class AccountManagementViewModelShould : IDisposable
 {
-    private readonly ILogger<AccountManagementViewModel> mockLogger;
+    private readonly IAuthService _authService;
+    private readonly IAccountRepository _accountRepository;
+    private readonly ILogger<AccountManagementViewModel> _logger;
+    private AccountManagementViewModel _viewModel;
 
-    public AccountManagementViewModelShould() => mockLogger = Substitute.For<ILogger<AccountManagementViewModel>>();
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task InitializeWithEmptyAccountCollectionWhenRepositoryIsEmpty()
+    public AccountManagementViewModelShould()
     {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
+        _authService = Substitute.For<IAuthService>();
+        _accountRepository = Substitute.For<IAccountRepository>();
+        _logger = Substitute.For<ILogger<AccountManagementViewModel>>();
 
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken); // Allow async initialization
+        // Default: return empty list for any cancellation token
+        _ = _accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
+        // Also set up for LoginAsync with any cancellation token
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(
+            new AuthenticationResult(false, string.Empty, new HashedAccountId(string.Empty), string.Empty, "Not configured")));
 
-        viewModel.Accounts.ShouldBeEmpty();
+        _viewModel = new AccountManagementViewModel(_authService, _accountRepository, _logger);
     }
 
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task InitializeWithNullSelectedAccount()
+    public void Dispose() => _viewModel.Dispose();
+
+    [Fact]
+    public async Task InitializeWithEmptyAccountsList()
     {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
+        // Wait for async initialization
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        viewModel.SelectedAccount.ShouldBeNull();
+        _viewModel.Accounts.ShouldBeEmpty();
+        _viewModel.SelectedAccount.ShouldBeNull();
+        _viewModel.IsLoading.ShouldBeFalse();
     }
 
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
+    [Fact]
     public async Task LoadAccountsFromRepositoryOnInitialization()
     {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        AccountInfo[] accounts = [CreateAccount("acc1", "User 1"), CreateAccount("acc2", "User 2")];
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>(accounts));
+        var account1 = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user1@example.com", "/path1");
+        var account2 = AccountInfo.Standard("id2", new HashedAccountId(AccountIdHasher.Hash("hash2")), "user2@example.com", "/path2");
+        var accounts = new List<AccountInfo> { account1, account2 };
 
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
+        // Override default mock to return accounts
+        _ = _accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>(accounts));
 
-        viewModel.Accounts.Count.ShouldBe(2);
-        viewModel.Accounts[0].HashedAccountId.Value.ShouldBe("acc1");
-        viewModel.Accounts[1].HashedAccountId.Value.ShouldBe("acc2");
+        // Create new viewmodel after setting up the mock
+        _viewModel.Dispose();
+        _viewModel = new AccountManagementViewModel(_authService, _accountRepository, _logger);
+        await Task.Delay(150, TestContext.Current.CancellationToken);
+
+        _viewModel.Accounts.Count.ShouldBe(2);
+        _viewModel.Accounts.ShouldContain(account1);
+        _viewModel.Accounts.ShouldContain(account2);
     }
 
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task RaisePropertyChangedWhenSelectedAccountChanges()
+    [Fact]
+    public async Task SetIsLoadingTrueWhileLoadingAccounts()
     {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
+        var tcs = new TaskCompletionSource<IReadOnlyList<AccountInfo>>();
+        _ = _accountRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(tcs.Task);
 
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
+        _viewModel = new AccountManagementViewModel(_authService, _accountRepository, _logger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
 
-        AccountInfo account = CreateAccount("acc1", "User 1");
-        var propertyChanged = false;
+        _viewModel.IsLoading.ShouldBeTrue();
 
-        viewModel.PropertyChanged += (_, args) =>
+        tcs.SetResult([]);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
+
+        _viewModel.IsLoading.ShouldBeFalse();
+    }
+
+    [Fact]
+    public async Task AddAccountSuccessfully()
+    {
+        var authResult = new AuthenticationResult(
+            Success: true,
+            AccountId: "account123",
+            HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash123")),
+            DisplayName: "test@example.com",
+            ErrorMessage: null
+        );
+
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
+
+        _ = _viewModel.AddAccountCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.Accounts.Count.ShouldBe(1);
+        _viewModel.Accounts[0].DisplayName.ShouldBe("test@example.com");
+        _viewModel.SelectedAccount?.Id.ShouldBe("account123");
+
+        await _accountRepository.Received(1).AddAsync(Arg.Is<AccountInfo>(a => a.DisplayName == "test@example.com"), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task CreateLocalSyncPathWithSanitizedDisplayName()
+    {
+        var authResult = new AuthenticationResult(
+            Success: true,
+            AccountId: "account123",
+            HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash123")),
+            DisplayName: "user@domain.com",
+            ErrorMessage: null
+        );
+
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
+
+        _ = _viewModel.AddAccountCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        await _accountRepository.Received(1).AddAsync(
+            Arg.Is<AccountInfo>(a => a.LocalSyncPath.Contains("user_domain_com")),
+            Arg.Any<CancellationToken>()
+        );
+    }
+
+    [Fact]
+    public async Task ShowToastOnAddAccountFailure()
+    {
+        var authResult = new AuthenticationResult(
+            Success: false,
+            AccountId: string.Empty,
+            HashedAccountId: new HashedAccountId(string.Empty),
+            DisplayName: string.Empty,
+            ErrorMessage: "Authentication failed"
+        );
+
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
+
+        _ = _viewModel.AddAccountCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.ToastMessage.ShouldBe("Authentication failed");
+        _viewModel.ToastVisible.ShouldBeTrue();
+        _viewModel.Accounts.ShouldBeEmpty();
+
+        await _accountRepository.DidNotReceive().AddAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RemoveSelectedAccount()
+    {
+        var account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path");
+        _viewModel.Accounts.Add(account);
+        _viewModel.SelectedAccount = account;
+
+        _ = _viewModel.RemoveAccountCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.Accounts.ShouldBeEmpty();
+        _viewModel.SelectedAccount.ShouldBeNull();
+
+        await _accountRepository.Received(1).DeleteAsync("id1", Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task NotRemoveAccountWhenNoneSelected()
+    {
+        var account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path");
+        _viewModel.Accounts.Add(account);
+        _viewModel.SelectedAccount = null;
+
+        _ = _viewModel.RemoveAccountCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.Accounts.Count.ShouldBe(1);
+        await _accountRepository.DidNotReceive().DeleteAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task LoginToSelectedAccount()
+    {
+        var account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path");
+        _viewModel.Accounts.Add(account);
+        _viewModel.SelectedAccount = account;
+
+        var authResult = new AuthenticationResult(
+            Success: true,
+            AccountId: "id1",
+            HashedAccountId: new HashedAccountId(AccountIdHasher.Hash("hash1")),
+            DisplayName: "user@example.com",
+            ErrorMessage: null
+        );
+
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
+
+        _ = _viewModel.LoginCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.SelectedAccount!.IsAuthenticated.ShouldBeTrue();
+
+        await _accountRepository.Received(1).UpdateAsync(
+            Arg.Is<AccountInfo>(a => a.Id == "id1" && a.IsAuthenticated),
+            Arg.Any<CancellationToken>()
+        );
+    }
+
+    [Fact]
+    public async Task ShowToastOnLoginFailure()
+    {
+        var account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path");
+        _viewModel.Accounts.Add(account);
+        _viewModel.SelectedAccount = account;
+
+        var authResult = new AuthenticationResult(
+            Success: false,
+            AccountId: string.Empty,
+            HashedAccountId: new HashedAccountId(string.Empty),
+            DisplayName: string.Empty,
+            ErrorMessage: "Login failed"
+        );
+
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
+
+        _ = _viewModel.LoginCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.ToastMessage.ShouldBe("Login failed");
+        _viewModel.ToastVisible.ShouldBeTrue();
+
+        await _accountRepository.DidNotReceive().UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task LogoutFromSelectedAccount()
+    {
+        AccountInfo account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path") with { IsAuthenticated = true };
+        _viewModel.Accounts.Add(account);
+        _viewModel.SelectedAccount = account;
+
+        _ = _authService.LogoutAsync("id1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+
+        _ = _viewModel.LogoutCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.SelectedAccount!.IsAuthenticated.ShouldBeFalse();
+
+        await _accountRepository.Received(1).UpdateAsync(
+            Arg.Is<AccountInfo>(a => a.Id == "id1" && !a.IsAuthenticated),
+            Arg.Any<CancellationToken>()
+        );
+    }
+
+    [Fact]
+    public async Task NotUpdateAccountOnLogoutFailure()
+    {
+        AccountInfo account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path") with { IsAuthenticated = true };
+        _viewModel.Accounts.Add(account);
+        _viewModel.SelectedAccount = account;
+
+        _ = _authService.LogoutAsync("id1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(false));
+
+        _ = _viewModel.LogoutCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.SelectedAccount!.IsAuthenticated.ShouldBeTrue();
+
+        await _accountRepository.DidNotReceive().UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public void DisableRemoveCommandWhenNoAccountSelected()
+    {
+        _viewModel.SelectedAccount = null;
+
+        var canExecute = false;
+        using IDisposable subscription = _viewModel.RemoveAccountCommand.CanExecute
+            .Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void EnableRemoveCommandWhenAccountSelected()
+    {
+        var account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path");
+        _viewModel.SelectedAccount = account;
+
+        var canExecute = false;
+        using IDisposable subscription = _viewModel.RemoveAccountCommand.CanExecute
+            .Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void DisableLoginCommandWhenNoAccountSelected()
+    {
+        _viewModel.SelectedAccount = null;
+
+        var canExecute = false;
+        using IDisposable subscription = _viewModel.LoginCommand.CanExecute
+            .Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void DisableLoginCommandWhenAccountAlreadyAuthenticated()
+    {
+        AccountInfo account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path") with { IsAuthenticated = true };
+        _viewModel.SelectedAccount = account;
+
+        var canExecute = false;
+        using IDisposable subscription = _viewModel.LoginCommand.CanExecute
+            .Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void EnableLoginCommandWhenAccountNotAuthenticated()
+    {
+        AccountInfo account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path") with { IsAuthenticated = false };
+        _viewModel.SelectedAccount = account;
+
+        var canExecute = false;
+        using IDisposable subscription = _viewModel.LoginCommand.CanExecute
+            .Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void DisableLogoutCommandWhenNoAccountSelected()
+    {
+        _viewModel.SelectedAccount = null;
+
+        var canExecute = false;
+        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute
+            .Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void DisableLogoutCommandWhenAccountNotAuthenticated()
+    {
+        AccountInfo account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path") with { IsAuthenticated = false };
+        _viewModel.SelectedAccount = account;
+
+        var canExecute = false;
+        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute
+            .Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void EnableLogoutCommandWhenAccountAuthenticated()
+    {
+        AccountInfo account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path") with { IsAuthenticated = true };
+        _viewModel.SelectedAccount = account;
+
+        var canExecute = false;
+        using IDisposable subscription = _viewModel.LogoutCommand.CanExecute
+            .Subscribe(value => canExecute = value);
+
+        canExecute.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task HideToastAfterFiveSeconds()
+    {
+        var authResult = new AuthenticationResult(
+            Success: false,
+            AccountId: string.Empty,
+            HashedAccountId: new HashedAccountId(string.Empty),
+            DisplayName: string.Empty,
+            ErrorMessage: "Test error"
+        );
+
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
+
+        _ = _viewModel.AddAccountCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.ToastVisible.ShouldBeTrue();
+        _viewModel.ToastMessage.ShouldBe("Test error");
+
+        await Task.Delay(5100, TestContext.Current.CancellationToken);
+
+        _viewModel.ToastVisible.ShouldBeFalse();
+        _viewModel.ToastMessage.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task CancelPreviousToastWhenShowingNewToast()
+    {
+        var authResult1 = new AuthenticationResult(
+            Success: false,
+            AccountId: string.Empty,
+            HashedAccountId: new HashedAccountId(string.Empty),
+            DisplayName: string.Empty,
+            ErrorMessage: "First error"
+        );
+
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult1));
+
+        _ = _viewModel.AddAccountCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.ToastMessage.ShouldBe("First error");
+
+        var authResult2 = new AuthenticationResult(
+            Success: false,
+            AccountId: string.Empty,
+            HashedAccountId: new HashedAccountId(string.Empty),
+            DisplayName: string.Empty,
+            ErrorMessage: "Second error"
+        );
+
+        _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult2));
+
+        _ = _viewModel.AddAccountCommand.Execute().Subscribe();
+        await Task.Delay(100, TestContext.Current.CancellationToken);
+
+        _viewModel.ToastMessage.ShouldBe("Second error");
+    }
+
+    [Fact]
+    public void RaisePropertyChangedForToastMessage()
+    {
+        var propertyChanged = false;
+        _viewModel.PropertyChanged += (_, args) =>
+        {
+            if(args.PropertyName == nameof(AccountManagementViewModel.ToastMessage))
+                propertyChanged = true;
+        };
+
+        _viewModel.ToastMessage = "Test message";
+
+        propertyChanged.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void RaisePropertyChangedForToastVisible()
+    {
+        var propertyChanged = false;
+        _viewModel.PropertyChanged += (_, args) =>
+        {
+            if(args.PropertyName == nameof(AccountManagementViewModel.ToastVisible))
+                propertyChanged = true;
+        };
+
+        _viewModel.ToastVisible = true;
+
+        propertyChanged.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void RaisePropertyChangedForSelectedAccount()
+    {
+        var propertyChanged = false;
+        _viewModel.PropertyChanged += (_, args) =>
         {
             if(args.PropertyName == nameof(AccountManagementViewModel.SelectedAccount))
                 propertyChanged = true;
         };
 
-        viewModel.SelectedAccount = account;
+        var account = AccountInfo.Standard("id1", new HashedAccountId(AccountIdHasher.Hash("hash1")), "user@example.com", "/path");
+        _viewModel.SelectedAccount = account;
 
         propertyChanged.ShouldBeTrue();
-        viewModel.SelectedAccount.ShouldBe(account);
     }
 
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task NotRaisePropertyChangedWhenSettingSameSelectedAccount()
+    [Fact]
+    public void RaisePropertyChangedForIsLoading()
     {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1");
-        viewModel.SelectedAccount = account;
-
-        var propertyChangedCount = 0;
-        viewModel.PropertyChanged += (_, _) => propertyChangedCount++;
-
-        viewModel.SelectedAccount = account;
-
-        propertyChangedCount.ShouldBe(0);
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task RaisePropertyChangedWhenIsLoadingChanges()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
         var propertyChanged = false;
-
-        viewModel.PropertyChanged += (_, args) =>
+        _viewModel.PropertyChanged += (_, args) =>
         {
             if(args.PropertyName == nameof(AccountManagementViewModel.IsLoading))
                 propertyChanged = true;
         };
 
-        viewModel.IsLoading = true;
+        _viewModel.IsLoading = true;
 
         propertyChanged.ShouldBeTrue();
-        viewModel.IsLoading.ShouldBeTrue();
     }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task NotRaisePropertyChangedWhenSettingSameIsLoadingValue()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        viewModel.IsLoading = true;
-
-        var propertyChangedCount = 0;
-        viewModel.PropertyChanged += (_, _) => propertyChangedCount++;
-
-        viewModel.IsLoading = true;
-
-        propertyChangedCount.ShouldBe(0);
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task HaveAddAccountCommandAlwaysEnabled()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        var canExecute = viewModel.AddAccountCommand.CanExecute.FirstAsync().Wait();
-
-        canExecute.ShouldBeTrue();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task ExecuteAddAccountCommandSuccessfully()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        var authResult = new AuthenticationResult(true, "acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "user@example.com", null);
-        _ = mockAuth.LoginAsync(Arg.Any<CancellationToken>()).Returns(authResult);
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        _ = await viewModel.AddAccountCommand.Execute();
-
-        _ = await mockAuth.Received(1).LoginAsync(Arg.Any<CancellationToken>());
-        await mockRepo.Received(1).AddAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task HaveRemoveAccountCommandDisabledWhenNoAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        var canExecute = viewModel.RemoveAccountCommand.CanExecute.FirstAsync().Wait();
-
-        canExecute.ShouldBeFalse();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task EnableRemoveAccountCommandWhenAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1");
-
-        viewModel.SelectedAccount = account;
-
-        var canExecute = viewModel.RemoveAccountCommand.CanExecute.FirstAsync().Wait();
-        canExecute.ShouldBeTrue();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task DisableRemoveAccountCommandWhenAccountDeselected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1");
-        viewModel.SelectedAccount = account;
-
-        viewModel.SelectedAccount = null;
-
-        var canExecute = viewModel.RemoveAccountCommand.CanExecute.FirstAsync().Wait();
-        canExecute.ShouldBeFalse();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task ExecuteRemoveAccountCommandWhenAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1");
-        viewModel.SelectedAccount = account;
-
-        _ = await viewModel.RemoveAccountCommand.Execute();
-
-        await mockRepo.Received(1).DeleteAsync("acc1", Arg.Any<CancellationToken>());
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task HaveLoginCommandDisabledWhenNoAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        var canExecute = viewModel.LoginCommand.CanExecute.FirstAsync().Wait();
-
-        canExecute.ShouldBeFalse();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task EnableLoginCommandWhenUnauthenticatedAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1");
-
-        viewModel.SelectedAccount = account;
-
-        var canExecute = viewModel.LoginCommand.CanExecute.FirstAsync().Wait();
-        canExecute.ShouldBeTrue();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task DisableLoginCommandWhenAuthenticatedAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1", true);
-
-        viewModel.SelectedAccount = account;
-
-        var canExecute = viewModel.LoginCommand.CanExecute.FirstAsync().Wait();
-        canExecute.ShouldBeFalse();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task ExecuteLoginCommandSuccessfully()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        var authResult = new AuthenticationResult(true, "acc1", new HashedAccountId(AccountIdHasher.Hash("acc1")), "User 1", null);
-        _ = mockAuth.LoginAsync(Arg.Any<CancellationToken>()).Returns(authResult);
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1");
-        viewModel.SelectedAccount = account;
-
-        _ = await viewModel.LoginCommand.Execute();
-
-        _ = await mockAuth.Received(1).LoginAsync(Arg.Any<CancellationToken>());
-        await mockRepo.Received(1).UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task HaveLogoutCommandDisabledWhenNoAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        var canExecute = viewModel.LogoutCommand.CanExecute.FirstAsync().Wait();
-
-        canExecute.ShouldBeFalse();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task EnableLogoutCommandWhenAuthenticatedAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1", true);
-
-        viewModel.SelectedAccount = account;
-
-        var canExecute = viewModel.LogoutCommand.CanExecute.FirstAsync().Wait();
-        canExecute.ShouldBeTrue();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task DisableLogoutCommandWhenUnauthenticatedAccountSelected()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1");
-
-        viewModel.SelectedAccount = account;
-
-        var canExecute = viewModel.LogoutCommand.CanExecute.FirstAsync().Wait();
-        canExecute.ShouldBeFalse();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task ExecuteLogoutCommandSuccessfully()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        _ = mockAuth.LogoutAsync("acc1", Arg.Any<CancellationToken>()).Returns(true);
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1", true);
-        viewModel.SelectedAccount = account;
-
-        _ = await viewModel.LogoutCommand.Execute();
-
-        _ = await mockAuth.Received(1).LogoutAsync("acc1", Arg.Any<CancellationToken>());
-        await mockRepo.Received(1).UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task AllowAddingAccountsToCollection()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account1 = CreateAccount("acc1", "User 1");
-        AccountInfo account2 = CreateAccount("acc2", "User 2");
-
-        viewModel.Accounts.Add(account1);
-        viewModel.Accounts.Add(account2);
-
-        viewModel.Accounts.Count.ShouldBe(2);
-        viewModel.Accounts.ShouldContain(account1);
-        viewModel.Accounts.ShouldContain(account2);
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task AllowRemovingAccountsFromCollection()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        using var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        AccountInfo account = CreateAccount("acc1", "User 1");
-        viewModel.Accounts.Add(account);
-
-        _ = viewModel.Accounts.Remove(account);
-
-        viewModel.Accounts.ShouldBeEmpty();
-    }
-
-    [Fact(Skip = "Runs on it's own but not when run with other tests - or is flaky and works sometimes when run with others")]
-    public async Task DisposeSuccessfullyWithoutErrors()
-    {
-        IAuthService mockAuth = Substitute.For<IAuthService>();
-        IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
-        _ = mockRepo.GetAllAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<AccountInfo>>([]));
-
-        var viewModel = new AccountManagementViewModel(mockAuth, mockRepo, mockLogger);
-        await Task.Delay(50, TestContext.Current.CancellationToken);
-
-        Should.NotThrow(viewModel.Dispose);
-    }
-
-    private static AccountInfo CreateAccount(string id, string displayName, bool isAuthenticated = false)
-        => new(id, new HashedAccountId(AccountIdHasher.Hash(id)), displayName, $@"C:\Sync\{id}", isAuthenticated, null, null, false, false, 3, 50, 0);
 }
