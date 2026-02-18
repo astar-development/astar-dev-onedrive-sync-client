@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
@@ -10,111 +11,103 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 public sealed class AuthService(IAuthenticationClient authClient, AuthConfiguration configuration) : IAuthService
 {
     /// <inheritdoc />
-    public async Task<AuthenticationResult> LoginAsync(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(TimeSpan.FromSeconds(30));
-
-            MsalAuthResult result = await authClient.AcquireTokenInteractiveAsync(configuration.Scopes, cts.Token);
-
-            return AuthenticationResult.Success(result.Account.HomeAccountId.Identifier, new Core.Models.HashedAccountId(AccountIdHasher.Hash(result.Account.HomeAccountId.Identifier)), result.Account.Username);
-        }
-        catch(MsalException ex)
-        {
-            return AuthenticationResult.Failed(ex.GetBaseException().Message);
-        }
-        catch(OperationCanceledException)
-        {
-            var message = cancellationToken.IsCancellationRequested
+    public async Task<Result<AuthenticationResult, ErrorResponse>> LoginAsync(CancellationToken cancellationToken)
+        => await authClient.AcquireTokenInteractiveAsync(configuration.Scopes, cancellationToken)
+            .MatchAsync(
+                success => new Result<AuthenticationResult, ErrorResponse>.Ok(AuthenticationResult.Success(success.Account.HomeAccountId.Identifier, new Core.Models.HashedAccountId(AccountIdHasher.Hash(success.Account.HomeAccountId.Identifier)), success.Account.Username)),
+                error => {var message = cancellationToken.IsCancellationRequested
                 ? "Login was cancelled."
                 : "Login timed out after 30 seconds.";
 
-            return AuthenticationResult.Failed(message);
-        }
-    }
+            return new Result<AuthenticationResult, ErrorResponse>.Error(new ErrorResponse(message));
+            });
 
     /// <inheritdoc />
-    public async Task<bool> LogoutAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<Result<bool, ErrorResponse>> LogoutAsync(string accountId, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
-            IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
-
-            if(account is not null)
+        Result<IEnumerable<IAccount>, ErrorResponse> accounts = await authClient.GetAccountsAsync(cancellationToken);
+        return await accounts.MatchAsync<Result<bool, ErrorResponse>>(
+            async accountsList =>
             {
-                await authClient.RemoveAsync(account, cancellationToken);
-                return true;
-            }
+                IAccount? account = accountsList.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+                if (account is not null)
+                {
+                    _ = await authClient.RemoveAsync(account, cancellationToken);
+                    return new Result<bool, ErrorResponse>.Ok(true);
+                }
 
-            return false;
+                return new Result<bool, ErrorResponse>.Ok(false);
+            },
+            error => Task.FromResult<Result<bool, ErrorResponse>>(new Result<bool, ErrorResponse>.Ok(false))
+        );
+    }
+
+    /// <inheritdoc />
+    public async Task<Result<IReadOnlyList<(string accountId, string DisplayName)>, ErrorResponse>> GetAuthenticatedAccountsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            Result<IEnumerable<IAccount>, ErrorResponse> accounts = await authClient.GetAccountsAsync(cancellationToken);
+            return accounts.Match(
+                accountsList => new Result<IReadOnlyList<(string, string)>, ErrorResponse>.Ok(accountsList.Select(a => (a.HomeAccountId.Identifier, a.Username)).ToList()),
+                error => new Result<IReadOnlyList<(string, string)>, ErrorResponse>.Ok(new List<(string, string)>()));
         }
         catch(MsalException)
         {
-            return false;
+            return new Result<IReadOnlyList<(string, string)>, ErrorResponse>.Ok(new List<(string, string)>());
         }
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<(string accountId, string DisplayName)>> GetAuthenticatedAccountsAsync(CancellationToken cancellationToken = default)
+    public async Task<Result<string?, ErrorResponse>> GetAccessTokenAsync(string accountId, CancellationToken cancellationToken = default)
     {
         try
         {
-            IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
-            return accounts
-                .Select(a => (a.HomeAccountId.Identifier, a.Username))
-                .ToList();
-        }
-        catch(MsalException)
-        {
-            return [];
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task<string?> GetAccessTokenAsync(string accountId, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
-            IAccount? account = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+            Result<IEnumerable<IAccount>, ErrorResponse> accounts = await authClient.GetAccountsAsync(cancellationToken);
+            IAccount? account = accounts.Match(
+                accountsList => accountsList.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId),
+                error => null);
 
             if(account is null)
-                return null;
+                return new Result<string?, ErrorResponse>.Ok(null);
 
-            MsalAuthResult result = await authClient
+            Result<MsalAuthResult, ErrorResponse> result = await authClient
                 .AcquireTokenSilentAsync(configuration.Scopes, account, cancellationToken);
 
-            return result.AccessToken;
+            return result.Match(
+                success => new Result<string?, ErrorResponse>.Ok(success.AccessToken),
+                error => new Result<string?, ErrorResponse>.Ok(null));
         }
         catch(MsalUiRequiredException)
         {
-            return null;
+            return new Result<string?, ErrorResponse>.Ok(null);
         }
         catch(MsalException)
         {
-            return null;
+            return new Result<string?, ErrorResponse>.Ok(null);
         }
     }
 
     /// <inheritdoc />
-    public async Task<bool> IsAuthenticatedAsync(string accountId, CancellationToken cancellationToken = default)
+    public async Task<Result<bool, ErrorResponse>> IsAuthenticatedAsync(string accountId, CancellationToken cancellationToken = default)
     {
         try
         {
-            IEnumerable<IAccount> accounts = await authClient.GetAccountsAsync(cancellationToken);
-            return accounts.Any(a => a.HomeAccountId.Identifier == accountId);
+            Result<IEnumerable<IAccount>, ErrorResponse> accounts = await authClient.GetAccountsAsync(cancellationToken);
+            IAccount? account = accounts.Match(
+                accountsList => accountsList.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId),
+                error => null);
+
+            return new Result<bool, ErrorResponse>.Ok(account is not null);
         }
         catch(MsalException)
         {
-            return false;
+            return new Result<bool, ErrorResponse>.Ok(false);
         }
     }
 
     /// <inheritdoc />
-    public async Task<string?> AcquireTokenSilentAsync(string accountId, CancellationToken cancellationToken = default) => await GetAccessTokenAsync(accountId, cancellationToken);
+    public async Task<Result<string?, ErrorResponse>> AcquireTokenSilentAsync(string accountId, CancellationToken cancellationToken = default) => await GetAccessTokenAsync(accountId, cancellationToken);
 
     /// <summary>
     ///     Creates a new AuthService with default MSAL configuration.

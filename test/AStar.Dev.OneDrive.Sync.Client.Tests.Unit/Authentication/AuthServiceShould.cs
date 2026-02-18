@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using Microsoft.Identity.Client;
@@ -35,7 +36,7 @@ public class AuthServiceShould
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
         _ = mockClient.AcquireTokenInteractiveAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<MsalAuthResult>(new MsalException("login_failed")));
+            .Returns(Task.FromException<Result<MsalAuthResult, ErrorResponse>>(new MsalException("login_failed")));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -56,7 +57,7 @@ public class AuthServiceShould
         await cts.CancelAsync();
 
         _ = mockClient.AcquireTokenInteractiveAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<MsalAuthResult>(new OperationCanceledException()));
+            .Returns(Task.FromException<Result<MsalAuthResult, ErrorResponse>>(new OperationCanceledException()));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -72,8 +73,8 @@ public class AuthServiceShould
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
         IAccount mockAccount = CreateMockAccount("acc1", "user@example.com");
 
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([mockAccount]));
-        _ = mockClient.RemoveAsync(mockAccount, TestContext.Current.CancellationToken).Returns(Task.CompletedTask);
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
+        _ = mockClient.RemoveAsync(mockAccount, TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<AStar.Dev.Functional.Extensions.Unit, ErrorResponse>>(new Result<AStar.Dev.Functional.Extensions.Unit, ErrorResponse>.Ok(AStar.Dev.Functional.Extensions.Unit.Value)));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -88,7 +89,7 @@ public class AuthServiceShould
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
 
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([])));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -100,7 +101,7 @@ public class AuthServiceShould
     public async Task ReturnEmptyListWhenNoAccountsAuthenticated()
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([])));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -116,7 +117,7 @@ public class AuthServiceShould
         IAccount account1 = CreateMockAccount("acc1", "user1@example.com");
         IAccount account2 = CreateMockAccount("acc2", "user2@example.com");
 
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([account1, account2]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([account1, account2])));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -135,7 +136,7 @@ public class AuthServiceShould
         IAccount mockAccount = CreateMockAccount("acc1", "user@example.com");
         var mockAuthResult = new MsalAuthResult(mockAccount, "token123");
 
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([mockAccount]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
         _ = mockClient.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), mockAccount, Arg.Any<CancellationToken>())
             .Returns(mockAuthResult);
 
@@ -150,7 +151,7 @@ public class AuthServiceShould
     public async Task ReturnNullWhenGetAccessTokenAccountNotFound()
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([])));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -164,9 +165,9 @@ public class AuthServiceShould
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
         IAccount mockAccount = CreateMockAccount("acc1", "user@example.com");
 
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([mockAccount]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
         _ = mockClient.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), mockAccount, Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<MsalAuthResult>(
+            .Returns(Task.FromException<Result<MsalAuthResult, ErrorResponse>>(
                 new MsalUiRequiredException("error_code", "User interaction required")));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
@@ -180,7 +181,7 @@ public class AuthServiceShould
     public async Task ReturnFalseWhenAccountNotAuthenticated()
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([]))));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -194,7 +195,7 @@ public class AuthServiceShould
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
         IAccount mockAccount = CreateMockAccount("acc1", "user@example.com");
 
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([mockAccount]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
@@ -209,7 +210,7 @@ public class AuthServiceShould
         IAccount mockAccount = CreateMockAccount("acc1", "user@example.com");
         var mockAuthResult = new MsalAuthResult(mockAccount, "token456");
 
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<IEnumerable<IAccount>>([mockAccount]));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
         _ = mockClient.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), mockAccount, Arg.Any<CancellationToken>())
             .Returns(mockAuthResult);
 

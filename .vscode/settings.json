@@ -12,8 +12,10 @@
         "axaml",
         "Barden",
         "branchcoverage",
+        "buildtransitive",
         "Colourful",
         "Consolas",
+        "contentfiles",
         "cref",
         "Diagnoser",
         "DPAPI",
@@ -52,7 +54,8 @@
         "unhashed",
         "Unmockable",
         "WCAG",
-        "Wireframes"
+        "Wireframes",
+        "xunit"
     ],
     "editor.formatOnSave": true,
     "files.autoSave": "afterDelay",

@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
@@ -14,7 +15,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
     /// <inheritdoc />
     public async Task<IReadOnlyList<OneDriveFolderNode>> GetRootFoldersAsync(string accountId, HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
-        var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
+        Result<bool, ErrorResponse> isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated)
             return [];
 
@@ -27,15 +28,9 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
             if(item.Id is null || item.Name is null)
                 continue;
 
-            var node = new OneDriveFolderNode(
-                item.Id,
-                item.Name,
-                $"/{item.Name}",
-                item.ParentReference?.Id,
-                true)
+            var node = new OneDriveFolderNode(item.Id,item.Name,$"/{item.Name}",item.ParentReference?.Id,true)
             { IsSelected = false };
 
-            // Add placeholder child so expansion toggle appears
             node.Children.Add(new OneDriveFolderNode());
 
             nodes.Add(node);
@@ -51,7 +46,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
     /// <inheritdoc />
     public async Task<IReadOnlyList<OneDriveFolderNode>> GetChildFoldersAsync(string accountId, HashedAccountId hashedAccountId, string parentFolderId, bool? parentIsSelected = null, CancellationToken cancellationToken = default)
     {
-        var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
+        Result<bool, ErrorResponse> isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated)
             return [];
 
@@ -90,7 +85,7 @@ public sealed class FolderTreeService(IGraphApiClient graphApiClient, IAuthServi
     /// <inheritdoc />
     public async Task<IReadOnlyList<OneDriveFolderNode>> GetFolderHierarchyAsync(string accountId, HashedAccountId hashedAccountId, int? maxDepth = null, CancellationToken cancellationToken = default)
     {
-        var isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
+        Result<bool, ErrorResponse> isAuthenticated = await authService.IsAuthenticatedAsync(accountId, cancellationToken);
         if(!isAuthenticated)
             return [];
 

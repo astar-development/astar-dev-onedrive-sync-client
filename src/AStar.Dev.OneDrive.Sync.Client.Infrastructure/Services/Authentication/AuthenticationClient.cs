@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
@@ -12,28 +13,34 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 public sealed class AuthenticationClient(IPublicClientApplication publicClientApp) : IAuthenticationClient
 {
     /// <inheritdoc />
-    public async Task<MsalAuthResult> AcquireTokenInteractiveAsync(IEnumerable<string> scopes, CancellationToken cancellationToken = default)
-    {
-        Microsoft.Identity.Client.AuthenticationResult result = await publicClientApp
-            .AcquireTokenInteractive(scopes)
-            .ExecuteAsync(cancellationToken);
-
-        return MsalAuthResult.FromMsal(result);
-    }
+    public async Task<Result<MsalAuthResult, ErrorResponse>> AcquireTokenInteractiveAsync(IEnumerable<string> scopes, CancellationToken cancellationToken)
+        => await Try.RunAsync(() => publicClientApp.AcquireTokenInteractive(scopes).ExecuteAsync(cancellationToken))
+            .MatchAsync(
+                result => new Result<MsalAuthResult, ErrorResponse>.Ok(MsalAuthResult.FromMsal(result)),
+                ex => new Result<MsalAuthResult, ErrorResponse>.Error(new ErrorResponse(ex.GetBaseException().Message))
+            );
 
     /// <inheritdoc />
-    public async Task<MsalAuthResult> AcquireTokenSilentAsync(IEnumerable<string> scopes, IAccount account, CancellationToken cancellationToken = default)
-    {
-        Microsoft.Identity.Client.AuthenticationResult result = await publicClientApp
-            .AcquireTokenSilent(scopes, account)
-            .ExecuteAsync(cancellationToken);
-
-        return MsalAuthResult.FromMsal(result);
-    }
+    public async Task<Result<MsalAuthResult, ErrorResponse>> AcquireTokenSilentAsync(IEnumerable<string> scopes, IAccount account, CancellationToken cancellationToken)
+        => await Try.RunAsync(() => publicClientApp.AcquireTokenSilent(scopes, account).ExecuteAsync(cancellationToken))
+            .MatchAsync(
+                result => new Result<MsalAuthResult, ErrorResponse>.Ok(MsalAuthResult.FromMsal(result)),
+                ex => new Result<MsalAuthResult, ErrorResponse>.Error(new ErrorResponse(ex.GetBaseException().Message))
+            );
 
     /// <inheritdoc />
-    public async Task<IEnumerable<IAccount>> GetAccountsAsync(CancellationToken cancellationToken = default) => await publicClientApp.GetAccountsAsync();
+    public async Task<Result<IEnumerable<IAccount>, ErrorResponse>> GetAccountsAsync(CancellationToken cancellationToken)
+        => await Try.RunAsync(publicClientApp.GetAccountsAsync)
+            .MatchAsync(
+                accounts => new Result<IEnumerable<IAccount>, ErrorResponse>.Ok(accounts),
+                ex => new Result<IEnumerable<IAccount>, ErrorResponse>.Error(new ErrorResponse(ex.GetBaseException().Message))
+            );
 
     /// <inheritdoc />
-    public async Task RemoveAsync(IAccount account, CancellationToken cancellationToken = default) => await publicClientApp.RemoveAsync(account);
+    public async Task<Result<Unit, ErrorResponse>> RemoveAsync(IAccount account, CancellationToken cancellationToken)
+        => await Try.RunAsync(() => publicClientApp.RemoveAsync(account))
+            .MatchAsync(
+                _ => new Result<Unit, ErrorResponse>.Ok(Unit.Value),
+                ex => new Result<Unit, ErrorResponse>.Error(new ErrorResponse(ex.GetBaseException().Message))
+            );
 }
