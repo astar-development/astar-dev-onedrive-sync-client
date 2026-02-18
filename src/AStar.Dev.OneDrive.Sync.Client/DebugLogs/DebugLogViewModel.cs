@@ -98,7 +98,7 @@ public sealed class DebugLogViewModel : ReactiveObject
     public bool IsLoading
     {
         get;
-        private set
+        set
         {
             _ = this.RaiseAndSetIfChanged(ref field, value);
             this.RaisePropertyChanged(nameof(CanGoToNextPage));
@@ -192,6 +192,7 @@ public sealed class DebugLogViewModel : ReactiveObject
         debugLogs.ForEach(DebugLogs.Add);
 
         TotalRecordCount = await _debugLogRepository.GetDebugLogCountByAccountIdAsync(SelectedAccount!.HashedAccountId);
+        HasMoreRecords = (CurrentPage * PageSize) < TotalRecordCount;
         StartingCountOfItemsDisplayed = ((CurrentPage - 1) * PageSize) + 1;
         EndingCountOfItemsDisplayed = StartingCountOfItemsDisplayed + PageSize - 1;
     }

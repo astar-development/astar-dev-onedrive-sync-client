@@ -38,4 +38,3 @@ public class ThemePreferenceToDisplayNameConverterShould
         result.ShouldBe(Avalonia.Data.BindingNotification.UnsetValue);
     }
 }
-
