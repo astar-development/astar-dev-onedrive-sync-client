@@ -16,12 +16,11 @@ public interface ISyncStateCoordinator
     /// <summary>
     ///     Initializes a new sync session.
     /// </summary>
-    /// <param name="accountId">The account identifier.</param>
     /// <param name="hashedAccountId">The hashed account identifier.</param>
     /// <param name="enableDetailedLogging">Whether to enable detailed sync logging.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The session ID if logging is enabled, otherwise null.</returns>
-    Task<string?> InitializeSessionAsync(string accountId, HashedAccountId hashedAccountId, bool enableDetailedLogging, CancellationToken cancellationToken = default);
+    Task<Guid> InitializeSessionAsync(HashedAccountId hashedAccountId, bool enableDetailedLogging, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Updates and reports sync progress.
@@ -38,6 +37,7 @@ public interface ISyncStateCoordinator
     /// <param name="filesDeleted">Number of files deleted during sync.</param>
     /// <param name="conflictsDetected">Number of conflicts detected.</param>
     /// <param name="currentScanningFolder">The current folder being scanned (null when not scanning).</param>
+    /// <param name="sessionId">The session ID.</param>
     /// <param name="phaseTotalBytes">Total bytes for the current phase (upload/download).</param>
     void UpdateProgress(
         string accountId,
@@ -52,6 +52,7 @@ public interface ISyncStateCoordinator
         int filesDeleted = 0,
         int conflictsDetected = 0,
         string? currentScanningFolder = null,
+        Guid? sessionId = null,
         long? phaseTotalBytes = null);
 
     /// <summary>
@@ -62,8 +63,9 @@ public interface ISyncStateCoordinator
     /// <param name="deleteCount">Number of files deleted.</param>
     /// <param name="conflictCount">Number of conflicts detected.</param>
     /// <param name="completedBytes">Total bytes transferred.</param>
+    /// <param name="sessionId">The session ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task RecordCompletionAsync(int uploadCount, int downloadCount, int deleteCount, int conflictCount, long completedBytes, CancellationToken cancellationToken = default);
+    Task RecordCompletionAsync(int uploadCount, int downloadCount, int deleteCount, int conflictCount, long completedBytes, Guid? sessionId = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Records sync failure.
@@ -86,8 +88,8 @@ public interface ISyncStateCoordinator
     /// <summary>
     ///     Gets the current session ID.
     /// </summary>
-    /// <returns>The current session ID, or null if no session is active.</returns>
-    string? GetCurrentSessionId();
+    /// <returns>The current session ID.</returns>
+    Guid GetCurrentSessionId();
 
     /// <summary>
     ///     Resets progress tracking details.

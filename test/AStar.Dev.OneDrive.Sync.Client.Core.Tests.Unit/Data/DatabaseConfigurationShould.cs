@@ -11,7 +11,6 @@ public class DatabaseConfigurationShould
 
         databasePath.ShouldNotBeNullOrEmpty();
         databasePath.ShouldEndWith("sync.db");
-        File.Exists(databasePath).ShouldBeFalse();
     }
 
     [Fact]

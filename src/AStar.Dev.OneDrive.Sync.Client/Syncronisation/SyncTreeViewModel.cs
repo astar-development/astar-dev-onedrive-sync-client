@@ -334,7 +334,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         }
         catch(Exception ex)
         {
-            ErrorMessage = $"Failed to load child folders: {ex.Message}";
+            ErrorMessage = $"Failed to load child folders: {ex.GetBaseException().Message}";
             await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadChildrenAsync", new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), $"Loading child folders for account {SelectedAccountId}. {ErrorMessage}", ex, cancellationToken);
         }
         finally
@@ -366,7 +366,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 }
                 catch(Exception ex)
                 {
-                    await _debugLogger.LogErrorAsync("SyncTreeViewModel.ToggleSelection", new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), $"Saving selections for account {SelectedAccountId}. {ex.Message}", ex);
+                    await _debugLogger.LogErrorAsync("SyncTreeViewModel.ToggleSelection", new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), $"Saving selections for account {SelectedAccountId}. {ex.GetBaseException().Message}", ex);
                 }
             });
         }
@@ -422,7 +422,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         }
         catch(Exception ex)
         {
-            ErrorMessage = $"Sync failed: {ex.Message}";
+            ErrorMessage = $"Sync failed: {ex.GetBaseException().Message}";
             LastSyncResult = null;
         }
     }

@@ -216,7 +216,7 @@ public async Task<Result<FileMetadata>> GetFileMetadataAsync(string path)
     }
     catch (Exception ex)
     {
-        return Result<FileMetadata>.Failure($"Failed to read metadata: {ex.Message}");
+        return Result<FileMetadata>.Failure($"Failed to read metadata: {ex.GetBaseException().Message}");
     }
 }
 
@@ -1761,7 +1761,7 @@ public async Task<Result> ProcessAsync()
     catch (Exception ex)
     {
         _logger.LogError(ex, "Failed to process");
-        return Result.Failure($"Processing failed: {ex.Message}");
+        return Result.Failure($"Processing failed: {ex.GetBaseException().Message}");
     }
 }
 

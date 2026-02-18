@@ -404,7 +404,7 @@ public class OptionShould
         var option = Option.None<int>();
 
         InvalidOperationException ex = Should.Throw<InvalidOperationException>(() => option.OrThrow());
-        ex.Message.ShouldBe("No value present");
+        ex.GetBaseException().Message.ShouldBe("No value present");
     }
 
     [Fact]
@@ -414,7 +414,7 @@ public class OptionShould
         var customEx = new ArgumentException("Custom message");
 
         ArgumentException ex = Should.Throw<ArgumentException>(() => option.OrThrow(customEx));
-        ex.Message.ShouldBe("Custom message");
+        ex.GetBaseException().Message.ShouldBe("Custom message");
     }
 
     [Fact]

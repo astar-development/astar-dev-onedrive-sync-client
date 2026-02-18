@@ -26,7 +26,7 @@ public sealed class SyncSessionLogRepository(IDbContextFactory<SyncDbContext> co
     }
 
     /// <inheritdoc />
-    public async Task<SyncSessionLog?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<SyncSessionLog?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         SyncSessionLogEntity? entity = await _contextFactory.CreateDbContext().SyncSessionLogs
             .AsNoTracking()

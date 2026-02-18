@@ -190,7 +190,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         }
         catch(Exception ex)
         {
-            StatusMessage = $"Failed to load accounts: {ex.Message}";
+            StatusMessage = $"Failed to load accounts: {ex.GetBaseException().Message}";
             IsSuccess = false;
         }
     }
@@ -244,7 +244,7 @@ public sealed class UpdateAccountDetailsViewModel : ReactiveObject
         }
         catch(Exception ex)
         {
-            StatusMessage = $"Failed to update account: {ex.Message}";
+            StatusMessage = $"Failed to update account: {ex.GetBaseException().Message}";
             IsSuccess = false;
             // Window stays open on error
         }

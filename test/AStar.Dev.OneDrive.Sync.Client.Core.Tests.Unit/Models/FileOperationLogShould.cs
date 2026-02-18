@@ -9,7 +9,7 @@ public class FileOperationLogShould
     public void CreateSyncConflictLogCorrectly()
     {
         var accountId = "account-id";
-        var sessionId = "session-id";
+        var sessionId = Guid.CreateVersion7();
         var filePath = "/path/to/file.txt";
         var localPath = "/onedrive/path/to/file.txt";
         var oneDriveId = "onedrive-item-id";
@@ -20,7 +20,7 @@ public class FileOperationLogShould
         DateTimeOffset remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
-        var fileOperationLog = FileOperationLog.CreateSyncConflictLog(
+        FileOperationLog fileOperationLog = FileOperationLog.CreateSyncConflictLog(
             sessionId,
             new HashedAccountId(accountId),
             filePath,
@@ -37,6 +37,8 @@ public class FileOperationLogShould
         fileOperationLog.FilePath.ShouldBe(filePath);
         fileOperationLog.Operation.ShouldBe(operationType);
         fileOperationLog.FilePath.ShouldBe(filePath);
+        fileOperationLog.LocalHash.ShouldBe(localHash);
+        fileOperationLog.LocalPath.ShouldBe(localPath);
         fileOperationLog.FileSize.ShouldBe(fileSize);
         fileOperationLog.LastModifiedUtc.ShouldBe(lastModifiedUtc);
         fileOperationLog.Reason.ShouldBe(reason);
@@ -46,7 +48,7 @@ public class FileOperationLogShould
     public void CreateDownloadLogCorrectly()
     {
         var accountId = "account-id";
-        var sessionId = "session-id";
+        var sessionId = Guid.CreateVersion7();
         var filePath = "/path/to/file.txt";
         var localPath = "/onedrive/path/to/file.txt";
         var oneDriveId = "onedrive-item-id";
@@ -57,7 +59,7 @@ public class FileOperationLogShould
         DateTimeOffset remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
-        var fileOperationLog = FileOperationLog.CreateDownloadLog(
+        FileOperationLog fileOperationLog = FileOperationLog.CreateDownloadLog(
             sessionId,
             new HashedAccountId(accountId),
             filePath,
@@ -83,7 +85,7 @@ public class FileOperationLogShould
     public void CreateUploadLogCorrectly()
     {
         var accountId = "account-id";
-        var sessionId = "session-id";
+        var sessionId = Guid.CreateVersion7();
         var filePath = "/path/to/file.txt";
         var localPath = "/onedrive/path/to/file.txt";
         var oneDriveId = "onedrive-item-id";
@@ -94,7 +96,7 @@ public class FileOperationLogShould
         DateTimeOffset remoteLastModifiedUtc = DateTime.UtcNow;
         var reason = $"Conflict: Both local and remote changed. Local modified: {lastModifiedUtc:yyyy-MM-dd HH:mm:ss}, Remote modified: {remoteLastModifiedUtc:yyyy-MM-dd HH:mm:ss}";
 
-        var fileOperationLog = FileOperationLog.CreateUploadLog(
+        FileOperationLog fileOperationLog = FileOperationLog.CreateUploadLog(
             sessionId,
             new HashedAccountId(accountId),
             filePath,

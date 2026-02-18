@@ -29,7 +29,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     }
 
     /// <inheritdoc />
-    public async Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken)
+    public async Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, Guid sessionId, CancellationToken cancellationToken)
     {
         _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckKnownFileConflictAsync", hashedAccountId,
             $"Found file in DB: {remoteFile.RelativePath}, DB Status={existingFile.SyncStatus}", cancellationToken);
@@ -64,7 +64,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     }
 
     /// <inheritdoc />
-    public async Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken)
+    public async Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, Guid sessionId, CancellationToken cancellationToken)
     {
         _ = await DebugLog.LogInfoAsync("ConflictDetectionService.CheckFirstSyncFileConflictAsync", hashedAccountId,
             $"File not in DB: {remoteFile.RelativePath} - first sync or new file", cancellationToken);
@@ -119,7 +119,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
     }
 
     /// <inheritdoc />
-    public async Task RecordSyncConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, FileMetadata localFile, string? sessionId, CancellationToken cancellationToken)
+    public async Task RecordSyncConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, FileMetadata localFile, Guid sessionId, CancellationToken cancellationToken)
     {
         var conflict = SyncConflict.CreateUnresolvedConflict(accountId,hashedAccountId,remoteFile.RelativePath ?? "",localFile.LastModifiedUtc,remoteFile.LastModifiedUtc,localFile.Size,remoteFile.Size);
 
@@ -136,9 +136,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
         _ = await DebugLog.LogInfoAsync("ConflictDetectionService.RecordSyncConflictAsync", hashedAccountId,
             $"CONFLICT detected for {remoteFile.RelativePath}: local and remote both changed", cancellationToken);
 
-        if(sessionId is not null)
-        {
-            var operationLog = FileOperationLog.CreateSyncConflictLog(
+        var operationLog = FileOperationLog.CreateSyncConflictLog(
                 sessionId,
                 hashedAccountId,
                 remoteFile.RelativePath ?? "",
@@ -149,8 +147,7 @@ public sealed class ConflictDetectionService : IConflictDetectionService
                 localFile.LastModifiedUtc,
                 remoteFile.LastModifiedUtc);
 
-            await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
-        }
+        await _fileOperationLogRepository.AddAsync(operationLog, cancellationToken);
 
         await _driveItemsRepository.SaveBatchAsync(
             [localFile with { SyncStatus = FileSyncStatus.PendingDownload, IsSelected = true }],

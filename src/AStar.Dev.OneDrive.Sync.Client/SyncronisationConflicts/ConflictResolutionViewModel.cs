@@ -141,7 +141,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
         catch(Exception ex)
         {
             _logger.LogError(ex, "Failed to load conflicts for account {AccountId}", _accountId);
-            StatusMessage = $"Error loading conflicts: {ex.Message}";
+            StatusMessage = $"Error loading conflicts: {ex.GetBaseException().Message}";
         }
         finally
         {
@@ -213,7 +213,7 @@ public sealed class ConflictResolutionViewModel : ReactiveObject, IDisposable
         catch(Exception ex)
         {
             _logger.LogError(ex, "Error during conflict resolution for account {AccountId}", _accountId);
-            StatusMessage = $"Error resolving conflicts: {ex.Message}";
+            StatusMessage = $"Error resolving conflicts: {ex.GetBaseException().Message}";
         }
         finally
         {

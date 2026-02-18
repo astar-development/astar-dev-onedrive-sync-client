@@ -222,7 +222,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         }
         catch(Exception ex)
         {
-            StatusMessage = $"Sync failed: {ex.Message}";
+            StatusMessage = $"Sync failed: {ex.GetBaseException().Message}";
             _logger.LogError(ex, "Sync failed for account {AccountId}", AccountId);
         }
         finally
@@ -248,7 +248,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
         }
         catch(Exception ex)
         {
-            StatusMessage = $"Failed to pause sync: {ex.Message}";
+            StatusMessage = $"Failed to pause sync: {ex.GetBaseException().Message}";
             _logger.LogError(ex, "Failed to pause sync for account {AccountId}", AccountId);
         }
     }

@@ -495,7 +495,7 @@ public class GraphApiClient : IGraphApiClient
         catch (ServiceException ex)
         {
             _logger.LogError(ex, "Graph API error getting item {ItemId} for account {AccountId}", itemId, accountId);
-            return Result<DriveItem>.Failure($"API error: {ex.Message}");
+            return Result<DriveItem>.Failure($"API error: {ex.GetBaseException().Message}");
         }
     }
 }
@@ -613,7 +613,7 @@ public class AuthenticationClient : IAuthenticationClient
         }
         catch (MsalException ex)
         {
-            return Result<AuthenticationResult>.Failure($"Authentication failed: {ex.Message}");
+            return Result<AuthenticationResult>.Failure($"Authentication failed: {ex.GetBaseException().Message}");
         }
     }
 

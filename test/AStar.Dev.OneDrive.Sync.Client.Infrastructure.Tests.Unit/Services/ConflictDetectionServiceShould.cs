@@ -36,7 +36,7 @@ public class ConflictDetectionServiceShould
         _ = syncConflictRepo.GetByFilePathAsync(new HashedAccountId(AccountIdHasher.Hash(AccountId)), "/test.txt", Arg.Any<CancellationToken>())
             .Returns((SyncConflict?)null);
 
-        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, null, null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, null, Guid.CreateVersion7(), CancellationToken.None);
 
         hasConflict.ShouldBeTrue();
         fileToDownload.ShouldBeNull();
@@ -66,7 +66,7 @@ public class ConflictDetectionServiceShould
             ["/test.txt"] = localFile
         };
 
-        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, @"C:\Sync", Guid.CreateVersion7(), CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         _ = fileToDownload.ShouldNotBeNull();
@@ -91,7 +91,7 @@ public class ConflictDetectionServiceShould
             @"C:\Sync\test.txt", null, FileSyncStatus.Synced, SyncDirection.Download);
         var localFilesDict = new Dictionary<string, FileMetadata>();
 
-        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, null, null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload) = await service.CheckKnownFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, existingFile, localFilesDict, null, Guid.CreateVersion7(), CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         fileToDownload.ShouldBeNull();
@@ -119,7 +119,7 @@ public class ConflictDetectionServiceShould
         _ = syncConflictRepo.GetByFilePathAsync(new HashedAccountId(AccountIdHasher.Hash(AccountId)), "/test.txt", Arg.Any<CancellationToken>())
             .Returns((SyncConflict?)null);
 
-        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, null, null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, null, Guid.CreateVersion7(), CancellationToken.None);
 
         hasConflict.ShouldBeTrue();
         fileToDownload.ShouldBeNull();
@@ -141,14 +141,14 @@ public class ConflictDetectionServiceShould
             null, null, FileSyncStatus.SyncOnly, SyncDirection.None);
         var localFile = new FileMetadata(
             "", new HashedAccountId(AccountIdHasher.Hash(AccountId)), "test.txt", "/test.txt", 200,
-            timestamp.AddSeconds(30), @"C:\Sync\test.txt"); // Within 60 second threshold
+            timestamp.AddSeconds(30), @"C:\Sync\test.txt"); 
         var localFilesDict = new Dictionary<string, FileMetadata>
         {
             ["/test.txt"] = localFile
         };
 
         (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(
-            AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, null, null, CancellationToken.None);
+            AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, null,  Guid.CreateVersion7(), CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         fileToDownload.ShouldBeNull();
@@ -171,7 +171,7 @@ public class ConflictDetectionServiceShould
             DateTimeOffset.UtcNow, false, false, true, null, "test.txt",
             null, null, FileSyncStatus.SyncOnly, SyncDirection.None);
         var localFilesDict = new Dictionary<string, FileMetadata>();
-        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, @"C:\Sync", null, CancellationToken.None);
+        (var hasConflict, FileMetadata? fileToDownload, FileMetadata? matchedFile) = await service.CheckFirstSyncFileConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFilesDict, @"C:\Sync", Guid.CreateVersion7(), CancellationToken.None);
 
         hasConflict.ShouldBeFalse();
         _ = fileToDownload.ShouldNotBeNull();
@@ -265,7 +265,7 @@ public class ConflictDetectionServiceShould
         _ = syncConflictRepo.GetByFilePathAsync(new HashedAccountId(AccountIdHasher.Hash(AccountId)), "/test.txt", Arg.Any<CancellationToken>())
             .Returns((SyncConflict?)null);
 
-        await service.RecordSyncConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFile, "session1", CancellationToken.None);
+        await service.RecordSyncConflictAsync(AccountId, new HashedAccountId(AccountIdHasher.Hash("test-account")), remoteFile, localFile, Guid.CreateVersion7(), CancellationToken.None);
 
         await syncConflictRepo.Received(1).AddAsync(
             Arg.Is<SyncConflict>(c =>

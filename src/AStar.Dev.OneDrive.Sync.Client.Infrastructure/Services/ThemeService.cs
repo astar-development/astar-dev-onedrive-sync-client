@@ -102,7 +102,7 @@ public class ThemeService(IWindowPreferencesService windowPreferencesService) : 
         catch(Exception ex)
         {
             // Log error but don't fail - fallback to default theme
-            System.Diagnostics.Debug.WriteLine($"Failed to load theme styles '{resourceUri}': {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"Failed to load theme styles '{resourceUri}': {ex.GetBaseException().Message}");
         }
     }
 

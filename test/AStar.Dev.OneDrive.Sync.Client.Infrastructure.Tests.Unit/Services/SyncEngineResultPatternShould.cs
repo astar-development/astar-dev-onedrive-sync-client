@@ -196,7 +196,7 @@ public class SyncEngineResultPatternShould
                 Arg.Any<DriveItemEntity>(),
                 Arg.Any<Dictionary<string, FileMetadata>>(),
                 Arg.Any<string?>(),
-                Arg.Any<string?>(),
+                Arg.Any<Guid>(),
                 Arg.Any<CancellationToken>())
             .Returns((false, null));
         _ = conflictDetectionService.CheckFirstSyncFileConflictAsync(
@@ -205,7 +205,7 @@ public class SyncEngineResultPatternShould
                 Arg.Any<DriveItemEntity>(),
                 Arg.Any<Dictionary<string, FileMetadata>>(),
                 Arg.Any<string?>(),
-                Arg.Any<string?>(),
+                Arg.Any<Guid>(),
                 Arg.Any<CancellationToken>())
             .Returns((false, null, null));
 
@@ -213,13 +213,12 @@ public class SyncEngineResultPatternShould
             SyncState.CreateInitial(string.Empty, new HashedAccountId(AccountIdHasher.Hash(string.Empty))));
         _ = syncStateCoordinator.Progress.Returns(progressSubject);
         _ = syncStateCoordinator.InitializeSessionAsync(
-                Arg.Any<string>(),
                 Arg.Any<HashedAccountId>(),
                 Arg.Any<bool>(),
                 Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+            .Returns(Guid.Empty);
         _ = syncStateCoordinator.GetCurrentSessionId()
-            .Returns((string?)null);
+            .Returns(Guid.Empty);
         _ = syncStateCoordinator.GetCurrentState()
             .Returns(callInfo => progressSubject.Value);
 
@@ -236,7 +235,7 @@ public class SyncEngineResultPatternShould
             Arg.Any<int>(),
             Arg.Any<int>(),
             Arg.Any<string?>(),
-            Arg.Any<long?>()))
+            Arg.Any<Guid?>()))
             .Do(callInfo =>
             {
                 var newState = new SyncState(

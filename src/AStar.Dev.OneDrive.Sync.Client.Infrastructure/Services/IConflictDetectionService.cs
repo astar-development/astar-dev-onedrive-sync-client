@@ -20,7 +20,7 @@ public interface IConflictDetectionService
     /// <param name="sessionId">Current sync session identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Tuple of (HasConflict, FileToDownload). FileToDownload is null if conflict or no change detected.</returns>
-    Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken);
+    Task<(bool HasConflict, FileMetadata? FileToDownload)> CheckKnownFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, DriveItemEntity existingFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, Guid sessionId, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Checks for conflicts when processing a file during first sync or new file scenario.
@@ -33,7 +33,7 @@ public interface IConflictDetectionService
     /// <param name="sessionId">Current sync session identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Tuple of (HasConflict, FileToDownload, MatchedFile). Returns matched file if files are identical.</returns>
-    Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, string? sessionId, CancellationToken cancellationToken);
+    Task<(bool HasConflict, FileMetadata? FileToDownload, FileMetadata? MatchedFile)> CheckFirstSyncFileConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, Dictionary<string, FileMetadata> localFilesDict, string? localSyncPath, Guid sessionId, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Checks if a local file has changed since last sync.
@@ -53,5 +53,5 @@ public interface IConflictDetectionService
     /// <param name="localFile">Local file metadata.</param>
     /// <param name="sessionId">Current sync session identifier.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    Task RecordSyncConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, FileMetadata localFile, string? sessionId, CancellationToken cancellationToken);
+    Task RecordSyncConflictAsync(string accountId, HashedAccountId hashedAccountId, DriveItemEntity remoteFile, FileMetadata localFile, Guid sessionId, CancellationToken cancellationToken);
 }

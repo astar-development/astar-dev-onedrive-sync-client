@@ -8,7 +8,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 public class FileOperationLogEntity
 {
     public string Id { get; set; } = string.Empty;
-    public string SyncSessionId { get; set; } = string.Empty;
+    public Guid? SyncSessionId { get; set; } = Guid.CreateVersion7();
     public HashedAccountId HashedAccountId { get; set; }
     public DateTimeOffset Timestamp { get; set; }
     public int Operation { get; set; }

@@ -299,7 +299,7 @@ public partial class SyncView : UserControl
         {
             // Bind interactions and handle lifecycle
             ViewModel?.StartSyncCommand.ThrownExceptions
-                .Subscribe(ex => ShowError(ex.Message))
+                .Subscribe(ex => ShowError(ex.GetBaseException().Message))
                 .DisposeWith(disposables);
         });
     }
@@ -1044,7 +1044,7 @@ public class MainViewModel : ReactiveObject
         SyncCommand.ThrownExceptions
             .Subscribe(ex =>
             {
-                ErrorMessage = $"Sync failed: {ex.Message}";
+                ErrorMessage = $"Sync failed: {ex.GetBaseException().Message}";
                 _logger.LogError(ex, "Sync command failed");
             });
     }
