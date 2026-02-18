@@ -1,0 +1,11 @@
+﻿{
+  "cacheTag": 1,
+  "applicationVersion": "1.0.0",
+  "userPreferencesPath": "",
+  "userPreferencesFile": "user-preferences.json",
+  "databaseName": "onedrive-sync.db",
+  "oneDriveRootDirectory": "OneDrive-Sync",
+  "cachePrefix": "",
+  "redirectUri": "http://localhost",
+  "graphUri": "https://graph.microsoft.com/v1.0/me/drive"
+}

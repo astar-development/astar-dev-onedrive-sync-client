@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Core.Models.OneDrive;
 
+[ExcludeFromCodeCoverage] // This class is a direct mapping of the OneDrive API response.
 public class OneDriveResponse
 {
     [JsonPropertyName("@odata.context")]

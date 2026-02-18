@@ -43,4 +43,8 @@
         <ProjectReference Include="..\..\src\nuget-packages\AStar.Dev.Source.Generators\AStar.Dev.Source.Generators.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage"/>
+    </ItemGroup>
+
 </Project>
