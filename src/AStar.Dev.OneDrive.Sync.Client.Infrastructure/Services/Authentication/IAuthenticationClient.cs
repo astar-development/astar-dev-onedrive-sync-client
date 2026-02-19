@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
@@ -16,30 +17,30 @@ public interface IAuthenticationClient
     ///     Acquires a token interactively (with UI) for the specified scopes.
     /// </summary>
     /// <param name="scopes">The scopes to request.</param>
-    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The authentication result containing the access token and account information.</returns>
-    Task<MsalAuthResult> AcquireTokenInteractiveAsync(IEnumerable<string> scopes, CancellationToken cancellationToken = default);
+    Task<Result<MsalAuthResult, ErrorResponse>> AcquireTokenInteractiveAsync(IEnumerable<string> scopes, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Acquires a token silently (without UI) for the specified account and scopes.
     /// </summary>
     /// <param name="scopes">The scopes to request.</param>
     /// <param name="account">The account to acquire the token for.</param>
-    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The authentication result containing the access token.</returns>
-    Task<MsalAuthResult> AcquireTokenSilentAsync(IEnumerable<string> scopes, IAccount account, CancellationToken cancellationToken = default);
+    Task<Result<MsalAuthResult, ErrorResponse>> AcquireTokenSilentAsync(IEnumerable<string> scopes, IAccount account, CancellationToken cancellationToken);
 
     /// <summary>
     ///     Gets all accounts currently in the token cache.
     /// </summary>
-    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Collection of cached accounts.</returns>
-    Task<IEnumerable<IAccount>> GetAccountsAsync(CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<IAccount>, ErrorResponse>> GetAccountsAsync(CancellationToken cancellationToken);
 
     /// <summary>
     ///     Removes an account from the token cache.
     /// </summary>
     /// <param name="account">The account to remove.</param>
-    /// <param name="cancellationToken">Optional cancellation token.</param>
-    Task RemoveAsync(IAccount account, CancellationToken cancellationToken = default);
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task<Result<Unit, ErrorResponse>> RemoveAsync(IAccount account, CancellationToken cancellationToken);
 }

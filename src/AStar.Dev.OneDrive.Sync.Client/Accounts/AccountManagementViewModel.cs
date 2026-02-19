@@ -144,8 +144,9 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             _toastCts?.Cancel();
             ToastMessage = null;
             ToastVisible = false;
+            CancellationToken cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
 
-            AuthenticationResult result = await _authService.LoginAsync();
+            AuthenticationResult result = await _authService.LoginAsync(cancellationToken);
             if(result.Success && result.DisplayName is not null)
             {
                 var localSyncPath = CreateTheLocalSyncPath(result);

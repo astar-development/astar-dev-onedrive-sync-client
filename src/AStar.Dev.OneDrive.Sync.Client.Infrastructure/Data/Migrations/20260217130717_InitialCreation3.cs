@@ -205,8 +205,8 @@ public partial class InitialCreation3 : Migration
 
         _ = migrationBuilder.InsertData(
             table: "Accounts",
-            columns: new[] { "HashedAccountId", "AutoSyncIntervalMinutes", "DeltaToken", "DisplayName", "EnableDebugLogging", "EnableDetailedSyncLogging", "Id", "IsAuthenticated", "LastSyncUtc", "LocalSyncPath", "MaxItemsInBatch", "MaxParallelUpDownloads" },
-            values: new object[] { "C856527B9EAF27E26FD89183D1E4F2AEF3CEB5C8040D87A012A3F8F50DC55BB9", 0, null, "System Admin", true, true, "e29a2798-c836-4854-ac90-a3f2d37aae26", true, null, ".", 1, 1 });
+            columns: ["HashedAccountId", "AutoSyncIntervalMinutes", "DeltaToken", "DisplayName", "EnableDebugLogging", "EnableDetailedSyncLogging", "Id", "IsAuthenticated", "LastSyncUtc", "LocalSyncPath", "MaxItemsInBatch", "MaxParallelUpDownloads"],
+            values: ["C856527B9EAF27E26FD89183D1E4F2AEF3CEB5C8040D87A012A3F8F50DC55BB9", 0, null, "System Admin", true, true, "e29a2798-c836-4854-ac90-a3f2d37aae26", true, null, ".", 1, 1]);
 
         _ = migrationBuilder.CreateIndex(
             name: "IX_Accounts_LocalSyncPath",
@@ -232,7 +232,7 @@ public partial class InitialCreation3 : Migration
         _ = migrationBuilder.CreateIndex(
             name: "IX_DriveItems_HashedAccountId_RelativePath",
             table: "DriveItems",
-            columns: new[] { "HashedAccountId", "RelativePath" });
+            columns: ["HashedAccountId", "RelativePath"]);
 
         _ = migrationBuilder.CreateIndex(
             name: "IX_DriveItems_IsFolder",
@@ -257,7 +257,7 @@ public partial class InitialCreation3 : Migration
         _ = migrationBuilder.CreateIndex(
             name: "IX_SyncConflicts_HashedAccountId_IsResolved",
             table: "SyncConflicts",
-            columns: new[] { "HashedAccountId", "IsResolved" });
+            columns: ["HashedAccountId", "IsResolved"]);
 
         _ = migrationBuilder.CreateIndex(
             name: "IX_SyncSessionLogs_HashedAccountId",

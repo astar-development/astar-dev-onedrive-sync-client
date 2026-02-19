@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
@@ -27,9 +28,12 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
 
         var url = GetDeltaOrNextUrl(deltaOrNextLink);
 
-        var token = await authService.GetAccessTokenAsync(accountId, cancellationToken);
+        Result<string?, ErrorResponse> token = await authService.GetAccessTokenAsync(accountId, cancellationToken);
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
-        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.Match(
+            accessToken => accessToken ?? throw new InvalidOperationException($"Received null access token for account: {hashedAccountId}"),
+            error => throw new InvalidOperationException($"Error acquiring access token for account: {hashedAccountId}. Error: {error.Message}")
+        ));
 
         using HttpResponseMessage response = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
         _ = response.EnsureSuccessStatusCode();
@@ -282,8 +286,11 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
 
         public async Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
         {
-            var token = await authService.GetAccessTokenAsync(accountId, cancellationToken) ?? throw new InvalidOperationException($"Failed to acquire access token for account: {hashedAccountId}");
-            return token;
+            Result<string?, ErrorResponse> token = await authService.GetAccessTokenAsync(accountId, cancellationToken) ?? throw new InvalidOperationException($"Failed to acquire access token for account: {hashedAccountId}");
+            return token.Match(
+                accessToken => accessToken ?? throw new InvalidOperationException($"Received null access token for account: {hashedAccountId}"),
+                error => throw new InvalidOperationException($"Error acquiring access token for account: {hashedAccountId}. Error: {error.Message}")
+            );
         }
     }
 

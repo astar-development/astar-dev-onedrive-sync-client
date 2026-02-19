@@ -1,3 +1,5 @@
+using AStar.Dev.Functional.Extensions;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 
 /// <summary>
@@ -10,7 +12,7 @@ public interface IAuthService
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Authentication result containing account information.</returns>
-    Task<AuthenticationResult> LoginAsync(CancellationToken cancellationToken = default);
+    Task<Result<AuthenticationResult, ErrorResponse>> LoginAsync(CancellationToken cancellationToken);
 
     /// <summary>
     ///     Logs out an account by removing it from the token cache.
@@ -18,14 +20,14 @@ public interface IAuthService
     /// <param name="accountId">The account identifier to log out.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if logout was successful, false otherwise.</returns>
-    Task<bool> LogoutAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<Result<bool, ErrorResponse>> LogoutAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Gets all authenticated accounts from the token cache.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>List of account identifiers and display names.</returns>
-    Task<IReadOnlyList<(string accountId, string DisplayName)>> GetAuthenticatedAccountsAsync(CancellationToken cancellationToken = default);
+    Task<Result<IReadOnlyList<(string accountId, string DisplayName)>, ErrorResponse>> GetAuthenticatedAccountsAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Acquires an access token for Microsoft Graph API calls.
@@ -33,7 +35,7 @@ public interface IAuthService
     /// <param name="accountId">The account identifier to get a token for.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Access token if successful, null otherwise.</returns>
-    Task<string?> GetAccessTokenAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<Result<string?, ErrorResponse>> GetAccessTokenAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Checks if an account is currently authenticated.
@@ -41,7 +43,7 @@ public interface IAuthService
     /// <param name="accountId">The account identifier to check.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>True if the account is authenticated, false otherwise.</returns>
-    Task<bool> IsAuthenticatedAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<Result<bool, ErrorResponse>> IsAuthenticatedAsync(string accountId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     Acquires a token silently (without user interaction) if possible.
@@ -49,5 +51,5 @@ public interface IAuthService
     /// <param name="accountId">The account identifier to get a token for.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Access token if successful, null if user interaction is required.</returns>
-    Task<string?> AcquireTokenSilentAsync(string accountId, CancellationToken cancellationToken = default);
+    Task<Result<string?, ErrorResponse>> AcquireTokenSilentAsync(string accountId, CancellationToken cancellationToken = default);
 }
