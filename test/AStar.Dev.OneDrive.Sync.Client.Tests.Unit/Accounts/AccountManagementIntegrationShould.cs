@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
@@ -58,7 +59,7 @@ public class AccountManagementIntegrationShould : IDisposable
     public async Task PersistNewAccountToDatabaseWhenAdded()
     {
         var authResult = new AuthenticationResult(true, "new-acc", new HashedAccountId(AccountIdHasher.Hash("new-acc")), "New User", null);
-        _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
+        _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<AuthenticationResult, ErrorResponse>>(authResult));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
@@ -97,7 +98,7 @@ public class AccountManagementIntegrationShould : IDisposable
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
         var authResult = new AuthenticationResult(true, "acc-login", new HashedAccountId(AccountIdHasher.Hash("acc-login")), "User", null);
-        _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
+        _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<AuthenticationResult, ErrorResponse>>(authResult));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
@@ -117,7 +118,7 @@ public class AccountManagementIntegrationShould : IDisposable
         var account = new AccountInfo("acc-logout", new HashedAccountId(AccountIdHasher.Hash("acc-logout")), "User", "/path", true, null, null, false, false, 3, 50, 0);
         await _accountRepository.AddAsync(account, TestContext.Current.CancellationToken);
 
-        _ = _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+        _ = _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(true));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);
@@ -135,8 +136,8 @@ public class AccountManagementIntegrationShould : IDisposable
     public async Task MaintainConsistencyBetweenViewModelAndDatabaseAfterMultipleOperations()
     {
         var authResult = new AuthenticationResult(true, "multi-acc", new HashedAccountId(AccountIdHasher.Hash("multi-acc")), "Multi User", null);
-        _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(authResult));
-        _ = _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+        _ = _mockAuthService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<AuthenticationResult, ErrorResponse>>(authResult));
+        _ = _mockAuthService.LogoutAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(true));
 
         using var viewModel = new AccountManagementViewModel(_mockAuthService, _accountRepository, _mockLogger);
         await Task.Delay(50, TestContext.Current.CancellationToken);

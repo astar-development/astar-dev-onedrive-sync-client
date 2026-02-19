@@ -1,3 +1,4 @@
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -14,7 +15,7 @@ public class FolderTreeServiceShould
     {
         IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
         IAuthService mockAuth = Substitute.For<IAuthService>();
-        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(false));
+        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(false));
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
@@ -30,7 +31,7 @@ public class FolderTreeServiceShould
     {
         IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
         IAuthService mockAuth = Substitute.For<IAuthService>();
-        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(true));
 
         var driveItems = new List<DriveItem>
         {
@@ -59,7 +60,7 @@ public class FolderTreeServiceShould
     {
         IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
         IAuthService mockAuth = Substitute.For<IAuthService>();
-        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(true));
 
         var driveItems = new List<DriveItem>
         {
@@ -81,7 +82,7 @@ public class FolderTreeServiceShould
     {
         IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
         IAuthService mockAuth = Substitute.For<IAuthService>();
-        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(true));
 
         var parentItem = new DriveItem { Id = "parent1", Name = "Documents", ParentReference = new ItemReference { Path = "/drive/root:" } };
         _ = mockGraph.GetDriveItemAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), "parent1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<DriveItem?>(parentItem));
@@ -106,7 +107,7 @@ public class FolderTreeServiceShould
     {
         IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
         IAuthService mockAuth = Substitute.For<IAuthService>();
-        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(false));
+        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(false));
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
@@ -122,7 +123,7 @@ public class FolderTreeServiceShould
     {
         IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
         IAuthService mockAuth = Substitute.For<IAuthService>();
-        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult(false));
+        _ = mockAuth.IsAuthenticatedAsync("account1", Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(false));
 
         var service = new FolderTreeService(mockGraph, mockAuth, null!);
 
@@ -137,7 +138,7 @@ public class FolderTreeServiceShould
     {
         IGraphApiClient mockGraph = Substitute.For<IGraphApiClient>();
         IAuthService mockAuth = Substitute.For<IAuthService>();
-        _ = mockAuth.IsAuthenticatedAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult(true));
+        _ = mockAuth.IsAuthenticatedAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<bool, ErrorResponse>>(true));
 
         var rootItems = new List<DriveItem> { new() { Id = "root1", Name = "Documents", Folder = new Folder() } };
         _ = mockGraph.GetRootChildrenAsync(Arg.Any<string>(), Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>()).Returns(Task.FromResult<IEnumerable<DriveItem>>(rootItems));

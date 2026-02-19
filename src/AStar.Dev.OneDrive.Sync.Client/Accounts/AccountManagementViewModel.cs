@@ -3,11 +3,13 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Unit = System.Reactive.Unit;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Accounts;
 
@@ -146,21 +148,30 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
             CancellationToken cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
 
-            AuthenticationResult result = await _authService.LoginAsync(cancellationToken);
-            if(result.Success && result.DisplayName is not null)
-            {
-                var localSyncPath = CreateTheLocalSyncPath(result);
+            _ = await _authService.LoginAsync(cancellationToken)
+                .MatchAsync<AuthenticationResult, ErrorResponse, Unit>(async result =>
+                {
+                    if(result.Success && result.DisplayName is not null)
+                    {
+                        var localSyncPath = CreateTheLocalSyncPath(result);
 
-                var newAccount = AccountInfo.Standard(result.AccountId, result.HashedAccountId, result.DisplayName, localSyncPath);
+                        var newAccount = AccountInfo.Standard(result.AccountId, result.HashedAccountId, result.DisplayName, localSyncPath);
 
-                await _accountRepository.AddAsync(newAccount);
-                Accounts.Add(newAccount);
-                SelectedAccount = newAccount;
-            }
-            else if(!result.Success && result.ErrorMessage is not null)
-            {
-                _ = ShowToastAsync(result.ErrorMessage);
-            }
+                        await _accountRepository.AddAsync(newAccount);
+                        Accounts.Add(newAccount);
+                        SelectedAccount = newAccount;
+                    }
+                    else if(!result.Success && result.ErrorMessage is not null)
+                    {
+                        await ShowToastAsync(result.ErrorMessage);
+                    }
+
+                    return Unit.Default;
+                }, async error =>
+                {
+                    await ShowToastAsync(error.Message);
+                    return Unit.Default;
+                });
         }
         finally
         {
@@ -200,28 +211,38 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             _toastCts?.Cancel();
             ToastMessage = null;
             ToastVisible = false;
+            CancellationToken cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
 
-            AuthenticationResult result = await _authService.LoginAsync();
-            if(result.Success && result.DisplayName is not null)
-            {
-                AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = true };
-                await _accountRepository.UpdateAsync(updatedAccount);
-
-                var index = Accounts.IndexOf(SelectedAccount);
-                if(index >= 0)
+            _ = await _authService.LoginAsync(cancellationToken)
+                .MatchAsync<AuthenticationResult, ErrorResponse, Unit>(async result =>
                 {
-                    Accounts[index] = updatedAccount;
-                    SelectedAccount = updatedAccount;
-                    using(Serilog.Context.LogContext.PushProperty("AccountHash", updatedAccount.HashedAccountId))
+                    if(result.Success && result.DisplayName is not null)
                     {
-                        _logger.LogInformation("Starting sync for account");
+                        AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = true };
+                        await _accountRepository.UpdateAsync(updatedAccount);
+
+                        var index = Accounts.IndexOf(SelectedAccount);
+                        if(index >= 0)
+                        {
+                            Accounts[index] = updatedAccount;
+                            SelectedAccount = updatedAccount;
+                            using(Serilog.Context.LogContext.PushProperty("AccountHash", updatedAccount.HashedAccountId))
+                            {
+                                _logger.LogInformation("Starting sync for account");
+                            }
+                        }
                     }
-                }
-            }
-            else if(result is { Success: false, ErrorMessage: not null })
-            {
-                _ = ShowToastAsync(result.ErrorMessage);
-            }
+                    else if(result is { Success: false, ErrorMessage: not null })
+                    {
+                        await ShowToastAsync(result.ErrorMessage);
+                    }
+
+                    return Unit.Default;
+                }, async error =>
+                {
+                    await ShowToastAsync(error.Message);
+                    return Unit.Default;
+                });
         }
         finally
         {
@@ -262,19 +283,28 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            var success = await _authService.LogoutAsync(SelectedAccount.Id);
-            if(success)
-            {
-                AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };
-                await _accountRepository.UpdateAsync(updatedAccount);
-
-                var index = Accounts.IndexOf(SelectedAccount);
-                if(index >= 0)
+            _ = await _authService.LogoutAsync(SelectedAccount.Id)
+                .MatchAsync<bool, ErrorResponse, Unit>(async success =>
                 {
-                    Accounts[index] = updatedAccount;
-                    SelectedAccount = updatedAccount;
-                }
-            }
+                    if(success)
+                    {
+                        AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };
+                        await _accountRepository.UpdateAsync(updatedAccount);
+
+                        var index = Accounts.IndexOf(SelectedAccount);
+                        if(index >= 0)
+                        {
+                            Accounts[index] = updatedAccount;
+                            SelectedAccount = updatedAccount;
+                        }
+                    }
+
+                    return Unit.Default;
+                }, async error =>
+                {
+                    await ShowToastAsync(error.Message);
+                    return Unit.Default;
+                });
         }
         finally
         {

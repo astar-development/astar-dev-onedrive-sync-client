@@ -18,17 +18,23 @@ public class AuthServiceShould
         var mockAuthResult = new MsalAuthResult(mockAccount, "access_token");
 
         _ = mockClient.AcquireTokenInteractiveAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
-            .Returns(mockAuthResult);
+            .Returns(Task.FromResult<Result<MsalAuthResult, ErrorResponse>>(mockAuthResult));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
+        var result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
-        result.Success.ShouldBeTrue();
-        result.AccountId.ShouldBe("acc1");
-        result.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("acc1"));
-        result.DisplayName.ShouldBe("user@example.com");
-        result.ErrorMessage.ShouldBeNull();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(
+            success =>
+            {
+                success.Success.ShouldBeTrue();
+                success.AccountId.ShouldBe("acc1");
+                success.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("acc1"));
+                success.DisplayName.ShouldBe("user@example.com");
+                success.ErrorMessage.ShouldBeNull();
+                return global::AStar.Dev.Functional.Extensions.Unit.Value;
+            },
+            error => throw new InvalidOperationException(error.Message));
     }
 
     [Fact]
@@ -36,17 +42,19 @@ public class AuthServiceShould
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
         _ = mockClient.AcquireTokenInteractiveAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<Result<MsalAuthResult, ErrorResponse>>(new MsalException("login_failed")));
+            .Returns(Task.FromResult<Result<MsalAuthResult, ErrorResponse>>(new ErrorResponse("Login failed.")));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
+        var result = await service.LoginAsync(TestContext.Current.CancellationToken);
 
-        result.Success.ShouldBeFalse();
-        result.AccountId.ShouldBeEmpty();
-        result.HashedAccountId.Value.ShouldBeEmpty();
-        result.DisplayName.ShouldBeEmpty();
-        _ = result.ErrorMessage.ShouldNotBeNull();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(
+            success => throw new InvalidOperationException("Should have failed"),
+            error =>
+            {
+                _ = error.Message.ShouldNotBeNull();
+                return global::AStar.Dev.Functional.Extensions.Unit.Value;
+            });
     }
 
     [Fact]
@@ -57,14 +65,19 @@ public class AuthServiceShould
         await cts.CancelAsync();
 
         _ = mockClient.AcquireTokenInteractiveAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<Result<MsalAuthResult, ErrorResponse>>(new OperationCanceledException()));
+            .Returns(Task.FromResult<Result<MsalAuthResult, ErrorResponse>>(new ErrorResponse("Login was cancelled.")));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AuthenticationResult result = await service.LoginAsync(cts.Token);
+        var result = await service.LoginAsync(cts.Token);
 
-        result.Success.ShouldBeFalse();
-        result.ErrorMessage.ShouldBe("Login was cancelled.");
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(
+            success => throw new InvalidOperationException("Should have failed"),
+            error =>
+            {
+                error.Message.ShouldBe("Login was cancelled.");
+                return global::AStar.Dev.Functional.Extensions.Unit.Value;
+            });
     }
 
     [Fact]
@@ -74,13 +87,17 @@ public class AuthServiceShould
         IAccount mockAccount = CreateMockAccount("acc1", "user@example.com");
 
         _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
-        _ = mockClient.RemoveAsync(mockAccount, TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<AStar.Dev.Functional.Extensions.Unit, ErrorResponse>>(new Result<AStar.Dev.Functional.Extensions.Unit, ErrorResponse>.Ok(AStar.Dev.Functional.Extensions.Unit.Value)));
+        _ = mockClient.RemoveAsync(mockAccount, TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<global::AStar.Dev.Functional.Extensions.Unit, ErrorResponse>>(new Result<global::AStar.Dev.Functional.Extensions.Unit, ErrorResponse>.Ok(global::AStar.Dev.Functional.Extensions.Unit.Value)));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
         var result = await service.LogoutAsync("acc1", TestContext.Current.CancellationToken);
 
-        result.ShouldBeTrue();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBeTrue();
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
         await mockClient.Received(1).RemoveAsync(mockAccount, TestContext.Current.CancellationToken);
     }
 
@@ -94,7 +111,11 @@ public class AuthServiceShould
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
         var result = await service.LogoutAsync("nonexistent", TestContext.Current.CancellationToken);
-        result.ShouldBeFalse();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBeFalse();
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     [Fact]
@@ -105,9 +126,13 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        IReadOnlyList<(string accountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        var result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
 
-        result.ShouldBeEmpty();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBeEmpty();
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     [Fact]
@@ -121,12 +146,16 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        IReadOnlyList<(string accountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
-        result.Count.ShouldBe(2);
-        result[0].accountId.ShouldBe("acc1");
-        result[0].DisplayName.ShouldBe("user1@example.com");
-        result[1].accountId.ShouldBe("acc2");
-        result[1].DisplayName.ShouldBe("user2@example.com");
+        var result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.Count.ShouldBe(2);
+            v[0].accountId.ShouldBe("acc1");
+            v[0].DisplayName.ShouldBe("user1@example.com");
+            v[1].accountId.ShouldBe("acc2");
+            v[1].DisplayName.ShouldBe("user2@example.com");
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     [Fact]
@@ -138,13 +167,17 @@ public class AuthServiceShould
 
         _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
         _ = mockClient.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), mockAccount, Arg.Any<CancellationToken>())
-            .Returns(mockAuthResult);
+            .Returns(Task.FromResult<Result<MsalAuthResult, ErrorResponse>>(mockAuthResult));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
         var result = await service.GetAccessTokenAsync("acc1", TestContext.Current.CancellationToken);
 
-        result.ShouldBe("token123");
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBe("token123");
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     [Fact]
@@ -156,7 +189,11 @@ public class AuthServiceShould
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
         var result = await service.GetAccessTokenAsync("nonexistent", TestContext.Current.CancellationToken);
-        result.ShouldBeNull();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBeNull();
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     [Fact]
@@ -174,19 +211,27 @@ public class AuthServiceShould
 
         var result = await service.GetAccessTokenAsync("acc1", TestContext.Current.CancellationToken);
 
-        result.ShouldBeNull();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBeNull();
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     [Fact]
     public async Task ReturnFalseWhenAccountNotAuthenticated()
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([]))));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([])));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
         var result = await service.IsAuthenticatedAsync("acc1", TestContext.Current.CancellationToken);
-        result.ShouldBeFalse();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBeFalse();
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     [Fact]
@@ -200,7 +245,11 @@ public class AuthServiceShould
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
         var result = await service.IsAuthenticatedAsync("acc1", TestContext.Current.CancellationToken);
-        result.ShouldBeTrue();
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBeTrue();
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     [Fact]
@@ -212,13 +261,17 @@ public class AuthServiceShould
 
         _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
         _ = mockClient.AcquireTokenSilentAsync(Arg.Any<IEnumerable<string>>(), mockAccount, Arg.Any<CancellationToken>())
-            .Returns(mockAuthResult);
+            .Returns(Task.FromResult<Result<MsalAuthResult, ErrorResponse>>(mockAuthResult));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
         var result = await service.AcquireTokenSilentAsync("acc1", TestContext.Current.CancellationToken);
 
-        result.ShouldBe("token456");
+        result.Match<global::AStar.Dev.Functional.Extensions.Unit>(v =>
+        {
+            v.ShouldBe("token456");
+            return global::AStar.Dev.Functional.Extensions.Unit.Value;
+        }, e => throw new InvalidOperationException(e.Message));
     }
 
     private static IAccount CreateMockAccount(string accountId, string username)
