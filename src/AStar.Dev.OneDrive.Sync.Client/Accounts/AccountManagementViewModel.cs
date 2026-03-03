@@ -3,6 +3,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
@@ -100,22 +101,22 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
     /// <summary>
     ///     Gets the command to add a new account.
     /// </summary>
-    public ReactiveCommand<Unit, Unit> AddAccountCommand { get; }
+    public ReactiveCommand<System.Reactive.Unit, System.Reactive.Unit> AddAccountCommand { get; }
 
     /// <summary>
     ///     Gets the command to remove the selected account.
     /// </summary>
-    public ReactiveCommand<Unit, Unit> RemoveAccountCommand { get; }
+    public ReactiveCommand<System.Reactive.Unit, System.Reactive.Unit> RemoveAccountCommand { get; }
 
     /// <summary>
     ///     Gets the command to login to the selected account.
     /// </summary>
-    public ReactiveCommand<Unit, Unit> LoginCommand { get; }
+    public ReactiveCommand<System.Reactive.Unit, System.Reactive.Unit> LoginCommand { get; }
 
     /// <summary>
     ///     Gets the command to logout from the selected account.
     /// </summary>
-    public ReactiveCommand<Unit, Unit> LogoutCommand { get; }
+    public ReactiveCommand<System.Reactive.Unit, System.Reactive.Unit> LogoutCommand { get; }
 
     /// <inheritdoc />
     public void Dispose() => _disposables.Dispose();
@@ -146,21 +147,27 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastVisible = false;
             CancellationToken cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
 
-            AuthenticationResult result = await _authService.LoginAsync(cancellationToken);
-            if(result.Success && result.DisplayName is not null)
-            {
-                var localSyncPath = CreateTheLocalSyncPath(result);
+            Result<AuthenticationResult, ErrorResponse> result = await _authService.LoginAsync(cancellationToken);
+            _ = result.Match<AStar.Dev.Functional.Extensions.Unit>(
+                authResult =>
+                {
+                    if(authResult.DisplayName is not null)
+                    {
+                        var localSyncPath = CreateTheLocalSyncPath(authResult);
+                        var newAccount = AccountInfo.Standard(authResult.AccountId, authResult.HashedAccountId, authResult.DisplayName, localSyncPath);
+                        _ = _accountRepository.AddAsync(newAccount);
+                        Accounts.Add(newAccount);
+                        SelectedAccount = newAccount;
+                    }
 
-                var newAccount = AccountInfo.Standard(result.AccountId, result.HashedAccountId, result.DisplayName, localSyncPath);
+                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                },
+                error =>
+                {
+                    _ = ShowToastAsync(error.Message);
 
-                await _accountRepository.AddAsync(newAccount);
-                Accounts.Add(newAccount);
-                SelectedAccount = newAccount;
-            }
-            else if(!result.Success && result.ErrorMessage is not null)
-            {
-                _ = ShowToastAsync(result.ErrorMessage);
-            }
+                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                });
         }
         finally
         {
@@ -201,27 +208,36 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             ToastMessage = null;
             ToastVisible = false;
 
-            AuthenticationResult result = await _authService.LoginAsync();
-            if(result.Success && result.DisplayName is not null)
-            {
-                AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = true };
-                await _accountRepository.UpdateAsync(updatedAccount);
-
-                var index = Accounts.IndexOf(SelectedAccount);
-                if(index >= 0)
+            CancellationToken cancellationToken = CancellationToken.None;
+            Result<AuthenticationResult, ErrorResponse> result = await _authService.LoginAsync(cancellationToken);
+            _ = result.Match<AStar.Dev.Functional.Extensions.Unit>(
+                authResult =>
                 {
-                    Accounts[index] = updatedAccount;
-                    SelectedAccount = updatedAccount;
-                    using(Serilog.Context.LogContext.PushProperty("AccountHash", updatedAccount.HashedAccountId))
+                    if(authResult.DisplayName is not null)
                     {
-                        _logger.LogInformation("Starting sync for account");
+                        AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = true };
+                        _ = _accountRepository.UpdateAsync(updatedAccount);
+
+                        var index = Accounts.IndexOf(SelectedAccount);
+                        if(index >= 0)
+                        {
+                            Accounts[index] = updatedAccount;
+                            SelectedAccount = updatedAccount;
+                            using(Serilog.Context.LogContext.PushProperty("AccountHash", updatedAccount.HashedAccountId))
+                            {
+                                _logger.LogInformation("Starting sync for account");
+                            }
+                        }
                     }
-                }
-            }
-            else if(result is { Success: false, ErrorMessage: not null })
-            {
-                _ = ShowToastAsync(result.ErrorMessage);
-            }
+
+                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                },
+                error =>
+                {
+                    _ = ShowToastAsync(error.Message);
+
+                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                });
         }
         finally
         {
@@ -262,19 +278,29 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         IsLoading = true;
         try
         {
-            var success = await _authService.LogoutAsync(SelectedAccount.Id);
-            if(success)
-            {
-                AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };
-                await _accountRepository.UpdateAsync(updatedAccount);
-
-                var index = Accounts.IndexOf(SelectedAccount);
-                if(index >= 0)
+            Result<bool, ErrorResponse> logoutResult = await _authService.LogoutAsync(SelectedAccount.Id);
+            _ = logoutResult.Match<AStar.Dev.Functional.Extensions.Unit>(
+                _ =>
                 {
-                    Accounts[index] = updatedAccount;
-                    SelectedAccount = updatedAccount;
-                }
-            }
+                    AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };
+                    Task updateTask = _accountRepository.UpdateAsync(updatedAccount);
+
+                    var index = Accounts.IndexOf(SelectedAccount);
+                    if(index >= 0)
+                    {
+                        Accounts[index] = updatedAccount;
+                        SelectedAccount = updatedAccount;
+                    }
+
+                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                },
+                error =>
+                {
+                    _logger.LogError("Logout failed for account {AccountId}: {ErrorMessage}", SelectedAccount.Id, error.Message);
+                    _ = ShowToastAsync($"Logout failed: {error.Message}");
+
+                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                });
         }
         finally
         {

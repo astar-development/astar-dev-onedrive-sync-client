@@ -22,27 +22,6 @@
                 successFormatter; if error, returns the error message (or uses errorFormatter if provided).
             </summary>
         </member>
-        <member name="T:AStar.Dev.Functional.Extensions.ConvenienceResultExtensions">
-            <summary>
-                A set of small convenience extensions to make consuming Result{T, Exception}
-                values in view-models and tests a bit easier.
-            </summary>
-        </member>
-        <member name="M:AStar.Dev.Functional.Extensions.ConvenienceResultExtensions.GetOrThrow``1(AStar.Dev.Functional.Extensions.Result{``0,System.Exception})">
-            <summary>
-                Returns the contained value or throws the captured exception.
-            </summary>
-        </member>
-        <member name="M:AStar.Dev.Functional.Extensions.ConvenienceResultExtensions.GetOrThrowAsync``1(System.Threading.Tasks.Task{AStar.Dev.Functional.Extensions.Result{``0,System.Exception}})">
-            <summary>
-                Awaits a task returning a Result and returns the value or throws the captured exception.
-            </summary>
-        </member>
-        <member name="M:AStar.Dev.Functional.Extensions.ConvenienceResultExtensions.ToErrorMessage``1(AStar.Dev.Functional.Extensions.Result{``0,System.Exception})">
-            <summary>
-                Returns a short, UI-friendly error message for the Result. Empty string for success.
-            </summary>
-        </member>
         <member name="T:AStar.Dev.Functional.Extensions.EnumerableExtensions">
             <summary>
                 Contains extensions for <see cref="T:System.Collections.Generic.IEnumerable`1" />.

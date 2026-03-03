@@ -22,13 +22,16 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
+        Result<AuthenticationResult, ErrorResponse> result = await service.LoginAsync(TestContext.Current.CancellationToken);
+        AuthenticationResult authResult = result.Match(
+            success => success,
+            error => throw new InvalidOperationException("Expected success"));
 
-        result.Success.ShouldBeTrue();
-        result.AccountId.ShouldBe("acc1");
-        result.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("acc1"));
-        result.DisplayName.ShouldBe("user@example.com");
-        result.ErrorMessage.ShouldBeNull();
+        authResult.Success.ShouldBeTrue();
+        authResult.AccountId.ShouldBe("acc1");
+        authResult.HashedAccountId.Value.ShouldBe(AccountIdHasher.Hash("acc1"));
+        authResult.DisplayName.ShouldBe("user@example.com");
+        authResult.ErrorMessage.ShouldBeNull();
     }
 
     [Fact]
@@ -36,17 +39,20 @@ public class AuthServiceShould
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
         _ = mockClient.AcquireTokenInteractiveAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<Result<MsalAuthResult, ErrorResponse>>(new MsalException("login_failed")));
+            .Returns(Task.FromResult<Result<MsalAuthResult, ErrorResponse>>(new Result<MsalAuthResult, ErrorResponse>.Error(new ErrorResponse("login_failed"))));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AuthenticationResult result = await service.LoginAsync(TestContext.Current.CancellationToken);
+        Result<AuthenticationResult, ErrorResponse> result = await service.LoginAsync(TestContext.Current.CancellationToken);
+        AuthenticationResult authResult = result.Match(
+            success => success,
+            error => AuthenticationResult.Failed(error.Message));
 
-        result.Success.ShouldBeFalse();
-        result.AccountId.ShouldBeEmpty();
-        result.HashedAccountId.Value.ShouldBeEmpty();
-        result.DisplayName.ShouldBeEmpty();
-        _ = result.ErrorMessage.ShouldNotBeNull();
+        authResult.Success.ShouldBeFalse();
+        authResult.AccountId.ShouldBeEmpty();
+        authResult.HashedAccountId.Value.ShouldBeEmpty();
+        authResult.DisplayName.ShouldBeEmpty();
+        _ = authResult.ErrorMessage.ShouldNotBeNull();
     }
 
     [Fact]
@@ -57,14 +63,17 @@ public class AuthServiceShould
         await cts.CancelAsync();
 
         _ = mockClient.AcquireTokenInteractiveAsync(Arg.Any<IEnumerable<string>>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException<Result<MsalAuthResult, ErrorResponse>>(new OperationCanceledException()));
+            .Returns(Task.FromResult<Result<MsalAuthResult, ErrorResponse>>(new Result<MsalAuthResult, ErrorResponse>.Error(new ErrorResponse("cancelled"))));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        AuthenticationResult result = await service.LoginAsync(cts.Token);
+        Result<AuthenticationResult, ErrorResponse> result = await service.LoginAsync(cts.Token);
+        AuthenticationResult authResult = result.Match(
+            success => success,
+            error => AuthenticationResult.Failed(error.Message));
 
-        result.Success.ShouldBeFalse();
-        result.ErrorMessage.ShouldBe("Login was cancelled.");
+        authResult.Success.ShouldBeFalse();
+        authResult.ErrorMessage.ShouldBe("Login was cancelled.");
     }
 
     [Fact]
@@ -78,9 +87,12 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        var result = await service.LogoutAsync("acc1", TestContext.Current.CancellationToken);
+        Result<bool, ErrorResponse> result = await service.LogoutAsync("acc1", TestContext.Current.CancellationToken);
+        var logoutResult = result.Match(
+            success => success,
+            error => throw new InvalidOperationException("Expected success"));
 
-        result.ShouldBeTrue();
+        logoutResult.ShouldBeTrue();
         await mockClient.Received(1).RemoveAsync(mockAccount, TestContext.Current.CancellationToken);
     }
 
@@ -93,8 +105,11 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        var result = await service.LogoutAsync("nonexistent", TestContext.Current.CancellationToken);
-        result.ShouldBeFalse();
+        Result<bool, ErrorResponse> result = await service.LogoutAsync("nonexistent", TestContext.Current.CancellationToken);
+        var logoutResult = result.Match(
+            success => success,
+            error => false);
+        logoutResult.ShouldBeFalse();
     }
 
     [Fact]
@@ -105,9 +120,12 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        IReadOnlyList<(string accountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        Result<IReadOnlyList<(string accountId, string DisplayName)>, ErrorResponse> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<(string accountId, string DisplayName)> accounts = result.Match(
+            success => success,
+            error => throw new InvalidOperationException("Expected success"));
 
-        result.ShouldBeEmpty();
+        accounts.ShouldBeEmpty();
     }
 
     [Fact]
@@ -121,12 +139,15 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        IReadOnlyList<(string accountId, string DisplayName)> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
-        result.Count.ShouldBe(2);
-        result[0].accountId.ShouldBe("acc1");
-        result[0].DisplayName.ShouldBe("user1@example.com");
-        result[1].accountId.ShouldBe("acc2");
-        result[1].DisplayName.ShouldBe("user2@example.com");
+        Result<IReadOnlyList<(string accountId, string DisplayName)>, ErrorResponse> result = await service.GetAuthenticatedAccountsAsync(TestContext.Current.CancellationToken);
+        IReadOnlyList<(string accountId, string DisplayName)> accounts = result.Match(
+            success => success,
+            error => throw new InvalidOperationException("Expected success"));
+        accounts.Count.ShouldBe(2);
+        accounts[0].accountId.ShouldBe("acc1");
+        accounts[0].DisplayName.ShouldBe("user1@example.com");
+        accounts[1].accountId.ShouldBe("acc2");
+        accounts[1].DisplayName.ShouldBe("user2@example.com");
     }
 
     [Fact]
@@ -142,9 +163,12 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        var result = await service.GetAccessTokenAsync("acc1", TestContext.Current.CancellationToken);
+        Result<string?, ErrorResponse> result = await service.GetAccessTokenAsync("acc1", TestContext.Current.CancellationToken);
+        var token = result.Match(
+            success => success,
+            error => null);
 
-        result.ShouldBe("token123");
+        token.ShouldBe("token123");
     }
 
     [Fact]
@@ -155,8 +179,11 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        var result = await service.GetAccessTokenAsync("nonexistent", TestContext.Current.CancellationToken);
-        result.ShouldBeNull();
+        Result<string?, ErrorResponse> result = await service.GetAccessTokenAsync("nonexistent", TestContext.Current.CancellationToken);
+        var token = result.Match(
+            success => success,
+            error => null);
+        token.ShouldBeNull();
     }
 
     [Fact]
@@ -172,21 +199,27 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        var result = await service.GetAccessTokenAsync("acc1", TestContext.Current.CancellationToken);
+        Result<string?, ErrorResponse> result = await service.GetAccessTokenAsync("acc1", TestContext.Current.CancellationToken);
+        var token = result.Match(
+            success => success,
+            error => null);
 
-        result.ShouldBeNull();
+        token.ShouldBeNull();
     }
 
     [Fact]
     public async Task ReturnFalseWhenAccountNotAuthenticated()
     {
         IAuthenticationClient mockClient = Substitute.For<IAuthenticationClient>();
-        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([]))));
+        _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([])));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        var result = await service.IsAuthenticatedAsync("acc1", TestContext.Current.CancellationToken);
-        result.ShouldBeFalse();
+        Result<bool, ErrorResponse> result = await service.IsAuthenticatedAsync("acc1", TestContext.Current.CancellationToken);
+        var isAuthenticated = result.Match(
+            success => success,
+            error => false);
+        isAuthenticated.ShouldBeFalse();
     }
 
     [Fact]
@@ -199,8 +232,11 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        var result = await service.IsAuthenticatedAsync("acc1", TestContext.Current.CancellationToken);
-        result.ShouldBeTrue();
+        Result<bool, ErrorResponse> result = await service.IsAuthenticatedAsync("acc1", TestContext.Current.CancellationToken);
+        var isAuthenticated = result.Match(
+            success => success,
+            error => false);
+        isAuthenticated.ShouldBeTrue();
     }
 
     [Fact]
@@ -216,9 +252,12 @@ public class AuthServiceShould
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 
-        var result = await service.AcquireTokenSilentAsync("acc1", TestContext.Current.CancellationToken);
+        Result<string?, ErrorResponse> result = await service.AcquireTokenSilentAsync("acc1", TestContext.Current.CancellationToken);
+        var token = result.Match(
+            success => success,
+            error => null);
 
-        result.ShouldBe("token456");
+        token.ShouldBe("token456");
     }
 
     private static IAccount CreateMockAccount(string accountId, string username)
