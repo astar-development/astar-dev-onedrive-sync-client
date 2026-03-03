@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 
 namespace AStar.Dev.Functional.Extensions;

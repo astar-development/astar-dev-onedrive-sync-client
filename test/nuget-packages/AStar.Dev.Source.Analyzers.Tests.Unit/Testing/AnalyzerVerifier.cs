@@ -19,7 +19,7 @@ internal static class AnalyzerVerifier<TAnalyzer>
         var test = new CSharpAnalyzerTest<TAnalyzer, XUnitVerifier>
         {
             TestCode = source,
-            ReferenceAssemblies = ReferenceAssemblies.Net.Net80
+            ReferenceAssemblies = ReferenceAssemblies.Net.Net90
         };
 
         test.ExpectedDiagnostics.AddRange(expected);

@@ -29,7 +29,9 @@ public sealed class AutoRegisterOptionsPartialAnalyzerShould
             .WithLocation(15, 34)
             .WithArguments("MyOptions");
 
+#pragma warning disable CS0618 // Type or member is obsolete
         await AnalyzerVerifier<AutoRegisterOptionsPartialAnalyzer>.VerifyAnalyzerAsync(source, expected);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     [Fact]
@@ -50,6 +52,8 @@ public sealed class AutoRegisterOptionsPartialAnalyzerShould
                               "    public readonly partial record struct MyOptions { }\n" +
                               "}\n";
 
+#pragma warning disable CS0618 // Type or member is obsolete
         await AnalyzerVerifier<AutoRegisterOptionsPartialAnalyzer>.VerifyAnalyzerAsync(source);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
