@@ -2,9 +2,9 @@
 description: "Documentation Agent"
 ---
 
-# Add / Review Documentation Mode
+# Create / Review Documentation Mode
 
-Mission: Review and enhance documentation for clarity, completeness, and accuracy.
+Mission: Create / Review and enhance documentation for clarity, completeness, and accuracy.
 
 ## Sources of Truth
 - Central policies: `.github/copilot-instructions.md`

@@ -9,6 +9,7 @@ using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.OneDriveServices;
+using AStar.Dev.Utilities;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Syncronisation;
@@ -250,14 +251,17 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
     private async Task LoadFoldersAsync(CancellationToken cancellationToken = default)
     {
-        if(string.IsNullOrEmpty(SelectedAccountId))
+        if(SelectedAccountId.IsNull())
         {
             Folders.Clear();
             return;
         }
 
+        var hashedAccountId = new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId));
         try
         {
+            DebugLogContext.SetAccountId(hashedAccountId);
+            _ = await DebugLog.LogInfoAsync("Test.Test.Test", hashedAccountId, $"Reached the LoadFolderAsync for {hashedAccountId} (HASHED!). WooHoo!", cancellationToken);
             IsLoading = true;
             ErrorMessage = null;
 
@@ -273,7 +277,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 SyncButtonText = "Start Sync";
             }
 
-            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id)), cancellationToken);
+            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(hashedAccountId, cancellationToken);
 
             Folders.Clear();
 
@@ -304,7 +308,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         catch(Exception ex)
         {
             ErrorMessage = $"Failed to load folders: {ex.GetBaseException().Message}";
-            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), $"Loading folders for account {SelectedAccountId}. {ErrorMessage}", cancellationToken: cancellationToken);
+            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", hashedAccountId, $"Loading folders for account {SelectedAccountId}. {ErrorMessage}", cancellationToken: cancellationToken);
         }
         finally
         {

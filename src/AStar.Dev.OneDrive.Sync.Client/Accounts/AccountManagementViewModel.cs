@@ -148,7 +148,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
             CancellationToken cancellationToken = new CancellationTokenSource(TimeSpan.FromSeconds(30)).Token;
 
             Result<AuthenticationResult, ErrorResponse> result = await _authService.LoginAsync(cancellationToken);
-            _ = result.Match<AStar.Dev.Functional.Extensions.Unit>(
+            _ = result.Match(
                 authResult =>
                 {
                     if(authResult.DisplayName is not null)
@@ -158,15 +158,16 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                         _ = _accountRepository.AddAsync(newAccount);
                         Accounts.Add(newAccount);
                         SelectedAccount = newAccount;
+                        _ = ShowToastAsync($"Successfully added {authResult.DisplayName}. Please review the default setting > File > Account Settings for sync folder location and other preferences.", 10);
                     }
 
-                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                    return Functional.Extensions.Unit.Value;
                 },
                 error =>
                 {
                     _ = ShowToastAsync(error.Message);
 
-                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                    return Functional.Extensions.Unit.Value;
                 });
         }
         finally
@@ -210,7 +211,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
 
             CancellationToken cancellationToken = CancellationToken.None;
             Result<AuthenticationResult, ErrorResponse> result = await _authService.LoginAsync(cancellationToken);
-            _ = result.Match<AStar.Dev.Functional.Extensions.Unit>(
+            _ = result.Match(
                 authResult =>
                 {
                     if(authResult.DisplayName is not null)
@@ -230,13 +231,13 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                         }
                     }
 
-                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                    return Functional.Extensions.Unit.Value;
                 },
                 error =>
                 {
                     _ = ShowToastAsync(error.Message);
 
-                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                    return Functional.Extensions.Unit.Value;
                 });
         }
         finally
@@ -245,16 +246,16 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         }
     }
 
-    private async Task ShowToastAsync(string message)
+    private async Task ShowToastAsync(string message, int timeoutSeconds = 5)
     {
         try
         {
             _toastCts?.Cancel();
             _toastCts = new CancellationTokenSource();
-            ToastMessage = message;
+            ToastMessage = $"{message} (Will auto-close after {timeoutSeconds} seconds)";
             ToastVisible = true;
 
-            await Task.Delay(TimeSpan.FromSeconds(5), _toastCts.Token);
+            await Task.Delay(TimeSpan.FromSeconds(timeoutSeconds), _toastCts.Token);
 
             ToastVisible = false;
             ToastMessage = null;
@@ -279,7 +280,7 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
         try
         {
             Result<bool, ErrorResponse> logoutResult = await _authService.LogoutAsync(SelectedAccount.Id);
-            _ = logoutResult.Match<AStar.Dev.Functional.Extensions.Unit>(
+            _ = logoutResult.Match(
                 _ =>
                 {
                     AccountInfo updatedAccount = SelectedAccount with { IsAuthenticated = false };
@@ -292,14 +293,14 @@ public sealed class AccountManagementViewModel : ReactiveObject, IDisposable
                         SelectedAccount = updatedAccount;
                     }
 
-                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                    return Functional.Extensions.Unit.Value;
                 },
                 error =>
                 {
                     _logger.LogError("Logout failed for account {AccountId}: {ErrorMessage}", SelectedAccount.Id, error.Message);
                     _ = ShowToastAsync($"Logout failed: {error.Message}");
 
-                    return AStar.Dev.Functional.Extensions.Unit.Value;
+                    return Functional.Extensions.Unit.Value;
                 });
         }
         finally

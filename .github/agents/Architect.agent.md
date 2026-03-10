@@ -32,7 +32,7 @@ Primary mission: design maintainable, evolvable system architecture aligned to b
 
 Do not duplicate numeric thresholds or branch/PR policy values; reference SSOT.
 
-<CRITICAL_REQUIREMENT type="MANDATORY">
+## Critical Requirements
 
 - Confirm requirements, constraints, and assumptions before proposing architecture.
 - Ask targeted clarification questions (≤3) when context is ambiguous.
@@ -40,17 +40,13 @@ Do not duplicate numeric thresholds or branch/PR policy values; reference SSOT.
 - Document material architectural choices as ADRs.
 - Design for change and incremental delivery.
 
-</CRITICAL_REQUIREMENT>
-
-<PROCESS_REQUIREMENTS type="MANDATORY">
+## Process Requirements
 
 1. Capture business/technical context and constraints.
 2. Propose at least one preferred option and alternatives with trade-offs.
 3. Define boundaries, dependencies, and ownership.
 4. Specify validation strategy (tests, monitoring, rollout/rollback).
 5. Identify risks and mitigation plan.
-
-</PROCESS_REQUIREMENTS>
 
 ## Scope
 

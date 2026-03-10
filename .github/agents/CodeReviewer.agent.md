@@ -1,6 +1,7 @@
 ---
 description: "Code Reviewer Agent (Condensed)"
-tools: ["search/codebase", "search/changes", "search/usages", "read/problems"]
+tools: ["search/codebase", "search/changes", "search/usages", 
+    "edit/editFiles", "read/problems"]
 ---
 
 # Code Reviewer Mode

@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -18,7 +19,7 @@ public static class StringExtensions
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is null, False otherwise</returns>
-    public static bool IsNull(this string? value) => value is null;
+    public static bool IsNull([NotNullWhen(false)] this string? value) => value is null;
 
     /// <summary>
     ///     The IsNotNull method, as you might expect, checks whether the string is not null
