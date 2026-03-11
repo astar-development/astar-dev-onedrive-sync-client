@@ -6,7 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.OneDrive.Sync.Client.MainWindow;
+namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 /// <summary>
 ///     Main application window.

@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:syncronisation="using:AStar.Dev.OneDrive.Sync.Client.Syncronisation"
-             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.MainWindow"
+             xmlns:vm="using:AStar.Dev.OneDrive.Sync.Client.Home"
              xmlns:vmSync="using:AStar.Dev.OneDrive.Sync.Client.Syncronisation"
              xmlns:converters="using:AStar.Dev.OneDrive.Sync.Client.Converters"
              xmlns:models1="clr-namespace:AStar.Dev.OneDrive.Sync.Client.Core.Models;assembly=AStar.Dev.OneDrive.Sync.Client.Core"

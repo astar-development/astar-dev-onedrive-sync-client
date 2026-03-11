@@ -7,8 +7,7 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.OneDriveServices;
-using AStar.Dev.OneDrive.Sync.Client.MainWindow;
-
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Syncronisation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;

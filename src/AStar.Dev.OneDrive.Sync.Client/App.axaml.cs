@@ -42,7 +42,7 @@ public sealed class App : Application
 
         if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            desktop.MainWindow = new MainWindow.MainWindow();
+            desktop.MainWindow = new Home.MainWindow();
 
             desktop.Startup += async (_, _) => await DebugLog.LogInfoAsync("App Startup", new Core.Models.HashedAccountId(AdminAccountMetadata.HashedAccountId), "Application has started", CancellationToken.None);
 

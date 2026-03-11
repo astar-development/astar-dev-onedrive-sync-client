@@ -16,7 +16,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
-namespace AStar.Dev.OneDrive.Sync.Client.MainWindow;
+namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 /// <summary>
 ///     ViewModel for the main application window, coordinating between account management and sync tree views.

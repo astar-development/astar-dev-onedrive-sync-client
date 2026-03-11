@@ -8,10 +8,10 @@ using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.OneDriveServices;
-using AStar.Dev.OneDrive.Sync.Client.MainWindow;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Syncronisation;
 
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.MainWindow;
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Home;
 
 public class MainWindowViewModelShould
 {
