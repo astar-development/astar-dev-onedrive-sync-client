@@ -53,7 +53,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         CancelSyncCommand = ReactiveCommand.CreateFromTask(CancelSyncAsync,
             this.WhenAnyValue(x => x.IsSyncing));
 
-        // Only allow opening if syncing and not already open
         OpenSyncProgressCommand = ReactiveCommand.Create(
             () => { IsSyncProgressOpen = true; },
             this.WhenAnyValue(x => x.IsSyncing, x => x.IsSyncProgressOpen, (syncing, open) => syncing && !open));
@@ -62,7 +61,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             .Subscribe(_ => LoadFoldersCommand.Execute().Subscribe())
             .DisposeWith(_disposables);
 
-        // Subscribe to sync progress updates
         _ = _syncEngine.Progress
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(state =>
