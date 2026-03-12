@@ -35,8 +35,6 @@ public interface ISyncConfigurationRepository
     /// <returns>List of selected folders.</returns>
     Task<IReadOnlyList<DriveItemEntity>> GetFoldersByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
-    Task<Result<bool, ErrorResponse>> UpdateFoldersByAccountIdAsync(HashedAccountId hashedAccountId, IEnumerable<FileMetadata> configurations, CancellationToken cancellationToken = default);
-
     /// <summary>
     ///     Adds a new sync configuration.
     /// </summary>
@@ -84,4 +82,13 @@ public interface ISyncConfigurationRepository
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The parent folder configuration entity if one exists; otherwise, null.</returns>
     Task<DriveItemEntity?> GetParentFolderAsync(HashedAccountId hashedAccountId, string parentPath, string possibleParentPath, CancellationToken cancellationToken);
+
+    /// <summary>
+    ///    ///     Updates the selected folders for a specific account. This method will add new folders, update existing ones, and remove any folders that are no longer selected. 
+    /// </summary>
+    /// <param name="hashedAccountId">The hashed identifier of the account.</param>
+    /// <param name="rootFolders">The list of root folders to update.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    Task UpdateFoldersByAccountIdAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken);
 }

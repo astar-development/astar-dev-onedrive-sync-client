@@ -54,26 +54,6 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
     }
 
     /// <inheritdoc />
-    public async Task<Result<bool, ErrorResponse>> UpdateFoldersByAccountIdAsync(HashedAccountId hashedAccountId, IEnumerable<FileMetadata> fileMetadatas, CancellationToken cancellationToken = default)
-    {
-        await using SyncDbContext context = _contextFactory.CreateDbContext();
-        var existingItems = context.DriveItems
-            .Where(driveItem => driveItem.HashedAccountId == hashedAccountId).ToList();
-
-        var metaLookup = fileMetadatas
-            .ToDictionary(
-                m => Normalize(m.RelativePath),
-                m => m.IsSelected
-            );
-
-        existingItems.ApplyHierarchicalSelection(fileMetadatas);
-
-        return await context.SaveChangesAsync(cancellationToken) > 0
-            ? true
-            : new ErrorResponse("No changes were made to the selected folders.");
-    }
-
-    /// <inheritdoc />
     public async Task<FileMetadata> AddAsync(FileMetadata configuration, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
@@ -220,5 +200,43 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
             path = "/" + path;
 
         return path;
+    }
+
+    /// <inheritdoc />
+    public async Task UpdateFoldersByAccountIdAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken)
+    {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+
+        foreach(OneDriveFolderNode folderNode in rootFolders)
+        {
+            DriveItemEntity? existingEntity = await context.DriveItems
+                .FirstOrDefaultAsync(d => d.HashedAccountId == hashedAccountId && d.DriveItemId == folderNode.DriveItemId, cancellationToken);
+
+            if(existingEntity is not null)
+            {
+                context.Entry(existingEntity).CurrentValues.SetValues(folderNode);
+            }
+
+            if(folderNode.Children is not null && folderNode.Children.Any())
+            {
+                foreach(OneDriveFolderNode childNode in folderNode.Children)
+                {
+                    DriveItemEntity? existingChildEntity = await context.DriveItems
+                        .FirstOrDefaultAsync(d => d.HashedAccountId == hashedAccountId && d.DriveItemId == childNode.DriveItemId, cancellationToken);
+
+                    if(existingChildEntity is not null)
+                    {
+                        context.Entry(existingChildEntity).CurrentValues.SetValues(childNode);
+                    }
+                    else
+                    {
+                        DriveItemEntity newChildEntity = MapToEntity(new FileMetadata(childNode.DriveItemId, hashedAccountId, childNode.Name, childNode.Path, 0, DateTime.UtcNow, "", childNode.IsFolder, false, childNode.IsSelected ?? false));
+                        _ = context.DriveItems.Add(newChildEntity);
+                    }
+                }
+            }
+        }
+
+        _ = await context.SaveChangesAsync(cancellationToken);
     }
 }
