@@ -298,6 +298,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                     continue;
                 }
 
+                node.ParentId = parent.DriveItemId;
                 parent.Children.Add(node);
             }
 
