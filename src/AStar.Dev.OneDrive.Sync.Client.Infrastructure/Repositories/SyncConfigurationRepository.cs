@@ -207,36 +207,40 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
 
+        var allIds = rootFolders
+            .SelectMany(f => f.Children.Prepend(f))
+            .Select(n => n.DriveItemId)
+            .ToHashSet();
+
+        Dictionary<string, DriveItemEntity> existingEntities = await context.DriveItems
+            .Where(d => d.HashedAccountId == hashedAccountId && allIds.Contains(d.DriveItemId))
+            .ToDictionaryAsync(d => d.DriveItemId, cancellationToken);
+
         foreach(OneDriveFolderNode folderNode in rootFolders)
         {
-            DriveItemEntity? existingEntity = await context.DriveItems
-                .FirstOrDefaultAsync(d => d.HashedAccountId == hashedAccountId && d.DriveItemId == folderNode.DriveItemId, cancellationToken);
+            if(existingEntities.TryGetValue(folderNode.DriveItemId, out DriveItemEntity? existing))
+                ApplyNodeValues(existing, folderNode);
 
-            if(existingEntity is not null)
+            foreach(OneDriveFolderNode childNode in folderNode.Children)
             {
-                context.Entry(existingEntity).CurrentValues.SetValues(folderNode);
-            }
-
-            if(folderNode.Children is not null && folderNode.Children.Any())
-            {
-                foreach(OneDriveFolderNode childNode in folderNode.Children)
-                {
-                    DriveItemEntity? existingChildEntity = await context.DriveItems
-                        .FirstOrDefaultAsync(d => d.HashedAccountId == hashedAccountId && d.DriveItemId == childNode.DriveItemId, cancellationToken);
-
-                    if(existingChildEntity is not null)
-                    {
-                        context.Entry(existingChildEntity).CurrentValues.SetValues(childNode);
-                    }
-                    else
-                    {
-                        DriveItemEntity newChildEntity = MapToEntity(new FileMetadata(childNode.DriveItemId, hashedAccountId, childNode.Name, childNode.Path, 0, DateTime.UtcNow, "", childNode.IsFolder, false, childNode.IsSelected ?? false));
-                        _ = context.DriveItems.Add(newChildEntity);
-                    }
-                }
+                if(existingEntities.TryGetValue(childNode.DriveItemId, out DriveItemEntity? existingChild))
+                    ApplyNodeValues(existingChild, childNode);
+                else
+                    _ = context.DriveItems.Add(CreateEntityFromNode(hashedAccountId, childNode));
             }
         }
 
         _ = await context.SaveChangesAsync(cancellationToken);
     }
+
+    private static void ApplyNodeValues(DriveItemEntity entity, OneDriveFolderNode node)
+    {
+        entity.Name = node.Name;
+        entity.RelativePath = node.Path;
+        entity.IsFolder = node.IsFolder;
+        entity.IsSelected = node.IsSelected;
+    }
+
+    private static DriveItemEntity CreateEntityFromNode(HashedAccountId hashedAccountId, OneDriveFolderNode node)
+        => new(hashedAccountId, node.DriveItemId, node.Path, null, null, 0, DateTimeOffset.UtcNow, node.IsFolder, false, node.IsSelected, name: node.Name);
 }
