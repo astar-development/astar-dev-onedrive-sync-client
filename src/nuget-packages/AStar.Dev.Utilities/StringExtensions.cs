@@ -113,4 +113,38 @@ public static class StringExtensions
                 .Replace(Path.AltDirectorySeparatorChar, ' ')
                 .Replace('-', ' ')
                 .Replace('_', ' ');
+
+    /// <summary>
+    ///    The NormalizeLinux method normalizes a file path to a Linux-style format by replacing backslashes with forward slashes,
+    /// </summary>
+    /// <param name="path">The file path to normalize</param>
+    /// <returns>The normalized file path, prefixed with a forward slash if not already prefixed</returns>
+    public static string NormalizeLinux(this string path)
+    {
+        if(string.IsNullOrWhiteSpace(path))
+            return "/";
+
+        path = path.Trim()
+                   .Replace("\\", "/")
+                   .TrimEnd('/');
+
+        return path.StartsWith('/') ? path : "/" + path;
+    }
+
+    /// <summary>
+    ///   The NormalizeWindows method normalizes a file path to a Windows-style format by replacing forward slashes with backslashes,
+    /// </summary>
+    /// <param name="path">The file path to normalize</param>
+    /// <returns>The normalized file path, prefixed with a backslash if not already prefixed</returns>
+    public static string NormalizeWindows(this string path)
+    {
+        if(string.IsNullOrWhiteSpace(path))
+            return "\\";
+
+        path = path.Trim()
+                   .Replace("/", "\\")
+                   .TrimEnd('\\');
+
+        return path.StartsWith('\\') ? path : "\\" + path;
+    }
 }

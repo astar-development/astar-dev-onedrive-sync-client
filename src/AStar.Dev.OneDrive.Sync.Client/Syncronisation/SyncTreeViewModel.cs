@@ -259,7 +259,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         try
         {
             DebugLogContext.SetAccountId(hashedAccountId);
-            _ = await DebugLog.LogInfoAsync("Test.Test.Test", hashedAccountId, $"Reached the LoadFolderAsync for {hashedAccountId} (HASHED!). WooHoo!", cancellationToken);
+            await DebugLog.EntryAsync(ApplicationMetadata.UI.SyncTreeViewModel.LoadFoldersAsync, hashedAccountId, cancellationToken);
             IsLoading = true;
             ErrorMessage = null;
 
@@ -281,7 +281,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
             var nodesByPath = folderList
                 .ToDictionary(
-                    f => Normalize(f.Path),
+                    f => f.Path.NormalizeLinux(),
                     f => new OneDriveFolderNode(f.DriveItemId, f.Name, f.Path, f.ParentId, f.IsFolder, f.IsSelected)
                 );
 
@@ -289,7 +289,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
             foreach(OneDriveFolderNode? node in nodesByPath.Values)
             {
-                var path = Normalize(node.Path);
+                var path = node.Path.NormalizeLinux();
                 var parentPath = GetParentPath(path);
 
                 if(parentPath is null || !nodesByPath.TryGetValue(parentPath, out OneDriveFolderNode? parent))
@@ -434,18 +434,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     {
         await _syncEngine.StopSyncAsync();
         LastSyncResult = "Sync cancelled";
-    }
-
-    private static string Normalize(string path)
-    {
-        if(string.IsNullOrWhiteSpace(path))
-            return "/";
-
-        path = path.Trim()
-                   .Replace("\\", "/")
-                   .TrimEnd('/');
-
-        return path.StartsWith('/') ? path : "/" + path;
     }
 
     private static string? GetParentPath(string path)
