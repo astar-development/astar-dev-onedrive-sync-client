@@ -12,6 +12,7 @@ public sealed class SyncDbContextFactory : IDesignTimeDbContextFactory<SyncDbCon
     public SyncDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<SyncDbContext>();
+        optionsBuilder.EnableSensitiveDataLogging();
 
         var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         var dbPath = Path.Combine(appDataPath, ApplicationMetadata.ApplicationFolder, "sync.db");

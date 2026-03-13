@@ -2,6 +2,7 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
@@ -207,30 +208,44 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
 
-        var allIds = rootFolders
-            .SelectMany(f => f.Children.Prepend(f))
-            .Select(n => n.DriveItemId)
-            .ToHashSet();
-
-        Dictionary<string, DriveItemEntity> existingEntities = await context.DriveItems
-            .Where(d => d.HashedAccountId == hashedAccountId && allIds.Contains(d.DriveItemId))
-            .ToDictionaryAsync(d => d.DriveItemId, cancellationToken);
-
-        foreach(OneDriveFolderNode folderNode in rootFolders)
+        var allFolders = new List<OneDriveFolderNode>();
+        foreach(OneDriveFolderNode root in rootFolders)
         {
-            if(existingEntities.TryGetValue(folderNode.DriveItemId, out DriveItemEntity? existing))
-                ApplyNodeValues(existing, folderNode);
+            allFolders.Add(root);
+            allFolders.AddRange(await AddChildFoldersRecursivelyAsync(hashedAccountId, root.Children.ToList(), cancellationToken));
+        }   
 
-            foreach(OneDriveFolderNode childNode in folderNode.Children)
+        foreach(OneDriveFolderNode folderNode in allFolders)
+        {
+            DriveItemEntity? existingEntity = await context.DriveItems
+                .FirstOrDefaultAsync(e => e.HashedAccountId == hashedAccountId && e.DriveItemId == folderNode.DriveItemId, cancellationToken);
+
+            if(existingEntity is not null   )
             {
-                if(existingEntities.TryGetValue(childNode.DriveItemId, out DriveItemEntity? existingChild))
-                    ApplyNodeValues(existingChild, childNode);
-                else
-                    _ = context.DriveItems.Add(CreateEntityFromNode(hashedAccountId, childNode));
+                ApplyNodeValues(existingEntity, folderNode);
+                context.Entry(existingEntity).CurrentValues.SetValues(existingEntity);
+            }
+            else
+            {
+                DriveItemEntity newEntity = CreateEntityFromNode(hashedAccountId, folderNode);
+                _ = context.DriveItems.Add(newEntity);
             }
         }
 
         _ = await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<List<OneDriveFolderNode>> AddChildFoldersRecursivelyAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> parentFolders, CancellationToken cancellationToken)
+    {
+        var allFolders = new List<OneDriveFolderNode>();
+
+        foreach(OneDriveFolderNode parent in parentFolders.Where(p => p.IsFolder))
+        {
+            allFolders.Add(parent);
+            allFolders.AddRange(await AddChildFoldersRecursivelyAsync(hashedAccountId, parent.Children.Where(d=>d.IsFolder).ToList(), cancellationToken));
+        }
+
+        return allFolders;
     }
 
     private static void ApplyNodeValues(DriveItemEntity entity, OneDriveFolderNode node)
