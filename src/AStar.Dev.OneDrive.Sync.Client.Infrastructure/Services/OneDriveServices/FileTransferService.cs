@@ -192,11 +192,16 @@ public sealed class FileTransferService : IFileTransferService
                 _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Starting download: {file.Name} (ID: {file.DriveItemId}) to {file.LocalPath}", cancellationToken);
                 _ = await DebugLog.LogInfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Starting download: {file.Name} (ID: {file.DriveItemId}) to {file.LocalPath}", cancellationSource.Token);
 
-                var directory = Path.GetDirectoryName(file.LocalPath);
-                if(!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                if(file.IsFolder)
                 {
-                    _ = await DebugLog.LogInfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Creating directory: {directory}", cancellationSource.Token);
-                    _ = Directory.CreateDirectory(directory);
+                    var directory = Path.GetDirectoryName(file.LocalPath);
+                    if(!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    {
+                        _ = await DebugLog.LogInfoAsync("SyncEngine.DownloadFile", hashedAccountId, $"Creating directory: {directory}", cancellationSource.Token);
+                        _ = Directory.CreateDirectory(directory);
+                    }
+
+                    return;
                 }
 
                 DriveItemEntity? existingFile = existingItems.FirstOrDefault(ie => ie.RelativePath == file.RelativePath && (ie.SyncStatus != FileSyncStatus.Failed || ie.SyncStatus == FileSyncStatus.PendingUpload));

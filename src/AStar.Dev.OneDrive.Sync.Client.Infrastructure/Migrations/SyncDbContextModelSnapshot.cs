@@ -3,19 +3,16 @@ using System;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
+namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Migrations
 {
     [DbContext(typeof(SyncDbContext))]
-    [Migration("20260217130717_InitialCreation3")]
-    partial class InitialCreation3
+    partial class SyncDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.2");
@@ -225,9 +222,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
                     b.Property<string>("RemoteHash")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("SyncSessionId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<byte[]>("SyncSessionId")
+                        .HasColumnType("BLOB");
 
                     b.Property<long>("Timestamp")
                         .HasColumnType("INTEGER")
@@ -292,8 +288,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities.SyncSessionLogEntity", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                    b.Property<byte[]>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("BLOB");
 
                     b.Property<long?>("CompletedUtc")
                         .HasColumnType("INTEGER")

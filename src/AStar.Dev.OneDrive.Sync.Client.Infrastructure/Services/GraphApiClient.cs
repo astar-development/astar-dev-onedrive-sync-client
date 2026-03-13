@@ -322,7 +322,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         DateTimeOffset lastModifiedUtc = GetLastModifiedUtc(jsonElement);
         var isDeleted = jsonElement.TryGetProperty("deleted", out _);
 
-        return new DriveItemEntity(hashedAccountId, driveItemId, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted);
+        return new DriveItemEntity(hashedAccountId, driveItemId, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted, name: name);
     }
 
     private static DateTimeOffset GetLastModifiedUtc(JsonElement jsonElement) => jsonElement.TryGetProperty("lastModifiedDateTime", out JsonElement lm)

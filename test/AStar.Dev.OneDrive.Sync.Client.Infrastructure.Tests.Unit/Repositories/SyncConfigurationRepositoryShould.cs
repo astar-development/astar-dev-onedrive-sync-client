@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Core;
+using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
@@ -68,6 +69,24 @@ public class SyncConfigurationRepositoryShould
 
         IReadOnlyList<FileMetadata> result = await repository.GetByAccountIdAsync(accountId, TestContext.Current.CancellationToken);
         result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public async Task ReturnOnlyFirstTwoLevelFoldersWhenQueryingFoldersByAccountId()
+    {
+        var accountId = new HashedAccountId(AccountIdHasher.Hash("depth-test-acc"));
+        var repository = new SyncConfigurationRepository(_contextFactory);
+
+        await repository.AddAsync(new FileMetadata("folder-l1", accountId, "Documents", "/Documents", 0, DateTimeOffset.UtcNow, "", IsFolder: true), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new FileMetadata("folder-l2", accountId, "Work", "/Documents/Work", 0, DateTimeOffset.UtcNow, "", IsFolder: true), TestContext.Current.CancellationToken);
+        await repository.AddAsync(new FileMetadata("folder-l3", accountId, "Projects", "/Documents/Work/Projects", 0, DateTimeOffset.UtcNow, "", IsFolder: true), TestContext.Current.CancellationToken);
+
+        IReadOnlyList<DriveItemEntity> result = await repository.GetFoldersByAccountIdAsync(accountId, TestContext.Current.CancellationToken);
+
+        result.Count.ShouldBe(2);
+        result.ShouldContain(f => f.DriveItemId == "folder-l1");
+        result.ShouldContain(f => f.DriveItemId == "folder-l2");
+        result.ShouldNotContain(f => f.DriveItemId == "folder-l3");
     }
 
     [Fact]

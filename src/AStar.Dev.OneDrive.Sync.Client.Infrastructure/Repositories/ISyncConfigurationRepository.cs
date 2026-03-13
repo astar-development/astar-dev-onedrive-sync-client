@@ -35,6 +35,14 @@ public interface ISyncConfigurationRepository
     /// <returns>List of selected folders.</returns>
     Task<IReadOnlyList<DriveItemEntity>> GetFoldersByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
 
+/// <summary>
+///    Gets all selected items for a specific account.
+/// </summary>
+/// <param name="hashedAccountId">The hashed identifier of the account.</param>
+/// <param name="cancellationToken">Cancellation token.</param>
+/// <returns>A list of all selected items for the account.</returns>
+    Task<IReadOnlyList<DriveItemEntity>> GetAllSelectedItemsByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default);
+
     /// <summary>
     ///     Adds a new sync configuration.
     /// </summary>

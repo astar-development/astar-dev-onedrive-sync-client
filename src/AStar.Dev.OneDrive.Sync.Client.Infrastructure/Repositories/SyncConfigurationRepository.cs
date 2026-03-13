@@ -54,6 +54,19 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
                 .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<DriveItemEntity>> GetAllSelectedItemsByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
+    {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+        List<DriveItemEntity> f = await context.DriveItems.FromSqlRaw(@"SELECT * FROM DriveItems
+WHERE RelativePath IN (
+    SELECT RelativePath
+    FROM DriveItems
+    WHERE IsSelected = 1 AND HashedAccountId = {0}
+) AND HashedAccountId = {0}", hashedAccountId.Value).ToListAsync(cancellationToken);
+
+return f;
+    }
+
     /// <inheritdoc />
     public async Task<FileMetadata> AddAsync(FileMetadata configuration, CancellationToken cancellationToken = default)
     {
