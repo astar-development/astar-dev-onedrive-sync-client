@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
@@ -19,10 +20,17 @@ public sealed partial class MainWindow : Window
 
     public MainWindow()
     {
+        // this constructor only exists to support the designer
+        _preferencesService = null!;
+        _savePreferencesTimer = null!;
+    }
+
+    public MainWindow(IHost host)
+    {
         InitializeComponent();
 
-        DataContext = Start.App.Host.Services.GetRequiredService<MainWindowViewModel>();
-        _preferencesService = Start.App.Host.Services.GetRequiredService<IWindowPreferencesService>();
+        DataContext = host.Services.GetRequiredService<MainWindowViewModel>();
+        _preferencesService = host.Services.GetRequiredService<IWindowPreferencesService>();
         _ = LoadWindowPreferencesAsync();
 
         PositionChanged += OnPositionChanged;
