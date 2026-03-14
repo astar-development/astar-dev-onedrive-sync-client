@@ -160,7 +160,7 @@ Full style guidelines: [.github/instructions/style-guidelines.instructions.md](i
 
 ### Folder Structure
 
-```
+```text
 src/
 ├── AStar.Dev.OneDrive.Sync.Client/           # Presentation Layer
 ├── AStar.Dev.OneDrive.Sync.Client.Infrastructure/  # Infrastructure Layer
@@ -232,13 +232,13 @@ test/
 
 ### External Resources
 
-- **Avalonia**: https://docs.avaloniaui.net/
-- **ReactiveUI**: https://www.reactiveui.net/
-- **Entity Framework Core**: https://learn.microsoft.com/en-us/ef/core/
-- **Microsoft Graph API**: https://learn.microsoft.com/en-us/graph/
-- **MSAL.NET**: https://github.com/AzureAD/microsoft-authentication-library-for-dotnet
-- **xUnit.net**: https://xunit.net/
-- **System.Reactive**: https://github.com/Reactive-Extensions/Rx.NET
+- **Avalonia**: <https://docs.avaloniaui.net/>
+- **ReactiveUI**: <https://www.reactiveui.net/>
+- **Entity Framework Core**: <https://learn.microsoft.com/en-us/ef/core/>
+- **Microsoft Graph API**: <https://learn.microsoft.com/en-us/graph/>
+- **MSAL.NET**: <https://github.com/AzureAD/microsoft-authentication-library-for-dotnet>
+- **xUnit.net**: <https://xunit.net/>
+- **System.Reactive**: <https://github.com/Reactive-Extensions/Rx.NET>
 
 ---
 

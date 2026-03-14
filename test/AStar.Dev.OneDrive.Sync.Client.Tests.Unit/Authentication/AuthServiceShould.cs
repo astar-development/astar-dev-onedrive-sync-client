@@ -83,7 +83,7 @@ public class AuthServiceShould
         IAccount mockAccount = CreateMockAccount("acc1", "user@example.com");
 
         _ = mockClient.GetAccountsAsync(TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<IEnumerable<IAccount>, ErrorResponse>>(new Result<IEnumerable<IAccount>, ErrorResponse>.Ok([mockAccount])));
-        _ = mockClient.RemoveAsync(mockAccount, TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<AStar.Dev.Functional.Extensions.Unit, ErrorResponse>>(new Result<AStar.Dev.Functional.Extensions.Unit, ErrorResponse>.Ok(AStar.Dev.Functional.Extensions.Unit.Value)));
+        _ = mockClient.RemoveAsync(mockAccount, TestContext.Current.CancellationToken).Returns(Task.FromResult<Result<Functional.Extensions.Unit, ErrorResponse>>(new Result<Functional.Extensions.Unit, ErrorResponse>.Ok(Functional.Extensions.Unit.Value)));
 
         var service = new AuthService(mockClient, CreateTestConfiguration());
 

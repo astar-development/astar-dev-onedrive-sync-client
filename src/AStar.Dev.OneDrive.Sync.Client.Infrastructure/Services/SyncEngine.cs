@@ -86,8 +86,8 @@ public sealed partial class SyncEngine(
                         return Unit.Value;
                     });
 
-            IReadOnlyList<DriveItemEntity> folders = await GetSelectedFoldersAsync(hashedAccountId, cancellationToken);
-            if(folders.Count == 0)
+            IReadOnlyList<DriveItemEntity> foldersAndFiles = await GetSelectedFoldersAndFilesAsync(hashedAccountId, cancellationToken);
+            if(foldersAndFiles.Count == 0)
             {
                 _syncStateCoordinator.UpdateProgress(accountId, hashedAccountId, SyncStatus.Idle);
                 return;
@@ -95,24 +95,24 @@ public sealed partial class SyncEngine(
 
             Guid? currentSessionId = await _syncStateCoordinator.InitializeSessionAsync(hashedAccountId, account.EnableDetailedSyncLogging, cancellationToken);
 
-            List<FileMetadata> allLocalFiles = await ScanLocalFilesAsync(hashedAccountId, folders, account);
-            var existingFilesDict = folders.ToDictionary(f => f.RelativePath ?? "", f => f);
+            List<FileMetadata> allLocalFiles = await ScanLocalFilesAsync(hashedAccountId, foldersAndFiles, account);
+            var existingFilesDict = foldersAndFiles.ToDictionary(f => f.RelativePath ?? "", f => f);
             var localFilesDict = allLocalFiles.ToDictionary(f => f.RelativePath ?? "", f => f);
 
             List<FileMetadata> filesToUpload = await DetectFilesToUploadAsync(
-                hashedAccountId, allLocalFiles, existingFilesDict, folders, cancellationToken);
+                hashedAccountId, allLocalFiles, existingFilesDict, foldersAndFiles, cancellationToken);
 
-            var remotePathsSet = folders.Select(f => f.RelativePath).ToHashSet();
+            var remotePathsSet = foldersAndFiles.Select(f => f.RelativePath).ToHashSet();
             var localPathsSet = allLocalFiles.Select(f => f.RelativePath).ToHashSet();
 
             (List<FileMetadata> filesToDownload, var conflictCount, HashSet<string> conflictPaths) =
-                await DetectFilesToDownloadAndConflictsAsync(hashedAccountId, folders, existingFilesDict, localFilesDict, account, cancellationToken);
+                await DetectFilesToDownloadAndConflictsAsync(hashedAccountId, foldersAndFiles, existingFilesDict, localFilesDict, account, cancellationToken);
 
-            await _deletionSyncService.ProcessRemoteToLocalDeletionsAsync(hashedAccountId, folders, remotePathsSet, localPathsSet, cancellationToken);
+            await _deletionSyncService.ProcessRemoteToLocalDeletionsAsync(hashedAccountId, foldersAndFiles, remotePathsSet, localPathsSet, cancellationToken);
 
             await _deletionSyncService.ProcessLocalToRemoteDeletionsAsync(accountId, hashedAccountId, allLocalFiles, remotePathsSet, localPathsSet, cancellationToken);
 
-            filesToUpload = FilterUploadsByDeletionsAndConflicts(filesToUpload, folders, remotePathsSet, conflictPaths);
+            filesToUpload = FilterUploadsByDeletionsAndConflicts(filesToUpload, foldersAndFiles, remotePathsSet, conflictPaths);
 
             (filesToDownload, var totalFiles, var totalBytes, var uploadBytes, var downloadBytes) = await CalculateSyncSummaryAsync(hashedAccountId, filesToUpload, filesToDownload, cancellationToken);
 
@@ -124,15 +124,15 @@ public sealed partial class SyncEngine(
             var completedBytes = 0L;
 
             (completedFiles, completedBytes) = await _fileTransferService.ExecuteUploadsAsync(accountId,
-                hashedAccountId, folders, filesToUpload, account.MaxParallelUpDownloads,
+                hashedAccountId, foldersAndFiles, filesToUpload, account.MaxParallelUpDownloads,
                 conflictCount, totalFiles, totalBytes, uploadBytes, completedFiles, completedBytes, "", currentSessionId,
                 _syncStateCoordinator.UpdateProgress, _syncCancellation, cancellationToken);
 
             _syncStateCoordinator.ResetTrackingDetails(completedBytes);
 
             (completedFiles, completedBytes) = await _fileTransferService.ExecuteDownloadsAsync(accountId,
-                hashedAccountId, folders, filesToDownload, account.MaxParallelUpDownloads,
-                conflictCount, totalFiles, totalBytes, uploadBytes, downloadBytes, completedFiles, completedBytes, "", currentSessionId, 
+                hashedAccountId, foldersAndFiles, filesToDownload, account.MaxParallelUpDownloads,
+                conflictCount, totalFiles, totalBytes, uploadBytes, downloadBytes, completedFiles, completedBytes, "", currentSessionId,
                 _syncStateCoordinator.UpdateProgress, _syncCancellation, cancellationToken);
 
             _syncStateCoordinator.UpdateProgress(accountId, hashedAccountId, SyncStatus.Completed, totalFiles, completedFiles, totalBytes,
@@ -211,10 +211,10 @@ public sealed partial class SyncEngine(
                     })
             .MapFailureAsync(ex => SyncError.DeltaProcessingFailed(ex.GetBaseException().Message, ex));
 
-    private async Task<IReadOnlyList<DriveItemEntity>> GetSelectedFoldersAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<DriveItemEntity>> GetSelectedFoldersAndFilesAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken)
     {
         IReadOnlyList<DriveItemEntity> folders = await _syncConfigurationRepository
-            .GetSelectedItemsByAccountIdAsync(hashedAccountId, cancellationToken);
+            .GetAllSelectedItemsByAccountIdAsync(hashedAccountId, cancellationToken);
 
         _ = await DebugLog.LogInfoAsync("SyncEngine.StartSyncAsync", hashedAccountId, $"Starting sync with {folders.Count} selected folders: {string.Join(", ", folders)}", cancellationToken);
 

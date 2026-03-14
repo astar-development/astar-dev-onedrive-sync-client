@@ -9,6 +9,7 @@ using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services.OneDriveServices;
+using AStar.Dev.Utilities;
 using ReactiveUI;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Syncronisation;
@@ -52,7 +53,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         CancelSyncCommand = ReactiveCommand.CreateFromTask(CancelSyncAsync,
             this.WhenAnyValue(x => x.IsSyncing));
 
-        // Only allow opening if syncing and not already open
         OpenSyncProgressCommand = ReactiveCommand.Create(
             () => { IsSyncProgressOpen = true; },
             this.WhenAnyValue(x => x.IsSyncing, x => x.IsSyncProgressOpen, (syncing, open) => syncing && !open));
@@ -61,7 +61,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
             .Subscribe(_ => LoadFoldersCommand.Execute().Subscribe())
             .DisposeWith(_disposables);
 
-        // Subscribe to sync progress updates
         _ = _syncEngine.Progress
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(state =>
@@ -250,14 +249,17 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
     private async Task LoadFoldersAsync(CancellationToken cancellationToken = default)
     {
-        if(string.IsNullOrEmpty(SelectedAccountId))
+        if(SelectedAccountId.IsNull())
         {
             Folders.Clear();
             return;
         }
 
+        var hashedAccountId = new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId));
         try
         {
+            DebugLogContext.SetAccountId(hashedAccountId);
+            await DebugLog.EntryAsync(ApplicationMetadata.UI.SyncTreeViewModel.LoadFoldersAsync, hashedAccountId, cancellationToken);
             IsLoading = true;
             ErrorMessage = null;
 
@@ -273,13 +275,13 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                 SyncButtonText = "Start Sync";
             }
 
-            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.Id)), cancellationToken);
+            IList<OneDriveFolderNode> folderList = await _selectionService.LoadSelectionsFromDatabaseAsync(hashedAccountId, cancellationToken);
 
             Folders.Clear();
 
             var nodesByPath = folderList
                 .ToDictionary(
-                    f => Normalize(f.Path),
+                    f => f.Path.NormalizeLinux(),
                     f => new OneDriveFolderNode(f.DriveItemId, f.Name, f.Path, f.ParentId, f.IsFolder, f.IsSelected)
                 );
 
@@ -287,7 +289,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
 
             foreach(OneDriveFolderNode? node in nodesByPath.Values)
             {
-                var path = Normalize(node.Path);
+                var path = node.Path.NormalizeLinux();
                 var parentPath = GetParentPath(path);
 
                 if(parentPath is null || !nodesByPath.TryGetValue(parentPath, out OneDriveFolderNode? parent))
@@ -296,6 +298,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
                     continue;
                 }
 
+                node.ParentId = parent.DriveItemId;
                 parent.Children.Add(node);
             }
 
@@ -304,7 +307,7 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
         catch(Exception ex)
         {
             ErrorMessage = $"Failed to load folders: {ex.GetBaseException().Message}";
-            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", new HashedAccountId(AccountIdHasher.Hash(SelectedAccountId ?? AdminAccountMetadata.HashedAccountId)), $"Loading folders for account {SelectedAccountId}. {ErrorMessage}", cancellationToken: cancellationToken);
+            await _debugLogger.LogErrorAsync("SyncTreeViewModel.LoadFoldersAsync", hashedAccountId, $"Loading folders for account {SelectedAccountId}. {ErrorMessage}", cancellationToken: cancellationToken);
         }
         finally
         {
@@ -431,18 +434,6 @@ public sealed class SyncTreeViewModel : ReactiveObject, IDisposable
     {
         await _syncEngine.StopSyncAsync();
         LastSyncResult = "Sync cancelled";
-    }
-
-    private static string Normalize(string path)
-    {
-        if(string.IsNullOrWhiteSpace(path))
-            return "/";
-
-        path = path.Trim()
-                   .Replace("\\", "/")
-                   .TrimEnd('/');
-
-        return path.StartsWith('/') ? path : "/" + path;
     }
 
     private static string? GetParentPath(string path)

@@ -11,27 +11,33 @@ MUST HAVE:
             _ = optionsBuilder.UseSqlite(@"Data Source=C:\Users\jbarden\AppData\Local\AStar.Dev.OneDrive.Sync.Client\sync.db");
         }
     }
-	
-	
-	dotnet nuget locals all --clear
-	dotnet tool update --global dotnet-ef
-	
-	Certainly! Here’s how you can clear the NuGet cache:
+ 
+ 
+ dotnet nuget locals all --clear
+ dotnet tool update --global dotnet-ef
+ 
+ Certainly! Here’s how you can clear the NuGet cache:
 
 **Windows (PowerShell):**
+
 ```powershell
 dotnet nuget locals all --clear
 ```
+
 or with the NuGet CLI:
+
 ```powershell
 nuget locals all -clear
 ```
 
 **Linux (bash):**
+
 ```sh
 dotnet nuget locals all --clear
 ```
+
 or with the NuGet CLI:
+
 ```sh
 nuget locals all -clear
 ```

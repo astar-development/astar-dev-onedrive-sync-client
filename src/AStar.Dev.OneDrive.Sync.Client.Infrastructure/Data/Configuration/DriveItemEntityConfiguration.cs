@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data.Configuration;
 
-public sealed class DriveItemRecordConfiguration : IEntityTypeConfiguration<DriveItemEntity>
+public sealed class DriveItemEntityConfiguration : IEntityTypeConfiguration<DriveItemEntity>
 {
     public void Configure(EntityTypeBuilder<DriveItemEntity> builder)
     {

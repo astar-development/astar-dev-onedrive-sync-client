@@ -2,6 +2,7 @@ using AStar.Dev.Functional.Extensions;
 using AStar.Dev.OneDrive.Sync.Client.Core.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
+using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Repositories;
@@ -53,24 +54,17 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
                 .ToListAsync(cancellationToken);
     }
 
-    /// <inheritdoc />
-    public async Task<Result<bool, ErrorResponse>> UpdateFoldersByAccountIdAsync(HashedAccountId hashedAccountId, IEnumerable<FileMetadata> fileMetadatas, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<DriveItemEntity>> GetAllSelectedItemsByAccountIdAsync(HashedAccountId hashedAccountId, CancellationToken cancellationToken = default)
     {
         await using SyncDbContext context = _contextFactory.CreateDbContext();
-        var existingItems = context.DriveItems
-            .Where(driveItem => driveItem.HashedAccountId == hashedAccountId).ToList();
+        List<DriveItemEntity> f = await context.DriveItems.FromSqlRaw(@"SELECT * FROM DriveItems
+WHERE RelativePath IN (
+    SELECT RelativePath
+    FROM DriveItems
+    WHERE IsSelected = 1 AND HashedAccountId = {0}
+) AND HashedAccountId = {0}", hashedAccountId.Value).ToListAsync(cancellationToken);
 
-        var metaLookup = fileMetadatas
-            .ToDictionary(
-                m => Normalize(m.RelativePath),
-                m => m.IsSelected
-            );
-
-        existingItems.ApplyHierarchicalSelection(fileMetadatas);
-
-        return await context.SaveChangesAsync(cancellationToken) > 0
-            ? true
-            : new ErrorResponse("No changes were made to the selected folders.");
+return f;
     }
 
     /// <inheritdoc />
@@ -221,4 +215,60 @@ public sealed class SyncConfigurationRepository(IDbContextFactory<SyncDbContext>
 
         return path;
     }
+
+    /// <inheritdoc />
+    public async Task UpdateFoldersByAccountIdAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken)
+    {
+        await using SyncDbContext context = _contextFactory.CreateDbContext();
+
+        var allFolders = new List<OneDriveFolderNode>();
+        foreach(OneDriveFolderNode root in rootFolders)
+        {
+            allFolders.Add(root);
+            allFolders.AddRange(await AddChildFoldersRecursivelyAsync(hashedAccountId, root.Children.ToList(), cancellationToken));
+        }   
+
+        foreach(OneDriveFolderNode folderNode in allFolders)
+        {
+            DriveItemEntity? existingEntity = await context.DriveItems
+                .FirstOrDefaultAsync(e => e.HashedAccountId == hashedAccountId && e.DriveItemId == folderNode.DriveItemId, cancellationToken);
+
+            if(existingEntity is not null   )
+            {
+                ApplyNodeValues(existingEntity, folderNode);
+                context.Entry(existingEntity).CurrentValues.SetValues(existingEntity);
+            }
+            else
+            {
+                DriveItemEntity newEntity = CreateEntityFromNode(hashedAccountId, folderNode);
+                _ = context.DriveItems.Add(newEntity);
+            }
+        }
+
+        _ = await context.SaveChangesAsync(cancellationToken);
+    }
+
+    private async Task<List<OneDriveFolderNode>> AddChildFoldersRecursivelyAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> parentFolders, CancellationToken cancellationToken)
+    {
+        var allFolders = new List<OneDriveFolderNode>();
+
+        foreach(OneDriveFolderNode parent in parentFolders.Where(p => p.IsFolder))
+        {
+            allFolders.Add(parent);
+            allFolders.AddRange(await AddChildFoldersRecursivelyAsync(hashedAccountId, parent.Children.Where(d=>d.IsFolder).ToList(), cancellationToken));
+        }
+
+        return allFolders;
+    }
+
+    private static void ApplyNodeValues(DriveItemEntity entity, OneDriveFolderNode node)
+    {
+        entity.Name = node.Name;
+        entity.RelativePath = node.Path;
+        entity.IsFolder = node.IsFolder;
+        entity.IsSelected = node.IsSelected;
+    }
+
+    private static DriveItemEntity CreateEntityFromNode(HashedAccountId hashedAccountId, OneDriveFolderNode node)
+        => new(hashedAccountId, node.DriveItemId, node.Path, null, null, 0, DateTimeOffset.UtcNow, node.IsFolder, false, node.IsSelected, name: node.Name);
 }

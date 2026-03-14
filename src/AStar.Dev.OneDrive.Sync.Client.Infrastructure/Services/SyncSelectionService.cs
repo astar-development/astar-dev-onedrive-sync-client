@@ -95,11 +95,7 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
 
     /// <inheritdoc />
     public async Task SaveSelectionsToDatabaseAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default)
-    {
-        IEnumerable<FileMetadata> configurations = rootFolders.Select(folder => new FileMetadata(folder.DriveItemId, hashedAccountId, folder.Name, folder.Path, 0, DateTime.UtcNow, "", true, false, folder.IsSelected ?? false));
-
-        _ = await configurationRepository.UpdateFoldersByAccountIdAsync(hashedAccountId, configurations, cancellationToken);
-    }
+        => await configurationRepository.UpdateFoldersByAccountIdAsync(hashedAccountId, rootFolders, cancellationToken);
 
     /// <inheritdoc />
     public async Task LoadSelectionsFromDatabaseAsync(HashedAccountId hashedAccountId, List<OneDriveFolderNode> rootFolders, CancellationToken cancellationToken = default)
@@ -190,6 +186,7 @@ public sealed class SyncSelectionService(ISyncConfigurationRepository configurat
             var folderNode = new OneDriveFolderNode
             {
                 DriveItemId = entity.DriveItemId,
+                IsFolder = entity.IsFolder,
                 Name = entity.Name??"",
                 Path = entity.RelativePath,
                 IsSelected = entity.IsSelected,

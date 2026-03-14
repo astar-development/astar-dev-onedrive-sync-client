@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -18,7 +19,7 @@ public static class StringExtensions
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is null, False otherwise</returns>
-    public static bool IsNull(this string? value) => value is null;
+    public static bool IsNull([NotNullWhen(false)] this string? value) => value is null;
 
     /// <summary>
     ///     The IsNotNull method, as you might expect, checks whether the string is not null
@@ -112,4 +113,38 @@ public static class StringExtensions
                 .Replace(Path.AltDirectorySeparatorChar, ' ')
                 .Replace('-', ' ')
                 .Replace('_', ' ');
+
+    /// <summary>
+    ///    The NormalizeLinux method normalizes a file path to a Linux-style format by replacing backslashes with forward slashes,
+    /// </summary>
+    /// <param name="path">The file path to normalize</param>
+    /// <returns>The normalized file path, prefixed with a forward slash if not already prefixed</returns>
+    public static string NormalizeLinux(this string path)
+    {
+        if(string.IsNullOrWhiteSpace(path))
+            return "/";
+
+        path = path.Trim()
+                   .Replace("\\", "/")
+                   .TrimEnd('/');
+
+        return path.StartsWith('/') ? path : "/" + path;
+    }
+
+    /// <summary>
+    ///   The NormalizeWindows method normalizes a file path to a Windows-style format by replacing forward slashes with backslashes,
+    /// </summary>
+    /// <param name="path">The file path to normalize</param>
+    /// <returns>The normalized file path, prefixed with a backslash if not already prefixed</returns>
+    public static string NormalizeWindows(this string path)
+    {
+        if(string.IsNullOrWhiteSpace(path))
+            return "\\";
+
+        path = path.Trim()
+                   .Replace("/", "\\")
+                   .TrimEnd('\\');
+
+        return path.StartsWith('\\') ? path : "\\" + path;
+    }
 }

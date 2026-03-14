@@ -29,6 +29,7 @@ public static class ApplicationMetadata
 
         public static class SyncTreeViewModel
         {
+            public const string LoadFoldersAsync = "SyncTreeViewModel.LoadFoldersAsync";
             public const string StartSync = "SyncTreeViewModel.StartSyncAsync";
         }
     }

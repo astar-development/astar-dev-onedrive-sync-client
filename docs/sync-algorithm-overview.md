@@ -47,12 +47,12 @@ This document provides a technical overview of the bidirectional synchronization
 
 ### Components
 
-| Component | Responsibility |
+|Component|Responsibility|
 |-----------|----------------|
-| **DeltaSyncEngine** | Main orchestrator, manages sync lifecycle |
-| **FileWatcherService** | Detects local file system changes in real-time |
-| **OneDriveApiService** | Communicates with Microsoft Graph API |
-| **FileMetadataRepository** | Tracks synced files in SQLite database |
+|**DeltaSyncEngine**|Main orchestrator, manages sync lifecycle|
+|**FileWatcherService**|Detects local file system changes in real-time|
+|**OneDriveApiService**|Communicates with Microsoft Graph API|
+|**FileMetadataRepository**|Tracks synced files in SQLite database|
 | **ConflictResolver** | Applies user's conflict resolution strategy |
 | **SyncStateRepository** | Persists progress for pause/resume |
 
@@ -234,11 +234,11 @@ bool BothSidesChanged(FileMetadata? localMetadata, RemoteChange remoteChange)
 
 ### Why cTag + Timestamp?
 
-| Approach | Pros | Cons |
+|Approach|Pros|Cons|
 |----------|------|------|
-| **SHA256 Hash** | 100% accurate | Slow (must read entire file), CPU intensive |
-| **Timestamp + Size** | Very fast | Can miss changes if timestamp forged |
-| **OneDrive cTag** | Fast, accurate, provided by OneDrive | Requires API metadata |
+|**SHA256 Hash**|100% accurate|Slow (must read entire file), CPU intensive|
+|**Timestamp + Size**|Very fast|Can miss changes if timestamp forged|
+|**OneDrive cTag**|Fast, accurate, provided by OneDrive|Requires API metadata|
 
 **Chosen Strategy**: **cTag + Timestamp**
 
@@ -452,14 +452,14 @@ await retryPolicy.ExecuteAsync(() => DownloadFileAsync(fileId));
 
 ### Common Scenarios
 
-| Error | Handling |
+|Error|Handling|
 |-------|----------|
-| **Network timeout** | Retry with exponential backoff (3 attempts) |
-| **Token expired** | Refresh token silently, retry operation |
-| **File locked** | Skip file, mark as failed, continue with others |
-| **Insufficient space** | Pause sync, notify user, prompt to free space |
-| **Permission denied** | Log error, skip file, notify user |
-| **OneDrive quota exceeded** | Pause uploads, notify user |
+|**Network timeout**|Retry with exponential backoff (3 attempts)|
+|**Token expired**|Refresh token silently, retry operation|
+|**File locked**|Skip file, mark as failed, continue with others|
+|**Insufficient space**|Pause sync, notify user, prompt to free space|
+|**Permission denied**|Log error, skip file, notify user|
+|**OneDrive quota exceeded**|Pause uploads, notify user|
 
 ---
 
@@ -534,15 +534,15 @@ string GetDeltaToken(string accountId)
 
 ### Unit Tests
 
-| Scenario | Expected Outcome |
+|Scenario|Expected Outcome|
 |----------|------------------|
-| Remote file added | File downloaded to local |
-| Local file added | File uploaded to OneDrive |
-| Remote file modified | Local file updated |
-| Local file modified | OneDrive file updated |
-| Remote file deleted | Local file deleted |
-| Local file deleted | OneDrive file deleted |
-| Both modified (conflict) | Conflict recorded, sync paused |
+|Remote file added|File downloaded to local|
+|Local file added|File uploaded to OneDrive|
+|Remote file modified|Local file updated|
+|Local file modified|OneDrive file updated|
+|Remote file deleted|Local file deleted|
+|Local file deleted|OneDrive file deleted|
+|Both modified (conflict)|Conflict recorded, sync paused|
 | Conflict resolved (keep local) | Local uploaded, conflict cleared |
 | Conflict resolved (keep remote) | Remote downloaded, conflict cleared |
 | Conflict resolved (keep both) | Local renamed, remote downloaded |

@@ -240,7 +240,7 @@ public sealed class UpdateAccountDetailsViewModelShould
             IAccountRepository mockRepo = Substitute.For<IAccountRepository>();
             IAutoSyncSchedulerService mockScheduler = Substitute.For<IAutoSyncSchedulerService>();
             AccountInfo account = CreateTestAccount("acc1", "User 1", tempPath);
-            _ = mockRepo.UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>()).Returns<Task>(_ => throw new Exception("Database error"));
+            _ = mockRepo.UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>()).Returns(_ => throw new Exception("Database error"));
             var sut = new UpdateAccountDetailsViewModel(mockRepo, mockScheduler)
             {
                 SelectedAccount = account

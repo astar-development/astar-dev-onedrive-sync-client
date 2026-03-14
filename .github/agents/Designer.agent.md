@@ -47,6 +47,7 @@ Do not implement unrelated visual features beyond the requested scope.
 ## Output Requirements
 
 Include:
+
 - UI intent and assumptions
 - Component layout and interaction model
 - Accessibility and state model

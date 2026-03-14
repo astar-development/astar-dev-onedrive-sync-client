@@ -31,7 +31,7 @@ Primary mission: implement reliable, maintainable code via strict TDD and reposi
 
 Do not duplicate numeric policy thresholds; reference SSOT.
 
-<CRITICAL_REQUIREMENT type="MANDATORY">
+## Critical Requirements
 
 - Always start with a failing test (RED).
 - Prove RED by running targeted tests first.
@@ -39,17 +39,13 @@ Do not duplicate numeric policy thresholds; reference SSOT.
 - Keep tests green at module and full-suite levels.
 - Ask clarification questions when requirements are ambiguous.
 
-</CRITICAL_REQUIREMENT>
-
-<PROCESS_REQUIREMENTS type="MANDATORY">
+## Process Requirements
 
 1. Clarify scope, constraints, and acceptance criteria.
 2. Add failing test(s).
 3. Implement minimal code change.
 4. Run affected tests, then full suite.
 5. Refactor while preserving behaviour.
-
-</PROCESS_REQUIREMENTS>
 
 ## Scope
 
@@ -68,6 +64,7 @@ Do not duplicate numeric policy thresholds; reference SSOT.
 ## Output Requirements
 
 Include:
+
 - What changed and why
 - Tests added/updated and run results
 - Any assumptions, risks, or follow-up work

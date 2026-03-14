@@ -1,7 +1,5 @@
 # README
 
-**N.B.** This README.md is located at `docs/README.md` and it is displayed in preference to the [README.md in the project root](../README.md). The [README preference order](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes) is described in the GitHub docs.
-
 ## Documents Directory
 
 This directory contains all project-related documentation, organized into subdirectories based on its purpose.

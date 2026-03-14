@@ -328,4 +328,25 @@ public class SyncTreeViewModelShould : IDisposable
         _ = exception.ShouldNotBeNull();
         _ = exception.ShouldBeOfType<ArgumentNullException>();
     }
+    [Fact]
+    public async Task SetParentIdOnChildNodesWhenBuildingHierarchyFromFlatList()
+    {
+        var flatList = new List<OneDriveFolderNode>
+        {
+            new() { DriveItemId = "root1", Name = "Root", Path = "/Root", IsFolder = true },
+            new() { DriveItemId = "child1", Name = "Child", Path = "/Root/Child", IsFolder = true }
+        };
+
+        _mockSelectionService
+            .LoadSelectionsFromDatabaseAsync(Arg.Any<HashedAccountId>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<IList<OneDriveFolderNode>>(flatList));
+
+        _viewModel.SelectedAccountId = "account123";
+        await Task.Delay(TimeSpan.FromMilliseconds(200), TestContext.Current.CancellationToken);
+
+        _viewModel.Folders.ShouldHaveSingleItem();
+        _viewModel.Folders[0].Children.ShouldHaveSingleItem();
+        _viewModel.Folders[0].Children[0].ParentId.ShouldBe("root1");
+    }
+
 }

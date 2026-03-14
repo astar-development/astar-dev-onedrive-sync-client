@@ -261,6 +261,20 @@
                 // sanitizedPath will be: "path to some file.txt"
             </example>
         </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.NormalizeLinux(System.String)">
+            <summary>
+               The NormalizeLinux method normalizes a file path to a Linux-style format by replacing backslashes with forward slashes,
+            </summary>
+            <param name="path">The file path to normalize</param>
+            <returns>The normalized file path, prefixed with a forward slash if not already prefixed</returns>
+        </member>
+        <member name="M:AStar.Dev.Utilities.StringExtensions.NormalizeWindows(System.String)">
+            <summary>
+              The NormalizeWindows method normalizes a file path to a Windows-style format by replacing forward slashes with backslashes,
+            </summary>
+            <param name="path">The file path to normalize</param>
+            <returns>The normalized file path, prefixed with a backslash if not already prefixed</returns>
+        </member>
         <member name="T:System.Text.RegularExpressions.Generated.LowercaseLettersRegex_0">
             <summary>Custom <see cref="T:System.Text.RegularExpressions.Regex"/>-derived type for the LowercaseLettersRegex method.</summary>
         </member>

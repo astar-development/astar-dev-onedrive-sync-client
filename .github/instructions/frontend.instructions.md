@@ -1,3 +1,5 @@
+# Frontend Instructions
+
 <!--
 SECTION PURPOSE: Frontmatter defines scope (which files are governed by these rules).
 PROMPTING: Keep the YAML minimal; AI should respect this glob when proposing edits.
@@ -5,7 +7,7 @@ PROMPTING: Keep the YAML minimal; AI should respect this glob when proposing edi
 
 ---
 
-## applyTo: "**/\*.cs, **/_.axaml, \*\*/_.razor, \*_/_.axaml.cs
+## applyTo: "**/\*.cs,**/_.axaml, \*\*/_.razor, \*_/_.axaml.cs
 
 <!--
 SECTION PURPOSE: Introduce mandatory frontend guidance.
@@ -13,7 +15,7 @@ PROMPTING: Clear headings; concise bullets for scanability.
 COMPLIANCE: Treat rules below as defaults unless project overrides exist.
 -->
 
-# Frontend Instructions
+## Mandatory Frontend Requirements
 
 <CRITICAL_REQUIREMENT type="MANDATORY">
 

@@ -16,7 +16,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI;
 
-namespace AStar.Dev.OneDrive.Sync.Client.MainWindow;
+namespace AStar.Dev.OneDrive.Sync.Client.Home;
 
 /// <summary>
 ///     ViewModel for the main application window, coordinating between account management and sync tree views.
@@ -311,10 +311,10 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
 
         WireUpSyncCompletion(syncTreeViewModel);
 
-        WireUpSyncStartAndProgress(syncTreeViewModel);
+        WireUpSyncStartWithProgress(syncTreeViewModel);
     }
 
-    private void WireUpSyncStartAndProgress(SyncTreeViewModel syncTreeViewModel) => _ = syncTreeViewModel
+    private void WireUpSyncStartWithProgress(SyncTreeViewModel syncTreeViewModel) => _ = syncTreeViewModel
                 .WhenAnyValue(x => x.IsSyncing, x => x.SelectedAccountId,
                     (isSyncing, accountId) => new { IsSyncing = isSyncing, AccountId = accountId })
                 .Subscribe(state =>
@@ -325,9 +325,7 @@ public sealed class MainWindowViewModel : ReactiveObject, IDisposable
                         if(SyncProgress is null || SyncProgress.AccountId != state.AccountId)
                         {
                             SyncProgress?.Dispose();
-                            SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(
-                            _serviceProvider,
-                            state.AccountId);
+                            SyncProgressViewModel syncProgressVm = ActivatorUtilities.CreateInstance<SyncProgressViewModel>(_serviceProvider, state.AccountId);
 
                             // Wire up ViewConflictsCommand to show conflict resolution
                             _ = syncProgressVm.ViewConflictsCommand

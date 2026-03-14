@@ -2005,14 +2005,14 @@ public class AccountConfigServiceShould
 
 ### Unit Test Coverage
 
-| Component | Priority | Key Tests |
+|Component|Priority|Key Tests|
 |-----------|----------|-----------|
-| `MultiAccountManager` | HIGH | Add/remove accounts, enforce 3-account limit, login/logout state |
-| `AccountManagementViewModel` | HIGH | Account collection updates, command execution, visibility properties |
-| `FolderTreeService` | MEDIUM | Root folder fetching, child folder loading, API error handling |
-| `SyncTreeViewModel` | HIGH | Tree loading, selection persistence, path collection |
-| `AccountConfigService` | HIGH | Save/load settings, JSON serialization, file I/O |
-| `OneDriveFolderNode` | LOW | Model validation |
+|`MultiAccountManager`|HIGH|Add/remove accounts, enforce 3-account limit, login/logout state|
+|`AccountManagementViewModel`|HIGH|Account collection updates, command execution, visibility properties|
+|`FolderTreeService`|MEDIUM|Root folder fetching, child folder loading, API error handling|
+|`SyncTreeViewModel`|HIGH|Tree loading, selection persistence, path collection|
+|`AccountConfigService`|HIGH|Save/load settings, JSON serialization, file I/O|
+|`OneDriveFolderNode`|LOW|Model validation|
 
 ### Integration Tests
 
@@ -2565,14 +2565,14 @@ private async Task LoadChildrenAsync(
 
 ## Risk Assessment
 
-| Risk | Impact | Likelihood | Mitigation |
+|Risk|Impact|Likelihood|Mitigation|
 |------|--------|------------|------------|
-| MSAL multi-account complexity | High | Medium | Thorough testing, MSAL docs review |
-| Graph API rate limits | Medium | Low | Implement retry logic, cache aggressively |
-| Large folder hierarchies (performance) | Medium | Medium | Lazy loading, virtualization |
-| Token expiration during tree load | Low | Medium | Implement token refresh before Graph calls |
-| Path length limits (Windows) | Low | Low | Use short hashed directory names |
-| User confusion with 3 accounts | Medium | Low | Clear labeling, visual separation |
+|MSAL multi-account complexity|High|Medium|Thorough testing, MSAL docs review|
+|Graph API rate limits|Medium|Low|Implement retry logic, cache aggressively|
+|Large folder hierarchies (performance)|Medium|Medium|Lazy loading, virtualization|
+|Token expiration during tree load|Low|Medium|Implement token refresh before Graph calls|
+|Path length limits (Windows)|Low|Low|Use short hashed directory names|
+|User confusion with 3 accounts|Medium|Low|Clear labeling, visual separation|
 
 ---
 

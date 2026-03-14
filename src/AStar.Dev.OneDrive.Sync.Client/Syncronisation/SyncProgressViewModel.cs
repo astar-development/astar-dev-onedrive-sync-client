@@ -2,6 +2,7 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
+using System.Security.Policy;
 using AStar.Dev.OneDrive.Sync.Client.Core;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
@@ -85,7 +86,7 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
     /// <summary>
     ///     Gets the hashed account ID for this sync progress.
     /// </summary>
-    public HashedAccountId HashedAccountId { get; }
+    public HashedAccountId HashedAccountId { get; private set; }
 
     /// <summary>
     ///     Gets or sets the current sync progress state.
@@ -207,8 +208,12 @@ public sealed class SyncProgressViewModel : ReactiveObject, IDisposable
             IsSyncing = true;
             StatusMessage = "Starting sync...";
             _logger.LogInformation("Starting sync for account {AccountId}", AccountId);
+            if(HashedAccountId.Value is null)
+            {
+                HashedAccountId = new HashedAccountId(AccountIdHasher.Hash(AccountId ?? AdminAccountMetadata.HashedAccountId));
+            }
 
-            await _syncEngine.StartSyncAsync(AccountId, HashedAccountId, cancellationToken);
+            await _syncEngine.StartSyncAsync(AccountId!, HashedAccountId, cancellationToken);
 
             StatusMessage = "Sync completed successfully";
             _logger.LogInformation("Sync completed for account {AccountId}", AccountId);

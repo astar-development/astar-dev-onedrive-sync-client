@@ -67,21 +67,21 @@ This evaluation will assess:
 
 ### Phase 2: Advanced Configuration Review
 
-3. **Analyze custom agents**
+1. **Analyze custom agents**
    - Count and categorize existing agents
    - Assess relevance to project needs
    - Check for mode-specific optimization
    - Evaluate documentation quality
    - Evaluate conflicts with core instructions, custom instructions (per file type), or custom prompts
 
-4. **Review prompt templates**
+2. **Review prompt templates**
    - Inventory available slash commands
    - Assess prompt structure and parameterization
    - Check tool integration and capability coverage
    - Evaluate reusability and maintenance
    - Evaluate conflicts with core instructions, custom instructions (per file type), or custom agents
 
-5. **Examine instruction files**
+3. **Examine instruction files**
    - Catalog language/domain-specific instructions
    - Assess coverage of technology stack and frameworks
    - Evaluate clarity and actionability of language/framework specific instructions
@@ -92,7 +92,7 @@ This evaluation will assess:
 
 ### Phase 3: Integration and Optimization
 
-6. **Repository structure alignment**
+1. **Repository structure alignment**
    - Verify .github directory organization
    - Check cross-reference consistency
    - Assess documentation completeness

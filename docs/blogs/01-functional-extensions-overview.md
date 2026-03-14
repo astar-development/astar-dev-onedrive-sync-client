@@ -1,7 +1,7 @@
 # Writing Better C# Code: An Introduction to AStar.Dev.Functional.Extensions
 
-**Published: February 18, 2026**  
-**Author: AStar Development Team**  
+**Published: February 18, 2026**
+**Author: AStar Development Team**
 **Target Audience: Entry-Level C# Developers**
 
 ---
@@ -149,7 +149,7 @@ Let's look at the main types in the package:
 
 Let's see each of these in action with real-world examples.
 
-## Option<T>: Say Goodbye to Null Reference Exceptions
+## Option`T`: Say Goodbye to Null Reference Exceptions
 
 Remember our `GetUserById` example? Let's rewrite it using `Option<T>`:
 
@@ -167,7 +167,7 @@ var user = GetUserById(42);
 Console.WriteLine($"Hello, {user.Name}!"); // Might crash!
 ```
 
-### After (Using Option<T>)
+### After (Using Option`T`)
 
 ```csharp
 public Option<User> GetUserById(int userId)
@@ -703,7 +703,7 @@ Ready to try it out? Here's how to get started:
 dotnet add package AStar.Dev.Functional.Extensions
 ```
 
-### 2. Start with Option<T>
+### 2. Start with Option`T`
 
 Pick a method that returns null and refactor it to return `Option<T>`:
 
@@ -762,8 +762,8 @@ The package includes many helpful extension methods:
 
 This post has given you a high-level overview of functional programming concepts and the AStar.Dev.Functional.Extensions package. In the upcoming posts, we'll dive deeper:
 
-- **Post 2: Deep Dive into Result<T, TError>** - Learn every method, pattern, and technique for elegant error handling
-- **Post 3: Mastering Option<T>** - Say goodbye to null reference exceptions forever
+- **Post 2: Deep Dive into Result`T, TError`** - Learn every method, pattern, and technique for elegant error handling
+- **Post 3: Mastering Option`T`** - Say goodbye to null reference exceptions forever
 - **Post 4: The Supporting Cast** - Explore `Unit`, `Try`, `Pattern`, and all the extension methods that make functional programming delightful
 
 Each post will include extensive examples, common patterns, and practical advice for using these tools in real-world applications.

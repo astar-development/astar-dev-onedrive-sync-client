@@ -30,51 +30,26 @@ ORDER BY Timestamp DESC;
 **Entry/Exit Logging**:
 
 ```csharp
-await DebugLog.EntryAsync(
-    DebugLogMetadata.Services.MyService.MyMethod,
-    accountId,
-    cancellationToken);
+await DebugLog.EntryAsync("MyService.MyMethod", hashedAccountId, cancellationToken);
+
 
 // Method implementation
 
-await DebugLog.ExitAsync(
-    DebugLogMetadata.Services.MyService.MyMethod,
-    accountId,
-    cancellationToken);
+await DebugLog.ExitAsync("MyService.MyMethod", hashedAccountId, cancellationToken);
+
 ```
 
 **Informational Logging**:
 
 ```csharp
-await DebugLog.LogInfoAsync(
-    "MyService.MyMethod",
-    accountId,
-    $"Processing {itemCount} items",
-    cancellationToken);
+await DebugLog.LogInfoAsync("MyService.MyMethod", hashedAccountId, $"Processing {itemCount} items", cancellationToken);
+
 ```
 
 **Error Logging**:
 
 ```csharp
-await DebugLog.LogErrorAsync(
-    "MyService.MyMethod",
-    accountId,
-    exception,
-    "Failed to process items",
-    cancellationToken);
-```
-
-**Performance Logging**:
-
-```csharp
-using var perfLogger = await DebugLog.StartPerformanceLogAsync(
-    "MyService.MyMethod",
-    accountId,
-    cancellationToken);
-
-// Code to measure
-
-// Automatically logs duration on disposal
+await DebugLog.LogErrorAsync("MyService.MyMethod", hashedAccountId, exception, "Failed to process items", cancellationToken);
 ```
 
 ### Log Levels

@@ -9,18 +9,21 @@ Thank you for your interest in contributing! This document provides guidelines f
 Before submitting a pull request, ensure your code meets these requirements:
 
 ### Code Quality
+
 - [ ] Code follows naming conventions and style guide ([style-guidelines](instructions/style-guidelines.instructions.md))
 - [ ] All public members have XML documentation comments
 - [ ] No warnings (project has `TreatWarningsAsErrors = true`)
 - [ ] Code is properly formatted (use IDE formatter)
 
 ### Architecture & Design
+
 - [ ] New services/repositories have interfaces for testability
 - [ ] Business logic is abstracted behind interfaces (no `new` instantiation of services)
 - [ ] Dependencies injected via constructor parameters
 - [ ] Follows layered architecture (Core → Infrastructure → Presentation)
 
 ### Testing
+
 - [ ] TDD workflow followed (failing test committed in branch history)
 - [ ] Tests cover happy path and error cases
 - [ ] Unit tests for business logic (80%+ coverage)
@@ -28,16 +31,19 @@ Before submitting a pull request, ensure your code meets these requirements:
 - [ ] All existing tests pass locally
 
 ### Database Changes
+
 - [ ] Database changes have Entity Framework migrations
 - [ ] Migration reviewed and tested
 - [ ] Migration includes `Up()` and `Down()` methods for rollback
 
 ### Async/Concurrency
+
 - [ ] Async/await used throughout (no `Task.Wait()` or `Task.Result`)
 - [ ] `CancellationToken` parameters added to async methods
 - [ ] Proper disposal of resources (`using` statements)
 
 ### Documentation
+
 - [ ] README updated (if applicable)
 - [ ] API documentation added for public interfaces
 - [ ] Comments explain "why", not "what" (code should be self-explanatory)
@@ -51,7 +57,8 @@ Use conventional commits format for all commit messages. This enables automatic 
 </COMMIT_REQUIREMENTS>
 
 ### Format
-```
+
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -60,6 +67,7 @@ Use conventional commits format for all commit messages. This enables automatic 
 ```
 
 ### Types
+
 - **feat**: New feature
 - **fix**: Bug fix
 - **refactor**: Code refactoring (no functional changes)
@@ -70,7 +78,8 @@ Use conventional commits format for all commit messages. This enables automatic 
 - **style**: Code style changes (formatting, whitespace)
 
 ### Examples
-```
+
+```text
 feat(sync): add delta query support for incremental sync
 
 Implement delta query pattern using Microsoft Graph API /delta endpoint.
@@ -80,7 +89,7 @@ items since last sync.
 Closes #123
 ```
 
-```
+```text
 fix(auth): handle token expiration gracefully
 
 Catch token expiration and prompt re-authentication instead of crashing.
@@ -89,7 +98,7 @@ Added retry logic with exponential backoff for transient failures.
 Fixes #456
 ```
 
-```
+```text
 refactor(repositories): extract common repository logic to base class
 
 Extract shared CRUD operations to AbstractRepository base class to reduce
@@ -97,6 +106,7 @@ duplication across repositories. No functional changes.
 ```
 
 ### Best Practices
+
 - Use imperative mood: "add" not "added" or "adds"
 - Don't capitalize first letter of subject
 - No period at end of subject
@@ -115,11 +125,13 @@ All changes must go through pull requests. Direct commits to main branch are blo
 ### Creating a Pull Request
 
 **1. Create feature branch**:
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
 **2. Make changes following TDD**:
+
 ```bash
 # Write failing test
 # Commit failing test
@@ -137,6 +149,7 @@ git commit -m "refactor: improve feature implementation"
 ```
 
 **3. Push branch**:
+
 ```bash
 git push -u origin feature/your-feature-name
 ```
@@ -144,6 +157,7 @@ git push -u origin feature/your-feature-name
 **4. Create PR via GitHub API** (preferred method):
 
 Use the GitHub Copilot tool:
+
 ```text
 {
   owner: "astar-development",
@@ -189,6 +203,7 @@ Relates to #456
 ### Pull Request Guidelines
 
 <WORKFLOW_ENFORCEMENT type="MANDATORY">
+
 - **PR Size**: < 300 lines of code changed, < 20 files (break down larger changes)
 - **Review Time**: Respond to reviewer feedback within 12 hours
 - **Merge Time**: PRs reviewed and merged within 24 hours (when possible)
@@ -207,6 +222,7 @@ For changes that exceed PR size limits:
 4. **Communicate**: Add detailed description explaining scope and approach
 
 **Feature Flag Example**:
+
 ```csharp
 public class FeatureFlags
 {
@@ -231,6 +247,7 @@ public async Task SyncAsync()
 ## Branching Strategy
 
 <NAMING_REQUIREMENTS type="MANDATORY">
+
 - **Feature branches**: `feature/<descriptive-name>` (e.g., `feature/add-file-watcher`)
 - **Bug fixes**: `fix/<descriptive-name>` (e.g., `fix/resolve-sync-conflict`)
 - **Refactors**: `refactor/<descriptive-name>` (e.g., `refactor/extract-interfaces`)
@@ -260,7 +277,7 @@ public async Task SyncAsync()
 - **Questions**: Open a GitHub Discussion
 - **Bugs**: Open a GitHub Issue with reproduction steps
 - **Features**: Open a GitHub Issue with use case and requirements
-- **Security**: Email security@astar.dev (do not open public issue)
+- **Security**: Email <security@astar.dev> (do not open public issue)
 
 ---
 

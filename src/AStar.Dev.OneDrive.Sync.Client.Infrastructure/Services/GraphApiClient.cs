@@ -137,6 +137,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         if(drive?.Id is null)
             throw new InvalidOperationException("Unable to access user's drive");
 
+        // the download doesnt work
         Stream contentStream = await graphClient.Drives[drive.Id].Items[itemId].Content.GetAsync(cancellationToken: cancellationToken) ??
                                throw new InvalidOperationException($"Failed to download file content for item {itemId}");
 
@@ -298,7 +299,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
     {
         var items = new List<DriveItemEntity>();
         if(doc.RootElement.TryGetProperty("value", out JsonElement arr))
-        {
+        {   
             foreach(JsonElement el in arr.EnumerateArray())
             {
                 items.Add(ParseDriveItemRecord(hashedAccountId, el));
@@ -321,7 +322,7 @@ public sealed class GraphApiClient(IAuthService authService, HttpClient http, Ms
         DateTimeOffset lastModifiedUtc = GetLastModifiedUtc(jsonElement);
         var isDeleted = jsonElement.TryGetProperty("deleted", out _);
 
-        return new DriveItemEntity(hashedAccountId, driveItemId, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted);
+        return new DriveItemEntity(hashedAccountId, driveItemId, relativePath, eTag, cTag, size, lastModifiedUtc, isFolder, isDeleted, name: name);
     }
 
     private static DateTimeOffset GetLastModifiedUtc(JsonElement jsonElement) => jsonElement.TryGetProperty("lastModifiedDateTime", out JsonElement lm)

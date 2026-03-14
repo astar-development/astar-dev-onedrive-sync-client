@@ -1,5 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Accounts;
-using AStar.Dev.OneDrive.Sync.Client.MainWindow;
+using AStar.Dev.OneDrive.Sync.Client.Home;
 using AStar.Dev.OneDrive.Sync.Client.Syncronisation;
 using AStar.Dev.OneDrive.Sync.Client.SyncronisationConflicts;
 using Microsoft.Extensions.DependencyInjection;

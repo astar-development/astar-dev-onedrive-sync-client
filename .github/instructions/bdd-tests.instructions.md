@@ -85,7 +85,7 @@ And I should be greeted by name
 
 Scenario Outline: Login fails with invalid credentials
 Given I am on the sign-in page
-When I sign in with <username> and <password>
+When I sign in with `username` and `password`
 Then I should see an authentication error
 
     Examples:
@@ -101,45 +101,37 @@ Example 1: Clear, behavior-focused vs UI-coupled
 
 Good:
 
-```
-Scenario: Add item to cart updates total
-  Given a priced item exists
-  And my cart is empty
-  When I add the item to my cart
-  Then my cart total should equal the item price
-```
+    Scenario: Add item to cart updates total
+      Given a priced item exists
+      And my cart is empty
+      When I add the item to my cart
+      Then my cart total should equal the item price
 
 Bad:
 
-```
-Scenario: Click add button updates total
-  Given I click the button with id "#add-btn"
-  And I wait 3 seconds
-  Then the element ".total" text should be "$9.99"
-```
+    Scenario: Click add button updates total
+      Given I click the button with id "#add-btn"
+      And I wait 3 seconds
+      Then the element ".total" text should be "$9.99"
 
 Example 2: Single outcome vs multiple assertions
 
 Good:
 
-```
-Scenario: Payment declined shows error
-  Given my card is blocked
-  When I attempt to pay
-  Then I should see a decline message
-```
+    Scenario: Payment declined shows error
+      Given my card is blocked
+      When I attempt to pay
+      Then I should see a decline message
 
 Bad:
 
-```
-Scenario: Payment declined does many things
-  Given my card is blocked
-  When I attempt to pay
-  Then I should see a decline message
-  And my order is cancelled
-  And my basket is emptied
-  And an email is sent
-```
+    Scenario: Payment declined shows error and cleans up
+      Given my card is blocked
+      When I attempt to pay
+      Then I should see a decline message
+      And my order is cancelled
+      And my basket is emptied
+      And an email is sent
 
 Rationale: Split into separate scenarios to keep each focused and reliable.
 

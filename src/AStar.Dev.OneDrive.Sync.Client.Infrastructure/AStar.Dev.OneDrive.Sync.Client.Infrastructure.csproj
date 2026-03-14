@@ -12,6 +12,8 @@
 
     <ItemGroup>
         <!-- Microsoft Identity (MSAL) -->
+        <PackageReference Include="Dapper" Version="2.1.72" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5" />
         <PackageReference Include="Microsoft.Identity.Client" Version="4.81.0" />
         <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.81.0" />
         <!-- Microsoft Graph API -->
