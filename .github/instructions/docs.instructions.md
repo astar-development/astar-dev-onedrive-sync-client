@@ -186,15 +186,15 @@ Prompting techniques: Mermaid diagram with loopbacks and explicit approval gate 
 
 ```mermaid
 flowchart TD
-	A[Collect inputs] --> B[Outline structure]
-	B --> C[Draft in clear, concise language]
-	C --> D[Add examples and diagrams]
-	D --> E[Peer review]
-	E --> F{Owner approval?}
-	F -- No --> C
-	F -- Yes --> G[Publish to correct location]
-	G --> H[Link/update indexes]
-	H --> I[Plan maintenance cadence]
+ A[Collect inputs] --> B[Outline structure]
+ B --> C[Draft in clear, concise language]
+ C --> D[Add examples and diagrams]
+ D --> E[Peer review]
+ E --> F{Owner approval?}
+ F -- No --> C
+ F -- Yes --> G[Publish to correct location]
+ G --> H[Link/update indexes]
+ H --> I[Plan maintenance cadence]
 ```
 
 <!-- © Capgemini 2026 -->

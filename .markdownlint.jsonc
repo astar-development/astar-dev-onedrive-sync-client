@@ -18,6 +18,9 @@
     "front_matter_title": ""
   },
 
+  // Disable table style checks
+  "MD060": false,
+
   // Disallow trailing spaces except in code blocks
   "MD009": { "br_spaces": 0 },
 

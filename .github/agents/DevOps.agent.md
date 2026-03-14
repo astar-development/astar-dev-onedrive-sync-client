@@ -56,6 +56,7 @@ Do not restate SSOT numeric thresholds; reference them.
 ## Output Requirements
 
 Include:
+
 - Pipeline/infrastructure changes
 - Security implications
 - Validation steps and outcomes

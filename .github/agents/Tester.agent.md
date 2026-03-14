@@ -64,6 +64,7 @@ Do not implement production code unless the user explicitly asks.
 3. E2E test only for critical user journeys.
 
 Heuristic:
+
 - Bug fix: reproduce at lowest feasible level first.
 - New feature: unit tests for core logic + focused integration for key boundaries; minimal E2E for critical flow.
 
@@ -92,6 +93,7 @@ Heuristic:
 - Prefer behaviour assertions over implementation-detail assertions.
 
 Recommended naming:
+
 - Class: `{ComponentName}Should`
 - Method: `{behaviour}When{Scenario}` or `{Method}ScenarioExpectedResult`
 
@@ -105,6 +107,7 @@ Recommended naming:
 ## Output Requirements
 
 When delivering test work, include:
+
 - Bullet points for what was tested:
   - Key scenarios covered (happy/error/edge).
 - Commands run and results.

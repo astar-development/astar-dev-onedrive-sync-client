@@ -60,6 +60,7 @@ Do not implement production code unless explicitly requested.
 ## Output Requirements
 
 Include:
+
 - Context and assumptions
 - Proposed architecture (preferred + alternatives)
 - Trade-offs and rationale

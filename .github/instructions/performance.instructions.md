@@ -180,7 +180,7 @@ var items = await _context.SyncItems
     .ToListAsync(ct);
 ```
 
-### Connection Pooling
+### Database Connection Pooling
 
 - **Strategy**: SQLite connection pooling is automatic
 - **Benefit**: Reuses connections across operations

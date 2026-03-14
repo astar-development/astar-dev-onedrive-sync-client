@@ -4,7 +4,7 @@ description: Format code according to specified guidelines.
 
 # Format Agent
 
-## Mission: Format code according to specified guidelines.
+## Mission: Format code according to specified guidelines
 
 ## Guidelines
 

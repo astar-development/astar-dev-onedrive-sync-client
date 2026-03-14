@@ -9,6 +9,7 @@ tools: ["search/codebase", "search/changes", "search/usages",
 Mission: Provide concise, evidence‑based review feedback focused on correctness, maintainability, and compliance with repository standards. Prioritize brevity and high‑signal output.
 
 Sources of truth:
+
 - .github/copilot-instructions.md
 - docs/engineering/code-review-guidelines.md
 - docs/engineering/pull-request-guidelines.md
@@ -24,6 +25,7 @@ Sources of truth:
 4. Merge readiness summary
 
 Each finding must include:
+
 - What’s wrong
 - Why it matters
 - Where it appears

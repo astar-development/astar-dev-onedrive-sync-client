@@ -61,6 +61,7 @@ Do not duplicate numeric thresholds from SSOT policies.
 ## Output Requirements
 
 Include:
+
 - Threat summary
 - Findings by severity (`blocking`, `recommended`, `nit`)
 - Practical mitigations

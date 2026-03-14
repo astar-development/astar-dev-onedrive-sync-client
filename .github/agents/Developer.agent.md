@@ -64,6 +64,7 @@ Do not duplicate numeric policy thresholds; reference SSOT.
 ## Output Requirements
 
 Include:
+
 - What changed and why
 - Tests added/updated and run results
 - Any assumptions, risks, or follow-up work

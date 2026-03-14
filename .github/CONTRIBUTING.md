@@ -57,7 +57,8 @@ Use conventional commits format for all commit messages. This enables automatic 
 </COMMIT_REQUIREMENTS>
 
 ### Format
-```
+
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -78,7 +79,7 @@ Use conventional commits format for all commit messages. This enables automatic 
 
 ### Examples
 
-```
+```text
 feat(sync): add delta query support for incremental sync
 
 Implement delta query pattern using Microsoft Graph API /delta endpoint.
@@ -88,7 +89,7 @@ items since last sync.
 Closes #123
 ```
 
-```
+```text
 fix(auth): handle token expiration gracefully
 
 Catch token expiration and prompt re-authentication instead of crashing.
@@ -97,7 +98,7 @@ Added retry logic with exponential backoff for transient failures.
 Fixes #456
 ```
 
-```
+```text
 refactor(repositories): extract common repository logic to base class
 
 Extract shared CRUD operations to AbstractRepository base class to reduce
@@ -124,11 +125,13 @@ All changes must go through pull requests. Direct commits to main branch are blo
 ### Creating a Pull Request
 
 **1. Create feature branch**:
+
 ```bash
 git checkout -b feature/your-feature-name
 ```
 
 **2. Make changes following TDD**:
+
 ```bash
 # Write failing test
 # Commit failing test
@@ -146,6 +149,7 @@ git commit -m "refactor: improve feature implementation"
 ```
 
 **3. Push branch**:
+
 ```bash
 git push -u origin feature/your-feature-name
 ```
@@ -153,6 +157,7 @@ git push -u origin feature/your-feature-name
 **4. Create PR via GitHub API** (preferred method):
 
 Use the GitHub Copilot tool:
+
 ```text
 {
   owner: "astar-development",
@@ -198,6 +203,7 @@ Relates to #456
 ### Pull Request Guidelines
 
 <WORKFLOW_ENFORCEMENT type="MANDATORY">
+
 - **PR Size**: < 300 lines of code changed, < 20 files (break down larger changes)
 - **Review Time**: Respond to reviewer feedback within 12 hours
 - **Merge Time**: PRs reviewed and merged within 24 hours (when possible)
@@ -241,6 +247,7 @@ public async Task SyncAsync()
 ## Branching Strategy
 
 <NAMING_REQUIREMENTS type="MANDATORY">
+
 - **Feature branches**: `feature/<descriptive-name>` (e.g., `feature/add-file-watcher`)
 - **Bug fixes**: `fix/<descriptive-name>` (e.g., `fix/resolve-sync-conflict`)
 - **Refactors**: `refactor/<descriptive-name>` (e.g., `refactor/extract-interfaces`)
@@ -270,7 +277,7 @@ public async Task SyncAsync()
 - **Questions**: Open a GitHub Discussion
 - **Bugs**: Open a GitHub Issue with reproduction steps
 - **Features**: Open a GitHub Issue with use case and requirements
-- **Security**: Email security@astar.dev (do not open public issue)
+- **Security**: Email <security@astar.dev> (do not open public issue)
 
 ---
 

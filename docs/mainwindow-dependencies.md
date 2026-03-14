@@ -31,31 +31,34 @@ flowchart TD
 
 - Only types created in the `AStar.Dev.OneDrive.Sync.Client` project, it's related projects or any AStar NuGet packages that are *directly* included here will be added to this diagram. Framework or other NuGet packages are not included by design.
 
-
 Want to go further?
 
 I can extend this script to include:
 
-    Namespace‑level grouping
+```text
+Namespace‑level grouping
 
-    Color‑coded nodes (Views, ViewModels, Services)
+Color‑coded nodes (Views, ViewModels, Services)
 
-    Reverse dependency lookup
+Reverse dependency lookup
 
-    Graph filtering (e.g., only show MainWindow subtree)
+Graph filtering (e.g., only show MainWindow subtree)
 
-    Clickable links to source files
+Clickable links to source files
 
-    Avalonia DataTemplates → ViewModel mappings
+Avalonia DataTemplates → ViewModel mappings
 
-    Service registration scanning (from DI container)
+Service registration scanning (from DI container)
+```
 
-    Add color‑coded Mermaid nodes (Views, ViewModels, Services)
+```text
+Add color‑coded Mermaid nodes (Views, ViewModels, Services)
 
-    Add namespace grouping (Mermaid subgraphs)
+Add namespace grouping (Mermaid subgraphs)
 
-    Add reverse dependency lookup (e.g., “what depends on MainWindow?”)
+Add reverse dependency lookup (e.g., "what depends on MainWindow?")
 
-    Add filtering so you can generate a graph starting only from MainWindow
+Add filtering so you can generate a graph starting only from MainWindow
+```
 
 But first — get the script running.

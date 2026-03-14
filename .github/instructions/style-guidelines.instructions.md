@@ -1,6 +1,8 @@
+# Coding Standards and Style Guidelines
+
 ---
+
 applyTo: "**/*.cs"
----
 
 Coding standards and style guidelines / preferences for C# files in this repository that AI must follow.
 
