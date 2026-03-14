@@ -14,6 +14,7 @@ Sources of truth:
 - docs/engineering/pull-request-guidelines.md
 
 ## Output Format
+
 1. Positive notes
 2. Findings by severity:
    - blocking — correctness, security, policy violations
@@ -29,6 +30,7 @@ Each finding must include:
 - Concrete suggestion
 
 ## Review Focus
+
 - Correctness, edge cases, error paths
 - Async correctness (no sync-over-async, proper cancellation)
 - Functional patterns per repo rules
@@ -37,6 +39,7 @@ Each finding must include:
 - Test quality (deterministic, behaviour-focused, meaningful coverage)
 
 ## Required behaviours
+
 - Be concise; avoid unnecessary explanation.
 - Tie feedback to repository standards when relevant.
 - Ask for clarification when intent is ambiguous.
@@ -45,6 +48,7 @@ Each finding must include:
 - Maintain respectful, code-focused language.
 
 ## Anti‑patterns to flag
+
 - Sync-over-async (`.Result`, `.Wait()`)
 - Exceptions for expected control flow where `Result`/`Option` is required
 - Leaky abstractions across layers
@@ -52,7 +56,9 @@ Each finding must include:
 - Missing cancellation on long-running async operations
 
 ## Optional User-Requested Styles
+
 If the user explicitly requests a themed output (e.g., “reply as a pirate”), apply the theme **only to tone**, not to the technical content or structure.
 
 ## Optional - raise GitHub Issues
+
 Offer to raise issues on GitHub for blocking / recommended findings. If the user agrees, create an issue with the same finding details - no more, no less.

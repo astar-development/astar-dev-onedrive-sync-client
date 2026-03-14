@@ -1,15 +1,15 @@
 # The Supporting Cast: Unit, Try, Pattern, and Extension Methods
 
-**Published: February 19, 2026**  
-**Author: AStar Development Team**  
-**Target Audience: Entry-Level C# Developers**  
+**Published: February 19, 2026**
+**Author: AStar Development Team**
+**Target Audience: Entry-Level C# Developers**
 **Part 4 of the AStar.Dev.Functional.Extensions Series**
 
 ---
 
 ## Introduction: The Glue That Holds It All Together
 
-In the previous three posts, we explored `Option<T>` and `Result<T, TError>`—the stars of functional programming in C#. But every great show needs a supporting cast, and the **AStar.Dev.Functional.Extensions** package includes several utility types and extension methods that make functional programming even more delightful.
+In the previous three posts, we explored `Option`T`` and `Result<T, TError>`—the stars of functional programming in C#. But every great show needs a supporting cast, and the **AStar.Dev.Functional.Extensions** package includes several utility types and extension methods that make functional programming even more delightful.
 
 Think of these as the tools in your utility belt. Individually, they might seem simple, but together they solve common problems elegantly and make your code more expressive.
 
@@ -166,11 +166,13 @@ public Result<User, string> UpdateUser(User user)
 ```
 
 **When to return Unit:**
+
 - The caller doesn't need the value
 - You want to emphasize the side effect (saving, sending, logging)
 - You're chaining operations where the next step doesn't use the previous value
 
 **When to return the value:**
+
 - The caller might need the updated value
 - You want to enable further transformations
 - The operation enriches or modifies the value in a meaningful way
@@ -256,6 +258,7 @@ result.Match(
 ```
 
 **What happened?**
+
 - `Try.Run()` executes the lambda
 - If it succeeds, returns `Result<User, Exception>.Ok(user)`
 - If it throws, returns `Result<User, Exception>.Error(exception)`
@@ -504,7 +507,7 @@ if (Pattern.IsFailure(result))
 
 ### Why Use Pattern Methods?
 
-**1. Method Group Conversion**
+### 1. Method Group Conversion
 
 Pattern methods work well with method references:
 
@@ -516,7 +519,7 @@ var foundUsers = userOptions.Where(Pattern.IsSome);
 var foundUsers = userOptions.Where(opt => opt.IsSome());
 ```
 
-**2. Null-Safe Checking**
+### 2. Null-Safe Checking
 
 Pattern methods handle nulls gracefully:
 
@@ -525,7 +528,7 @@ Option<User> userOption = null;
 Pattern.IsSome(userOption); // Returns false, doesn't throw
 ```
 
-**3. Readability in Conditions**
+### 3. Readability in Conditions
 
 Sometimes the static method reads better:
 
@@ -622,7 +625,7 @@ The package includes dozens of extension methods that make working with `Option`
 
 #### FirstOrNone
 
-Like `FirstOrDefault`, but returns `Option<T>`:
+Like `FirstOrDefault`, but returns `Option`T``:
 
 ```csharp
 var users = new List<User> { /*...*/ };
@@ -838,6 +841,7 @@ public class UsersViewModel : ReactiveObject
 ```
 
 **What it does:**
+
 - If the Result is success, clears the collection and adds all items
 - If the Result is error, calls the error handler
 - Perfect for loading data into UI collections
@@ -1145,7 +1149,7 @@ public class CheckoutViewModel : ReactiveObject
 
 ## Best Practices Summary
 
-### When to Use Unit
+### When to Use Unit (Summary)
 
 - ✅ Operations that perform side effects but return no value
 - ✅ Validations that return success/failure without a value
@@ -1199,7 +1203,7 @@ We've explored the supporting cast of the AStar.Dev.Functional.Extensions packag
 6. **ViewModel Helpers** - Special extensions for UI code
 7. **Collection Helpers** - Working with Options and Results in sequences
 
-Combined with `Option<T>` and `Result<T, TError>` from the previous posts, you now have a complete toolkit for writing clean, safe, maintainable C# code using functional programming principles.
+Combined with `Option`T`` and `Result<T, TError>` from the previous posts, you now have a complete toolkit for writing clean, safe, maintainable C# code using functional programming principles.
 
 **Key Takeaways:**
 
@@ -1215,8 +1219,8 @@ Combined with `Option<T>` and `Result<T, TError>` from the previous posts, you n
 Over this four-part series, we've covered:
 
 1. **[Part 1](./01-functional-extensions-overview.md)** - Why functional programming makes code better
-2. **[Part 2](./02-result-type-deep-dive.md)** - Mastering Result<T, TError> for elegant error handling
-3. **[Part 3](./03-option-type-deep-dive.md)** - Mastering Option<T> to eliminate null reference exceptions
+2. **[Part 2](./02-result-type-deep-dive.md)** - Mastering Result`T, TError` for elegant error handling
+3. **[Part 3](./03-option-type-deep-dive.md)** - Mastering Option`T` to eliminate null reference exceptions
 4. **[Part 4](./04-supporting-types-and-extensions.md)** (this post) - The supporting cast that makes it all work together
 
 You now have everything you need to write functional C# code that is:
@@ -1237,8 +1241,8 @@ Happy coding! 🚀
 ## Series Navigation
 
 - [Part 1: Overview of AStar.Dev.Functional.Extensions](./01-functional-extensions-overview.md)
-- [Part 2: Deep Dive into Result<T, TError>](./02-result-type-deep-dive.md)
-- [Part 3: Mastering Option<T>](./03-option-type-deep-dive.md)
+- [Part 2: Deep Dive into Result`T, TError`](./02-result-type-deep-dive.md)
+- [Part 3: Mastering Option`T`](./03-option-type-deep-dive.md)
 - [Part 4: The Supporting Cast](./04-supporting-types-and-extensions.md) (You are here)
 
 ---

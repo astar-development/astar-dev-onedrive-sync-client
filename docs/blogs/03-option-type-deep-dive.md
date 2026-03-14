@@ -1,8 +1,8 @@
-# Mastering Option<T>: Say Goodbye to Null Reference Exceptions
+# Mastering Option`T`: Say Goodbye to Null Reference Exceptions
 
-**Published: February 19, 2026**  
-**Author: AStar Development Team**  
-**Target Audience: Entry-Level C# Developers**  
+**Published: February 19, 2026**
+**Author: AStar Development Team**
+**Target Audience: Entry-Level C# Developers**
 **Part 3 of the AStar.Dev.Functional.Extensions Series**
 
 ---
@@ -36,11 +36,11 @@ But here's the problem: **it's too easy to forget that null check.** The method 
 
 What if there was a way to make "might be absent" explicit? What if the compiler could help you remember to handle the empty case? What if you could chain operations on potentially-null values without a million nested if-statements?
 
-**Welcome to `Option<T>`.**
+**Welcome to `Option`T``.**
 
-## What Is Option<T>?
+## What Is Option`T`?
 
-An `Option<T>` is a type that explicitly represents a value that might or might not be present. Instead of using `null` to represent absence, we use a type that can be either:
+An `Option`T`` is a type that explicitly represents a value that might or might not be present. Instead of using `null` to represent absence, we use a type that can be either:
 
 1. **Some(value)** - A value is present
 2. **None** - No value is present
@@ -65,7 +65,7 @@ The difference is night and day.
 
 ## Creating Options: Some and None
 
-Creating an `Option<T>` is straightforward. You have several ways to do it:
+Creating an `Option`T`` is straightforward. You have several ways to do it:
 
 ### Method 1: Using Option.Some and Option.None
 
@@ -78,7 +78,7 @@ Option<string> emptyOption = Option.None<string>(); // Empty
 
 ### Method 2: Implicit Conversion
 
-Just like with `Result<T, TError>`, `Option<T>` supports implicit conversion:
+Just like with `Result<T, TError>`, `Option`T`` supports implicit conversion:
 
 ```csharp
 public Option<User> FindUser(int id)
@@ -131,7 +131,7 @@ Option<int> optionInt = nullableInt.ToOption();
 
 ## Pattern Matching: Handling Both Cases
 
-Once you have an `Option<T>`, you need to handle both the `Some` and `None` cases. The primary way to do this is with the `Match` method:
+Once you have an `Option`T``, you need to handle both the `Some` and `None` cases. The primary way to do this is with the `Match` method:
 
 ```csharp
 var userOption = FindUser(42);
@@ -227,7 +227,7 @@ This works like `Dictionary.TryGetValue()` or `int.TryParse()`.
 
 ## Transforming Options: The Map Method
 
-One of the most powerful features of `Option<T>` is the ability to transform the value inside without explicitly checking if it's `Some` or `None`.
+One of the most powerful features of `Option`T`` is the ability to transform the value inside without explicitly checking if it's `Some` or `None`.
 
 ```csharp
 Option<User> userOption = FindUser(42);
@@ -335,7 +335,7 @@ This is exactly like `Bind` in `Result<T, TError>`—it chains operations that c
 
 Just like with `Result`, you can think of `Option` operations as railway tracks:
 
-```
+```text
 FindUser ──Some──> FindOrder ──Some──> FindProduct ──Some──> ✓
    │                   │                    │
    └──None──> ✗        └──None──> ✗          └──None──> ✗
@@ -345,7 +345,7 @@ Once you hit the `None` track, you stay there. All subsequent operations are ski
 
 ## Converting Between Option and Result
 
-Often you want to convert between `Option<T>` and `Result<T, TError>`. The package makes this easy:
+Often you want to convert between `Option`T`` and `Result<T, TError>`. The package makes this easy:
 
 ### Option to Result
 
@@ -391,7 +391,7 @@ This pattern is incredibly useful: use `Option` for queries that might return no
 
 ## Working with Collections
 
-`Option<T>` works beautifully with collections. Let's explore common scenarios:
+`Option`T`` works beautifully with collections. Let's explore common scenarios:
 
 ### Finding the First Match
 
@@ -420,7 +420,7 @@ public Option<User> FindUserByEmail(string email)
 }
 ```
 
-This is like `FirstOrDefault`, but returns `Option<T>` instead of potentially null.
+This is like `FirstOrDefault`, but returns `Option`T`` instead of potentially null.
 
 ### Filtering Collections
 
@@ -453,11 +453,11 @@ var pictureOptions = _users
 Access collection elements safely:
 
 ```csharp
-public Option<T> TryGetAt<T>(this IList<T> list, int index)
+public Option`T` TryGetAt`T`(this IList`T` list, int index)
 {
     return index >= 0 && index < list.Count
         ? Option.Some(list[index])
-        : Option.None<T>();
+        : Option.None`T`();
 }
 
 // Usage
@@ -476,7 +476,7 @@ No more `IndexOutOfRangeException`!
 
 ## LINQ-Style Queries with Option
 
-The package includes LINQ-style query support for `Option<T>`:
+The package includes LINQ-style query support for `Option`T``:
 
 ### Select (Same as Map)
 
@@ -534,7 +534,7 @@ LINQ syntax keeps the parameters in scope and can be clearer for complex logic.
 
 ## Async Operations
 
-Like `Result<T, TError>`, `Option<T>` works seamlessly with async code:
+Like `Result<T, TError>`, `Option`T`` works seamlessly with async code:
 
 ### Async Option-Returning Methods
 
@@ -696,7 +696,7 @@ var userName = FindUser(userId)
 Or create a helper extension:
 
 ```csharp
-public static T GetOrDefault<T>(this Option<T> option, T defaultValue)
+public static T GetOrDefault`T`(this Option`T` option, T defaultValue)
 {
     return option.Match(
         onSome: value => value,
@@ -714,7 +714,7 @@ var userName = FindUser(userId)
 Sometimes computing the default is expensive:
 
 ```csharp
-public static T GetOrElse<T>(this Option<T> option, Func<T> defaultFactory)
+public static T GetOrElse`T`(this Option`T` option, Func`T` defaultFactory)
 {
     return option.Match(
         onSome: value => value,
@@ -731,10 +731,10 @@ var user = FindUser(userId)
 Keep an Option only if it satisfies a condition:
 
 ```csharp
-public static Option<T> Where<T>(this Option<T> option, Func<T, bool> predicate)
+public static Option`T` Where`T`(this Option`T` option, Func<T, bool> predicate)
 {
     return option.Bind(value =>
-        predicate(value) ? Option.Some(value) : Option.None<T>());
+        predicate(value) ? Option.Some(value) : Option.None`T`());
 }
 
 var adultUserOption = FindUser(userId)
@@ -767,9 +767,9 @@ var fullNameOption = Combine(
 Do something only if the Option is Some:
 
 ```csharp
-public static Option<T> Do<T>(this Option<T> option, Action<T> action)
+public static Option`T` Do`T`(this Option`T` option, Action`T` action)
 {
-    if (option is Option<T>.Some some)
+    if (option is Option`T`.Some some)
     {
         action(some.Value);
     }
@@ -858,6 +858,7 @@ public class UserReportService
 ```
 
 **Problems:**
+
 - Nested null checks everywhere
 - Mix of different null-handling strategies (?, ??, throw)
 - Easy to forget a null check
@@ -942,6 +943,7 @@ public class UserReportService
 ```
 
 **Benefits:**
+
 - No nested null checks
 - Each method has a single, clear responsibility
 - Easy to test independently
@@ -950,7 +952,7 @@ public class UserReportService
 
 ## Testing with Options
 
-Testing code that uses `Option<T>` is straightforward:
+Testing code that uses `Option`T`` is straightforward:
 
 ```csharp
 public class UserServiceTests
@@ -1076,13 +1078,14 @@ if (name != null)
 ```
 
 **Limitations:**
+
 - ⚠️ Compiler warnings only (can be ignored or disabled)
 - ⚠️ No functional operations (Map, Bind, etc.)
 - ⚠️ Still using null—just with annotations
 - ⚠️ Doesn't work well with generics
 - ⚠️ Can't chain operations safely
 
-### Option<T>
+### Option`T`
 
 ```csharp
 public Option<string> FindUserName(int userId)
@@ -1098,13 +1101,14 @@ FindUserName(42).Match(
 ```
 
 **Benefits:**
+
 - ✅ Compile-time enforcement (can't ignore)
 - ✅ Rich functional operations (Map, Bind, Match, etc.)
 - ✅ No null—explicit Some/None states
 - ✅ Works beautifully with generics
 - ✅ Chainable operations with short-circuiting
 
-**Can you use both?** Absolutely! Nullable reference types help catch nulls at the boundaries, while `Option<T>` provides rich functional operations inside your domain logic.
+**Can you use both?** Absolutely! Nullable reference types help catch nulls at the boundaries, while `Option`T`` provides rich functional operations inside your domain logic.
 
 ## Best Practices
 
@@ -1192,17 +1196,18 @@ return FindUser(userId)
 ### 6. Be Consistent
 
 Pick a pattern and stick with it across your codebase:
-- Use `Option<T>` consistently for optional values
+
+- Use `Option`T`` consistently for optional values
 - Use `.Match()` as the primary way to extract values
 - Use `.Map()` and `.Bind()` for transformations
 
 ## Conclusion: Null-Safe Code Made Simple
 
-The `Option<T>` type transforms how you handle optional values in C#. Instead of relying on null and defensive null checks everywhere, you make absence explicit in your type signatures and use powerful functional operations to work with optional values safely.
+The `Option`T`` type transforms how you handle optional values in C#. Instead of relying on null and defensive null checks everywhere, you make absence explicit in your type signatures and use powerful functional operations to work with optional values safely.
 
 **Key takeaways:**
 
-1. **`Option<T>` makes absence explicit** - Your method signatures tell the full story
+1. **`Option`T`` makes absence explicit** - Your method signatures tell the full story
 2. **Pattern matching ensures you handle all cases** - No forgotten null checks
 3. **Map transforms values safely** - Short-circuits on None automatically
 4. **Bind chains optional operations** - Build complex flows from simple parts
@@ -1210,7 +1215,8 @@ The `Option<T>` type transforms how you handle optional values in C#. Instead of
 6. **Works with collections and LINQ** - Integrate seamlessly with C# features
 7. **Async support** - All operations have async equivalents
 
-By using `Option<T>`, you write code that is:
+By using `Option`T``, you write code that is:
+
 - ✅ More explicit and honest
 - ✅ Safer (no null reference exceptions
 )

@@ -1,8 +1,8 @@
 # Mastering Result<T, TError>: Error Handling Without the Pain
 
-**Published: February 19, 2026**  
-**Author: AStar Development Team**  
-**Target Audience: Entry-Level C# Developers**  
+**Published: February 19, 2026**
+**Author: AStar Development Team**
+**Target Audience: Entry-Level C# Developers**
 **Part 2 of the AStar.Dev.Functional.Extensions Series**
 
 ---
@@ -101,6 +101,7 @@ Result<User, string> result = GetUser(userId);
 ```
 
 Just by looking at this type, you immediately know:
+
 - ✅ Success case: You'll get a `User`
 - ❌ Failure case: You'll get a `string` (error message)
 
@@ -325,10 +326,11 @@ It "flattens" the nested Results automatically. This is sometimes called **monad
 There's a beautiful metaphor for this called **Railway-Oriented Programming** (coined by Scott Wlaschin):
 
 Imagine a railway track that splits into two:
+
 - **Success track** - Everything is going great
 - **Failure track** - Something went wrong
 
-```
+```text
 GetUser ──Success──> GetOrder ──Success──> Calculate ──Success──> ✓
    │                    │                      │
    └──Failure──> ✗      └──Failure──> ✗        └──Failure──> ✗
@@ -1093,11 +1095,13 @@ No `Assert.Throws`, no complex exception setup—just simple assertions on value
 ### 1. Choose Appropriate Error Types
 
 For simple cases, `string` errors are fine:
+
 ```csharp
 Result<User, string> GetUser(int id);
 ```
 
 For complex cases, use custom error types:
+
 ```csharp
 public class ValidationError
 {
@@ -1109,6 +1113,7 @@ Result<User, List<ValidationError>> ValidateUser(UserInput input);
 ```
 
 For exception wrapping, use `Exception`:
+
 ```csharp
 Result<User, Exception> GetUserFromDatabase(int id);
 ```
@@ -1116,6 +1121,7 @@ Result<User, Exception> GetUserFromDatabase(int id);
 ### 2. Be Consistent
 
 Pick a pattern and stick with it across your codebase:
+
 - Use `Result<T, string>` for simple error messages
 - Use `Result<T, Exception>` when wrapping legacy code
 - Use custom error types for complex scenarios
@@ -1188,6 +1194,7 @@ The `Result<T, TError>` type transforms error handling from a chore into an eleg
 7. **Testing becomes simpler** - No exception testing ceremony
 
 By using `Result`, you write code that is:
+
 - ✅ More explicit and honest
 - ✅ Easier to read and maintain
 - ✅ Safer and less error-prone
@@ -1204,7 +1211,7 @@ In the next post, we'll dive deep into `Option<T>` and learn how to eliminate nu
 - [Railway Oriented Programming by Scott Wlaschin](https://fsharpforfunandprofit.com/rop/)
 - [AStar.Dev.Functional.Extensions GitHub Repository](https://github.com/astar-development/astar-dev-onedrive-sync-client)
 
-**Coming Next:** Post 3 - Mastering Option<T>: Null-Safe Code Made Simple
+**Coming Next:** Post 3 - Mastering Option`T`: Null-Safe Code Made Simple
 
 ---
 
