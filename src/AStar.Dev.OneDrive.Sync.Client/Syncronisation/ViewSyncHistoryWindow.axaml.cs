@@ -17,11 +17,11 @@ public sealed partial class ViewSyncHistoryWindow : Window
         InitializeComponent();
 
         // Retrieve dependencies from DI container and create ViewModel
-        if(App.Host.Services is not null)
+        if(Start.App.Host.Services is not null)
         {
-            IAccountRepository accountRepo = App.Host.Services.GetRequiredService<IAccountRepository>();
-            IFileOperationLogRepository fileOpLogRepo = App.Host.Services.GetRequiredService<IFileOperationLogRepository>();
-            IDebugLogger debugLogger = App.Host.Services.GetRequiredService<IDebugLogger>();
+            IAccountRepository accountRepo = Start.App.Host.Services.GetRequiredService<IAccountRepository>();
+            IFileOperationLogRepository fileOpLogRepo = Start.App.Host.Services.GetRequiredService<IFileOperationLogRepository>();
+            IDebugLogger debugLogger = Start.App.Host.Services.GetRequiredService<IDebugLogger>();
             DataContext = new ViewSyncHistoryViewModel(accountRepo, fileOpLogRepo, debugLogger);
         }
     }

@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace AStar.Dev.OneDrive.Sync.Client;
+namespace AStar.Dev.OneDrive.Sync.Client.Start;
 
 public static class AppHost
 {

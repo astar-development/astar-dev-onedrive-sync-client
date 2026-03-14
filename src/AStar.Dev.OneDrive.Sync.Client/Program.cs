@@ -27,7 +27,7 @@ internal static class Program
         }
     }
 
-    private static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>()
+    private static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<Start.App>()
                 .UsePlatformDetect()
                 .WithInterFont()
                 .LogToTrace()

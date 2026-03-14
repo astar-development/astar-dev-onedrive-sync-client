@@ -16,11 +16,11 @@ public partial class DebugLogWindow : Window
     {
         InitializeComponent();
 
-        if(App.Host.Services is not null)
+        if(Start.App.Host.Services is not null)
         {
-            IAccountRepository accountRepository = App.Host.Services.GetRequiredService<IAccountRepository>();
-            IDebugLogRepository debugLogRepository = App.Host.Services.GetRequiredService<IDebugLogRepository>();
-            IDebugLogger debugLogger = App.Host.Services.GetRequiredService<IDebugLogger>();
+            IAccountRepository accountRepository = Start.App.Host.Services.GetRequiredService<IAccountRepository>();
+            IDebugLogRepository debugLogRepository = Start.App.Host.Services.GetRequiredService<IDebugLogRepository>();
+            IDebugLogger debugLogger = Start.App.Host.Services.GetRequiredService<IDebugLogger>();
             DataContext = new DebugLogViewModel(accountRepository, debugLogRepository, debugLogger);
         }
     }

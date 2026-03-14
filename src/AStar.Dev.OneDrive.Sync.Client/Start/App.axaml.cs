@@ -8,7 +8,7 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AStar.Dev.OneDrive.Sync.Client;
+namespace AStar.Dev.OneDrive.Sync.Client.Start;
 
 /// <summary>
 ///     Main application class for the OneDrive sync client.

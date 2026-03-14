@@ -21,8 +21,8 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
 
-        DataContext = App.Host.Services.GetRequiredService<MainWindowViewModel>();
-        _preferencesService = App.Host.Services.GetRequiredService<IWindowPreferencesService>();
+        DataContext = Start.App.Host.Services.GetRequiredService<MainWindowViewModel>();
+        _preferencesService = Start.App.Host.Services.GetRequiredService<IWindowPreferencesService>();
         _ = LoadWindowPreferencesAsync();
 
         PositionChanged += OnPositionChanged;
