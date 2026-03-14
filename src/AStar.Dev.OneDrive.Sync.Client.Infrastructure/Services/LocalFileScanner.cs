@@ -2,6 +2,7 @@ using System.IO.Abstractions;
 using System.Security.Cryptography;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
+using AStar.Dev.Utilities;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
 
@@ -69,7 +70,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
                         continue;
 
                     var relativePath = GetRelativePath(currentLocalPath, filePath);
-                    var oneDrivePath = CombinePaths(currentOneDrivePath, relativePath);
+                    var oneDrivePath = currentOneDrivePath.CombinePath(relativePath);
                     var hash = await ComputeFileHashAsync(filePath, cancellationToken);
 
                     var metadata = new FileMetadata(
@@ -106,7 +107,7 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
             foreach(var directory in directories)
             {
                 var relativePath = GetRelativePath(currentLocalPath, directory);
-                var oneDrivePath = CombinePaths(currentOneDrivePath, relativePath);
+                var oneDrivePath = currentOneDrivePath.CombinePath(relativePath);
 
                 await ScanDirectoryRecursiveAsync(
                     hashedAccountId,
@@ -140,17 +141,4 @@ public sealed class LocalFileScanner(IFileSystem fileSystem) : ILocalFileScanner
                 ? path + Path.DirectorySeparatorChar
                 : path;
 
-    private static string CombinePaths(string basePath, string relativePath)
-    {
-        basePath = basePath.Replace('\\', '/');
-        relativePath = relativePath.Replace('\\', '/');
-
-        if(!basePath.EndsWith('/'))
-            basePath += '/';
-
-        if(relativePath.StartsWith('/'))
-            relativePath = relativePath[1..];
-
-        return basePath + relativePath;
-    }
 }

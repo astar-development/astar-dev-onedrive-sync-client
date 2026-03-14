@@ -4,7 +4,7 @@ using AStar.Dev.OneDrive.Sync.Client.Syncronisation;
 using AStar.Dev.OneDrive.Sync.Client.SyncronisationConflicts;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AStar.Dev.OneDrive.Sync.Client;
+namespace AStar.Dev.OneDrive.Sync.Client.Start;
 
 public static class ViewModelExtensions
 {

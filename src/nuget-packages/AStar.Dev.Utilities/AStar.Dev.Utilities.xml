@@ -88,6 +88,23 @@
             <param name="object">The object to convert to JSON</param>
             <returns>The JSON string of the object supplied</returns>
         </member>
+        <member name="T:AStar.Dev.Utilities.PathOperationExtensions">
+            <summary>
+                Provides extension methods for common path operations.
+            </summary> <remarks>
+                This class includes methods that enhance the functionality of string paths, such as safely combining multiple segments while preventing rooted paths from overriding the base path.
+            </remarks>
+        </member>
+        <member name="M:AStar.Dev.Utilities.PathOperationExtensions.CombinePath(System.String,System.String[])">
+            <summary>
+                Combines a base path with one or more relative segments while preventing rooted segments from overriding earlier parts.
+            </summary>
+            <param name="basePath">The starting path to append segments to.</param>
+            <param name="segments">The path segments to append. All segments must be relative.</param>
+            <returns>The combined path.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="basePath" /> or <paramref name="segments" /> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when any segment is rooted.</exception>
+        </member>
         <member name="T:AStar.Dev.Utilities.RegexExtensions">
             <summary>
             </summary>

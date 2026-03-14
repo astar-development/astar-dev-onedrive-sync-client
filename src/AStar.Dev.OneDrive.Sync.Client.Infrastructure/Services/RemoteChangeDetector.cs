@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models;
 using AStar.Dev.OneDrive.Sync.Client.Core.Models.Enums;
+using AStar.Dev.Utilities;
 using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
@@ -144,10 +145,10 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
             if(changes.Count >= maxFiles)
                 return;
 
+            var itemPath = currentPath.CombinePath(item.Name);
             if(item.File is not null && item.Id is not null && item.Name is not null)
             {
                 fileCount++;
-                var itemPath = CombinePaths(currentPath, item.Name);
                 FileMetadata metadata = ConvertToFileMetadata(hashedAccountId, item, itemPath);
                 changes.Add(metadata);
                 if(changes.Count % 500 == 0)
@@ -156,7 +157,6 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
             else if(item.Folder is not null && item.Id is not null && item.Name is not null)
             {
                 folderCount++;
-                var itemPath = CombinePaths(currentPath, item.Name);
                 _ = await DebugLog.LogInfoAsync("RemoteChangeDetector.ScanFolderRecursiveAsync", hashedAccountId, $"Recursing into subfolder: '{item.Name}'", cancellationToken);
                 await ScanFolderRecursiveAsync(accountId, hashedAccountId, item, itemPath, changes, cancellationToken, maxFiles);
             }
@@ -168,20 +168,6 @@ public sealed class RemoteChangeDetector(IGraphApiClient graphApiClient) : IRemo
     }
 
     private static FileMetadata ConvertToFileMetadata(HashedAccountId hashedAccountId, DriveItem item, string path) => new(item.Id ?? string.Empty, hashedAccountId, item.Name ?? string.Empty, path, item.Size ?? 0, item.LastModifiedDateTime ?? DateTimeOffset.UtcNow, string.Empty, false, false, false, item.CTag, item.ETag, null, null, FileSyncStatus.PendingDownload, SyncDirection.Download);
-
-    private static string CombinePaths(string basePath, string name)
-    {
-        basePath = basePath.Replace('\\', '/');
-        name = name.Replace('\\', '/');
-
-        if(!basePath.EndsWith('/'))
-            basePath += '/';
-
-        if(name.StartsWith('/'))
-            name = name[1..];
-
-        return basePath + name;
-    }
 
     private static string CleanGraphApiPathPrefix(string path)
     {

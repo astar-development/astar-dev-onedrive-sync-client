@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Data;
 using AStar.Dev.OneDrive.Sync.Client.Infrastructure.Services;
+using AStar.Dev.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +13,7 @@ public static class AppHost
 {
     public static IHost BuildHost()
     {
-        var logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), ApplicationMetadata.ApplicationFolder, "logs");
+        var logDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData).CombinePath(ApplicationMetadata.ApplicationFolder, "logs");
         _ = Directory.CreateDirectory(logDir);
 
         IHost host = Host.CreateDefaultBuilder()

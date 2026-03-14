@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace AStar.Dev.OneDrive.Sync.Client;
+namespace AStar.Dev.OneDrive.Sync.Client.Start;
 
 public static class AuthenticationExtensions
 {

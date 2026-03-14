@@ -6,7 +6,7 @@ using Polly.CircuitBreaker;
 using Polly.Extensions.Http;
 using Polly.Retry;
 
-namespace AStar.Dev.OneDrive.Sync.Client;
+namespace AStar.Dev.OneDrive.Sync.Client.Start;
 
 public static class HttpClientExtension
 {
