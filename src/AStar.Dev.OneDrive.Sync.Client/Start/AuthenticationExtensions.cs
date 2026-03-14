@@ -11,7 +11,7 @@ public static class AuthenticationExtensions
 {
     public static IServiceCollection AddAuthenticationServices(this IServiceCollection services, IConfiguration configuration)
     {
-        using (IServiceScope scope = services.BuildServiceProvider().CreateScope())
+        using(IServiceScope scope = services.BuildServiceProvider().CreateScope())
         {
             ApplicationSettings appSettings = scope.ServiceProvider.GetRequiredService<IOptions<ApplicationSettings>>().Value;
 
@@ -21,7 +21,6 @@ public static class AuthenticationExtensions
 
             _ = services.AddSingleton(msalConfigurationSettings);
         }
-        ;
 
         var authConfig = AuthConfiguration.LoadFromConfiguration(configuration);
 

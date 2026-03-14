@@ -35,6 +35,7 @@ public static class AppHost
 
         return host;
     }
+    
     /// <summary>
     ///     Ensures the database is created and migrations are applied.
     /// </summary>

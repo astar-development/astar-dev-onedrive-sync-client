@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Testably.Abstractions;
 
-namespace AStar.Dev.OneDrive.Sync.Client;
+namespace AStar.Dev.OneDrive.Sync.Client.Start;
 
 public static class ApplicationServiceExtensions
 {
