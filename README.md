@@ -110,7 +110,7 @@ Uses **System.Reactive** for asynchronous operations:
 
 ## Project Structure
 
-```
+```text
 src/
 ├── AStar.Dev.OneDrive.Sync.Client/           # Presentation Layer
 ├── AStar.Dev.OneDrive.Sync.Client.Infrastructure/  # Infrastructure Layer

@@ -1,3 +1,5 @@
+# Avalonia Dependency Graph Format
+
 Today
 You said
 Hi, I am wondering if there is an easy way to create a markdown (or similar) that shows the dependency graph of an AvaloniaUI app.
@@ -11,7 +13,7 @@ I have VSCode and JetBrains rider but "think" I've only seen something like this
 Is this remotely possible?
 Copilot said
 
-Here’s the short version up front: there is no built‑in Avalonia or IDE tool (VSCode, Rider, or even Visual Studio) that can automatically generate a dependency graph of XAML → code‑behind → ViewModel → constructor dependencies → nested UserControls.  
+Here’s the short version up front: there is no built‑in Avalonia or IDE tool (VSCode, Rider, or even Visual Studio) that can automatically generate a dependency graph of XAML → code‑behind → ViewModel → constructor dependencies → nested UserControls.
 But—yes, it is possible using external tools and a bit of scripting, and Avalonia’s structure actually makes it easier than it looks.
 
 Below is a practical, developer‑friendly breakdown of what does work today.
@@ -32,12 +34,12 @@ How it works
     Feed the output into GraphViz or Mermaid to produce a diagram.
 
 Tools that help
-Tool	What it gives you
-Roslyn Quoter / Roslyn APIs	Parse C# and XAML to extract references.
-dotnet‑deps (CLI)	Generates dependency graphs between projects/files.
-NDepend (commercial)	Full dependency graphing, including class‑level.
-Mermaid (Markdown‑friendly)	Lets you embed diagrams directly in Markdown.
-GraphViz	Produces PNG/SVG dependency graphs.
+Tool What it gives you
+Roslyn Quoter / Roslyn APIs Parse C# and XAML to extract references.
+dotnet‑deps (CLI) Generates dependency graphs between projects/files.
+NDepend (commercial) Full dependency graphing, including class‑level.
+Mermaid (Markdown‑friendly) Lets you embed diagrams directly in Markdown.
+GraphViz Produces PNG/SVG dependency graphs.
 Example Mermaid output (you can generate this programmatically)
 mermaid
 
@@ -64,7 +66,7 @@ JetBrains Rider doesn’t auto‑draw a graph, but it does give you:
     Navigate → Type Dependency Diagram  
     (this is the closest thing to a graph, but only for C# types)
 
-Limitation:  
+Limitation:
 It won’t understand XAML → UserControl references automatically.
 ❌ 3. Avalonia DevTools cannot do this
 
@@ -884,15 +886,15 @@ Mermaid node IDs cannot contain:
 
     spaces
 
-    generics like Option<T>
+    generics like Option&lt;T&gt;
 
     punctuation like . or - unless sanitized
 
 Your graph likely contains nodes like:
 Code
 
-Option<T>_cs --> T_cs
-ErrorOr<T>_cs --> Something_cs
+Option&lt;T&gt;_cs --> T_cs
+ErrorOr&lt;T&gt;_cs --> Something_cs
 
 Mermaid sees:
 Code
@@ -935,11 +937,11 @@ static string Sanitize(string name)
 }
 
 This ensures:
-Original	Sanitized
-Option.cs	OptionT_cs
-ErrorOr	ErrorOrT
-MyService?	MyService
-Foo.Bar-Baz	Foo_Bar_Baz
+Original Sanitized
+Option.cs OptionT_cs
+ErrorOr ErrorOrT
+MyService? MyService
+Foo.Bar-Baz Foo_Bar_Baz
 
 And Mermaid will happily parse it.
 🧪 Want me to patch the whole generator for you?
@@ -955,321 +957,320 @@ If you paste just the problematic lines from dependencies.md, I’ll:
 For example:
 Code
 
-OptionT_cs["Option<T>.cs"]
+OptionT_cs["Option&lt;T&gt;.cs"]
 
 So the graph stays readable.
 
 Whenever you're ready, drop me the snippet around line 12 and we’ll tighten this up.
 You said
 for lazy copying - first 20 lines:
-```mermaid
-graph TD
-    App_axaml --> App_axaml_cs
-    App_axaml --> EnumToBooleanConverter_axaml
-    SyncStateCoordinator_cs --> ISyncSessionLogRepository_cs
-    ConflictDetectionService_cs --> ISyncConflictRepository_cs
-    ConflictDetectionService_cs --> IFileOperationLogRepository_cs
-    ConflictDetectionService_cs --> IDriveItemsRepository_cs
-    OneDriveFolderNode_cs --> string_cs
+
+    graph TD
+        App_axaml --> App_axaml_cs
+        App_axaml --> EnumToBooleanConverter_axaml
+        SyncStateCoordinator_cs --> ISyncSessionLogRepository_cs
+        ConflictDetectionService_cs --> ISyncConflictRepository_cs
+        ConflictDetectionService_cs --> IFileOperationLogRepository_cs
+        ConflictDetectionService_cs --> IDriveItemsRepository_cs
+        OneDriveFolderNode_cs --> string_cs
+        OneDriveFolderNode_cs --> string?_cs
+        OneDriveFolderNode_cs --> bool_cs
+        OneDriveFolderNode_cs --> bool?_cs
+        Option{T}_cs --> T_cs
+        ErrorResponse_cs --> string_cs
+        AStarLogger_cs --> ILogger<TCategoryName>_cs
+        AStarLogger_cs --> ITelemetryClient_cs
+        ColourfulTheme_axaml --> ColourfulTheme_axaml_cs
+        TerminalTheme_axaml --> TerminalTheme_axaml_cs
+        ProfessionalTheme_axaml --> ProfessionalTheme_axaml_cs
+        AccountManagementViewModel_cs --> IAuthService_cs
+    
+    I updated the Sanitize with your earlier method and it did run but, just incase more tweaks are required I've still supplied the above.
+    When you confirm if there are any potential other updates, I will mention the next problem but, on a positive, the mermaid does generate now
+    Copilot said
+    
+    Jay, this is perfect.
+    Your snippet tells me exactly what’s happening, and you’ve already confirmed the sanitizer fix worked — which means we’re now in the “polish and harden” phase.
+    
+    Let’s walk through the remaining issues and make the generator rock‑solid.
+    🎯 What your snippet reveals
+    
+    These lines are the culprits:
+    Code
+    
     OneDriveFolderNode_cs --> string?_cs
-    OneDriveFolderNode_cs --> bool_cs
-    OneDriveFolderNode_cs --> bool?_cs
     Option{T}_cs --> T_cs
-    ErrorResponse_cs --> string_cs
     AStarLogger_cs --> ILogger<TCategoryName>_cs
-    AStarLogger_cs --> ITelemetryClient_cs
-    ColourfulTheme_axaml --> ColourfulTheme_axaml_cs
-    TerminalTheme_axaml --> TerminalTheme_axaml_cs
-    ProfessionalTheme_axaml --> ProfessionalTheme_axaml_cs
-    AccountManagementViewModel_cs --> IAuthService_cs
-
-I updated the Sanitize with your earlier method and it did run but, just incase more tweaks are required I've still supplied the above.
-When you confirm if there are any potential other updates, I will mention the next problem but, on a positive, the mermaid does generate now
-Copilot said
-
-Jay, this is perfect.
-Your snippet tells me exactly what’s happening, and you’ve already confirmed the sanitizer fix worked — which means we’re now in the “polish and harden” phase.
-
-Let’s walk through the remaining issues and make the generator rock‑solid.
-🎯 What your snippet reveals
-
-These lines are the culprits:
-Code
-
-OneDriveFolderNode_cs --> string?_cs
-Option{T}_cs --> T_cs
-AStarLogger_cs --> ILogger<TCategoryName>_cs
-
-Even after the first sanitizer pass, Mermaid still chokes on:
-
-    string?
-
-    Option{T}
-
-    ILogger<TCategoryName>
-
-Because:
-
-    ? is illegal in Mermaid node IDs
-
-    {} is interpreted as shape data
-
-    <T> is interpreted as HTML
-
-    ILogger<TCategoryName> becomes ILoggerTCategoryName but still contains uppercase generics that might collide with other nodes
-
-So yes — we need a stronger, deterministic, collision‑safe sanitizer.
-🛠️ The final sanitizer (handles everything)
-
-Replace your Sanitize method with this version:
-csharp
-
-static string Sanitize(string name)
-{
-    // Remove file extensions
-    name = name.Replace(".cs", "").Replace(".axaml", "");
-
-    // Remove nullable markers
-    name = name.Replace("?", "");
-
-    // Remove generic type parameters <T>, <TKey, TValue>, etc.
-    name = Regex.Replace(name, "<.*?>", "");
-
-    // Remove braces, parentheses, commas, exclamation marks
-    name = Regex.Replace(name, @"[\{\}\(\),!]", "");
-
-    // Replace dots, dashes, slashes with underscores
-    name = Regex.Replace(name, @"[.\-/]", "_");
-
-    // Replace whitespace with underscores
-    name = Regex.Replace(name, @"\s+", "_");
-
-    // Remove any remaining characters Mermaid doesn't like
-    name = Regex.Replace(name, @"[^a-zA-Z0-9_]", "");
-
-    return name;
-}
-
-✔ What this guarantees
-Input	Sanitized
-string?	string
-Option	OptionT
-ILogger	ILoggerTCategoryName
-Foo.Bar-Baz	Foo_Bar_Baz
-ErrorOr	ErrorOrT
-MyTypeT1, T2>	MyTypeT1T2
-
-This is now Mermaid‑safe, collision‑resistant, and predictable.
-🎨 Bonus: Pretty labels (optional but recommended)
-
-Right now, the graph shows:
-Code
-
-OptionT_cs
-
-Which is… functional, but not pretty.
-
-We can upgrade the Mermaid output to:
-Code
-
-OptionT_cs["Option<T>.cs"]
-
-That gives you:
-
-    safe node ID → OptionT_cs
-
-    pretty label → Option<T>.cs
-
-If you want this, I can drop in the updated Mermaid builder.
-🎉 So what’s next?
-
-You said:
-
-    “When you confirm if there are any potential other updates, I will mention the next problem…”
-
-I’m ready.
-
-With the sanitizer fixed, the next issues are usually:
-
-    Mermaid graph too large
-
-    Nodes overlapping
-
-    Hard to read
-
-    Too many edges
-
-    Want grouping (Views, ViewModels, Services)
-
-    Want to start from MainWindow only
-
-    Want color‑coding
-
-    Want clickable links to source files
-
-Tell me what you hit next and we’ll keep leveling this up.
-You said
-SyncProgressViewModel_axaml is one of the nodes on the mermaid diagram but it makes no sense - SyncProgressViewModel is a view model (SyncProgressViewModel.cs) I would expect to see links from SyncProgressView.axaml or SyncProgressView.axaml.cs or both (and I do see a link from SyncProgressView_axaml)
-I dont understand why SyncProgressViewModel_axaml is on the diagram with that name
-
-    SyncProgressView_axaml --> SyncProgressView_axaml_cs
+    
+    Even after the first sanitizer pass, Mermaid still chokes on:
+    
+        string?
+    
+        Option{T}
+    
+        ILogger<TCategoryName>
+    
+    Because:
+    
+        ? is illegal in Mermaid node IDs
+    
+        {} is interpreted as shape data
+    
+        <T> is interpreted as HTML
+    
+        ILogger<TCategoryName> becomes ILoggerTCategoryName but still contains uppercase generics that might collide with other nodes
+    
+    So yes — we need a stronger, deterministic, collision‑safe sanitizer.
+    🛠️ The final sanitizer (handles everything)
+    
+    Replace your Sanitize method with this version:
+    csharp
+    
+    static string Sanitize(string name)
+    {
+        // Remove file extensions
+        name = name.Replace(".cs", "").Replace(".axaml", "");
+    
+        // Remove nullable markers
+        name = name.Replace("?", "");
+    
+        // Remove generic type parameters <T>, <TKey, TValue>, etc.
+        name = Regex.Replace(name, "<.*?>", "");
+    
+        // Remove braces, parentheses, commas, exclamation marks
+        name = Regex.Replace(name, @"[\{\}\(\),!]", "");
+    
+        // Replace dots, dashes, slashes with underscores
+        name = Regex.Replace(name, @"[.\-/]", "_");
+    
+        // Replace whitespace with underscores
+        name = Regex.Replace(name, @"\s+", "_");
+    
+        // Remove any remaining characters Mermaid doesn't like
+        name = Regex.Replace(name, @"[^a-zA-Z0-9_]", "");
+    
+        return name;
+    }
+    
+    ✔ What this guarantees
+    Input Sanitized
+    string? string
+    Option OptionT
+    ILogger ILoggerTCategoryName
+    Foo.Bar-Baz Foo_Bar_Baz
+    ErrorOr ErrorOrT
+    MyTypeT1, T2> MyTypeT1T2
+    
+    This is now Mermaid‑safe, collision‑resistant, and predictable.
+    🎨 Bonus: Pretty labels (optional but recommended)
+    
+    Right now, the graph shows:
+    Code
+    
+    OptionT_cs
+    
+    Which is… functional, but not pretty.
+    
+    We can upgrade the Mermaid output to:
+    Code
+    
+    OptionT_cs["Option<T>.cs"]
+    
+    That gives you:
+    
+        safe node ID → OptionT_cs
+    
+        pretty label → Option<T>.cs
+    
+    If you want this, I can drop in the updated Mermaid builder.
+    🎉 So what’s next?
+    
+    You said:
+    
+        “When you confirm if there are any potential other updates, I will mention the next problem…”
+    
+    I’m ready.
+    
+    With the sanitizer fixed, the next issues are usually:
+    
+        Mermaid graph too large
+    
+        Nodes overlapping
+    
+        Hard to read
+    
+        Too many edges
+    
+        Want grouping (Views, ViewModels, Services)
+    
+        Want to start from MainWindow only
+    
+        Want color‑coding
+    
+        Want clickable links to source files
+    
+    Tell me what you hit next and we’ll keep leveling this up.
+    You said
+    SyncProgressViewModel_axaml is one of the nodes on the mermaid diagram but it makes no sense - SyncProgressViewModel is a view model (SyncProgressViewModel.cs) I would expect to see links from SyncProgressView.axaml or SyncProgressView.axaml.cs or both (and I do see a link from SyncProgressView_axaml)
+    I dont understand why SyncProgressViewModel_axaml is on the diagram with that name
+    
+        SyncProgressView_axaml --> SyncProgressView_axaml_cs
+        SyncProgressView_axaml --> SyncProgressViewModel_axaml
+    
+    The first 3 file names make sense but there is def no SyncProgressViewModel_axaml (ONLY SyncProgressViewModel.cs)
+    
+    Can you see the cause / explain why ?
+    Copilot said
+    
+    Ohhh yes — I can already see exactly what’s happening, and it’s a really good catch on your part.
+    This is one of those “the script is doing exactly what we told it to do… but not what we meant” moments.
+    
+    Let me break it down cleanly.
+    🎯 Why SyncProgressViewModel_axaml appears (even though it shouldn’t)
+    
+    Your Mermaid snippet shows:
+    Code
+    
     SyncProgressView_axaml --> SyncProgressViewModel_axaml
-
-The first 3 file names make sense but there is def no SyncProgressViewModel_axaml (ONLY SyncProgressViewModel.cs)
-
-Can you see the cause / explain why ?
-Copilot said
-
-Ohhh yes — I can already see exactly what’s happening, and it’s a really good catch on your part.
-This is one of those “the script is doing exactly what we told it to do… but not what we meant” moments.
-
-Let me break it down cleanly.
-🎯 Why SyncProgressViewModel_axaml appears (even though it shouldn’t)
-
-Your Mermaid snippet shows:
-Code
-
-SyncProgressView_axaml --> SyncProgressViewModel_axaml
-
-But you only have:
-
-    SyncProgressView.axaml
-
-    SyncProgressView.axaml.cs
-
-    SyncProgressViewModel.cs
-
-So why is the generator inventing:
-Code
-
-SyncProgressViewModel.axaml
-
-The culprit is this line in the XAML parser:
-csharp
-
-var ucMatches = Regex.Matches(xaml, @"<(\w+):(\w+)");
-foreach (Match m in ucMatches)
-{
-    var control = m.Groups[2].Value + ".axaml";
-    edges.Add((file, control));
-}
-
-✔ It matches any tag with a namespace prefix
-
-For example:
-xml
-
-<vm:SyncProgressViewModel />
-
-or even:
-xml
-
-<vm:SyncProgressViewModel>
-
-Your XAML probably contains something like:
-xml
-
-<DataContext>
+    
+    But you only have:
+    
+        SyncProgressView.axaml
+    
+        SyncProgressView.axaml.cs
+    
+        SyncProgressViewModel.cs
+    
+    So why is the generator inventing:
+    Code
+    
+    SyncProgressViewModel.axaml
+    
+    The culprit is this line in the XAML parser:
+    csharp
+    
+    var ucMatches = Regex.Matches(xaml, @"<(\w+):(\w+)");
+    foreach (Match m in ucMatches)
+    {
+        var control = m.Groups[2].Value + ".axaml";
+        edges.Add((file, control));
+    }
+    
+    ✔ It matches any tag with a namespace prefix
+    
+    For example:
+    xml
+    
     <vm:SyncProgressViewModel />
-</DataContext>
-
-The regex sees:
-
-    prefix: vm
-
-    tag name: SyncProgressViewModel
-
-And blindly assumes:
-Code
-
-SyncProgressViewModel.axaml
-
-because it treats every namespaced tag as a UserControl.
-
-But ViewModels are also namespaced tags in Avalonia XAML, so they get caught too.
-🧠 So the generator is not wrong — it’s just too naive.
-
-It doesn’t know the difference between:
-
-    <local:MyUserControl /> → should map to .axaml
-
-    <vm:MyViewModel /> → should map to .cs
-
-Right now it treats everything as a UserControl.
-✅ The fix: detect ViewModels vs UserControls
-
-We can fix this in a few ways, but the cleanest is:
-✔ If the tag ends with ViewModel, treat it as a .cs file
-✔ Otherwise, treat it as a .axaml file
-
-Here’s the improved logic:
-csharp
-
-var ucMatches = Regex.Matches(xaml, @"<(\w+):(\w+)");
-foreach (Match m in ucMatches)
-{
-    var name = m.Groups[2].Value;
-
-    if (name.EndsWith("ViewModel"))
+    
+    or even:
+    xml
+    
+    <vm:SyncProgressViewModel>
+    
+    Your XAML probably contains something like:
+    xml
+    
+    <DataContext>
+        <vm:SyncProgressViewModel />
+    </DataContext>
+    
+    The regex sees:
+    
+        prefix: vm
+    
+        tag name: SyncProgressViewModel
+    
+    And blindly assumes:
+    Code
+    
+    SyncProgressViewModel.axaml
+    
+    because it treats every namespaced tag as a UserControl.
+    
+    But ViewModels are also namespaced tags in Avalonia XAML, so they get caught too.
+    🧠 So the generator is not wrong — it’s just too naive.
+    
+    It doesn’t know the difference between:
+    
+        <local:MyUserControl /> → should map to .axaml
+    
+        <vm:MyViewModel /> → should map to .cs
+    
+    Right now it treats everything as a UserControl.
+    ✅ The fix: detect ViewModels vs UserControls
+    
+    We can fix this in a few ways, but the cleanest is:
+    ✔ If the tag ends with ViewModel, treat it as a .cs file
+    ✔ Otherwise, treat it as a .axaml file
+    
+    Here’s the improved logic:
+    csharp
+    
+    var ucMatches = Regex.Matches(xaml, @"<(\w+):(\w+)");
+    foreach (Match m in ucMatches)
     {
-        edges.Add((file, name + ".cs"));
+        var name = m.Groups[2].Value;
+    
+        if (name.EndsWith("ViewModel"))
+        {
+            edges.Add((file, name + ".cs"));
+        }
+        else
+        {
+            edges.Add((file, name + ".axaml"));
+        }
     }
-    else
-    {
-        edges.Add((file, name + ".axaml"));
-    }
-}
-
-✔ This produces the correct edges:
-Code
-
-SyncProgressView.axaml --> SyncProgressViewModel.cs
-SyncProgressView.axaml --> SomeUserControl.axaml
-
-No more phantom SyncProgressViewModel_axaml.
-🎉 You spotted a real bug — and now the generator gets smarter
-
-This is exactly the kind of refinement that turns a rough prototype into a genuinely useful tool.
-
-If you want, we can go even further:
-
-    Detect DataTemplates and map them to ViewModels
-
-    Detect x:DataType and map to ViewModels
-
-    Detect UserControl base classes in .cs files
-
-    Detect Window / UserControl / TemplatedControl inheritance
-
-    Detect ViewLocator patterns
-
-    Detect DI registrations and map services
-
-But first — let’s patch this ViewModel/UserControl distinction.
-
-If you want, I can paste the full updated ExtractXamlDependencies method with all improvements included.
-You said
-I couldn't think of a way to explain why the current version is close but not quite what I want so, I created a section of the mermaid graph manually:
-```mermaid
-flowchart TD
-    A{MainWindow.axaml} --> B[MainWindow.axaml.cs]
-    A{MainWindow.axaml} --> C[MainWindowViewModel.cs]
-    B --> C
-    A --> D[ConflictResolutionView.axaml]
-    A --> E[AccountManagementView.axaml]
-    A --> F[SyncTreeView.axaml]
-    A --> G[SyncProgressView.axaml]
-    B --> H[IWindowPreferencesService]
-    C --> I[AccountManagementViewModel.cs]
-    C --> J[SyncTreeViewModel.cs]
-    C --> K[IServiceProvider.cs]
-    C --> J[IAutoSyncCoordinator.cs]
-    C --> L[IAccountRepository.cs]
-    C --> M[ISyncConflictRepository.cs]
-    C --> N[SettingsViewModel.cs]
-    E --> O[AccountManagementView.axaml.cs]
-    O --> P[AccountManagementViewModel.cs]
-```
+    
+    ✔ This produces the correct edges:
+    Code
+    
+    SyncProgressView.axaml --> SyncProgressViewModel.cs
+    SyncProgressView.axaml --> SomeUserControl.axaml
+    
+    No more phantom SyncProgressViewModel_axaml.
+    🎉 You spotted a real bug — and now the generator gets smarter
+    
+    This is exactly the kind of refinement that turns a rough prototype into a genuinely useful tool.
+    
+    If you want, we can go even further:
+    
+        Detect DataTemplates and map them to ViewModels
+    
+        Detect x:DataType and map to ViewModels
+    
+        Detect UserControl base classes in .cs files
+    
+        Detect Window / UserControl / TemplatedControl inheritance
+    
+        Detect ViewLocator patterns
+    
+        Detect DI registrations and map services
+    
+    But first — let’s patch this ViewModel/UserControl distinction.
+    
+    If you want, I can paste the full updated ExtractXamlDependencies method with all improvements included.
+    You said
+    I couldn't think of a way to explain why the current version is close but not quite what I want so, I created a section of the mermaid graph manually:
+    ```mermaid
+    flowchart TD
+        A{MainWindow.axaml} --> B[MainWindow.axaml.cs]
+        A{MainWindow.axaml} --> C[MainWindowViewModel.cs]
+        B --> C
+        A --> D[ConflictResolutionView.axaml]
+        A --> E[AccountManagementView.axaml]
+        A --> F[SyncTreeView.axaml]
+        A --> G[SyncProgressView.axaml]
+        B --> H[IWindowPreferencesService]
+        C --> I[AccountManagementViewModel.cs]
+        C --> J[SyncTreeViewModel.cs]
+        C --> K[IServiceProvider.cs]
+        C --> J[IAutoSyncCoordinator.cs]
+        C --> L[IAccountRepository.cs]
+        C --> M[ISyncConflictRepository.cs]
+        C --> N[SettingsViewModel.cs]
+        E --> O[AccountManagementView.axaml.cs]
+        O --> P[AccountManagementViewModel.cs]
 
 As you can see, in mine, the window/user control axaml is shown, the mandatory (in my projects anyway) code behind is shown, if a view model is used, it has it's own link
 
@@ -1307,6 +1308,7 @@ Let me break down what your example reveals, what the current generator is doing
 🎯 What your example shows (and why it’s right)
 
 Your structure is:
+
 1. Every View (.axaml)
 
     Has a node
@@ -1502,6 +1504,7 @@ Before I rewrite the generator, let me reflect back what you’ve built — beca
 
 Here’s why your version is right:
 🎯 Your diagram expresses the real Avalonia architecture
+
 1. Views are the root of the graph
 
 MainWindow.axaml is the entry point, so it’s the top node.
@@ -1677,12 +1680,12 @@ Let me lay out the shape taxonomy we’ll use, then I’ll generate the updated 
 🎨 Shape Assignments (Finalized)
 
 Mermaid flowchart shapes we can use:
-Category	Shape	Mermaid Syntax	Example
-Views (.axaml)	Rectangle	id[Label]	MainWindow_axaml[MainWindow.axaml]
-Code‑behind (.axaml.cs)	Round‑rect	id(Label)	MainWindow_axaml_cs(MainWindow.axaml.cs)
-ViewModels (.cs)	Circle	id((Label))	MainWindowViewModel_cs((MainWindowViewModel.cs))
-Services / Interfaces	Rhombus (diamond)	id{Label}	IAccountRepository_cs{IAccountRepository}
-Other .cs classes	Rectangle	id[Label]	SyncTreeViewModel_cs((SyncTreeViewModel.cs))
+Category Shape Mermaid Syntax Example
+Views (.axaml) Rectangle id[Label] MainWindow_axaml[MainWindow.axaml]
+Code‑behind (.axaml.cs) Round‑rect id(Label) MainWindow_axaml_cs(MainWindow.axaml.cs)
+ViewModels (.cs) Circle id((Label)) MainWindowViewModel_cs((MainWindowViewModel.cs))
+Services / Interfaces Rhombus (diamond) id{Label} IAccountRepository_cs{IAccountRepository}
+Other .cs classes Rectangle id[Label] SyncTreeViewModel_cs((SyncTreeViewModel.cs))
 
 This gives you:
 
@@ -1700,6 +1703,7 @@ This is clean, readable, and visually intuitive.
 🧠 Category Detection Rules
 
 We’ll classify nodes like this:
+
 1. .axaml → View
 
 Shape: rectangle

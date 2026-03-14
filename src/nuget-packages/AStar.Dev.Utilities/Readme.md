@@ -16,7 +16,6 @@ This package provides reusable utilities that simplify everyday tasks such as st
 
 ## Key Features
 
-
 ## Examples and Code Snippets
 
 ```csharp
@@ -35,13 +34,16 @@ var hasDigit = "Pa55word".ContainsAtLeastOneDigit();
 ## Extension Methods by Class
 
 ### EncryptionExtensions
+
 - `Encrypt(this string plainText, string? key = null, string? iv = null)`
 - `Decrypt(this string plainText, string? key = null, string? iv = null)`
 
 ### ObjectExtensions
+
 - `ToJson<T>(this T @object)`
 
 ### StringExtensions
+
 - `IsNull(this string? value)`
 - `IsNotNull(this string? value)`
 - `IsNullOrWhiteSpace(this string? value)`
@@ -55,15 +57,18 @@ var hasDigit = "Pa55word".ContainsAtLeastOneDigit();
 - `string NormalizeWindows(this string path)`
 
 ### RegexExtensions
+
 - `ContainsAtLeastOneLowercaseLetter(this string value)`
 - `ContainsAtLeastOneUppercaseLetter(this string value)`
 - `ContainsAtLeastOneDigit(this string value)`
 - `ContainsAtLeastOneSpecialCharacter(this string value)`
 
 ### EnumExtensions
+
 - `T ParseEnum<T>(this string value)`
 
 ### LinqExtensions
+
 - `ForEach<T>(this IEnumerable<T> enumerable, Action<T> action)`
 
 ## Conclusion
