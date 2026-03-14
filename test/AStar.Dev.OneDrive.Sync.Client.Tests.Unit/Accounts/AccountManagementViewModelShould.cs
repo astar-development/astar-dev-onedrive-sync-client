@@ -112,7 +112,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        _viewModel.ToastMessage.ShouldBe("Authentication failed");
+        _viewModel.ToastMessage.ShouldBe("Authentication failed (Will auto-close after 5 seconds)");
         _viewModel.ToastVisible.ShouldBeTrue();
         _viewModel.Accounts.ShouldBeEmpty();
         await _accountRepository.DidNotReceive().AddAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
@@ -175,7 +175,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _ = _viewModel.LoginCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        _viewModel.ToastMessage.ShouldBe("Login failed");
+        _viewModel.ToastMessage.ShouldBe("Login failed (Will auto-close after 5 seconds)");
         _viewModel.ToastVisible.ShouldBeTrue();
         await _accountRepository.DidNotReceive().UpdateAsync(Arg.Any<AccountInfo>(), Arg.Any<CancellationToken>());
     }
@@ -313,7 +313,7 @@ public sealed class AccountManagementViewModelShould : IDisposable
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
         _viewModel.ToastVisible.ShouldBeTrue();
-        _viewModel.ToastMessage.ShouldBe("Test error");
+        _viewModel.ToastMessage.ShouldBe("Test error (Will auto-close after 5 seconds)");
         await Task.Delay(5100, TestContext.Current.CancellationToken);
         _viewModel.ToastVisible.ShouldBeFalse();
         _viewModel.ToastMessage.ShouldBeNull();
@@ -328,12 +328,12 @@ public sealed class AccountManagementViewModelShould : IDisposable
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
 
-        _viewModel.ToastMessage.ShouldBe("First error");
+        _viewModel.ToastMessage.ShouldBe("First error (Will auto-close after 5 seconds)");
         var authResult2 = new AuthenticationResult(Success: false,AccountId: string.Empty,HashedAccountId: new HashedAccountId(string.Empty),DisplayName: string.Empty,ErrorMessage: "Second error");
         _ = _authService.LoginAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<Result<AuthenticationResult, ErrorResponse>>(new Result<AuthenticationResult, ErrorResponse>.Error(new ErrorResponse(authResult2.ErrorMessage!))));
         _ = _viewModel.AddAccountCommand.Execute().Subscribe();
         await Task.Delay(100, TestContext.Current.CancellationToken);
-        _viewModel.ToastMessage.ShouldBe("Second error");
+        _viewModel.ToastMessage.ShouldBe("Second error (Will auto-close after 5 seconds)");
     }
 
     [Fact]
