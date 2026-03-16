@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Identity.Client;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Auth;

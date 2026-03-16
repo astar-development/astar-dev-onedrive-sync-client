@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Localization;
 

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Models;
 
 /// <summary>

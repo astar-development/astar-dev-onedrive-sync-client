@@ -1,5 +1,3 @@
-using System.Linq;
-using System.Threading.Tasks;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 

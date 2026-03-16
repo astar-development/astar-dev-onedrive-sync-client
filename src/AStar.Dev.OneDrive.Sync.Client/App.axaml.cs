@@ -8,7 +8,6 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
-using AStar.Dev.OneDrive.Sync.Client.Views;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 

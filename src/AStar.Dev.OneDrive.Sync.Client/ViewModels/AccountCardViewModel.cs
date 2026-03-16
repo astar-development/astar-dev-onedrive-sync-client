@@ -1,4 +1,3 @@
-using System;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
