@@ -1,22 +1,22 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using Microsoft.Graph;
-using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 
-/// <summary>
-/// Microsoft Graph SDK v5 implementation.
-/// Creates a per-call GraphServiceClient using the supplied access token.
-/// Drive ID and root item ID are fetched once per token and cached to avoid
-/// redundant round trips on every folder/delta operation.
-/// </summary>
 public sealed class GraphService : IGraphService
 {
-    // Cache keyed by access token — avoids repeated Me.Drive calls
     private readonly Dictionary<string, DriveContext> _cache = [];
 
     // ── IGraphService ─────────────────────────────────────────────────────
+
+    public async Task<string> GetDriveIdAsync(
+        string accessToken,
+        CancellationToken ct = default)
+    {
+        var (_, ctx) = await ResolveAsync(accessToken, ct);
+        return ctx.DriveId;
+    }
 
     public async Task<List<DriveFolder>> GetRootFoldersAsync(
         string accessToken,
@@ -47,6 +47,44 @@ public sealed class GraphService : IGraphService
             if (page.OdataNextLink is null) break;
 
             page = await client.Drives[ctx.DriveId].Items[ctx.RootId].Children
+                .WithUrl(page.OdataNextLink)
+                .GetAsync(cancellationToken: ct);
+        }
+
+        return [.. folders.OrderBy(f => f.Name)];
+    }
+
+    public async Task<List<DriveFolder>> GetChildFoldersAsync(
+        string accessToken,
+        string driveId,
+        string parentFolderId,
+        CancellationToken ct = default)
+    {
+        var client = BuildClient(accessToken);
+
+        var result = await client.Drives[driveId].Items[parentFolderId].Children
+            .GetAsync(req =>
+            {
+                req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
+                req.QueryParameters.Top    = 100;
+            }, ct);
+
+        List<DriveFolder> folders = [];
+
+        var page = result;
+        while (page?.Value is not null)
+        {
+            folders.AddRange(
+                page.Value
+                    .Where(i => i.Folder is not null)
+                    .Select(i => new DriveFolder(
+                        Id:       i.Id!,
+                        Name:     i.Name!,
+                        ParentId: i.ParentReference?.Id)));
+
+            if (page.OdataNextLink is null) break;
+
+            page = await client.Drives[driveId].Items[parentFolderId].Children
                 .WithUrl(page.OdataNextLink)
                 .GetAsync(cancellationToken: ct);
         }
@@ -155,16 +193,17 @@ public sealed class GraphService : IGraphService
     private static GraphServiceClient BuildClient(string accessToken) =>
         new(new BaseBearerTokenAuthenticationProvider(
             new StaticAccessTokenProvider(accessToken)));
+
     private sealed record DriveContext(string DriveId, string RootId);
-}
 
-file sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
-{
-    public Task<string> GetAuthorizationTokenAsync(
-        Uri uri,
-        Dictionary<string, object>? additionalAuthenticationContext = null,
-        CancellationToken ct = default) => Task.FromResult(token);
+    private sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
+    {
+        public Task<string> GetAuthorizationTokenAsync(
+            Uri uri,
+            Dictionary<string, object>? additionalAuthenticationContext = null,
+            CancellationToken ct = default) => Task.FromResult(token);
 
-    public AllowedHostsValidator AllowedHostsValidator { get; } =
-        new(["graph.microsoft.com"]);
+        public AllowedHostsValidator AllowedHostsValidator { get; } =
+            new(["graph.microsoft.com"]);
+    }
 }

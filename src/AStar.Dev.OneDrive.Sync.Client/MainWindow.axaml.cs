@@ -14,11 +14,8 @@ public partial class MainWindow : Window
         IStartupService startupService)
     {
         InitializeComponent();
-
         var vm = new MainWindowViewModel(authService, graphService, startupService);
         DataContext = vm;
-
-        // Restore persisted accounts after the window is shown
         Opened += async (_, _) => await vm.InitialiseAsync();
     }
 }

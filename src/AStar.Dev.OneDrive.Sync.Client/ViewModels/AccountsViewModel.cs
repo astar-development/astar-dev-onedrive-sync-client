@@ -5,11 +5,7 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
@@ -38,11 +34,17 @@ public sealed partial class AccountsViewModel(
 
     // ── Events ────────────────────────────────────────────────────────────
 
+    /// <summary>Raised when user clicks an account card — navigate to Files.</summary>
     public event EventHandler<AccountCardViewModel>? AccountSelected;
+
+    /// <summary>Raised after a new account is successfully added and persisted.</summary>
+    public event EventHandler<OneDriveAccount>? AccountAdded;
+
+    /// <summary>Raised after an account is removed.</summary>
+    public event EventHandler<string>? AccountRemoved;
 
     // ── Public API ────────────────────────────────────────────────────────
 
-    /// <summary>Called by MainWindowViewModel to open the add-account wizard.</summary>
     public void AddAccount()
     {
         var wizard = new AddAccountWizardViewModel(authService, graphService);
@@ -51,10 +53,6 @@ public sealed partial class AccountsViewModel(
         Wizard = wizard;
     }
 
-    /// <summary>
-    /// Restores accounts from the database on startup.
-    /// Called once by MainWindowViewModel after construction.
-    /// </summary>
     public void RestoreAccounts(IEnumerable<OneDriveAccount> accounts)
     {
         foreach (var account in accounts)
@@ -83,6 +81,7 @@ public sealed partial class AccountsViewModel(
             ActiveAccount = Accounts.FirstOrDefault();
 
         OnPropertyChanged(nameof(HasAccounts));
+        AccountRemoved?.Invoke(this, card.Id);
     }
 
     // ── Wizard events ─────────────────────────────────────────────────────
@@ -94,7 +93,6 @@ public sealed partial class AccountsViewModel(
         account.AccentIndex = Accounts.Count % 6;
         account.IsActive    = Accounts.Count == 0;
 
-        // Persist to database
         var entity = ToEntity(account);
         await repository.UpsertAsync(entity);
 
@@ -107,6 +105,9 @@ public sealed partial class AccountsViewModel(
 
         if (account.IsActive)
             ActiveAccount = card;
+
+        // Notify MainWindowViewModel to add a Files tab
+        AccountAdded?.Invoke(this, account);
     }
 
     private void OnWizardCancelled(object? sender, EventArgs e) => CloseWizard();
@@ -131,7 +132,6 @@ public sealed partial class AccountsViewModel(
         ActiveAccount = card;
         AccountSelected?.Invoke(this, card);
 
-        // Persist active state
         _ = repository.SetActiveAccountAsync(card.Id);
     }
 
@@ -147,16 +147,16 @@ public sealed partial class AccountsViewModel(
 
     private static AccountEntity ToEntity(OneDriveAccount a) => new()
     {
-        Id          = a.Id,
-        DisplayName = a.DisplayName,
-        Email       = a.Email,
-        AccentIndex = a.AccentIndex,
-        IsActive    = a.IsActive,
-        DeltaLink   = a.DeltaLink,
+        Id           = a.Id,
+        DisplayName  = a.DisplayName,
+        Email        = a.Email,
+        AccentIndex  = a.AccentIndex,
+        IsActive     = a.IsActive,
+        DeltaLink    = a.DeltaLink,
         LastSyncedAt = a.LastSyncedAt,
-        QuotaTotal  = a.QuotaTotal,
-        QuotaUsed   = a.QuotaUsed,
-        SyncFolders = [.. a.SelectedFolderIds.Select(id => new SyncFolderEntity
+        QuotaTotal   = a.QuotaTotal,
+        QuotaUsed    = a.QuotaUsed,
+        SyncFolders  = [.. a.SelectedFolderIds.Select(id => new SyncFolderEntity
         {
             FolderId  = id,
             AccountId = a.Id

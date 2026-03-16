@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260316091342_InitialCreate")]
+    [Migration("20260316094123_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />

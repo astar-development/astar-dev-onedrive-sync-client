@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
@@ -13,8 +13,6 @@ public sealed partial class MainWindowViewModel(
     IGraphService   graphService,
     IStartupService startupService) : ObservableObject
 {
-    // ── Navigation ────────────────────────────────────────────────────────
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
     [NotifyPropertyChangedFor(nameof(IsFilesActive))]
@@ -33,17 +31,22 @@ public sealed partial class MainWindowViewModel(
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
 
-    // ── Active view ───────────────────────────────────────────────────────
-
     public object? ActiveView => ActiveSection switch
     {
         NavSection.Dashboard => _dashboardView ??= new DashboardView(),
-        NavSection.Files     => _filesView     ??= new FilesView(),
+        NavSection.Files     => FilesViewInstance,
         NavSection.Activity  => _activityView  ??= new ActivityView(),
-        NavSection.Accounts  => _accountsView  ??= new AccountsView(),
+        NavSection.Accounts  => AccountsViewInstance,
         NavSection.Settings  => _settingsView  ??= new SettingsView(),
         _                    => null
     };
+
+    // Views with specific DataContexts set at creation time
+    private FilesView FilesViewInstance =>
+        _filesView ??= new FilesView { DataContext = Files };
+
+    private AccountsView AccountsViewInstance =>
+        _accountsView ??= new AccountsView { DataContext = this };
 
     private DashboardView? _dashboardView;
     private FilesView?     _filesView;
@@ -51,35 +54,37 @@ public sealed partial class MainWindowViewModel(
     private AccountsView?  _accountsView;
     private SettingsView?  _settingsView;
 
-    // ── Child view models ─────────────────────────────────────────────────
+    public AccountsViewModel  Accounts  { get; } =
+        new(authService, graphService, App.Repository);
 
-    public AccountsViewModel  Accounts  { get; } = new(authService, graphService,
-        // repository injected via App — resolved at construction time
-        App.Repository);
+    public FilesViewModel     Files     { get; } =
+        new(authService, graphService, App.Repository);
 
     public StatusBarViewModel StatusBar { get; } = new();
 
-    // ── Startup ───────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Called once from MainWindow after DataContext is set.
-    /// Restores persisted accounts without blocking the UI thread.
-    /// </summary>
     public async Task InitialiseAsync()
     {
-        var restored = await startupService.RestoreAccountsAsync();
-        Accounts.RestoreAccounts(restored);
-        SyncStatusBarToActiveAccount();
-
         Accounts.AccountSelected += OnAccountSelected;
+        Accounts.AccountAdded    += OnAccountAdded;
+        Accounts.AccountRemoved  += OnAccountRemoved;
         Accounts.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
                 SyncStatusBarToActiveAccount();
         };
-    }
 
-    // ── Add account (entry point from left panel button) ──────────────────
+        var restored = await startupService.RestoreAccountsAsync();
+        Accounts.RestoreAccounts(restored);
+
+        foreach (var account in restored)
+            Files.AddAccount(account);
+
+        var active = restored.FirstOrDefault(a => a.IsActive);
+        if (active is not null)
+            await Files.ActivateAccountAsync(active.Id);
+
+        SyncStatusBarToActiveAccount();
+    }
 
     [RelayCommand]
     private void AddAccount()
@@ -88,13 +93,22 @@ public sealed partial class MainWindowViewModel(
         Accounts.AddAccount();
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────
-
-    private void OnAccountSelected(object? sender, AccountCardViewModel card)
+    private async void OnAccountSelected(object? sender, AccountCardViewModel card)
     {
         ActiveSection = NavSection.Files;
+        await Files.ActivateAccountAsync(card.Id);
         SyncStatusBarToActiveAccount();
     }
+
+    private async void OnAccountAdded(object? sender, OneDriveAccount account)
+    {
+        Files.AddAccount(account);
+        ActiveSection = NavSection.Files;
+        await Files.ActivateAccountAsync(account.Id);
+    }
+
+    private void OnAccountRemoved(object? sender, string accountId) =>
+        Files.RemoveAccount(accountId);
 
     private void SyncStatusBarToActiveAccount()
     {

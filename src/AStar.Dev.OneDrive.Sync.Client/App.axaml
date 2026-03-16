@@ -10,7 +10,17 @@
                 <ResourceInclude Source="avares://AStar.Dev.OneDrive.Sync.Client/Themes/Base.axaml"/>
                 <ResourceInclude Source="avares://AStar.Dev.OneDrive.Sync.Client/Themes/Light.axaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <converters:SyncStateToForegroundConverter x:Key="SyncStateToForegroundConverter"/>
+
+            <!-- Converters -->
+            <converters:SyncStateToForegroundConverter          x:Key="SyncStateToForegroundConverter"/>
+            <converters:BoolToAccentConverter                   x:Key="BoolToAccentConverter"/>
+            <converters:StringNotEmptyConverter                 x:Key="StringNotEmptyConverter"/>
+            <converters:DepthToIndentConverter                  x:Key="DepthToIndentConverter"/>
+            <converters:SyncStateToBadgeBackgroundConverter     x:Key="SyncStateToBadgeBackgroundConverter"/>
+            <converters:SyncStateToBadgeForegroundConverter     x:Key="SyncStateToBadgeForegroundConverter"/>
+            <converters:BoolToExcludeIncludeLabelConverter      x:Key="BoolToExcludeIncludeLabelConverter"/>
+            <converters:BoolToExcludeIncludeTooltipConverter    x:Key="BoolToExcludeIncludeTooltipConverter"/>
+
         </ResourceDictionary>
     </Application.Resources>
 
@@ -21,6 +31,7 @@
             <Setter Property="FontFamily" Value="$Default"/>
             <Setter Property="FontSize"   Value="13"/>
         </Style>
+
         <Style Selector="Button">
             <Setter Property="Background"      Value="Transparent"/>
             <Setter Property="BorderBrush"     Value="{DynamicResource BorderSubtleBrush}"/>
@@ -34,22 +45,28 @@
                 </Transitions>
             </Setter>
         </Style>
+
         <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource BackgroundHoverBrush}"/>
         </Style>
+
         <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
             <Setter Property="Background" Value="{DynamicResource BackgroundActiveBrush}"/>
         </Style>
+
         <Style Selector="ScrollBar">
             <Setter Property="Opacity" Value="0.5"/>
         </Style>
+
         <Style Selector="ProgressBar">
             <Setter Property="Background"   Value="{DynamicResource BackgroundTertiaryBrush}"/>
             <Setter Property="CornerRadius" Value="1"/>
         </Style>
+
         <Style Selector="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         </Style>
+
         <Style Selector="ToolTip">
             <Setter Property="Background"      Value="{DynamicResource BackgroundTertiaryBrush}"/>
             <Setter Property="Foreground"      Value="{DynamicResource TextPrimaryBrush}"/>
@@ -59,6 +76,7 @@
             <Setter Property="Padding"         Value="8,5"/>
             <Setter Property="FontSize"        Value="{StaticResource FontSizeSm}"/>
         </Style>
+
     </Application.Styles>
 
 </Application>
