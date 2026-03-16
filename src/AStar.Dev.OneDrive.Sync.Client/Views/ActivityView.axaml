@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Views.ActivityView">
+    <Grid>
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="8">
+            <TextBlock Text="Activity"
+                       FontSize="18"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Placeholder — coming in a later step."
+                       FontSize="13"
+                       HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</UserControl>
