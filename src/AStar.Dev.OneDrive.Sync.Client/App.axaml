@@ -2,9 +2,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="AStar.Dev.OneDrive.Sync.Client.App"
              xmlns:local="using:AStar.Dev.OneDrive.Sync.Client"
+             xmlns:converters="AStar.Dev.OneDrive.Sync.Client.Converters"
              RequestedThemeVariant="Default">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
+    <Application.Resources>
+
+        <!-- ── Converters ────────────────────────────────────────────────── -->
+        <converters:SyncStateToForegroundConverter x:Key="SyncStateToForegroundConverter"/>
+
+    </Application.Resources>
+    
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>

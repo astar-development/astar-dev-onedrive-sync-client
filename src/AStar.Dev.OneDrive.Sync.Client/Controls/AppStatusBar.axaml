@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="AStar.Dev.OneDrive.Sync.Client.ViewModels"
+             x:Class="AStar.Dev.OneDrive.Sync.Client.Controls.AppStatusBar"
+             x:DataType="vm:StatusBarViewModel"
+             Height="{StaticResource StatusBarHeight}">
+
+    <Border Background="{DynamicResource BackgroundStatusBarBrush}"
+            BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource BorderSubtleBrush}">
+
+        <!-- No-account state -->
+        <Grid>
+            <TextBlock IsVisible="{Binding !HasAccount}"
+                       Text="No account selected"
+                       FontSize="{StaticResource FontSizeXs}"
+                       Foreground="{DynamicResource TextTertiaryBrush}"
+                       VerticalAlignment="Center"
+                       Margin="12,0"/>
+
+            <!-- Active-account state -->
+            <Grid IsVisible="{Binding HasAccount}"
+                  ColumnDefinitions="Auto,1,Auto,*,Auto,12,Auto,12,Auto">
+
+                <!-- Account dot + name -->
+                <Ellipse Grid.Column="0"
+                         Width="7" Height="7"
+                         Margin="10,0,5,0"
+                         VerticalAlignment="Center"
+                         Fill="{DynamicResource TextAccentBrush}"/>
+
+                <TextBlock Grid.Column="0"
+                           Margin="22,0,8,0"
+                           Text="{Binding AccountEmail}"
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           MaxWidth="180"/>
+
+                <!-- Separator -->
+                <Rectangle Grid.Column="1"
+                            Width="1" Height="12"
+                            Fill="{DynamicResource BorderSubtleBrush}"
+                            VerticalAlignment="Center"
+                            Margin="4,0"/>
+
+                <!-- Sync status label -->
+                <TextBlock Grid.Column="2"
+                           Margin="6,0"
+                           Text="{Binding StatusLabel}"
+                           FontSize="{StaticResource FontSizeXs}"
+                           VerticalAlignment="Center">
+                    <TextBlock.Foreground>
+                        <!-- Colour driven by SyncState via DataTriggers-equivalent in styles -->
+                        <MultiBinding Converter="{StaticResource SyncStateToForegroundConverter}">
+                            <Binding Path="SyncState"/>
+                        </MultiBinding>
+                    </TextBlock.Foreground>
+                </TextBlock>
+
+                <!-- Indeterminate progress indicator (syncing only) -->
+                <ProgressBar Grid.Column="3"
+                             Margin="8,0"
+                             Height="2"
+                             VerticalAlignment="Center"
+                             IsIndeterminate="True"
+                             IsVisible="{Binding IsSyncing}"
+                             Foreground="{DynamicResource TextAccentBrush}"
+                             Background="Transparent"/>
+
+                <!-- Last sync time -->
+                <TextBlock Grid.Column="4"
+                           Text="{Binding LastSyncText}"
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           VerticalAlignment="Center"/>
+
+                <!-- Storage used -->
+                <TextBlock Grid.Column="6"
+                           Text="{Binding StorageUsedText}"
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           VerticalAlignment="Center"/>
+
+                <!-- Conflict policy -->
+                <TextBlock Grid.Column="8"
+                           Text="{Binding ConflictPolicyText}"
+                           FontSize="{StaticResource FontSizeXs}"
+                           Foreground="{DynamicResource TextTertiaryBrush}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0"/>
+
+            </Grid>
+        </Grid>
+
+    </Border>
+
+</UserControl>
