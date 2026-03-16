@@ -2,7 +2,9 @@ using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
+using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Views;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -11,8 +13,12 @@ namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 public sealed partial class MainWindowViewModel(
     IAuthService    authService,
     IGraphService   graphService,
-    IStartupService startupService) : ObservableObject
+    IStartupService startupService,
+    ISyncService    syncService,
+    SyncScheduler   scheduler) : ObservableObject
 {
+    // ── Navigation ────────────────────────────────────────────────────────
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
     [NotifyPropertyChangedFor(nameof(IsFilesActive))]
@@ -31,6 +37,8 @@ public sealed partial class MainWindowViewModel(
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
 
+    // ── Active view ───────────────────────────────────────────────────────
+
     public object? ActiveView => ActiveSection switch
     {
         NavSection.Dashboard => _dashboardView ??= new DashboardView(),
@@ -42,9 +50,8 @@ public sealed partial class MainWindowViewModel(
     };
 
     // Views with specific DataContexts set at creation time
-    private FilesView FilesViewInstance =>
-        _filesView ??= new FilesView { DataContext = Files };
-
+    private FilesView    FilesViewInstance    =>
+        _filesView    ??= new FilesView    { DataContext = Files };
     private AccountsView AccountsViewInstance =>
         _accountsView ??= new AccountsView { DataContext = this };
 
@@ -54,6 +61,8 @@ public sealed partial class MainWindowViewModel(
     private AccountsView?  _accountsView;
     private SettingsView?  _settingsView;
 
+    // ── Child view models ─────────────────────────────────────────────────
+
     public AccountsViewModel  Accounts  { get; } =
         new(authService, graphService, App.Repository);
 
@@ -62,8 +71,13 @@ public sealed partial class MainWindowViewModel(
 
     public StatusBarViewModel StatusBar { get; } = new();
 
+    // ── Startup ───────────────────────────────────────────────────────────
+
     public async Task InitialiseAsync()
     {
+        // Wire sync progress to status bar
+        syncService.SyncProgressChanged += OnSyncProgressChanged;
+
         Accounts.AccountSelected += OnAccountSelected;
         Accounts.AccountAdded    += OnAccountAdded;
         Accounts.AccountRemoved  += OnAccountRemoved;
@@ -86,12 +100,28 @@ public sealed partial class MainWindowViewModel(
         SyncStatusBarToActiveAccount();
     }
 
+    // ── Sync commands ─────────────────────────────────────────────────────
+
+    [RelayCommand]
+    private async Task SyncNowAsync()
+    {
+        var active = Accounts.ActiveAccount;
+        if (active is null) return;
+
+        var account = BuildAccountModel(active);
+        await scheduler.TriggerAccountAsync(account);
+    }
+
+    // ── Add account ───────────────────────────────────────────────────────
+
     [RelayCommand]
     private void AddAccount()
     {
         ActiveSection = NavSection.Accounts;
         Accounts.AddAccount();
     }
+
+    // ── Private helpers ───────────────────────────────────────────────────
 
     private async void OnAccountSelected(object? sender, AccountCardViewModel card)
     {
@@ -109,6 +139,32 @@ public sealed partial class MainWindowViewModel(
 
     private void OnAccountRemoved(object? sender, string accountId) =>
         Files.RemoveAccount(accountId);
+
+    private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs e)
+    {
+        // Marshal to UI thread — sync runs on background threads
+        Dispatcher.UIThread.Post(() =>
+        {
+            var card = Accounts.Accounts
+                .FirstOrDefault(a => a.Id == e.AccountId);
+
+            if (card is null) return;
+
+            if (e.IsComplete)
+            {
+                card.SyncState = e.Total == 0
+                    ? SyncState.Idle
+                    : SyncState.Idle;
+            }
+            else
+            {
+                card.SyncState = SyncState.Syncing;
+            }
+
+            if (card.Id == Accounts.ActiveAccount?.Id)
+                SyncStatusBarToActiveAccount();
+        });
+    }
 
     private void SyncStatusBarToActiveAccount()
     {
@@ -129,4 +185,12 @@ public sealed partial class MainWindowViewModel(
         StatusBar.LastSyncText       = active.LastSyncText;
         StatusBar.IsSyncing          = active.SyncState == SyncState.Syncing;
     }
+
+    private static OneDriveAccount BuildAccountModel(AccountCardViewModel card) =>
+        new()
+        {
+            Id          = card.Id,
+            DisplayName = card.DisplayName,
+            Email       = card.Email
+        };
 }

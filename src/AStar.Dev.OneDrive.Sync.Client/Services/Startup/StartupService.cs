@@ -44,7 +44,9 @@ public sealed class StartupService(
                 LastSyncedAt      = entity.LastSyncedAt,
                 QuotaTotal        = entity.QuotaTotal,
                 QuotaUsed         = entity.QuotaUsed,
-                SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
+                SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
+                LocalSyncPath  = entity.LocalSyncPath,
+                ConflictPolicy = entity.ConflictPolicy
             });
         }
 

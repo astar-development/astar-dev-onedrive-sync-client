@@ -155,6 +155,8 @@ public sealed partial class AccountsViewModel(
         DeltaLink    = a.DeltaLink,
         LastSyncedAt = a.LastSyncedAt,
         QuotaTotal   = a.QuotaTotal,
+        LocalSyncPath  = a.LocalSyncPath,
+        ConflictPolicy = a.ConflictPolicy,
         QuotaUsed    = a.QuotaUsed,
         SyncFolders  = [.. a.SelectedFolderIds.Select(id => new SyncFolderEntity
         {
