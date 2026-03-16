@@ -12,6 +12,8 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbCon
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.UseSqliteFriendlyConversions();
+        
         modelBuilder.Entity<AccountEntity>(e =>
         {
             e.HasKey(a => a.Id);

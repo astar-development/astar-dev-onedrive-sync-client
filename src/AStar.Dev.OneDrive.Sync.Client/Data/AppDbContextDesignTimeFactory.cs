@@ -1,8 +1,7 @@
-using AStar.Dev.OneDrive.Sync.Client.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace AStar.Dev.OneDrive.Sync.Client;
+namespace AStar.Dev.OneDrive.Sync.Client.Data;
 
 /// <summary>
 /// Used only by EF Core tooling (dotnet ef migrations add).
