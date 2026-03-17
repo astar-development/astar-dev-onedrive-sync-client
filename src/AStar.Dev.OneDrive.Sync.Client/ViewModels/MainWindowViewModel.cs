@@ -48,13 +48,13 @@ public sealed partial class MainWindowViewModel(
     {
         get
         {
-            var result = ActiveSection switch
+            object? result = ActiveSection switch
             {
-                NavSection.Dashboard => (object)DashboardViewInstance,
-                NavSection.Files     => (object)FilesViewInstance,
-                NavSection.Activity  => (object)ActivityViewInstance,
-                NavSection.Accounts  => (object)AccountsViewInstance,
-                NavSection.Settings  => (object)SettingsViewInstance,
+                NavSection.Dashboard => DashboardViewInstance,
+                NavSection.Files     => FilesViewInstance,
+                NavSection.Activity  => ActivityViewInstance,
+                NavSection.Accounts  => AccountsViewInstance,
+                NavSection.Settings  => SettingsViewInstance,
                 _                    => null
             };
 
@@ -66,10 +66,7 @@ public sealed partial class MainWindowViewModel(
     {
         get
         {
-            if (_dashboardView is null)
-            {
-                _dashboardView = new DashboardView { DataContext = Dashboard };
-            }
+            _dashboardView ??= new DashboardView { DataContext = Dashboard };
 
             return _dashboardView;
         }
@@ -79,10 +76,7 @@ public sealed partial class MainWindowViewModel(
     {
         get
         {
-            if (_filesView is null)
-            {
-                _filesView = new FilesView { DataContext = Files };
-            }
+            _filesView ??= new FilesView { DataContext = Files };
 
             return _filesView;
         }
@@ -92,10 +86,7 @@ public sealed partial class MainWindowViewModel(
     {
         get
         {
-            if (_activityView is null)
-            {
-                _activityView = new ActivityView { DataContext = Activity };
-            }
+            _activityView ??= new ActivityView { DataContext = Activity };
             
             return _activityView;
         }
@@ -105,10 +96,7 @@ public sealed partial class MainWindowViewModel(
     {
         get
         {
-            if (_accountsView is null)
-            {
-                _accountsView = new AccountsView { DataContext = this };
-            }
+            _accountsView ??= new AccountsView { DataContext = this };
             
             return _accountsView;
         }
@@ -118,10 +106,7 @@ public sealed partial class MainWindowViewModel(
     {
         get
         {
-            if (_settingsView is null)
-            {
-                _settingsView = new SettingsView { DataContext = Settings };
-            }
+            _settingsView ??= new SettingsView { DataContext = Settings };
 
             return _settingsView;
         }
@@ -135,20 +120,15 @@ public sealed partial class MainWindowViewModel(
 
     // ── Child view models ─────────────────────────────────────────────────
 
-    public AccountsViewModel  Accounts  { get; } = 
-        new(authService, graphService, App.Repository);
+    public AccountsViewModel  Accounts  { get; } = new(authService, graphService, App.Repository);
 
-    public FilesViewModel     Files     { get; } =
-        new(authService, graphService, App.Repository);
+    public FilesViewModel     Files     { get; } = new(authService, graphService, App.Repository);
 
-    public ActivityViewModel  Activity  { get; } =
-        new(syncService, syncRepository);
+    public ActivityViewModel  Activity  { get; } = new(syncService, syncRepository);
 
-    public DashboardViewModel Dashboard { get; } =
-        new(scheduler);
+    public DashboardViewModel Dashboard { get; } = new(scheduler);
 
-    public SettingsViewModel  Settings  { get; } =
-        new(settingsService, App.Theme, scheduler, accountRepository);
+    public SettingsViewModel  Settings  { get; } = new(settingsService, App.Theme, scheduler, accountRepository);
 
     public StatusBarViewModel StatusBar { get; } = new();
 
@@ -260,23 +240,21 @@ public sealed partial class MainWindowViewModel(
     }
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs e)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            var card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.AccountId);
-            if (card is null) return;
+        => Dispatcher.UIThread.Post(() =>
+                                        {
+                                            var card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.AccountId);
+                                            if (card is null) return;
 
-            card.SyncState = e.IsComplete ? SyncState.Idle : SyncState.Syncing;
+                                            card.SyncState = e.IsComplete ? SyncState.Idle : SyncState.Syncing;
 
-            Dashboard.UpdateAccountSyncState(
-                e.AccountId,
-                card.SyncState,
-                card.ConflictCount);
+                                            Dashboard.UpdateAccountSyncState(
+                                                e.AccountId,
+                                                card.SyncState,
+                                                card.ConflictCount);
 
-            if (card.Id == Accounts.ActiveAccount?.Id)
-                SyncStatusBarToActiveAccount();
-        });
-    }
+                                            if (card.Id == Accounts.ActiveAccount?.Id)
+                                                SyncStatusBarToActiveAccount();
+                                        });
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs e)
     {

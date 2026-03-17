@@ -37,11 +37,7 @@ public sealed class SyncScheduler : IAsyncDisposable
         
         try
         {
-            _timer    = new Timer(
-                OnTimerTick,
-                state:       null,
-                dueTime:     _interval,      // first tick after one interval
-                period:      _interval);
+            _timer    = new Timer(OnTimerTick, state: null, dueTime: _interval, period: _interval);
 
             _running = false;
         }
@@ -52,10 +48,7 @@ public sealed class SyncScheduler : IAsyncDisposable
         }
     }
 
-    public void Stop()
-    {
-        _timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-    }
+    public void Stop() => _timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
 
     public void SetInterval(TimeSpan interval)
     {
@@ -69,15 +62,14 @@ public sealed class SyncScheduler : IAsyncDisposable
     public async Task TriggerNowAsync(CancellationToken ct = default)
     {
         if (_running) return;
+
         await RunSyncPassAsync(ct);
     }
 
     /// <summary>
     /// Triggers an immediate sync for a single account.
     /// </summary>
-    public async Task TriggerAccountAsync(
-        OneDriveAccount account,
-        CancellationToken ct = default)
+    public async Task TriggerAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
         SyncStarted?.Invoke(this, account.Id);
         try
@@ -95,12 +87,14 @@ public sealed class SyncScheduler : IAsyncDisposable
     private async void OnTimerTick(object? state)
     {
         if (_running) return;
+
         await RunSyncPassAsync(CancellationToken.None);
     }
 
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
         _running = true;
+        
         try
         {
             var entities = await _accountRepository.GetAllAsync();

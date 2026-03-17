@@ -17,15 +17,14 @@ public sealed class SyncService(
 
     // ── ISyncService ──────────────────────────────────────────────────────
 
-    public async Task SyncAccountAsync(
-        OneDriveAccount   account,
-        CancellationToken ct = default)
+    public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
         var authResult = await authService.AcquireTokenSilentAsync(account.Id, ct);
         if (authResult.IsError)
         {
             RaiseProgress(account.Id, string.Empty, 0, 0,
                 authResult.ErrorMessage ?? "Auth failed", isComplete: true);
+
             return;
         }
 
@@ -35,48 +34,37 @@ public sealed class SyncService(
         {
             RaiseProgress(account.Id, string.Empty, 0, 0,
                 "No local sync path configured", isComplete: true);
+
             return;
         }
 
         foreach (var folderId in account.SelectedFolderIds)
         {
             if (ct.IsCancellationRequested) break;
+
             await SyncFolderAsync(account, token, folderId, ct);
         }
     }
 
-    public async Task ResolveConflictAsync(
-        SyncConflict      conflict,
-        ConflictPolicy    policy,
-        CancellationToken ct = default)
+    public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
-        var authResult = await authService
-            .AcquireTokenSilentAsync(conflict.AccountId, ct);
+        var authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct);
 
         if (authResult.IsError) return;
 
-        var outcome = ConflictResolver.Resolve(
-            policy,
-            conflict.LocalModified,
-            conflict.RemoteModified);
+        var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
 
-        await ApplyConflictOutcomeAsync(
-            conflict, outcome, authResult.AccessToken!, ct);
+        await ApplyConflictOutcomeAsync(conflict, outcome, authResult.AccessToken!, ct);
 
         await syncRepository.ResolveConflictAsync(conflict.Id, policy);
     }
 
     // ── Folder sync ───────────────────────────────────────────────────────
 
-    private async Task SyncFolderAsync(
-        OneDriveAccount   account,
-        string            token,
-        string            folderId,
-        CancellationToken ct)
+    private async Task SyncFolderAsync(OneDriveAccount account, string token, string folderId, CancellationToken ct)
     {
         var entity       = await accountRepository.GetByIdAsync(account.Id);
-        var folderEntity = entity?.SyncFolders
-            .FirstOrDefault(f => f.FolderId == folderId);
+        var folderEntity = entity?.SyncFolders.FirstOrDefault(f => f.FolderId == folderId);
 
         var deltaLink = folderEntity?.DeltaLink;
 
@@ -93,6 +81,7 @@ public sealed class SyncService(
 
             RaiseProgress(account.Id, folderId, 0, 0,
                 "No changes", isComplete: true);
+
             return;
         }
 
@@ -125,10 +114,7 @@ public sealed class SyncService(
 
     // ── Job building ──────────────────────────────────────────────────────
 
-    private static List<SyncJob> BuildJobs(
-        OneDriveAccount account,
-        string          folderId,
-        List<DeltaItem> items)
+    private static List<SyncJob> BuildJobs(OneDriveAccount account, string folderId, List<DeltaItem> items)
     {
         List<SyncJob> jobs = [];
 
@@ -176,10 +162,7 @@ public sealed class SyncService(
     // ── Conflict detection ────────────────────────────────────────────────
 
     private async Task<(List<SyncJob> Clean, List<SyncConflict> Conflicts)>
-        ClassifyJobsAsync(
-            OneDriveAccount   account,
-            List<SyncJob>     jobs,
-            CancellationToken ct)
+        ClassifyJobsAsync(OneDriveAccount account, List<SyncJob> jobs, CancellationToken ct)
     {
         List<SyncJob>      clean     = [];
         List<SyncConflict> conflicts = [];
@@ -244,16 +227,13 @@ public sealed class SyncService(
         }
 
         await Task.CompletedTask;
+
         return (clean, conflicts);
     }
 
     // ── Job processing ────────────────────────────────────────────────────
 
-    private async Task ProcessJobQueueAsync(
-        OneDriveAccount   account,
-        string            token,
-        List<SyncJob>     jobs,
-        CancellationToken ct)
+    private async Task ProcessJobQueueAsync(OneDriveAccount account, string token, List<SyncJob> jobs, CancellationToken ct)
     {
         var completed = 0;
         var total     = jobs.Count;
@@ -330,9 +310,7 @@ public sealed class SyncService(
         }
     }
 
-    private static async Task DownloadFileAsync(
-        SyncJob           job,
-        CancellationToken ct)
+    private static async Task DownloadFileAsync(SyncJob job, CancellationToken ct)
     {
         if (job.DownloadUrl is null) return;
 
@@ -353,11 +331,7 @@ public sealed class SyncService(
         File.SetLastWriteTimeUtc(job.LocalPath, job.RemoteModified.UtcDateTime);
     }
 
-    private async Task ApplyConflictOutcomeAsync(
-        SyncConflict      conflict,
-        ConflictOutcome   outcome,
-        string            token,
-        CancellationToken ct)
+    private async Task ApplyConflictOutcomeAsync(SyncConflict conflict, ConflictOutcome outcome, string token, CancellationToken ct)
     {
         switch (outcome)
         {

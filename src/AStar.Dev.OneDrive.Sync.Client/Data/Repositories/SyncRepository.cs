@@ -37,9 +37,7 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
           .OrderBy(j => j.QueuedAt)
           .ToListAsync();
 
-    public async Task UpdateJobStateAsync(Guid jobId, SyncJobState state, string? error = null)
-    {
-        await db.SyncJobs
+    public async Task UpdateJobStateAsync(Guid jobId, SyncJobState state, string? error = null) => await db.SyncJobs
             .Where(j => j.Id == jobId)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(j => j.State, state)
@@ -47,8 +45,7 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
                 .SetProperty(j => j.CompletedAt,
                     state is SyncJobState.Completed or SyncJobState.Failed or SyncJobState.Skipped
                         ? DateTimeOffset.UtcNow
-                        : (DateTimeOffset?)null));
-    }
+                        : null));
 
     public Task ClearCompletedJobsAsync(string accountId) =>
         db.SyncJobs
@@ -86,15 +83,12 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
           .OrderBy(c => c.DetectedAt)
           .ToListAsync();
 
-    public async Task ResolveConflictAsync(Guid conflictId, ConflictPolicy resolution)
-    {
-        await db.SyncConflicts
+    public async Task ResolveConflictAsync(Guid conflictId, ConflictPolicy resolution) => await db.SyncConflicts
             .Where(c => c.Id == conflictId)
             .ExecuteUpdateAsync(s => s
                 .SetProperty(c => c.State, ConflictState.Resolved)
                 .SetProperty(c => c.Resolution, resolution)
                 .SetProperty(c => c.ResolvedAt, DateTimeOffset.UtcNow));
-    }
 
     public Task<int> GetPendingConflictCountAsync(string accountId) =>
         db.SyncConflicts

@@ -101,34 +101,28 @@ public sealed partial class ActivityViewModel(
     }
 
     /// <summary>Called by MainWindowViewModel when a sync job completes.</summary>
-    public void AddActivityItem(ActivityItemViewModel item)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            LogItems.Insert(0, item);
+    public void AddActivityItem(ActivityItemViewModel item) => Dispatcher.UIThread.Post(() =>
+                                                                    {
+                                                                        LogItems.Insert(0, item);
 
-            // Keep log to 500 items max
-            while (LogItems.Count > 500)
-                LogItems.RemoveAt(LogItems.Count - 1);
+                                                                        // Keep log to 500 items max
+                                                                        while (LogItems.Count > 500)
+                                                                            LogItems.RemoveAt(LogItems.Count - 1);
 
-            LogItemCount = LogItems.Count;
-            RebuildFilteredLog();
-        });
-    }
+                                                                        LogItemCount = LogItems.Count;
+                                                                        RebuildFilteredLog();
+                                                                    });
 
     /// <summary>Called by MainWindowViewModel when a new conflict is detected.</summary>
-    public void AddConflictItem(SyncConflict conflict)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            if (Conflicts.Any(c => c.Id == conflict.Id)) return;
-            AddConflict(conflict);
-            ConflictCount = Conflicts.Count;
+    public void AddConflictItem(SyncConflict conflict) => Dispatcher.UIThread.Post(() =>
+                                                               {
+                                                                   if (Conflicts.Any(c => c.Id == conflict.Id)) return;
+                                                                   AddConflict(conflict);
+                                                                   ConflictCount = Conflicts.Count;
 
-            // Switch to conflicts tab automatically
-            ActiveTab = ActivityTab.Conflicts;
-        });
-    }
+                                                                   // Switch to conflicts tab automatically
+                                                                   ActiveTab = ActivityTab.Conflicts;
+                                                               });
 
     // ── Filter commands ───────────────────────────────────────────────────
 

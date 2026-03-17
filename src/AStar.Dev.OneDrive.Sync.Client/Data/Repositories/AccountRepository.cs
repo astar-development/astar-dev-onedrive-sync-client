@@ -48,10 +48,7 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
         await db.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(string id)
-    {
-        await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync();
-    }
+    public async Task DeleteAsync(string id) => await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync();
 
     public async Task SetActiveAccountAsync(string id)
     {
@@ -65,11 +62,8 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
                 s.SetProperty(a => a.IsActive, true));
     }
 
-    public async Task UpdateDeltaLinkAsync(string accountId, string folderId, string deltaLink)
-    {
-        await db.SyncFolders
+    public async Task UpdateDeltaLinkAsync(string accountId, string folderId, string deltaLink) => await db.SyncFolders
             .Where(f => f.AccountId == accountId && f.FolderId == folderId)
             .ExecuteUpdateAsync(s =>
                 s.SetProperty(f => f.DeltaLink, deltaLink));
-    }
 }

@@ -105,26 +105,20 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     // ── Public update API (called by DashboardViewModel) ─────────────────
 
-    public void UpdateSyncState(SyncState state, int conflicts)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            SyncState      = state;
-            ConflictCount  = conflicts;
-            IsSyncing      = state == SyncState.Syncing;
-            UpdateLastSyncText();
-        });
-    }
+    public void UpdateSyncState(SyncState state, int conflicts) => Dispatcher.UIThread.Post(() =>
+                                                                        {
+                                                                            SyncState = state;
+                                                                            ConflictCount = conflicts;
+                                                                            IsSyncing = state == SyncState.Syncing;
+                                                                            UpdateLastSyncText();
+                                                                        });
 
-    public void AddRecentActivity(ActivityItemViewModel item)
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            RecentActivity.Insert(0, item);
-            while (RecentActivity.Count > 3)
-                RecentActivity.RemoveAt(RecentActivity.Count - 1);
-        });
-    }
+    public void AddRecentActivity(ActivityItemViewModel item) => Dispatcher.UIThread.Post(() =>
+                                                                      {
+                                                                          RecentActivity.Insert(0, item);
+                                                                          while (RecentActivity.Count > 3)
+                                                                              RecentActivity.RemoveAt(RecentActivity.Count - 1);
+                                                                      });
 
     // ── Private helpers ───────────────────────────────────────────────────
 
