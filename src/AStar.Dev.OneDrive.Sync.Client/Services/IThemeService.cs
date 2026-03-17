@@ -1,5 +1,3 @@
-using System;
-
 namespace AStar.Dev.OneDrive.Sync.Client.Services;
 
 public enum AppTheme { Light, Dark, System }

@@ -12,6 +12,7 @@
         Title="OneDrive Sync"
         Width="1100" Height="700"
         MinWidth="800" MinHeight="520"
+        Icon="avares://AStar.Dev.OneDrive.Sync.Client/Assets/astar.png"
         Background="{DynamicResource BackgroundPrimaryBrush}"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaChromeHints="PreferSystemChrome"
@@ -192,25 +193,77 @@
                     </Border>
 
                     <ScrollViewer DockPanel.Dock="Top"
-                                  VerticalScrollBarVisibility="Auto"
-                                  HorizontalScrollBarVisibility="Disabled">
+                                VerticalScrollBarVisibility="Auto"
+                                HorizontalScrollBarVisibility="Disabled">
                         <StackPanel Margin="0,4">
-                            <StackPanel HorizontalAlignment="Center"
+
+                            <!-- Empty state -->
+                            <StackPanel IsVisible="{Binding !Accounts.HasAccounts}"
+                                        HorizontalAlignment="Center"
                                         Margin="12,32,12,0"
                                         Spacing="6">
                                 <TextBlock Text="No accounts yet"
-                                           FontSize="{StaticResource FontSizeSm}"
-                                           Foreground="{DynamicResource TextTertiaryBrush}"
-                                           HorizontalAlignment="Center"
-                                           TextWrapping="Wrap"
-                                           TextAlignment="Center"/>
+                                        FontSize="{StaticResource FontSizeSm}"
+                                        Foreground="{DynamicResource TextTertiaryBrush}"
+                                        HorizontalAlignment="Center"
+                                        TextWrapping="Wrap"
+                                        TextAlignment="Center"/>
                                 <TextBlock Text="Add a Microsoft account to get started."
-                                           FontSize="{StaticResource FontSizeXs}"
-                                           Foreground="{DynamicResource TextTertiaryBrush}"
-                                           HorizontalAlignment="Center"
-                                           TextWrapping="Wrap"
-                                           TextAlignment="Center"/>
+                                        FontSize="{StaticResource FontSizeXs}"
+                                        Foreground="{DynamicResource TextTertiaryBrush}"
+                                        HorizontalAlignment="Center"
+                                        TextWrapping="Wrap"
+                                        TextAlignment="Center"/>
                             </StackPanel>
+
+                            <!-- Account list -->
+                            <ItemsControl IsVisible="{Binding Accounts.HasAccounts}"
+                                        ItemsSource="{Binding Accounts.Accounts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="vm:AccountCardViewModel">
+                                        <Button Background="Transparent"
+                                                BorderThickness="0"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                Padding="8,4"
+                                                Command="{Binding SelectCommand}">
+                                            <Grid ColumnDefinitions="Auto,*,Auto">
+
+                                                <!-- Accent dot -->
+                                                <Ellipse Grid.Column="0"
+                                                        Width="8" Height="8"
+                                                        Margin="4,0,8,0"
+                                                        VerticalAlignment="Center">
+                                                    <Ellipse.Fill>
+                                                        <SolidColorBrush Color="{Binding AccentColor}"/>
+                                                    </Ellipse.Fill>
+                                                </Ellipse>
+
+                                                <!-- Email -->
+                                                <TextBlock Grid.Column="1"
+                                                        Text="{Binding Email}"
+                                                        FontSize="{StaticResource FontSizeXs}"
+                                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                                        VerticalAlignment="Center"
+                                                        TextTrimming="CharacterEllipsis"/>
+
+                                                <!-- Active indicator -->
+                                                <Ellipse Grid.Column="2"
+                                                        Width="6" Height="6"
+                                                        Margin="4,0"
+                                                        VerticalAlignment="Center"
+                                                        IsVisible="{Binding IsActive}">
+                                                    <Ellipse.Fill>
+                                                        <SolidColorBrush Color="{Binding AccentColor}"/>
+                                                    </Ellipse.Fill>
+                                                </Ellipse>
+
+                                            </Grid>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+
                         </StackPanel>
                     </ScrollViewer>
 

@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using System.Windows.Input;
@@ -85,16 +84,12 @@ public partial class IconRailButton : UserControl
     }
 
     private static void OnIconDataChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
-    {
-        sender.Icon.Data = e.GetNewValue<Geometry?>();
-    }
+        => sender.Icon.Data = e.GetNewValue<Geometry?>();
 
     private static void OnTooltipChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
-    {
-        sender.TooltipText.Text = e.GetNewValue<string>();
-    }
+        => sender.TooltipText.Text = e.GetNewValue<string>();
 
-    // ── Click ─────────────────────────────────────────────────────────────
+    // ── Click ────────────────────────────────────────────────────────────
 
     private void RailBtn_OnClick(object? sender, RoutedEventArgs e)
     {

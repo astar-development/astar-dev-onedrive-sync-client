@@ -1,20 +1,36 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
+using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
+using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
+using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
+using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.OneDrive.Sync.Client.Views;
+using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
-public sealed partial class MainWindowViewModel : ObservableObject
+public sealed partial class MainWindowViewModel(
+    IAuthService     authService,
+    IGraphService    graphService,
+    IStartupService  startupService,
+    ISyncService     syncService,
+    SyncScheduler    scheduler,
+    ISyncRepository  syncRepository,
+    ISettingsService settingsService,
+    IAccountRepository accountRepository) : ObservableObject
 {
     // ── Navigation ────────────────────────────────────────────────────────
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(ActiveView))]  // add to the existing list on _activeSection
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
     [NotifyPropertyChangedFor(nameof(IsFilesActive))]
     [NotifyPropertyChangedFor(nameof(IsActivityActive))]
     [NotifyPropertyChangedFor(nameof(IsAccountsActive))]
     [NotifyPropertyChangedFor(nameof(IsSettingsActive))]
+    [NotifyPropertyChangedFor(nameof(ActiveView))]
     private NavSection _activeSection = NavSection.Dashboard;
 
     public bool IsDashboardActive => ActiveSection == NavSection.Dashboard;
@@ -26,54 +42,249 @@ public sealed partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
 
-    // ── Child view models ─────────────────────────────────────────────────
+    // ── Active view ───────────────────────────────────────────────────────
 
-    public AccountsViewModel Accounts { get; } = new();
-    public StatusBarViewModel StatusBar { get; } = new();
-
-    // ── Construction ──────────────────────────────────────────────────────
-
-    [RelayCommand]
-    private void AddAccount()
+    public object? ActiveView
     {
-        //Accounts.AddAccountCommand.Execute(null);
-
-    ActiveSection = NavSection.Accounts;
-    Accounts.AddAccount();
-    }
-
-    public MainWindowViewModel()
-    {
-        Accounts.AccountSelected += OnAccountSelected;
-        Accounts.AccountSelected += OnAccountSelected;
-        Accounts.PropertyChanged += (_, e) =>
+        get
         {
-            if (e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
-                SyncStatusBarToActiveAccount();
-        };
+            object? result = ActiveSection switch
+            {
+                NavSection.Dashboard => DashboardViewInstance,
+                NavSection.Files     => FilesViewInstance,
+                NavSection.Activity  => ActivityViewInstance,
+                NavSection.Accounts  => AccountsViewInstance,
+                NavSection.Settings  => SettingsViewInstance,
+                _                    => null
+            };
+
+            return result;
+        }
     }
-    public object? ActiveView => ActiveSection switch
+
+    private DashboardView DashboardViewInstance
     {
-        NavSection.Dashboard => _dashboardView ??= new DashboardView(),
-        NavSection.Files     => _filesView     ??= new FilesView(),
-        NavSection.Activity  => _activityView  ??= new ActivityView(),
-        NavSection.Accounts  => _accountsView  ??= new AccountsView(),
-        NavSection.Settings  => _settingsView  ??= new SettingsView(),
-        _                    => null
-    };
+        get
+        {
+            _dashboardView ??= new DashboardView { DataContext = Dashboard };
+
+            return _dashboardView;
+        }
+    }
+
+    private FilesView FilesViewInstance
+    {
+        get
+        {
+            _filesView ??= new FilesView { DataContext = Files };
+
+            return _filesView;
+        }
+    }
+
+    private ActivityView ActivityViewInstance
+    {
+        get
+        {
+            _activityView ??= new ActivityView { DataContext = Activity };
+            
+            return _activityView;
+        }
+    }
+
+    private AccountsView AccountsViewInstance
+    {
+        get
+        {
+            _accountsView ??= new AccountsView { DataContext = this };
+            
+            return _accountsView;
+        }
+    }
+
+    private SettingsView SettingsViewInstance
+    {
+        get
+        {
+            _settingsView ??= new SettingsView { DataContext = Settings };
+
+            return _settingsView;
+        }
+    }
 
     private DashboardView? _dashboardView;
     private FilesView?     _filesView;
     private ActivityView?  _activityView;
     private AccountsView?  _accountsView;
     private SettingsView?  _settingsView;
+
+    // ── Child view models ─────────────────────────────────────────────────
+
+    public AccountsViewModel  Accounts  { get; } = new(authService, graphService, App.Repository);
+
+    public FilesViewModel     Files     { get; } = new(authService, graphService, App.Repository);
+
+    public ActivityViewModel  Activity  { get; } = new(syncService, syncRepository);
+
+    public DashboardViewModel Dashboard { get; } = new(scheduler);
+
+    public SettingsViewModel  Settings  { get; } = new(settingsService, App.Theme, scheduler, accountRepository);
+
+    public StatusBarViewModel StatusBar { get; } = new();
+
+    // ── Startup ───────────────────────────────────────────────────────────
+
+    public async Task InitialiseAsync()
+    {
+        try
+        {
+            syncService.SyncProgressChanged += OnSyncProgressChanged;
+            syncService.JobCompleted        += OnJobCompleted;
+            syncService.ConflictDetected    += OnConflictDetected;
+
+            Accounts.AccountSelected += OnAccountSelected;
+            Accounts.AccountAdded    += OnAccountAdded;
+            Accounts.AccountRemoved  += OnAccountRemoved;
+            Accounts.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
+                    SyncStatusBarToActiveAccount();
+            };
+
+            var restored = await startupService.RestoreAccountsAsync();
+            
+            Accounts.RestoreAccounts(restored);
+
+            foreach (var account in restored)
+            {
+                Files.AddAccount(account);
+                Dashboard.AddAccount(account);
+            }
+
+            Settings.LoadAccounts(restored);
+
+            var active = restored.FirstOrDefault(a => a.IsActive);
+            if (active is not null)
+            {
+                await Files.ActivateAccountAsync(active.Id);
+                
+                await Activity.SetActiveAccountAsync(active.Id, active.Email);
+            }
+
+            SyncStatusBarToActiveAccount();
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Fatal(ex, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", ex.Message);
+        }
+    }
+
+    // ── Sync commands ─────────────────────────────────────────────────────
+
+    [RelayCommand]
+    private async Task SyncNowAsync()
+    {
+        var active = Accounts.ActiveAccount;
+        if (active is null) return;
+
+        var entity = await App.Repository.GetByIdAsync(active.Id);
+        if (entity is null) return;
+
+        var account = new OneDriveAccount
+        {
+            Id                = entity.Id,
+            DisplayName       = entity.DisplayName,
+            Email             = entity.Email,
+            LocalSyncPath     = entity.LocalSyncPath,
+            ConflictPolicy    = entity.ConflictPolicy,
+            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
+        };
+
+        await scheduler.TriggerAccountAsync(account);
+    }
+
+    // ── Add account ───────────────────────────────────────────────────────
+
+    [RelayCommand]
+    private void AddAccount()
+    {
+        ActiveSection = NavSection.Accounts;
+        Accounts.AddAccount();
+    }
+
     // ── Private helpers ───────────────────────────────────────────────────
 
-    private void OnAccountSelected(object? sender, AccountCardViewModel card)
+    private async void OnAccountSelected(object? sender, AccountCardViewModel card)
     {
-        // Navigate to Files when an account card is clicked
         ActiveSection = NavSection.Files;
+        await Files.ActivateAccountAsync(card.Id);
+        await Activity.SetActiveAccountAsync(card.Id, card.Email);
         SyncStatusBarToActiveAccount();
+    }
+
+    private async void OnAccountAdded(object? sender, OneDriveAccount account)
+    {
+        Files.AddAccount(account);
+        Dashboard.AddAccount(account);
+        Settings.AddAccount(account);
+        ActiveSection = NavSection.Files;
+        await Files.ActivateAccountAsync(account.Id);
+        await Activity.SetActiveAccountAsync(account.Id, account.Email);
+    }
+
+    private void OnAccountRemoved(object? sender, string accountId)
+    {
+        Files.RemoveAccount(accountId);
+        Dashboard.RemoveAccount(accountId);
+        Settings.RemoveAccount(accountId);
+    }
+
+    private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs e)
+        => Dispatcher.UIThread.Post(() =>
+                                        {
+                                            var card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.AccountId);
+                                            if (card is null) return;
+
+                                            card.SyncState = e.IsComplete ? SyncState.Idle : SyncState.Syncing;
+
+                                            Dashboard.UpdateAccountSyncState(
+                                                e.AccountId,
+                                                card.SyncState,
+                                                card.ConflictCount);
+
+                                            if (card.Id == Accounts.ActiveAccount?.Id)
+                                                SyncStatusBarToActiveAccount();
+                                        });
+
+    private void OnJobCompleted(object? sender, JobCompletedEventArgs e)
+    {
+        var card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.Job.AccountId);
+
+        var item = ActivityItemViewModel.FromJob(
+            e.Job,
+            accountEmail: card?.Email ?? e.Job.AccountId,
+            folderName:   string.Empty);
+
+        Activity.AddActivityItem(item);
+        Dashboard.AddActivityItem(item);
+    }
+
+    private void OnConflictDetected(object? sender, SyncConflict conflict)
+    {
+        Activity.AddConflictItem(conflict);
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            var card = Accounts.Accounts
+                .FirstOrDefault(a => a.Id == conflict.AccountId);
+            if (card is not null)
+            {
+                card.ConflictCount++;
+                Dashboard.UpdateAccountSyncState(
+                    conflict.AccountId, card.SyncState, card.ConflictCount);
+            }
+            SyncStatusBarToActiveAccount();
+        });
     }
 
     private void SyncStatusBarToActiveAccount()
@@ -81,8 +292,8 @@ public sealed partial class MainWindowViewModel : ObservableObject
         var active = Accounts.ActiveAccount;
         if (active is null)
         {
-            StatusBar.HasAccount        = false;
-            StatusBar.AccountEmail      = string.Empty;
+            StatusBar.HasAccount         = false;
+            StatusBar.AccountEmail       = string.Empty;
             StatusBar.AccountDisplayName = string.Empty;
             return;
         }

@@ -1,5 +1,7 @@
-﻿using Avalonia;
-using System;
+﻿using AStar.Dev.OneDrive.Sync.Client.Data;
+using Avalonia;
+using Microsoft.Extensions.Configuration;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
@@ -7,15 +9,62 @@ sealed class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might break.
+    // yet and stuff might (will!) break.
     [STAThread]
-    public static void Main(string[] args) => BuildAvaloniaApp()
-        .StartWithClassicDesktopLifetime(args);
+    public static void Main(string[] args)
+    {
+        try
+        {
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .Build();
 
-    // Avalonia configuration, don't remove; also used by visual designer.
-    public static AppBuilder BuildAvaloniaApp()
-        => AppBuilder.Configure<App>()
+            var logPath = Path.Combine(
+                DbContextFactory.GetPlatformDataDirectory(),
+                "sync.txt");
+
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .MinimumLevel.Information()
+                .WriteTo.File(
+                    formatter: new Serilog.Formatting.Json.JsonFormatter(),
+                    path: logPath,
+                    rollingInterval: RollingInterval.Hour,
+                    retainedFileCountLimit: 7,
+                    shared: true,
+                    flushToDiskInterval: TimeSpan.FromSeconds(1)
+                )
+                .CreateLogger();
+            
+            var appBuilder = BuildAvaloniaApp();
+            
+            appBuilder.StartWithClassicDesktopLifetime(args);
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application terminated unexpectedly");
+        }
+        finally
+        {
+            Log.CloseAndFlush();
+        }
+    }
+
+    // Avalonia configuration, don't remove; also used by visualdddd designer.
+    public static AppBuilder BuildAvaloniaApp() =>
+        AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
-            .LogToTrace();
+            .LogToTrace()
+            .With(new X11PlatformOptions { EnableIme = false })
+            .AfterSetup(_ =>
+            {
+                AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+                {
+                    Serilog.Log.Fatal(e.ExceptionObject as Exception,
+                        "[Unhandled] {Message}",
+                        (e.ExceptionObject as Exception)?.Message ?? "Unknown");
+                    Serilog.Log.CloseAndFlush();
+                };
+            });
 }

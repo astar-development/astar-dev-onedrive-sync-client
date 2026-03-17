@@ -1,10 +1,5 @@
-using System;
-using System.Linq;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
-using Avalonia.Media;
-using Avalonia.Platform;
 using Avalonia.Styling;
 using Avalonia.Threading;
 

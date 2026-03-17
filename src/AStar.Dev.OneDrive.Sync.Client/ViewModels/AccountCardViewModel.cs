@@ -1,5 +1,5 @@
-using System;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -17,6 +17,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
     public string Id          => _model.Id;
     public string DisplayName => _model.DisplayName;
     public string Email       => _model.Email;
+    public Color AccentColor => Color.Parse(PaletteHex(_model.AccentIndex));
 
     /// <summary>
     /// Two-letter initials derived from DisplayName (e.g. "JS" for "Jason Smith").
@@ -104,6 +105,20 @@ public sealed partial class AccountCardViewModel : ObservableObject
     // ── Palette ───────────────────────────────────────────────────────────
 
     private static readonly string[] AccentPalette =
+    [
+        "#185FA5",
+        "#0F6E56",
+        "#993C1D",
+        "#534AB7",
+        "#993556",
+        "#854F0B"
+    ];
+    
+    public static Color PaletteColor(int index) => Color.Parse(Palette[index % Palette.Length]);
+
+    public static string PaletteHex(int index) => Palette[index % Palette.Length];
+
+    private static readonly string[] Palette =
     [
         "#185FA5",
         "#0F6E56",

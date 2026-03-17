@@ -1,35 +1,30 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
 public enum WizardStep { SignIn, SelectFolders, Confirm }
 
-/// <summary>
-/// Stub folder item shown in the wizard folder-selection step.
-/// Replaced with real Graph API data when the Graph service is wired up.
-/// </summary>
-public sealed partial class WizardFolderItem : ObservableObject
+public sealed partial class WizardFolderItem(string id, string name) : ObservableObject
 {
-    public string Id   { get; init; } = string.Empty;
-    public string Name { get; init; } = string.Empty;
+    public string Id   { get; } = id;
+    public string Name { get; } = name;
 
     [ObservableProperty] private bool _isSelected = true;
 }
 
-/// <summary>
-/// Drives the Add Account wizard — a three-step flow:
-///   Step 1 — Sign in (MSAL browser launch, wired up in a later step)
-///   Step 2 — Select folders to sync (skippable)
-///   Step 3 — Confirm and finish
-/// </summary>
-public sealed partial class AddAccountWizardViewModel : ObservableObject
+public sealed partial class AddAccountWizardViewModel(
+    IAuthService  authService,
+    IGraphService graphService) : ObservableObject
 {
+    private string  _accountId   = string.Empty;
+    private string? _accessToken;
+    private CancellationTokenSource? _authCts;
+
     // ── Step state ────────────────────────────────────────────────────────
 
     [ObservableProperty]
@@ -53,12 +48,14 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject
 
     [ObservableProperty] private bool   _isWaitingForAuth;
     [ObservableProperty] private string _signInStatusText = string.Empty;
+    [ObservableProperty] private bool   _signInHasError;
 
     // ── Folder selection step ─────────────────────────────────────────────
 
     public ObservableCollection<WizardFolderItem> Folders { get; } = [];
 
-    [ObservableProperty] private bool _isLoadingFolders;
+    [ObservableProperty] private bool   _isLoadingFolders;
+    [ObservableProperty] private string _folderLoadError = string.Empty;
 
     // ── Confirm step ──────────────────────────────────────────────────────
 
@@ -71,10 +68,10 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject
     public bool CanGoBack => CurrentStep != WizardStep.SignIn;
     public bool CanGoNext => CurrentStep switch
     {
-        WizardStep.SignIn         => IsSignedIn,
-        WizardStep.SelectFolders  => true,   // skippable
-        WizardStep.Confirm        => true,
-        _                         => false
+        WizardStep.SignIn        => IsSignedIn,
+        WizardStep.SelectFolders => true,
+        WizardStep.Confirm       => true,
+        _                        => false
     };
 
     public string NextLabel => CurrentStep == WizardStep.Confirm ? "Finish" : "Next";
@@ -87,98 +84,140 @@ public sealed partial class AddAccountWizardViewModel : ObservableObject
     }
 
     [RelayCommand(CanExecute = nameof(CanGoNext))]
-    private void Next()
+    private async Task NextAsync()
     {
-        if (CurrentStep == WizardStep.SignIn)
+        switch (CurrentStep)
         {
-            LoadStubFolders();
-            CurrentStep = WizardStep.SelectFolders;
-        }
-        else if (CurrentStep == WizardStep.SelectFolders)
-        {
-            BuildConfirmSummary();
-            CurrentStep = WizardStep.Confirm;
-        }
-        else if (CurrentStep == WizardStep.Confirm)
-        {
-            Finish();
+            case WizardStep.SignIn:
+                await LoadFoldersAsync();
+                CurrentStep = WizardStep.SelectFolders;
+                break;
+
+            case WizardStep.SelectFolders:
+                BuildConfirmSummary();
+                CurrentStep = WizardStep.Confirm;
+                break;
+
+            case WizardStep.Confirm:
+                Finish();
+                break;
         }
     }
 
     [RelayCommand]
     private void SkipFolders()
     {
-        // Deselect all then advance
         foreach (var f in Folders) f.IsSelected = false;
         BuildConfirmSummary();
         CurrentStep = WizardStep.Confirm;
     }
 
-    // ── Sign-in (stub — MSAL wired in a later step) ───────────────────────
+    // ── Sign-in ───────────────────────────────────────────────────────────
 
     [RelayCommand]
     private async Task OpenBrowserAsync()
     {
-        IsWaitingForAuth = true;
+        if (IsWaitingForAuth) return;
+
+        SignInHasError   = false;
         SignInStatusText = "Waiting for sign-in\u2026";
+        IsWaitingForAuth = true;
 
-        // Stub: simulate auth delay — replaced with real MSAL call later
-        await Task.Delay(1500);
+        _authCts = new CancellationTokenSource();
 
-        IsSignedIn           = true;
-        IsWaitingForAuth     = false;
-        SignInStatusText     = "Signed in successfully";
-        ConfirmedDisplayName = "Demo User";
-        ConfirmedEmail       = "demo@outlook.com";
+        try
+        {
+            var result = await authService.SignInInteractiveAsync(_authCts.Token);
 
-        NextCommand.NotifyCanExecuteChanged();
+            if (result.IsCancelled)
+            {
+                SignInStatusText = "Sign-in cancelled.";
+                SignInHasError   = false;
+            }
+            else if (result.IsError)
+            {
+                SignInStatusText = result.ErrorMessage ?? "Sign-in failed.";
+                SignInHasError   = true;
+            }
+            else
+            {
+                _accountId           = result.AccountId!;
+                _accessToken         = result.AccessToken;
+                ConfirmedDisplayName = result.DisplayName ?? string.Empty;
+                ConfirmedEmail       = result.Email       ?? string.Empty;
+                IsSignedIn           = true;
+                SignInStatusText     = $"Signed in as {ConfirmedEmail}";
+                SignInHasError       = false;
+                NextCommand.NotifyCanExecuteChanged();
+            }
+        }
+        finally
+        {
+            IsWaitingForAuth = false;
+            _authCts.Dispose();
+            _authCts = null;
+        }
     }
 
     // ── Events ────────────────────────────────────────────────────────────
 
-    /// <summary>Raised when the wizard completes successfully.</summary>
     public event EventHandler<OneDriveAccount>? Completed;
-
-    /// <summary>Raised when the user cancels.</summary>
-    public event EventHandler? Cancelled;
+    public event EventHandler?                  Cancelled;
 
     [RelayCommand]
-    private void Cancel() => Cancelled?.Invoke(this, EventArgs.Empty);
+    private async Task CancelAsync()
+    {
+        _authCts?.Cancel();
+        await Task.CompletedTask;
+        Cancelled?.Invoke(this, EventArgs.Empty);
+    }
 
     // ── Private helpers ───────────────────────────────────────────────────
 
-    private void LoadStubFolders()
+    private async Task LoadFoldersAsync()
     {
+        if (_accessToken is null) return;
+
+        IsLoadingFolders = true;
+        FolderLoadError  = string.Empty;
         Folders.Clear();
-        // Stub folders — replaced with real Graph /me/drive/root/children call later
-        foreach (var name in new[] { "Documents", "Photos", "Desktop", "Music", "Videos" })
+
+        try
         {
-            Folders.Add(new WizardFolderItem
-            {
-                Id         = Guid.NewGuid().ToString(),
-                Name       = name,
-                IsSelected = name is "Documents" or "Desktop"
-            });
+            var driveFolders = await graphService
+                .GetRootFoldersAsync(_accessToken);
+
+            foreach (var f in driveFolders)
+                Folders.Add(new WizardFolderItem(f.Id, f.Name)
+                {
+                    IsSelected = f.Name is "Documents" or "Desktop"
+                });
+        }
+        catch (Exception ex)
+        {
+            FolderLoadError = $"Could not load folders: {ex.Message}";
+        }
+        finally
+        {
+            IsLoadingFolders = false;
         }
     }
 
-    private void BuildConfirmSummary()
-    {
+    private void BuildConfirmSummary() =>
         ConfirmedFolderCount = Folders.Count(f => f.IsSelected);
-    }
 
     private void Finish()
     {
         var account = new OneDriveAccount
         {
+            Id                = _accountId,
             DisplayName       = ConfirmedDisplayName,
             Email             = ConfirmedEmail,
-            SelectedFolderIds = Folders
+            SelectedFolderIds = [.. Folders.Where(f => f.IsSelected).Select(f => f.Id)],
+            FolderNames       = Folders
                 .Where(f => f.IsSelected)
-                .Select(f => f.Id)
-                .ToList()
+                .ToDictionary(f => f.Id, f => f.Name)
         };
-
         Completed?.Invoke(this, account);
     }
 }
