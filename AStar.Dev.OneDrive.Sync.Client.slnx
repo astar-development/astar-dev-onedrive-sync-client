@@ -2,7 +2,15 @@
   <Folder Name="/src/">
     <Project Path="src/AStar.Dev.OneDrive.Sync.Client/AStar.Dev.OneDrive.Sync.Client.csproj" />
   </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.csproj" />
+  <Folder Name="/src/nuget-packages/">
+    <Project Path="src/nuget-packages/AStar.Dev.Functional.Extensions/AStar.Dev.Functional.Extensions.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Logging.Extensions/AStar.Dev.Logging.Extensions.csproj" />
+    <Project Path="src/nuget-packages/AStar.Dev.Utilities/AStar.Dev.Utilities.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/AStar.Dev.OneDrive.Sync.Client.Tests.Unit/AStar.Dev.OneDrive.Sync.Client.Tests.Unit.csproj" />
+  </Folder>
+  <Folder Name="/test/nuget-packages/">
+    <Project Path="test/nuget-packages/AStar.Dev.Functional.Extensions.Tests.Unit/AStar.Dev.Functional.Extensions.Tests.Unit.csproj" />
   </Folder>
 </Solution>
