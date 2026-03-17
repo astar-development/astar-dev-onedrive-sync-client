@@ -40,11 +40,9 @@ public sealed class SyncService(
 
         foreach (var folderId in account.SelectedFolderIds)
         {
-            Log.Information("Starting sync for account {AccountId}, folder {FolderId}", account.Id, folderId);
             if (ct.IsCancellationRequested) break;
 
             await SyncFolderAsync(account, token, folderId, ct);
-            Log.Information("Finished sync for account {AccountId}, folder {FolderId}", account.Id, folderId);
         }
     }
 
@@ -121,7 +119,7 @@ public sealed class SyncService(
         {
             if (item.IsFolder) continue;
 
-            var relativePath = item.Name;
+            var relativePath = item.RelativePath ?? item.Name;
             var localPath = Path.Combine(account.LocalSyncPath, relativePath);
 
             if (item.IsDeleted)

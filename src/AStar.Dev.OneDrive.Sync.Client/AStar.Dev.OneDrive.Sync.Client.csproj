@@ -53,4 +53,9 @@
       </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\nuget-packages\AStar.Dev.Utilities\AStar.Dev.Utilities.csproj" />
+    <ProjectReference Include="..\nuget-packages\AStar.Dev.Functional.Extensions\AStar.Dev.Functional.Extensions.csproj" />
+  </ItemGroup>
+
 </Project>

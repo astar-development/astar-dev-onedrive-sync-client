@@ -7,5 +7,7 @@
 3. Activity log is empty
 4. Sync doesn't, well, sync...
 5. // Upload wired in a later step... well, this is later...
+6. After a sync, and no other sync running (that I am aware of), the overall status says "Syncing" which seems wrong
+
 
 ## Reviewed

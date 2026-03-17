@@ -1,6 +1,8 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.Utilities;
 using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions.Authentication;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 
@@ -19,24 +21,24 @@ public sealed class GraphService : IGraphService
     {
         var (client, driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        var result = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
+        var driveItemCollectionResponse = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
             .GetAsync(req =>
             {
                 req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
-                req.QueryParameters.Top    = 100;
+                req.QueryParameters.Top = 100;
             }, ct);
 
         List<DriveFolder> folders = [];
 
-        var page = result;
+        var page = driveItemCollectionResponse;
         while (page?.Value is not null)
         {
             folders.AddRange(
                 page.Value
                     .Where(i => i.Folder is not null)
                     .Select(i => new DriveFolder(
-                        Id:       i.Id!,
-                        Name:     i.Name!,
+                        Id: i.Id!,
+                        Name: i.Name!,
                         ParentId: i.ParentReference?.Id)));
 
             if (page.OdataNextLink is null) break;
@@ -50,7 +52,7 @@ public sealed class GraphService : IGraphService
     }
 
     /// <inheritdoc />
-    public async Task<List<DriveFolder>> GetChildFoldersAsync( string accessToken, string driveId, string parentFolderId, CancellationToken ct = default)
+    public async Task<List<DriveFolder>> GetChildFoldersAsync(string accessToken, string driveId, string parentFolderId, CancellationToken ct = default)
     {
         var client = BuildClient(accessToken);
 
@@ -58,7 +60,7 @@ public sealed class GraphService : IGraphService
             .GetAsync(req =>
             {
                 req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
-                req.QueryParameters.Top    = 100;
+                req.QueryParameters.Top = 100;
             }, ct);
 
         List<DriveFolder> folders = [];
@@ -70,8 +72,8 @@ public sealed class GraphService : IGraphService
                 page.Value
                     .Where(i => i.Folder is not null)
                     .Select(i => new DriveFolder(
-                        Id:       i.Id!,
-                        Name:     i.Name!,
+                        Id: i.Id!,
+                        Name: i.Name!,
                         ParentId: i.ParentReference?.Id)));
 
             if (page.OdataNextLink is null) break;
@@ -87,67 +89,144 @@ public sealed class GraphService : IGraphService
     /// <inheritdoc />
     public async Task<(long Total, long Used)> GetQuotaAsync(string accessToken, CancellationToken ct = default)
     {
-        var (client, ctx) = await ResolveAsync(accessToken, ct);
+        var (client, ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
         var drive = await client.Drives[ctx.DriveId]
-            .GetAsync(req =>
-                req.QueryParameters.Select = ["quota"], ct);
+            .GetAsync(req => req.QueryParameters.Select = ["quota"], ct);
 
         return drive?.Quota is { Total: not null, Used: not null }
-            ? (drive.Quota.Total.Value, drive.Quota.Used.Value)
+            ? (drive.Quota.Total!.Value, drive.Quota.Used!.Value)
             : (0L, 0L);
     }
 
     /// <inheritdoc />
-    public async Task<DeltaResult> GetDeltaAsync(string accessToken, string folderId, string? deltaLink, CancellationToken ct = default)
+    public async Task<DeltaResult> GetDeltaAsync(
+    string  accessToken,
+    string  folderId,
+    string? deltaLink,
+    CancellationToken ct = default)
+{
+    var (client, ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+
+    // First sync — enumerate all children recursively then get a delta link
+    if (deltaLink is null)
+        return await FullEnumerationAsync(client, ctx.DriveId, folderId, ct);
+
+    // Subsequent syncs — use delta link for changes only
+    List<DeltaItem> items = [];
+    string? nextDeltaLink = null;
+    bool hasMorePages     = false;
+
+    var page = await client.Drives[ctx.DriveId].Items[folderId].Delta
+        .WithUrl(deltaLink)
+        .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+
+    while (page?.Value is not null)
     {
-        var (client, ctx) = await ResolveAsync(accessToken, ct);
+        foreach (var item in page.Value)
+            items.Add(MapToDeltaItem(item));
 
-        List<DeltaItem> items = [];
-        string? nextDeltaLink = null;
-        bool hasMorePages     = false;
-
-        var page = deltaLink is not null
-            ? await client.Drives[ctx.DriveId].Items[folderId].Delta
-                .WithUrl(deltaLink)
-                .GetAsDeltaGetResponseAsync(cancellationToken: ct)
-            : await client.Drives[ctx.DriveId].Items[folderId].Delta
-                .GetAsDeltaGetResponseAsync(cancellationToken: ct);
-
-        while (page?.Value is not null) // ToDo - could this be the issue? returns 0 items on the first call, but not sure which folder it is for
+        if (page.OdataNextLink is not null)
         {
-            foreach (var item in page.Value)
-            {
-                items.Add(new DeltaItem(
-                    Id:           item.Id!,
-                    Name:         item.Name ?? string.Empty,
-                    ParentId:     item.ParentReference?.Id,
-                    IsFolder:     item.Folder is not null,
-                    IsDeleted:    item.Deleted is not null,
-                    Size:         item.Size ?? 0L,
-                    LastModified: item.LastModifiedDateTime,
-                    DownloadUrl:  item.AdditionalData
-                        .TryGetValue("@microsoft.graph.downloadUrl", out var url)
-                            ? url?.ToString()
-                            : null));
-            }
+            hasMorePages = true;
+            page = await client.Drives[ctx.DriveId].Items[folderId].Delta
+                .WithUrl(page.OdataNextLink)
+                .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+        }
+        else
+        {
+            nextDeltaLink = page.OdataDeltaLink;
+            break;
+        }
+    }
 
-            if (page.OdataNextLink is not null)
-            {
-                hasMorePages = true;
-                page = await client.Drives[ctx.DriveId].Items[folderId].Delta
-                    .WithUrl(page.OdataNextLink)
-                    .GetAsDeltaGetResponseAsync(cancellationToken: ct);
-            }
-            else
-            {
-                nextDeltaLink = page.OdataDeltaLink;
-                break;
-            }
+    return new DeltaResult(items, nextDeltaLink, hasMorePages);
+}
+
+private async Task<DeltaResult> FullEnumerationAsync(
+    GraphServiceClient client,
+    string             driveId,
+    string             folderId,
+    CancellationToken  ct)
+{
+    List<DeltaItem> items = [];
+    await EnumerateFolderAsync(client, driveId, folderId, string.Empty, items, ct);
+
+    // After full enumeration, get a delta link to use for future syncs
+    var deltaPage = await client.Drives[driveId].Items[folderId].Delta
+        .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+
+    var deltaLink = deltaPage?.OdataDeltaLink;
+
+    return new DeltaResult(items, deltaLink, false);
+}
+
+private async Task EnumerateFolderAsync(
+    GraphServiceClient client,
+    string             driveId,
+    string             parentId,
+    string             relativePath,
+    List<DeltaItem>    items,
+    CancellationToken  ct)
+{
+    var page = await client.Drives[driveId].Items[parentId].Children
+        .GetAsync(req =>
+        {
+            req.QueryParameters.Select = 
+                ["id", "name", "folder", "file", "size", 
+                 "lastModifiedDateTime", "parentReference",
+                 "@microsoft.graph.downloadUrl"];
+            req.QueryParameters.Top = 100;
+        }, ct);
+
+    while (page?.Value is not null)
+    {
+        foreach (var item in page.Value)
+        {
+            var itemPath = string.IsNullOrEmpty(relativePath)
+                ? item.Name ?? string.Empty
+                : $"{relativePath}/{item.Name}";
+
+            items.Add(new DeltaItem(
+                Id:           item.Id!,
+                Name:         item.Name ?? string.Empty,
+                ParentId:     item.ParentReference?.Id,
+                IsFolder:     item.Folder is not null,
+                IsDeleted:    false,
+                Size:         item.Size ?? 0L,
+                LastModified: item.LastModifiedDateTime,
+                DownloadUrl:  item.AdditionalData
+                    .TryGetValue("@microsoft.graph.downloadUrl", out var url)
+                        ? url?.ToString()
+                        : null));
+
+            // Recurse into subfolders
+            if (item.Folder is not null && item.Id is not null)
+                await EnumerateFolderAsync(
+                    client, driveId, item.Id, itemPath, items, ct);
         }
 
-        return new DeltaResult(items, nextDeltaLink, hasMorePages);
+        if (page.OdataNextLink is null) break;
+
+        page = await client.Drives[driveId].Items[parentId].Children
+            .WithUrl(page.OdataNextLink)
+            .GetAsync(cancellationToken: ct);
     }
+}
+
+private static DeltaItem MapToDeltaItem(Microsoft.Graph.Models.DriveItem item) =>
+    new(
+        Id:           item.Id!,
+        Name:         item.Name ?? string.Empty,
+        ParentId:     item.ParentReference?.Id,
+        IsFolder:     item.Folder is not null,
+        IsDeleted:    item.Deleted is not null,
+        Size:         item.Size ?? 0L,
+        LastModified: item.LastModifiedDateTime,
+        DownloadUrl:  item.AdditionalData
+            .TryGetValue("@microsoft.graph.downloadUrl", out var url)
+                ? url?.ToString()
+                : null);
 
     // ── Private helpers ───────────────────────────────────────────────────
 

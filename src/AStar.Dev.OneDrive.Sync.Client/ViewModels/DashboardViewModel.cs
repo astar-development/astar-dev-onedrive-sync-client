@@ -25,11 +25,11 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
 
     public bool HasAccounts => TotalAccounts > 0;
 
-    public string OverallStatusText => (_anySyncing, _anyErrors, _totalConflicts) switch
+    public string OverallStatusText => (AnySyncing, AnyErrors, TotalConflicts) switch
     {
         (true,  _,    _) => "Syncing ...",
         (_,     true, _) => "Error",
-        (_,     _, > 0) => $"{_totalConflicts} conflict{(_totalConflicts == 1 ? "" : "s")}",
+        (_,     _, > 0) => $"{TotalConflicts} conflict{ (TotalConflicts == 1 ? "" : "s")}",
         _                => "All synced"
     };
 
