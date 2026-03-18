@@ -1,5 +1,5 @@
-using AStar.Dev.OneDrive.Sync.Client.Data;
 using System.Text.Json;
+using AStar.Dev.OneDrive.Sync.Client.Data;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 
@@ -34,7 +34,7 @@ public sealed class SettingsService : ISettingsService
     public static async Task<SettingsService> LoadAsync()
     {
         var svc = new SettingsService();
-        if (File.Exists(svc._path))
+        if(File.Exists(svc._path))
         {
             try
             {

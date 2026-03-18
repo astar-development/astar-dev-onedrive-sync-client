@@ -40,7 +40,7 @@ sealed class Program
 
             _ = appBuilder.StartWithClassicDesktopLifetime(args);
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Log.Fatal(ex, "Application terminated unexpectedly");
         }

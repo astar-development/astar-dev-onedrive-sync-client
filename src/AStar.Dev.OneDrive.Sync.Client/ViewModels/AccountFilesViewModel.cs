@@ -1,12 +1,12 @@
+using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
-using Avalonia.Media;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
@@ -21,16 +21,16 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     // ── Display ───────────────────────────────────────────────────────────
 
-    public string AccountId   => _account.Id;
+    public string AccountId => _account.Id;
     public string DisplayName => _account.DisplayName;
-    public string Email       => _account.Email;
+    public string Email => _account.Email;
 
-    public string TabLabel  => _account.DisplayName.Length > 0
+    public string TabLabel => _account.DisplayName.Length > 0
                                  ? _account.DisplayName
                                  : _account.Email;
 
-    public int    AccentIndex => _account.AccentIndex;
-    
+    public int AccentIndex => _account.AccentIndex;
+
     public Color AccentColor => AccountCardViewModel.PaletteColor(_account.AccentIndex);
 
     // ── Tree ──────────────────────────────────────────────────────────────
@@ -54,20 +54,21 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     [RelayCommand]
     public async Task LoadAsync()
     {
-        if (IsLoading) return;
+        if(IsLoading)
+            return;
 
-        IsLoading    = true;
+        IsLoading = true;
         HasLoadError = false;
-        LoadError    = string.Empty;
+        LoadError = string.Empty;
         RootFolders.Clear();
 
         try
         {
             AuthResult authResult = await _authService.AcquireTokenSilentAsync(_account.Id);
 
-            if (authResult.IsError)
+            if(authResult.IsError)
             {
-                LoadError    = authResult.ErrorMessage ?? "Authentication failed.";
+                LoadError = authResult.ErrorMessage ?? "Authentication failed.";
                 HasLoadError = true;
                 return;
             }
@@ -79,7 +80,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             List<DriveFolder> folders = await _graphService.GetRootFoldersAsync(_accessToken);
 
-            foreach (DriveFolder f in folders)
+            foreach(DriveFolder f in folders)
             {
                 FolderSyncState syncState = _account.SelectedFolderIds.Contains(f.Id)
                     ? FolderSyncState.Included
@@ -96,16 +97,16 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 var vm = new FolderTreeNodeViewModel(
                     node, _graphService, _accessToken, _driveId);
 
-                vm.IncludeToggled             += OnIncludeToggled;
-                vm.ViewActivityRequested      += OnViewActivityRequested;
+                vm.IncludeToggled += OnIncludeToggled;
+                vm.ViewActivityRequested += OnViewActivityRequested;
                 vm.OpenInFileManagerRequested += OnOpenInFileManager;
 
                 RootFolders.Add(vm);
             }
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
-            LoadError    = $"Failed to load folders: {ex.Message}";
+            LoadError = $"Failed to load folders: {ex.Message}";
             HasLoadError = true;
         }
         finally
@@ -118,9 +119,9 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     private async void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
     {
-        if (node.IsIncluded)
+        if(node.IsIncluded)
         {
-            if (!_account.SelectedFolderIds.Contains(node.Id))
+            if(!_account.SelectedFolderIds.Contains(node.Id))
                 _account.SelectedFolderIds.Add(node.Id);
         }
         else
@@ -162,7 +163,8 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "OneDrive", node.Name);
 
-        if (!Directory.Exists(path)) return;
+        if(!Directory.Exists(path))
+            return;
 
         var opener = OperatingSystem.IsWindows() ? "explorer"
                    : OperatingSystem.IsMacOS()   ? "open"

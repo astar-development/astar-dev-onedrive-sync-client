@@ -92,6 +92,6 @@ public sealed class StringExtensionsShould
     [InlineData(512, "512 B")]
     [InlineData(1536, "1.5 KB")]
     [InlineData(5 * 1024 * 1024, "5.0 MB")]
-    [InlineData(5 * 1024 * 1024 + 512 * 1024 * 1024, "517.0 MB")]
+    [InlineData((5 * 1024 * 1024) + (512 * 1024 * 1024), "517.0 MB")]
     public void ConvertTheFileSizeToHumanReadableFormat(long fileSizeToConvert, string expected) => fileSizeToConvert.FileSizeToText().ShouldBe(expected);
 }

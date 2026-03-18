@@ -36,7 +36,7 @@ public sealed class TokenCacheService
     {
         StorageCreationProperties storageProperties;
 
-        if (OperatingSystem.IsLinux())
+        if(OperatingSystem.IsLinux())
         {
             // On Linux try keyring first, fall back to unprotected file
             // They cannot be combined in the same builder
@@ -63,7 +63,7 @@ public sealed class TokenCacheService
                 helper.RegisterCache(app.UserTokenCache);
                 return;
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 Serilog.Log.Warning(ex,
                     "[TokenCache] Keyring unavailable, falling back to plaintext cache");

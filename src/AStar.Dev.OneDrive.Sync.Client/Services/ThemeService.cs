@@ -33,7 +33,7 @@ public sealed class ThemeService : IThemeService, IDisposable
         _systemWatcher?.Dispose();
         _systemWatcher = null;
 
-        if (theme == AppTheme.System)
+        if(theme == AppTheme.System)
         {
             // Apply immediately based on current OS preference, then watch
             ApplyVariant(GetSystemIsDark() ? AppTheme.Dark : AppTheme.Light);
@@ -52,14 +52,14 @@ public sealed class ThemeService : IThemeService, IDisposable
     private static bool GetSystemIsDark()
     {
         Application? app = Application.Current;
-        if (app is null) return false;
-        return app.ActualThemeVariant == ThemeVariant.Dark;
+        return app is null ? false : app.ActualThemeVariant == ThemeVariant.Dark;
     }
 
     private void WatchSystem()
     {
         Application? app = Application.Current;
-        if (app is null) return;
+        if(app is null)
+            return;
 
         // ActualThemeVariantChanged fires when the OS dark-mode preference changes
         app.ActualThemeVariantChanged += OnActualThemeVariantChanged;
@@ -69,7 +69,8 @@ public sealed class ThemeService : IThemeService, IDisposable
 
     private void OnActualThemeVariantChanged(object? sender, EventArgs e)
     {
-        if (CurrentTheme != AppTheme.System) return;
+        if(CurrentTheme != AppTheme.System)
+            return;
         Dispatcher.UIThread.Post(() =>
             ApplyVariant(GetSystemIsDark() ? AppTheme.Dark : AppTheme.Light));
     }
@@ -77,7 +78,8 @@ public sealed class ThemeService : IThemeService, IDisposable
     private static void ApplyVariant(AppTheme resolved)
     {
         Application? app = Application.Current;
-        if (app is null) return;
+        if(app is null)
+            return;
 
         Uri targetUri = resolved == AppTheme.Dark ? DarkUri : LightUri;
         IList<IResourceProvider> merged = app.Resources.MergedDictionaries;
@@ -86,7 +88,7 @@ public sealed class ThemeService : IThemeService, IDisposable
             .OfType<ResourceInclude>()
             .FirstOrDefault(r => r.Source == LightUri || r.Source == DarkUri);
 
-        if (existing is not null)
+        if(existing is not null)
             _ = merged.Remove(existing);
 
         merged.Add(new ResourceInclude(targetUri) { Source = targetUri });

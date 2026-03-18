@@ -53,22 +53,22 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 
             return BuildSuccess(result);
         }
-        catch (MsalClientException ex) when
+        catch(MsalClientException ex) when
                 (ex.ErrorCode is MsalError.AuthenticationCanceledError
                             or "authentication_canceled"
                             or "user_canceled")
         {
             return AuthResult.Cancelled();
         }
-        catch (OperationCanceledException)
+        catch(OperationCanceledException)
         {
             return AuthResult.Cancelled();
         }
-        catch (MsalException ex)
+        catch(MsalException ex)
         {
             return AuthResult.Failure($"Authentication failed: {ex.Message}");
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             return AuthResult.Failure($"Unexpected error during sign-in: {ex.Message}");
         }
@@ -83,7 +83,7 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
             IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
             IAccount? account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
-            if (account is null)
+            if(account is null)
                 return AuthResult.Failure("Account not found in token cache.");
 
             AuthenticationResult result = await _app
@@ -92,16 +92,16 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 
             return BuildSuccess(result);
         }
-        catch (MsalUiRequiredException)
+        catch(MsalUiRequiredException)
         {
             // Silent refresh not possible — interactive sign-in required
             return AuthResult.Failure("Re-authentication required.");
         }
-        catch (OperationCanceledException)
+        catch(OperationCanceledException)
         {
             return AuthResult.Cancelled();
         }
-        catch (MsalException ex)
+        catch(MsalException ex)
         {
             return AuthResult.Failure($"Token refresh failed: {ex.Message}");
         }
@@ -114,7 +114,7 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
         IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
         IAccount? account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
-        if (account is not null)
+        if(account is not null)
             await _app.RemoveAsync(account);
     }
 
@@ -132,7 +132,8 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 
     private async Task EnsureCacheRegisteredAsync()
     {
-        if (_cacheRegistered) return;
+        if(_cacheRegistered)
+            return;
         await _cacheService.RegisterAsync(_app);
         _cacheRegistered = true;
     }
@@ -144,20 +145,22 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
         var email       = result.Account.Username;
 
         // Try to get a friendlier display name from the ID token claims
-        if (result.ClaimsPrincipal is not null)
+        if(result.ClaimsPrincipal is not null)
         {
             var nameClaim  = result.ClaimsPrincipal.FindFirst("name")?.Value;
             var emailClaim = result.ClaimsPrincipal.FindFirst("preferred_username")?.Value
                           ?? result.ClaimsPrincipal.FindFirst("email")?.Value;
 
-            if (!string.IsNullOrEmpty(nameClaim))  displayName = nameClaim;
-            if (!string.IsNullOrEmpty(emailClaim)) email       = emailClaim;
+            if(!string.IsNullOrEmpty(nameClaim))
+                displayName = nameClaim;
+            if(!string.IsNullOrEmpty(emailClaim))
+                email = emailClaim;
         }
 
         return AuthResult.Success(
             accessToken: result.AccessToken,
-            accountId:   result.Account.HomeAccountId.Identifier,
+            accountId: result.Account.HomeAccountId.Identifier,
             displayName: displayName,
-            email:       email);
+            email: email);
     }
 }

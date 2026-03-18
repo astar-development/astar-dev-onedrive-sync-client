@@ -1,10 +1,10 @@
+using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.Utilities;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
@@ -15,17 +15,17 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     // ── Identity ──────────────────────────────────────────────────────────
 
-    public string AccountId   => _account.Id;
+    public string AccountId => _account.Id;
     public string DisplayName => _account.DisplayName;
-    public string Email       => _account.Email;
-    public string AccentHex   => AccountCardViewModel.PaletteHex(_account.AccentIndex);
+    public string Email => _account.Email;
+    public string AccentHex => AccountCardViewModel.PaletteHex(_account.AccentIndex);
     public Avalonia.Media.Color AccentColor
         => Avalonia.Media.Color.Parse(AccentHex);
 
     // ── Storage ───────────────────────────────────────────────────────────
 
-    public long   QuotaTotal    => _account.QuotaTotal;
-    public long   QuotaUsed     => _account.QuotaUsed;
+    public long QuotaTotal => _account.QuotaTotal;
+    public long QuotaUsed => _account.QuotaUsed;
     public double StorageFraction => QuotaTotal > 0
         ? Math.Clamp((double)QuotaUsed / QuotaTotal, 0, 1)
         : 0;
@@ -50,14 +50,14 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [ObservableProperty] private int    _folderCount;
     [ObservableProperty] private bool   _isSyncing;
 
-    public bool   IsHealthy   => SyncState is SyncState.Idle && ConflictCount == 0;
+    public bool IsHealthy => SyncState is SyncState.Idle && ConflictCount == 0;
     public string StatusLabel => (SyncState, ConflictCount) switch
     {
-        (SyncState.Syncing,  _) => "Syncing ...",
-        (SyncState.Error,    _) => "Error",
-        (_, > 0)                => $"{ConflictCount} conflict{(ConflictCount == 1 ? "" : "s")}",
-        (SyncState.Pending,  _) => "Pending",
-        _                       => "Synced"
+        (SyncState.Syncing, _) => "Syncing ...",
+        (SyncState.Error, _) => "Error",
+        (_, > 0) => $"{ConflictCount} conflict{(ConflictCount == 1 ? "" : "s")}",
+        (SyncState.Pending, _) => "Pending",
+        _ => "Synced"
     };
 
     // ── Expansion ─────────────────────────────────────────────────────────
@@ -76,7 +76,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     public DashboardAccountViewModel(OneDriveAccount account, SyncScheduler scheduler)
     {
-        _account   = account;
+        _account = account;
         _scheduler = scheduler;
         _folderCount = account.SelectedFolderIds.Count;
         UpdateLastSyncText(SyncState.Idle);
@@ -115,7 +115,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public void AddRecentActivity(ActivityItemViewModel item) => Dispatcher.UIThread.Post(() =>
                                                                       {
                                                                           RecentActivity.Insert(0, item);
-                                                                          while (RecentActivity.Count > 3)
+                                                                          while(RecentActivity.Count > 3)
                                                                               RecentActivity.RemoveAt(RecentActivity.Count - 1);
                                                                       });
 
@@ -128,10 +128,10 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             ? "Never synced"
             : (DateTimeOffset.UtcNow - _account.LastSyncedAt.Value) switch
             {
-                { TotalSeconds: < 60  }    => "Just now",
-                { TotalMinutes: < 60  } td => $"{(int)td.TotalMinutes}m ago",
-                { TotalHours:   < 24  } td => $"{(int)td.TotalHours}h ago",
-                { TotalDays:    < 2   }    => "Yesterday",
-                var td                     => $"{(int)td.TotalDays}d ago"
+                { TotalSeconds: < 60 } => "Just now",
+                { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
+                { TotalHours: < 24 } td => $"{(int)td.TotalHours}h ago",
+                { TotalDays: < 2 } => "Yesterday",
+                var td => $"{(int)td.TotalDays}d ago"
             };
 }

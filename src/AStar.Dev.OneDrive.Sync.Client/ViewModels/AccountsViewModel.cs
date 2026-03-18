@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -5,13 +6,12 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
 public sealed partial class AccountsViewModel(
-    IAuthService       authService,
-    IGraphService      graphService,
+    IAuthService authService,
+    IGraphService graphService,
     IAccountRepository repository) : ObservableObject
 {
     // ── Account list ──────────────────────────────────────────────────────
@@ -55,12 +55,12 @@ public sealed partial class AccountsViewModel(
 
     public void RestoreAccounts(IEnumerable<OneDriveAccount> accounts)
     {
-        foreach (OneDriveAccount account in accounts)
+        foreach(OneDriveAccount account in accounts)
         {
             AccountCardViewModel card = BuildCard(account);
             Accounts.Add(card);
 
-            if (account.IsActive)
+            if(account.IsActive)
                 ActiveAccount = card;
         }
 
@@ -79,7 +79,7 @@ public sealed partial class AccountsViewModel(
 
         _ = Accounts.Remove(card);
 
-        if (ActiveAccount == card)
+        if(ActiveAccount == card)
             ActiveAccount = Accounts.FirstOrDefault();
 
         OnPropertyChanged(nameof(HasAccounts));
@@ -93,23 +93,24 @@ public sealed partial class AccountsViewModel(
         CloseWizard();
 
         account.AccentIndex = Accounts.Count % 6;
-        account.IsActive    = Accounts.Count == 0;
+        account.IsActive = Accounts.Count == 0;
 
         AccountEntity entity = ToEntity(account);
         await repository.UpsertAsync(entity);
 
-        if (account.IsActive)
+        if(account.IsActive)
             await repository.SetActiveAccountAsync(account.Id);
 
         AccountCardViewModel card = BuildCard(account);
         Accounts.Add(card);
         OnPropertyChanged(nameof(HasAccounts));
 
-        if (account.IsActive)
+        if(account.IsActive)
             ActiveAccount = card;
 
         // Notify MainWindowViewModel to add a Files tab
-        AccountAdded?.Invoke(this, account);System.Diagnostics.Debug.WriteLine(
+        AccountAdded?.Invoke(this, account);
+        System.Diagnostics.Debug.WriteLine(
     $"AccountsViewModel instance: {GetHashCode()} Count: {Accounts.Count} - OnWizardCompleted: Added account {account.Email} with ID {account.Id}");
     }
 
@@ -117,7 +118,7 @@ public sealed partial class AccountsViewModel(
 
     private void CloseWizard()
     {
-        if (Wizard is not null)
+        if(Wizard is not null)
         {
             Wizard.Completed -= OnWizardCompleted;
             Wizard.Cancelled -= OnWizardCancelled;
@@ -130,7 +131,7 @@ public sealed partial class AccountsViewModel(
 
     private void OnCardSelected(object? sender, AccountCardViewModel card)
     {
-        foreach (AccountCardViewModel c in Accounts)
+        foreach(AccountCardViewModel c in Accounts)
             c.IsActive = c == card;
 
         ActiveAccount = card;
@@ -144,24 +145,24 @@ public sealed partial class AccountsViewModel(
     private AccountCardViewModel BuildCard(OneDriveAccount account)
     {
         var card = new AccountCardViewModel(account);
-        card.Selected        += OnCardSelected;
+        card.Selected += OnCardSelected;
         card.RemoveRequested += (_, c) => RemoveAccountCommand.Execute(c);
         return card;
     }
 
     private static AccountEntity ToEntity(OneDriveAccount a) => new()
     {
-        Id           = a.Id,
-        DisplayName  = a.DisplayName,
-        Email        = a.Email,
-        AccentIndex  = a.AccentIndex,
-        IsActive     = a.IsActive,
-        DeltaLink    = a.DeltaLink,
+        Id = a.Id,
+        DisplayName = a.DisplayName,
+        Email = a.Email,
+        AccentIndex = a.AccentIndex,
+        IsActive = a.IsActive,
+        DeltaLink = a.DeltaLink,
         LastSyncedAt = a.LastSyncedAt,
-        QuotaTotal   = a.QuotaTotal,
-        LocalSyncPath  = a.LocalSyncPath,
+        QuotaTotal = a.QuotaTotal,
+        LocalSyncPath = a.LocalSyncPath,
         ConflictPolicy = a.ConflictPolicy,
-        QuotaUsed    = a.QuotaUsed,
+        QuotaUsed = a.QuotaUsed,
         SyncFolders = [.. a.SelectedFolderIds.Select(id => new SyncFolderEntity
         {
             FolderId   = id,

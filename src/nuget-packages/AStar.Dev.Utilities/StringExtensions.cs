@@ -121,7 +121,7 @@ public static class StringExtensions
     /// <returns>The normalized file path, prefixed with a forward slash if not already prefixed</returns>
     public static string NormalizeLinux(this string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if(string.IsNullOrWhiteSpace(path))
             return "/";
 
         path = path.Trim()
@@ -138,7 +138,7 @@ public static class StringExtensions
     /// <returns>The normalized file path, prefixed with a backslash if not already prefixed</returns>
     public static string NormalizeWindows(this string path)
     {
-        if (string.IsNullOrWhiteSpace(path))
+        if(string.IsNullOrWhiteSpace(path))
             return "\\";
 
         path = path.Trim()

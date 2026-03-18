@@ -14,9 +14,9 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     // ── Display properties ────────────────────────────────────────────────
 
-    public string Id          => _model.Id;
+    public string Id => _model.Id;
     public string DisplayName => _model.DisplayName;
-    public string Email       => _model.Email;
+    public string Email => _model.Email;
     public Color AccentColor => Color.Parse(PaletteHex(_model.AccentIndex));
 
     /// <summary>
@@ -72,7 +72,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     public AccountCardViewModel(OneDriveAccount model)
     {
-        _model   = model;
+        _model = model;
         _isActive = model.IsActive;
         UpdateLastSyncText();
     }
@@ -88,17 +88,17 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     private void UpdateLastSyncText()
     {
-        if (_model.LastSyncedAt is null)
+        if(_model.LastSyncedAt is null)
         {
             LastSyncText = "Never synced";
             return;
         }
 
         TimeSpan elapsed = DateTimeOffset.UtcNow - _model.LastSyncedAt.Value;
-        LastSyncText = elapsed.TotalMinutes < 2  ? "Just now"
-                     : elapsed.TotalHours   < 1  ? $"{(int)elapsed.TotalMinutes}m ago"
-                     : elapsed.TotalDays    < 1  ? $"{(int)elapsed.TotalHours}h ago"
-                     : elapsed.TotalDays    < 2  ? "Yesterday"
+        LastSyncText = elapsed.TotalMinutes < 2 ? "Just now"
+                     : elapsed.TotalHours < 1 ? $"{(int)elapsed.TotalMinutes}m ago"
+                     : elapsed.TotalDays < 1 ? $"{(int)elapsed.TotalHours}h ago"
+                     : elapsed.TotalDays < 2 ? "Yesterday"
                      : $"{(int)elapsed.TotalDays}d ago";
     }
 
@@ -113,7 +113,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
         "#993556",
         "#854F0B"
     ];
-    
+
     public static Color PaletteColor(int index) => Color.Parse(Palette[index % Palette.Length]);
 
     public static string PaletteHex(int index) => Palette[index % Palette.Length];

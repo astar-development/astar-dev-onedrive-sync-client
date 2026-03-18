@@ -9,7 +9,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 /// Default interval: 60 minutes. Configurable via Settings.
 /// Manual sync can be triggered immediately via <see cref="TriggerNowAsync"/>.
 /// </summary>
-public sealed class SyncScheduler(ISyncService syncService,IAccountRepository accountRepository) : IAsyncDisposable
+public sealed class SyncScheduler(ISyncService syncService, IAccountRepository accountRepository) : IAsyncDisposable
 {
     private readonly ISyncService       _syncService       = syncService;
     private readonly IAccountRepository _accountRepository = accountRepository;
@@ -25,14 +25,14 @@ public sealed class SyncScheduler(ISyncService syncService,IAccountRepository ac
     public void Start(TimeSpan? interval = null)
     {
         _interval = interval ?? DefaultInterval;
-        
+
         try
         {
-            _timer    = new Timer(OnTimerTick, state: null, dueTime: _interval, period: _interval);
+            _timer = new Timer(OnTimerTick, state: null, dueTime: _interval, period: _interval);
 
             _running = false;
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Serilog.Log.Fatal(ex, "[SyncScheduler.Start] FATAL ERROR creating Timer: {Error}", ex.Message);
             throw;
@@ -52,7 +52,8 @@ public sealed class SyncScheduler(ISyncService syncService,IAccountRepository ac
     /// </summary>
     public async Task TriggerNowAsync(CancellationToken ct = default)
     {
-        if (_running) return;
+        if(_running)
+            return;
 
         await RunSyncPassAsync(ct);
     }
@@ -77,7 +78,8 @@ public sealed class SyncScheduler(ISyncService syncService,IAccountRepository ac
 
     private async void OnTimerTick(object? state)
     {
-        if (_running) return;
+        if(_running)
+            return;
 
         await RunSyncPassAsync(CancellationToken.None);
     }
@@ -85,13 +87,14 @@ public sealed class SyncScheduler(ISyncService syncService,IAccountRepository ac
     private async Task RunSyncPassAsync(CancellationToken ct)
     {
         _running = true;
-        
+
         try
         {
             List<AccountEntity> entities = await _accountRepository.GetAllAsync();
-            foreach (AccountEntity entity in entities)
+            foreach(AccountEntity entity in entities)
             {
-                if (ct.IsCancellationRequested) break;
+                if(ct.IsCancellationRequested)
+                    break;
 
                 var account = new OneDriveAccount
                 {
@@ -110,7 +113,7 @@ public sealed class SyncScheduler(ISyncService syncService,IAccountRepository ac
                 {
                     await _syncService.SyncAccountAsync(account, ct);
                 }
-                catch (Exception ex)
+                catch(Exception ex)
                 {
                     System.Diagnostics.Debug.WriteLine(
                         $"Scheduled sync failed for {account.Email}: {ex.Message}");
@@ -131,7 +134,7 @@ public sealed class SyncScheduler(ISyncService syncService,IAccountRepository ac
     {
         Stop();
 
-        if (_timer is not null)
+        if(_timer is not null)
             await _timer.DisposeAsync();
     }
 }

@@ -17,7 +17,7 @@ public interface IStartupService
 
 public sealed class StartupService(
     IAccountRepository repository,
-    IAuthService       authService) : IStartupService
+    IAuthService authService) : IStartupService
 {
     public async Task<List<OneDriveAccount>> RestoreAccountsAsync()
     {
@@ -27,43 +27,44 @@ public sealed class StartupService(
         var cachedIds = (await authService.GetCachedAccountIdsAsync()).ToHashSet();
         System.Diagnostics.Debug.WriteLine($"Cached MSAL IDs: {string.Join(", ", cachedIds)}");
 
-        foreach (AccountEntity entity in entities)
+        foreach(AccountEntity entity in entities)
             System.Diagnostics.Debug.WriteLine($"DB account: {entity.Id} | {entity.Email}");
 
         List<OneDriveAccount> accounts = [];
 
-        foreach (AccountEntity entity in entities)
+        foreach(AccountEntity entity in entities)
         {
             // Skip accounts whose tokens have been evicted from the cache
             // (e.g. user signed out on another device, token expired beyond refresh)
-            if (!cachedIds.Contains(entity.Id)) continue;
+            if(!cachedIds.Contains(entity.Id))
+                continue;
 
             accounts.Add(new OneDriveAccount
             {
-                Id                = entity.Id,
-                DisplayName       = entity.DisplayName,
-                Email             = entity.Email,
-                AccentIndex       = entity.AccentIndex,
-                IsActive          = entity.IsActive,
-                DeltaLink         = entity.DeltaLink,
-                LastSyncedAt      = entity.LastSyncedAt,
-                QuotaTotal        = entity.QuotaTotal,
-                QuotaUsed         = entity.QuotaUsed,
+                Id = entity.Id,
+                DisplayName = entity.DisplayName,
+                Email = entity.Email,
+                AccentIndex = entity.AccentIndex,
+                IsActive = entity.IsActive,
+                DeltaLink = entity.DeltaLink,
+                LastSyncedAt = entity.LastSyncedAt,
+                QuotaTotal = entity.QuotaTotal,
+                QuotaUsed = entity.QuotaUsed,
                 SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
-                LocalSyncPath  = entity.LocalSyncPath,
+                LocalSyncPath = entity.LocalSyncPath,
                 ConflictPolicy = entity.ConflictPolicy
             });
         }
 
         // Ensure only one account is active — last-write wins if data is inconsistent
         var activeCount = accounts.Count(a => a.IsActive);
-        if (activeCount > 1)
+        if(activeCount > 1)
         {
-            foreach (OneDriveAccount? a in accounts.Where(a => a.IsActive).Skip(1))
+            foreach(OneDriveAccount? a in accounts.Where(a => a.IsActive).Skip(1))
                 a.IsActive = false;
         }
 
-        if (accounts.Count > 0 && !accounts.Any(a => a.IsActive))
+        if(accounts.Count > 0 && !accounts.Any(a => a.IsActive))
             accounts[0].IsActive = true;
 
         return accounts;

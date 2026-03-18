@@ -12,9 +12,9 @@ public enum FolderSyncState
 }
 
 public sealed record FolderTreeNode(
-    string          Id,
-    string          Name,
-    string?         ParentId,
-    string          AccountId,
-    FolderSyncState SyncState   = FolderSyncState.Excluded,
-    bool            HasChildren = true);
+    string Id,
+    string Name,
+    string? ParentId,
+    string AccountId,
+    FolderSyncState SyncState = FolderSyncState.Excluded,
+    bool HasChildren = true);

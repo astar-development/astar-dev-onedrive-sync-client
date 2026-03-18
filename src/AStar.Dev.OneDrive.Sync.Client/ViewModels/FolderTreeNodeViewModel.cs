@@ -1,8 +1,8 @@
+using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
@@ -15,10 +15,10 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     // ── Display ───────────────────────────────────────────────────────────
 
-    public string  Id       { get; }
-    public string  Name     { get; }
+    public string Id { get; }
+    public string Name { get; }
     public string? ParentId { get; }
-    public int     Depth    { get; }
+    public int Depth { get; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsIncluded))]
@@ -32,12 +32,12 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     public string StatusBadgeText => SyncState switch
     {
         FolderSyncState.Included => "included",
-        FolderSyncState.Synced   => "synced",
-        FolderSyncState.Syncing  => "syncing ...",
-        FolderSyncState.Partial  => "partial",
+        FolderSyncState.Synced => "synced",
+        FolderSyncState.Syncing => "syncing ...",
+        FolderSyncState.Partial => "partial",
         FolderSyncState.Conflict => "conflict",
-        FolderSyncState.Error    => "error",
-        _                        => "excluded"
+        FolderSyncState.Error => "error",
+        _ => "excluded"
     };
 
     // ── Expansion ─────────────────────────────────────────────────────────
@@ -63,20 +63,20 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     public FolderTreeNodeViewModel(
         FolderTreeNode node,
-        IGraphService  graphService,
-        string         accessToken,
-        string         driveId,
-        int            depth = 0)
+        IGraphService graphService,
+        string accessToken,
+        string driveId,
+        int depth = 0)
     {
-        Id            = node.Id;
-        Name          = node.Name;
-        ParentId      = node.ParentId;
-        Depth         = depth;
-        _syncState    = node.SyncState;
-        HasChildren   = node.HasChildren;
+        Id = node.Id;
+        Name = node.Name;
+        ParentId = node.ParentId;
+        Depth = depth;
+        _syncState = node.SyncState;
+        HasChildren = node.HasChildren;
         _graphService = graphService;
-        _accessToken  = accessToken;
-        _driveId      = driveId;
+        _accessToken = accessToken;
+        _driveId = driveId;
     }
 
     // ── Commands ──────────────────────────────────────────────────────────
@@ -84,9 +84,10 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     [RelayCommand]
     private async Task ToggleExpandAsync()
     {
-        if (!HasChildren) return;
+        if(!HasChildren)
+            return;
 
-        if (!IsExpanded)
+        if(!IsExpanded)
         {
             await EnsureChildrenLoadedAsync();
             IsExpanded = true;
@@ -119,7 +120,8 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     private async Task EnsureChildrenLoadedAsync()
     {
-        if (_childrenLoaded) return;
+        if(_childrenLoaded)
+            return;
 
         IsLoadingChildren = true;
         try
@@ -128,7 +130,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
                 .GetChildFoldersAsync(_accessToken, _driveId, Id);
 
             Children.Clear();
-            foreach (DriveFolder f in folders)
+            foreach(DriveFolder f in folders)
             {
                 var childNode = new FolderTreeNode(
                     Id:          f.Id,
@@ -141,14 +143,14 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
                 var childVm = new FolderTreeNodeViewModel(
                     childNode, _graphService, _accessToken, _driveId, Depth + 1);
 
-                childVm.IncludeToggled             += (s, e) => IncludeToggled?.Invoke(s, e);
+                childVm.IncludeToggled += (s, e) => IncludeToggled?.Invoke(s, e);
                 childVm.OpenInFileManagerRequested += (s, e) => OpenInFileManagerRequested?.Invoke(s, e);
-                childVm.ViewActivityRequested      += (s, e) => ViewActivityRequested?.Invoke(s, e);
+                childVm.ViewActivityRequested += (s, e) => ViewActivityRequested?.Invoke(s, e);
 
                 Children.Add(childVm);
             }
 
-            if (Children.Count == 0)
+            if(Children.Count == 0)
                 HasChildren = false;
 
             _childrenLoaded = true;

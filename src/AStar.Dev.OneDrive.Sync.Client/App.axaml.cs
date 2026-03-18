@@ -1,6 +1,4 @@
-using Avalonia;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Markup.Xaml;
+using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Services;
@@ -10,8 +8,10 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
-using System.Globalization;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 

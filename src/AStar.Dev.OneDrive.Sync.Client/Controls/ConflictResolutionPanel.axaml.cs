@@ -1,7 +1,7 @@
-using Avalonia.Controls;
-using Avalonia.Interactivity;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Controls;
 

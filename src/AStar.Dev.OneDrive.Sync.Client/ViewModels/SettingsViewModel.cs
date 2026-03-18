@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -6,18 +7,17 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
 public sealed partial class AccountSyncSettingsViewModel(
-    OneDriveAccount    account,
+    OneDriveAccount account,
     IAccountRepository repository) : ObservableObject
 {
-    public string AccountId    => account.Id;
-    public string Email        => account.Email;
-    public string DisplayName  => account.DisplayName;
-    public string AccentHex    => AccountCardViewModel.PaletteHex(account.AccentIndex);
+    public string AccountId => account.Id;
+    public string Email => account.Email;
+    public string DisplayName => account.DisplayName;
+    public string AccentHex => AccountCardViewModel.PaletteHex(account.AccentIndex);
 
     [ObservableProperty] private string         _localSyncPath  = account.LocalSyncPath;
     [ObservableProperty] private ConflictPolicy _conflictPolicy = account.ConflictPolicy;
@@ -41,22 +41,23 @@ public sealed partial class AccountSyncSettingsViewModel(
     [RelayCommand]
     private async Task SaveAsync()
     {
-        account.LocalSyncPath  = LocalSyncPath;
+        account.LocalSyncPath = LocalSyncPath;
         account.ConflictPolicy = ConflictPolicy;
 
         AccountEntity? entity = await repository.GetByIdAsync(account.Id);
-        if (entity is null) return;
+        if(entity is null)
+            return;
 
-        entity.LocalSyncPath  = LocalSyncPath;
+        entity.LocalSyncPath = LocalSyncPath;
         entity.ConflictPolicy = ConflictPolicy;
         await repository.UpsertAsync(entity);
     }
 }
 
 public sealed partial class SettingsViewModel(
-    ISettingsService   settingsService,
-    IThemeService      themeService,
-    SyncScheduler      scheduler,
+    ISettingsService settingsService,
+    IThemeService themeService,
+    SyncScheduler scheduler,
     IAccountRepository repository) : ObservableObject
 {
     // ── Appearance ────────────────────────────────────────────────────────
@@ -89,7 +90,8 @@ public sealed partial class SettingsViewModel(
         _ = settingsService.SaveAsync();
     }
 
-    [ObservableProperty] private int _syncIntervalMinutes =
+    [ObservableProperty]
+    private int _syncIntervalMinutes =
         settingsService.Current.SyncIntervalMinutes;
 
     partial void OnSyncIntervalMinutesChanged(int value)
@@ -124,7 +126,7 @@ public sealed partial class SettingsViewModel(
     public void LoadAccounts(IEnumerable<OneDriveAccount> accounts)
     {
         AccountSettings.Clear();
-        foreach (OneDriveAccount a in accounts)
+        foreach(OneDriveAccount a in accounts)
             AccountSettings.Add(new AccountSyncSettingsViewModel(a, repository));
     }
 
@@ -134,7 +136,7 @@ public sealed partial class SettingsViewModel(
     public void RemoveAccount(string accountId)
     {
         AccountSyncSettingsViewModel? vm = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
-        if (vm is not null)
+        if(vm is not null)
             _ = AccountSettings.Remove(vm);
     }
 }

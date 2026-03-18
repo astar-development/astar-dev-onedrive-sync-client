@@ -14,12 +14,12 @@ using CommunityToolkit.Mvvm.Input;
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
 public sealed partial class MainWindowViewModel(
-    IAuthService     authService,
-    IGraphService    graphService,
-    IStartupService  startupService,
-    ISyncService     syncService,
-    SyncScheduler    scheduler,
-    ISyncRepository  syncRepository,
+    IAuthService authService,
+    IGraphService graphService,
+    IStartupService startupService,
+    ISyncService syncService,
+    SyncScheduler scheduler,
+    ISyncRepository syncRepository,
     ISettingsService settingsService,
     IAccountRepository accountRepository) : ObservableObject
 {
@@ -35,10 +35,10 @@ public sealed partial class MainWindowViewModel(
     private NavSection _activeSection = NavSection.Dashboard;
 
     public bool IsDashboardActive => ActiveSection == NavSection.Dashboard;
-    public bool IsFilesActive      => ActiveSection == NavSection.Files;
-    public bool IsActivityActive   => ActiveSection == NavSection.Activity;
-    public bool IsAccountsActive   => ActiveSection == NavSection.Accounts;
-    public bool IsSettingsActive   => ActiveSection == NavSection.Settings;
+    public bool IsFilesActive => ActiveSection == NavSection.Files;
+    public bool IsActivityActive => ActiveSection == NavSection.Activity;
+    public bool IsAccountsActive => ActiveSection == NavSection.Accounts;
+    public bool IsSettingsActive => ActiveSection == NavSection.Settings;
 
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
@@ -88,7 +88,7 @@ public sealed partial class MainWindowViewModel(
         get
         {
             field ??= new ActivityView { DataContext = Activity };
-            
+
             return field;
         }
     }
@@ -98,7 +98,7 @@ public sealed partial class MainWindowViewModel(
         get
         {
             field ??= new AccountsView { DataContext = this };
-            
+
             return field;
         }
     }
@@ -115,15 +115,15 @@ public sealed partial class MainWindowViewModel(
 
     // ── Child view models ─────────────────────────────────────────────────
 
-    public AccountsViewModel  Accounts  { get; } = new(authService, graphService, App.Repository);
+    public AccountsViewModel Accounts { get; } = new(authService, graphService, App.Repository);
 
-    public FilesViewModel     Files     { get; } = new(authService, graphService, App.Repository);
+    public FilesViewModel Files { get; } = new(authService, graphService, App.Repository);
 
-    public ActivityViewModel  Activity  { get; } = new(syncService, syncRepository);
+    public ActivityViewModel Activity { get; } = new(syncService, syncRepository);
 
     public DashboardViewModel Dashboard { get; } = new(scheduler);
 
-    public SettingsViewModel  Settings  { get; } = new(settingsService, App.Theme, scheduler, accountRepository);
+    public SettingsViewModel Settings { get; } = new(settingsService, App.Theme, scheduler, accountRepository);
 
     public StatusBarViewModel StatusBar { get; } = new();
 
@@ -134,23 +134,23 @@ public sealed partial class MainWindowViewModel(
         try
         {
             syncService.SyncProgressChanged += OnSyncProgressChanged;
-            syncService.JobCompleted        += OnJobCompleted;
-            syncService.ConflictDetected    += OnConflictDetected;
+            syncService.JobCompleted += OnJobCompleted;
+            syncService.ConflictDetected += OnConflictDetected;
 
             Accounts.AccountSelected += OnAccountSelected;
-            Accounts.AccountAdded    += OnAccountAdded;
-            Accounts.AccountRemoved  += OnAccountRemoved;
+            Accounts.AccountAdded += OnAccountAdded;
+            Accounts.AccountRemoved += OnAccountRemoved;
             Accounts.PropertyChanged += (_, e) =>
             {
-                if (e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
+                if(e.PropertyName == nameof(AccountsViewModel.ActiveAccount))
                     SyncStatusBarToActiveAccount();
             };
 
             List<OneDriveAccount> restored = await startupService.RestoreAccountsAsync();
-            
+
             Accounts.RestoreAccounts(restored);
 
-            foreach (OneDriveAccount account in restored)
+            foreach(OneDriveAccount account in restored)
             {
                 Files.AddAccount(account);
                 Dashboard.AddAccount(account);
@@ -159,16 +159,16 @@ public sealed partial class MainWindowViewModel(
             Settings.LoadAccounts(restored);
 
             OneDriveAccount? active = restored.FirstOrDefault(a => a.IsActive);
-            if (active is not null)
+            if(active is not null)
             {
                 await Files.ActivateAccountAsync(active.Id);
-                
+
                 await Activity.SetActiveAccountAsync(active.Id, active.Email);
             }
 
             SyncStatusBarToActiveAccount();
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Serilog.Log.Fatal(ex, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", ex.Message);
         }
@@ -180,10 +180,12 @@ public sealed partial class MainWindowViewModel(
     private async Task SyncNowAsync()
     {
         AccountCardViewModel? active = Accounts.ActiveAccount;
-        if (active is null) return;
+        if(active is null)
+            return;
 
         AccountEntity? entity = await App.Repository.GetByIdAsync(active.Id);
-        if (entity is null) return;
+        if(entity is null)
+            return;
 
         var account = new OneDriveAccount
         {
@@ -281,7 +283,7 @@ public sealed partial class MainWindowViewModel(
         {
             AccountCardViewModel? card = Accounts.Accounts
                 .FirstOrDefault(a => a.Id == conflict.AccountId);
-            if (card is not null)
+            if(card is not null)
             {
                 card.ConflictCount++;
                 Dashboard.UpdateAccountSyncState(conflict.AccountId, card);
@@ -294,20 +296,20 @@ public sealed partial class MainWindowViewModel(
     private void SyncStatusBarToActiveAccount()
     {
         AccountCardViewModel? active = Accounts.ActiveAccount;
-        if (active is null)
+        if(active is null)
         {
-            StatusBar.HasAccount         = false;
-            StatusBar.AccountEmail       = string.Empty;
+            StatusBar.HasAccount = false;
+            StatusBar.AccountEmail = string.Empty;
             StatusBar.AccountDisplayName = string.Empty;
             return;
         }
 
-        StatusBar.HasAccount         = true;
-        StatusBar.AccountEmail       = active.Email;
+        StatusBar.HasAccount = true;
+        StatusBar.AccountEmail = active.Email;
         StatusBar.AccountDisplayName = active.DisplayName;
-        StatusBar.SyncState          = active.SyncState;
-        StatusBar.ConflictCount      = active.ConflictCount;
-        StatusBar.LastSyncText       = active.LastSyncText;
-        StatusBar.IsSyncing          = active.SyncState == SyncState.Syncing;
+        StatusBar.SyncState = active.SyncState;
+        StatusBar.ConflictCount = active.ConflictCount;
+        StatusBar.LastSyncText = active.LastSyncText;
+        StatusBar.IsSyncing = active.SyncState == SyncState.Syncing;
     }
 }

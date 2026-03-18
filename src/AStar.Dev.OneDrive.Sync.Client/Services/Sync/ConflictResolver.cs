@@ -5,19 +5,19 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 public static class ConflictResolver
 {
     public static ConflictOutcome Resolve(
-        ConflictPolicy    policy,
-        DateTimeOffset    localModified,
-        DateTimeOffset    remoteModified)
+        ConflictPolicy policy,
+        DateTimeOffset localModified,
+        DateTimeOffset remoteModified)
         => policy switch
         {
-            ConflictPolicy.Ignore        => ConflictOutcome.Skip,
-            ConflictPolicy.LocalWins     => ConflictOutcome.UseLocal,
-            ConflictPolicy.RemoteWins    => ConflictOutcome.UseRemote,
-            ConflictPolicy.KeepBoth      => ConflictOutcome.KeepBoth,
+            ConflictPolicy.Ignore => ConflictOutcome.Skip,
+            ConflictPolicy.LocalWins => ConflictOutcome.UseLocal,
+            ConflictPolicy.RemoteWins => ConflictOutcome.UseRemote,
+            ConflictPolicy.KeepBoth => ConflictOutcome.KeepBoth,
             ConflictPolicy.LastWriteWins => localModified >= remoteModified
                                                ? ConflictOutcome.UseLocal
                                                : ConflictOutcome.UseRemote,
-            _                            => ConflictOutcome.Skip
+            _ => ConflictOutcome.Skip
         };
 
     /// <summary>

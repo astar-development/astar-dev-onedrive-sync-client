@@ -45,5 +45,5 @@ public interface IGraphService
     /// <param name="deltaLink">The delta link for incremental sync.</param>
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The delta result containing the changes.</returns>
-    Task<DeltaResult> GetDeltaAsync(string  accessToken,string  folderId, string? deltaLink, CancellationToken ct = default);
+    Task<DeltaResult> GetDeltaAsync(string accessToken, string folderId, string? deltaLink, CancellationToken ct = default);
 }

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
@@ -5,7 +6,6 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
@@ -70,7 +70,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         List<SyncConflictEntity> persistedConflicts = await syncRepository
             .GetPendingConflictsAsync(accountId);
 
-        foreach (SyncConflictEntity entity in persistedConflicts)
+        foreach(SyncConflictEntity entity in persistedConflicts)
         {
             var model = new SyncConflict
             {
@@ -101,7 +101,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
                                                                         LogItems.Insert(0, item);
 
                                                                         // Keep log to 500 items max
-                                                                        while (LogItems.Count > 500)
+                                                                        while(LogItems.Count > 500)
                                                                             LogItems.RemoveAt(LogItems.Count - 1);
 
                                                                         LogItemCount = LogItems.Count;
@@ -111,7 +111,8 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     /// <summary>Called by MainWindowViewModel when a new conflict is detected.</summary>
     public void AddConflictItem(SyncConflict conflict) => Dispatcher.UIThread.Post(() =>
                                                                {
-                                                                   if (Conflicts.Any(c => c.Id == conflict.Id)) return;
+                                                                   if(Conflicts.Any(c => c.Id == conflict.Id))
+                                                                       return;
                                                                    AddConflict(conflict);
                                                                    ConflictCount = Conflicts.Count;
 
@@ -156,10 +157,10 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         IEnumerable<ActivityItemViewModel> query = LogItems
             .Where(i => _activeAccountId is null || i.AccountId == _activeAccountId);
 
-        if (ActiveFilter.HasValue)
+        if(ActiveFilter.HasValue)
             query = query.Where(i => i.Type == ActiveFilter.Value);
 
-        foreach (ActivityItemViewModel? item in query)
+        foreach(ActivityItemViewModel? item in query)
             FilteredLog.Add(item);
 
         LogItemCount = FilteredLog.Count;

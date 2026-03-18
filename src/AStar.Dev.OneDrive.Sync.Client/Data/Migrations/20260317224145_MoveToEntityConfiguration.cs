@@ -2,21 +2,20 @@
 
 #nullable disable
 
-namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations
+namespace AStar.Dev.OneDrive.Sync.Client.Data.Migrations;
+
+/// <inheritdoc />
+public partial class MoveToEntityConfiguration : Migration
 {
     /// <inheritdoc />
-    public partial class MoveToEntityConfiguration : Migration
+    protected override void Up(MigrationBuilder migrationBuilder)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
 
-        }
+    }
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
+    /// <inheritdoc />
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
 
-        }
     }
 }

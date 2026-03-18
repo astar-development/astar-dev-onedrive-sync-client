@@ -1,7 +1,7 @@
+using System.Globalization;
+using AStar.Dev.OneDrive.Sync.Client.Models;
 using Avalonia.Data.Converters;
 using Avalonia.Media;
-using AStar.Dev.OneDrive.Sync.Client.Models;
-using System.Globalization;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Converters;
 

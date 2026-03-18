@@ -12,20 +12,20 @@ public sealed partial class ConflictItemViewModel(
 {
     // ── Display ───────────────────────────────────────────────────────────
 
-    public Guid           Id             => conflict.Id;
-    public string         AccountId      => conflict.AccountId;
-    public string         FileName       => Path.GetFileName(conflict.RelativePath);
-    public string         RelativePath   => conflict.RelativePath;
-    public DateTimeOffset LocalModified  => conflict.LocalModified;
+    public Guid Id => conflict.Id;
+    public string AccountId => conflict.AccountId;
+    public string FileName => Path.GetFileName(conflict.RelativePath);
+    public string RelativePath => conflict.RelativePath;
+    public DateTimeOffset LocalModified => conflict.LocalModified;
     public DateTimeOffset RemoteModified => conflict.RemoteModified;
-    public long           LocalSize      => conflict.LocalSize;
-    public long           RemoteSize     => conflict.RemoteSize;
-    public DateTimeOffset DetectedAt     => conflict.DetectedAt;
+    public long LocalSize => conflict.LocalSize;
+    public long RemoteSize => conflict.RemoteSize;
+    public DateTimeOffset DetectedAt => conflict.DetectedAt;
 
-    public string LocalModifiedText  => FormatDateTime(conflict.LocalModified);
+    public string LocalModifiedText => FormatDateTime(conflict.LocalModified);
     public string RemoteModifiedText => FormatDateTime(conflict.RemoteModified);
-    public string LocalSizeText      => conflict.LocalSize.FileSizeToText();
-    public string RemoteSizeText     => conflict.RemoteSize.FileSizeToText();
+    public string LocalSizeText => conflict.LocalSize.FileSizeToText();
+    public string RemoteSizeText => conflict.RemoteSize.FileSizeToText();
 
     // ── Resolution panel state ────────────────────────────────────────────
 
@@ -60,7 +60,8 @@ public sealed partial class ConflictItemViewModel(
     [RelayCommand]
     private async Task ResolveAsync()
     {
-        if (IsResolving) return;
+        if(IsResolving)
+            return;
 
         IsResolving = true;
         try
@@ -92,5 +93,5 @@ public sealed partial class ConflictItemViewModel(
 
 public sealed record ConflictPolicyOption(
     ConflictPolicy Policy,
-    string         Label,
-    string         Description);
+    string Label,
+    string Description);

@@ -1,9 +1,9 @@
+using System.Collections.ObjectModel;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
@@ -11,14 +11,14 @@ public enum WizardStep { SignIn, SelectFolders, Confirm }
 
 public sealed partial class WizardFolderItem(string id, string name) : ObservableObject
 {
-    public string Id   { get; } = id;
+    public string Id { get; } = id;
     public string Name { get; } = name;
 
     [ObservableProperty] private bool _isSelected = true;
 }
 
 public sealed partial class AddAccountWizardViewModel(
-    IAuthService  authService,
+    IAuthService authService,
     IGraphService graphService) : ObservableObject
 {
     private string  _accountId   = string.Empty;
@@ -36,9 +36,9 @@ public sealed partial class AddAccountWizardViewModel(
     [NotifyPropertyChangedFor(nameof(NextLabel))]
     private WizardStep _currentStep = WizardStep.SignIn;
 
-    public bool IsSignInStep        => CurrentStep == WizardStep.SignIn;
+    public bool IsSignInStep => CurrentStep == WizardStep.SignIn;
     public bool IsSelectFoldersStep => CurrentStep == WizardStep.SelectFolders;
-    public bool IsConfirmStep       => CurrentStep == WizardStep.Confirm;
+    public bool IsConfirmStep => CurrentStep == WizardStep.Confirm;
 
     // ── Sign-in step ──────────────────────────────────────────────────────
 
@@ -68,10 +68,10 @@ public sealed partial class AddAccountWizardViewModel(
     public bool CanGoBack => CurrentStep != WizardStep.SignIn;
     public bool CanGoNext => CurrentStep switch
     {
-        WizardStep.SignIn        => IsSignedIn,
+        WizardStep.SignIn => IsSignedIn,
         WizardStep.SelectFolders => true,
-        WizardStep.Confirm       => true,
-        _                        => false
+        WizardStep.Confirm => true,
+        _ => false
     };
 
     public string NextLabel => CurrentStep == WizardStep.Confirm ? "Finish" : "Next";
@@ -79,14 +79,16 @@ public sealed partial class AddAccountWizardViewModel(
     [RelayCommand]
     private void Back()
     {
-        if (CurrentStep == WizardStep.SelectFolders) CurrentStep = WizardStep.SignIn;
-        else if (CurrentStep == WizardStep.Confirm)  CurrentStep = WizardStep.SelectFolders;
+        if(CurrentStep == WizardStep.SelectFolders)
+            CurrentStep = WizardStep.SignIn;
+        else if(CurrentStep == WizardStep.Confirm)
+            CurrentStep = WizardStep.SelectFolders;
     }
 
     [RelayCommand(CanExecute = nameof(CanGoNext))]
     private async Task NextAsync()
     {
-        switch (CurrentStep)
+        switch(CurrentStep)
         {
             case WizardStep.SignIn:
                 await LoadFoldersAsync();
@@ -107,7 +109,8 @@ public sealed partial class AddAccountWizardViewModel(
     [RelayCommand]
     private void SkipFolders()
     {
-        foreach (WizardFolderItem f in Folders) f.IsSelected = false;
+        foreach(WizardFolderItem f in Folders)
+            f.IsSelected = false;
         BuildConfirmSummary();
         CurrentStep = WizardStep.Confirm;
     }
@@ -117,9 +120,10 @@ public sealed partial class AddAccountWizardViewModel(
     [RelayCommand]
     private async Task OpenBrowserAsync()
     {
-        if (IsWaitingForAuth) return;
+        if(IsWaitingForAuth)
+            return;
 
-        SignInHasError   = false;
+        SignInHasError = false;
         SignInStatusText = "Waiting for sign-in ...";
         IsWaitingForAuth = true;
 
@@ -129,25 +133,25 @@ public sealed partial class AddAccountWizardViewModel(
         {
             AuthResult result = await authService.SignInInteractiveAsync(_authCts.Token);
 
-            if (result.IsCancelled)
+            if(result.IsCancelled)
             {
                 SignInStatusText = "Sign-in cancelled.";
-                SignInHasError   = false;
+                SignInHasError = false;
             }
-            else if (result.IsError)
+            else if(result.IsError)
             {
                 SignInStatusText = result.ErrorMessage ?? "Sign-in failed.";
-                SignInHasError   = true;
+                SignInHasError = true;
             }
             else
             {
-                _accountId           = result.AccountId!;
-                _accessToken         = result.AccessToken;
+                _accountId = result.AccountId!;
+                _accessToken = result.AccessToken;
                 ConfirmedDisplayName = result.DisplayName ?? string.Empty;
-                ConfirmedEmail       = result.Email       ?? string.Empty;
-                IsSignedIn           = true;
-                SignInStatusText     = $"Signed in as {ConfirmedEmail}";
-                SignInHasError       = false;
+                ConfirmedEmail = result.Email ?? string.Empty;
+                IsSignedIn = true;
+                SignInStatusText = $"Signed in as {ConfirmedEmail}";
+                SignInHasError = false;
                 NextCommand.NotifyCanExecuteChanged();
             }
         }
@@ -176,10 +180,11 @@ public sealed partial class AddAccountWizardViewModel(
 
     private async Task LoadFoldersAsync()
     {
-        if (_accessToken is null) return;
+        if(_accessToken is null)
+            return;
 
         IsLoadingFolders = true;
-        FolderLoadError  = string.Empty;
+        FolderLoadError = string.Empty;
         Folders.Clear();
 
         try
@@ -187,13 +192,15 @@ public sealed partial class AddAccountWizardViewModel(
             List<DriveFolder> driveFolders = await graphService
                 .GetRootFoldersAsync(_accessToken);
 
-            foreach (DriveFolder f in driveFolders)
+            foreach(DriveFolder f in driveFolders)
+            {
                 Folders.Add(new WizardFolderItem(f.Id, f.Name)
                 {
                     IsSelected = f.Name is "Documents" or "Desktop"
                 });
+            }
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             FolderLoadError = $"Could not load folders: {ex.Message}";
         }

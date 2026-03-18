@@ -38,7 +38,7 @@ public sealed class LocalizationService : ILocalizationService
 
     public LocalizationService()
     {
-        _assembly       = Assembly.GetExecutingAssembly();
+        _assembly = Assembly.GetExecutingAssembly();
         _resourcePrefix = _assembly.GetName().Name + ".Assets.Localization.";
 
         AvailableCultures = DiscoverCultures();
@@ -58,7 +58,7 @@ public sealed class LocalizationService : ILocalizationService
 
     public string Get(string key)
     {
-        if (_strings.TryGetValue(key, out var value))
+        if(_strings.TryGetValue(key, out var value))
             return value;
 
         // Soft fallback — never return null or throw in the UI layer
@@ -72,7 +72,7 @@ public sealed class LocalizationService : ILocalizationService
         {
             return string.Format(CurrentCulture, template, args);
         }
-        catch (FormatException)
+        catch(FormatException)
         {
             return template;
         }
@@ -80,7 +80,8 @@ public sealed class LocalizationService : ILocalizationService
 
     public async Task SetCultureAsync(CultureInfo culture)
     {
-        if (culture.Name == CurrentCulture.Name) return;
+        if(culture.Name == CurrentCulture.Name)
+            return;
         await LoadAsync(culture);
         CultureChanged?.Invoke(this, CurrentCulture);
     }
@@ -97,14 +98,16 @@ public sealed class LocalizationService : ILocalizationService
             FallbackCulture.Name
         }.Distinct();
 
-        foreach (var name in candidates)
+        foreach(var name in candidates)
         {
             var resourceName = $"{_resourcePrefix}{name}.json";
             await using Stream? stream = _assembly.GetManifestResourceStream(resourceName);
-            if (stream is null) continue;
+            if(stream is null)
+                continue;
 
             Dictionary<string, string> loaded = await ParseAsync(stream);
-            if (loaded.Count == 0) continue;
+            if(loaded.Count == 0)
+                continue;
 
             _strings = loaded;
 
@@ -117,7 +120,7 @@ public sealed class LocalizationService : ILocalizationService
 
         // Should not happen if en-GB.json is embedded, but guard anyway
         _strings = [];
-        CurrentCulture  = FallbackCulture;
+        CurrentCulture = FallbackCulture;
     }
 
     private static async Task<Dictionary<string, string>> ParseAsync(Stream stream)
@@ -126,17 +129,18 @@ public sealed class LocalizationService : ILocalizationService
         {
             using JsonDocument doc = await JsonDocument.ParseAsync(stream);
             var result = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
+            foreach(JsonProperty prop in doc.RootElement.EnumerateObject())
             {
                 // Skip metadata keys
-                if (prop.Name is "locale" or "culture") continue;
-                if (prop.Value.ValueKind == JsonValueKind.String)
+                if(prop.Name is "locale" or "culture")
+                    continue;
+                if(prop.Value.ValueKind == JsonValueKind.String)
                     result[prop.Name] = prop.Value.GetString()!;
             }
 
             return result;
         }
-        catch (JsonException)
+        catch(JsonException)
         {
             return [];
         }
@@ -147,17 +151,19 @@ public sealed class LocalizationService : ILocalizationService
         var prefix = _resourcePrefix;
         var cultures = new List<CultureInfo>();
 
-        foreach (var name in _assembly.GetManifestResourceNames())
+        foreach(var name in _assembly.GetManifestResourceNames())
         {
-            if (!name.StartsWith(prefix, StringComparison.Ordinal)) continue;
-            if (!name.EndsWith(".json", StringComparison.OrdinalIgnoreCase)) continue;
+            if(!name.StartsWith(prefix, StringComparison.Ordinal))
+                continue;
+            if(!name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                continue;
 
             var cultureName = name[prefix.Length..^".json".Length];
             try
             {
                 cultures.Add(new CultureInfo(cultureName));
             }
-            catch (CultureNotFoundException)
+            catch(CultureNotFoundException)
             {
                 // Skip resource files that aren't valid culture identifiers
             }

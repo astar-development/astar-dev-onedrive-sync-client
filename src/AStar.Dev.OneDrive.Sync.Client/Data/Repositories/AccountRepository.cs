@@ -22,7 +22,7 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
             .Include(a => a.SyncFolders)
             .FirstOrDefaultAsync(a => a.Id == account.Id);
 
-        if (existing is null)
+        if(existing is null)
         {
             _ = db.Accounts.Add(account);
         }
@@ -38,7 +38,7 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
 
             db.SyncFolders.RemoveRange(toRemove);
 
-            foreach (SyncFolderEntity? newFolder in account.SyncFolders
+            foreach(SyncFolderEntity? newFolder in account.SyncFolders
                 .Where(nf => existing.SyncFolders.All(f => f.FolderId != nf.FolderId)))
             {
                 existing.SyncFolders.Add(newFolder);
