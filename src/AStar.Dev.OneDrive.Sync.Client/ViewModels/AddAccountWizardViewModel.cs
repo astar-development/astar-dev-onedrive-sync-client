@@ -107,7 +107,7 @@ public sealed partial class AddAccountWizardViewModel(
     [RelayCommand]
     private void SkipFolders()
     {
-        foreach (var f in Folders) f.IsSelected = false;
+        foreach (WizardFolderItem f in Folders) f.IsSelected = false;
         BuildConfirmSummary();
         CurrentStep = WizardStep.Confirm;
     }
@@ -127,7 +127,7 @@ public sealed partial class AddAccountWizardViewModel(
 
         try
         {
-            var result = await authService.SignInInteractiveAsync(_authCts.Token);
+            AuthResult result = await authService.SignInInteractiveAsync(_authCts.Token);
 
             if (result.IsCancelled)
             {
@@ -184,10 +184,10 @@ public sealed partial class AddAccountWizardViewModel(
 
         try
         {
-            var driveFolders = await graphService
+            List<DriveFolder> driveFolders = await graphService
                 .GetRootFoldersAsync(_accessToken);
 
-            foreach (var f in driveFolders)
+            foreach (DriveFolder f in driveFolders)
                 Folders.Add(new WizardFolderItem(f.Id, f.Name)
                 {
                     IsSelected = f.Name is "Documents" or "Desktop"
@@ -203,8 +203,8 @@ public sealed partial class AddAccountWizardViewModel(
         }
     }
 
-    private void BuildConfirmSummary() =>
-        ConfirmedFolderCount = Folders.Count(f => f.IsSelected);
+    private void BuildConfirmSummary()
+        => ConfirmedFolderCount = Folders.Count(f => f.IsSelected);
 
     private void Finish()
     {

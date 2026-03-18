@@ -6,7 +6,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
 public sealed class SyncConflictEntity
 {
-    [Key]
     public Guid           Id             { get; set; }
     public string         AccountId      { get; set; } = string.Empty;
     public string         FolderId       { get; set; } = string.Empty;

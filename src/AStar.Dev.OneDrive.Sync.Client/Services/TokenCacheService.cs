@@ -26,7 +26,7 @@ public sealed class TokenCacheService
     public TokenCacheService()
     {
         _cacheDirectory = GetPlatformCacheDirectory();
-        Directory.CreateDirectory(_cacheDirectory);
+        _ = Directory.CreateDirectory(_cacheDirectory);
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public sealed class TokenCacheService
             // They cannot be combined in the same builder
             try
             {
-                var keyringProperties = new StorageCreationPropertiesBuilder(
+                StorageCreationProperties keyringProperties = new StorageCreationPropertiesBuilder(
                         CacheFileName,
                         _cacheDirectory)
                     .WithLinuxKeyring(
@@ -59,7 +59,7 @@ public sealed class TokenCacheService
                     .Build();
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                var helper = await MsalCacheHelper
+                MsalCacheHelper helper = await MsalCacheHelper
                     .CreateAsync(keyringProperties)
                     .WaitAsync(cts.Token);
                 helper.RegisterCache(app.UserTokenCache);
@@ -90,7 +90,7 @@ public sealed class TokenCacheService
                 .Build();
         }
 
-        var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);
+        MsalCacheHelper cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);
         cacheHelper.RegisterCache(app.UserTokenCache);
     }
 

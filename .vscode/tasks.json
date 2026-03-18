@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/AStar.Dev.OneDrive.Sync.Client.slnx",
+                "${workspaceFolder}/AStar.Dev.Onedrive.Sync.Client.slnx",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],

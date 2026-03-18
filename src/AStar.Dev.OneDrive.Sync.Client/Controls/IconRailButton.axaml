@@ -71,7 +71,7 @@
                 VerticalAlignment="Center"
                 HorizontalContentAlignment="Center"
                 VerticalContentAlignment="Center"
-                Click="RailBtn_OnClick">
+                Click="RailBtnClick">
 
             <ToolTip.Tip>
                 <ToolTip>

@@ -17,37 +17,37 @@ namespace AStar.Dev.OneDrive.Sync.Client;
 
 public partial class App : Application
 {
-    public static ILocalizationService Localisation  { get; private set; } = null!;
-    public static IThemeService        Theme         { get; private set; } = null!;
-    public static IAuthService         Auth          { get; private set; } = null!;
-    public static IAccountRepository   Repository    { get; private set; } = null!;
-    public static ISyncService         SyncService   { get; private set; } = null!;
-    public static SyncScheduler        Scheduler     { get; private set; } = null!;
-    public static ISettingsService     AppSettings   { get; private set; } = null!;
+    public static ILocalizationService Localisation { get; private set; } = null!;
+    public static IThemeService Theme { get; private set; } = null!;
+    public static IAuthService Auth { get; private set; } = null!;
+    public static IAccountRepository Repository { get; private set; } = null!;
+    public static ISyncService SyncService { get; private set; } = null!;
+    public static SyncScheduler Scheduler { get; private set; } = null!;
+    public static ISettingsService AppSettings { get; private set; } = null!;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public override void OnFrameworkInitializationCompleted()
-{
-    base.OnFrameworkInitializationCompleted();
-
-    if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
     {
-        // Create a lightweight shell window immediately — no dependencies needed
-        var mainWindow = new MainWindow();
-        desktop.MainWindow = mainWindow;
+        base.OnFrameworkInitializationCompleted();
 
-        // Do ALL async initialisation after the window is shown
-        mainWindow.Opened += async (_, _) => await BootstrapAsync(mainWindow);
-
-        desktop.Exit += async (_, _) =>
+        if(ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            if (Scheduler is not null)
-                await Scheduler.DisposeAsync();
-            Serilog.Log.CloseAndFlush();
-        };
+            var mainWindow = new MainWindow();
+            desktop.MainWindow = mainWindow;
+
+            mainWindow.Opened += async (_, _) => await BootstrapAsync(mainWindow);
+
+            desktop.Exit += async (_, _) =>
+            {
+                if(Scheduler is not null)
+                    await Scheduler.DisposeAsync();
+
+                Serilog.Log.Information("[App] Application exiting");
+                Serilog.Log.CloseAndFlush();
+            };
+        }
     }
-}
 
     private static async Task BootstrapAsync(MainWindow window)
     {
@@ -57,14 +57,14 @@ public partial class App : Application
             await locService.InitialiseAsync(new CultureInfo("en-GB"));
             Localisation = locService;
 
-            var settingsService = await SettingsService.LoadAsync();
+            SettingsService settingsService = await SettingsService.LoadAsync();
             AppSettings = settingsService;
 
             var themeService = new ThemeService();
             themeService.Apply(settingsService.Current.Theme);
             Theme = themeService;
 
-            var db = DbContextFactory.Create();
+            AppDbContext db = DbContextFactory.Create();
             await db.Database.MigrateAsync();
             var accountRepository = new AccountRepository(db);
             var syncRepository    = new SyncRepository(db);
@@ -78,21 +78,16 @@ public partial class App : Application
             var syncService    = new SyncService(
                 authService, graphService, accountRepository, syncRepository);
             var scheduler      = new SyncScheduler(syncService, accountRepository);
-            SyncService        = syncService;
-            Scheduler          = scheduler;
+            SyncService = syncService;
+            Scheduler = scheduler;
 
             var startupService = new StartupService(accountRepository, authService);
 
-            // Now wire up the real ViewModel
-            await window.InitialiseAsync(
-                authService, graphService, startupService,
-                syncService, scheduler, syncRepository,
-                settingsService, accountRepository);
+            await window.InitialiseAsync(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository);
 
-            scheduler.Start(
-                TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
+            scheduler.Start(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
         }
-        catch (Exception ex)
+        catch(Exception ex)
         {
             Serilog.Log.Fatal(ex, "[App] Fatal error during bootstrap: {Message}", ex.Message);
         }

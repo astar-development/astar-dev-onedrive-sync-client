@@ -14,11 +14,11 @@ public static class DbContextFactory
     public static AppDbContext Create()
     {
         var dir = GetPlatformDataDirectory();
-        Directory.CreateDirectory(dir);
+        _ = Directory.CreateDirectory(dir);
 
         var dbPath = Path.Combine(dir, DbFileName);
 
-        var options = new DbContextOptionsBuilder<AppDbContext>()
+        DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite($"Data Source={dbPath}")
             .Options;
 

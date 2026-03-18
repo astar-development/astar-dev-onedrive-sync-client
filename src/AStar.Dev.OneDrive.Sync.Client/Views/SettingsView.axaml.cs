@@ -28,8 +28,7 @@ public partial class SettingsView : UserControl
 
     private void OnPolicyClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: ConflictPolicy policy }
-            && DataContext is SettingsViewModel vm)
+        if (sender is Button { Tag: ConflictPolicy policy } && DataContext is SettingsViewModel vm)
         {
             vm.DefaultConflictPolicy = policy;
         }
@@ -37,8 +36,7 @@ public partial class SettingsView : UserControl
 
     private void OnIntervalClick(object? sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: int minutes }
-            && DataContext is SettingsViewModel vm)
+        if (sender is Button { Tag: int minutes } && DataContext is SettingsViewModel vm)
         {
             vm.SyncIntervalMinutes = minutes;
         }
@@ -49,14 +47,13 @@ public partial class SettingsView : UserControl
         if (sender is not Button { Tag: string accountId }) return;
         if (DataContext is not SettingsViewModel vm) return;
 
-        var account = vm.AccountSettings
-            .FirstOrDefault(a => a.AccountId == accountId);
+        AccountSyncSettingsViewModel? account = vm.AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
         if (account is null) return;
 
         var topLevel = TopLevel.GetTopLevel(this);
         if (topLevel is null) return;
 
-        var folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
+        IReadOnlyList<IStorageFolder> folders = await topLevel.StorageProvider.OpenFolderPickerAsync(
             new FolderPickerOpenOptions
             {
                 Title         = "Choose local sync folder",

@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
@@ -151,11 +152,11 @@ public sealed partial class MainWindowViewModel(
                     SyncStatusBarToActiveAccount();
             };
 
-            var restored = await startupService.RestoreAccountsAsync();
+            List<OneDriveAccount> restored = await startupService.RestoreAccountsAsync();
             
             Accounts.RestoreAccounts(restored);
 
-            foreach (var account in restored)
+            foreach (OneDriveAccount account in restored)
             {
                 Files.AddAccount(account);
                 Dashboard.AddAccount(account);
@@ -163,7 +164,7 @@ public sealed partial class MainWindowViewModel(
 
             Settings.LoadAccounts(restored);
 
-            var active = restored.FirstOrDefault(a => a.IsActive);
+            OneDriveAccount? active = restored.FirstOrDefault(a => a.IsActive);
             if (active is not null)
             {
                 await Files.ActivateAccountAsync(active.Id);
@@ -184,10 +185,10 @@ public sealed partial class MainWindowViewModel(
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        var active = Accounts.ActiveAccount;
+        AccountCardViewModel? active = Accounts.ActiveAccount;
         if (active is null) return;
 
-        var entity = await App.Repository.GetByIdAsync(active.Id);
+        AccountEntity? entity = await App.Repository.GetByIdAsync(active.Id);
         if (entity is null) return;
 
         var account = new OneDriveAccount
@@ -242,7 +243,7 @@ public sealed partial class MainWindowViewModel(
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs e)
         => Dispatcher.UIThread.Post(() =>
                                         {
-                                            var card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.AccountId);
+                                            AccountCardViewModel? card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.AccountId);
                                             if (card is null) return;
 
                                             card.SyncState = e.IsComplete ? SyncState.Idle : SyncState.Syncing;
@@ -258,7 +259,7 @@ public sealed partial class MainWindowViewModel(
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs e)
     {
-        var card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.Job.AccountId);
+        AccountCardViewModel? card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.Job.AccountId);
 
         var item = ActivityItemViewModel.FromJob(
             e.Job,
@@ -275,7 +276,7 @@ public sealed partial class MainWindowViewModel(
 
         Dispatcher.UIThread.Post(() =>
         {
-            var card = Accounts.Accounts
+            AccountCardViewModel? card = Accounts.Accounts
                 .FirstOrDefault(a => a.Id == conflict.AccountId);
             if (card is not null)
             {
@@ -289,7 +290,7 @@ public sealed partial class MainWindowViewModel(
 
     private void SyncStatusBarToActiveAccount()
     {
-        var active = Accounts.ActiveAccount;
+        AccountCardViewModel? active = Accounts.ActiveAccount;
         if (active is null)
         {
             StatusBar.HasAccount         = false;

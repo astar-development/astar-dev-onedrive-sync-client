@@ -27,7 +27,7 @@ public sealed class SettingsService : ISettingsService
     public SettingsService()
     {
         var dir = DbContextFactory.GetPlatformDataDirectory();
-        Directory.CreateDirectory(dir);
+        _ = Directory.CreateDirectory(dir);
         _path = Path.Combine(dir, "settings.json");
     }
 
@@ -38,7 +38,7 @@ public sealed class SettingsService : ISettingsService
         {
             try
             {
-                await using var stream = File.OpenRead(svc._path);
+                await using FileStream stream = File.OpenRead(svc._path);
                 svc.Current = await JsonSerializer.DeserializeAsync<AppSettings>(stream, JsonOpts) ?? new AppSettings();
             }
             catch
@@ -51,7 +51,7 @@ public sealed class SettingsService : ISettingsService
 
     public async Task SaveAsync()
     {
-        await using var stream = File.Create(_path);
+        await using FileStream stream = File.Create(_path);
         await JsonSerializer.SerializeAsync(stream, Current, JsonOpts);
         SettingsChanged?.Invoke(this, Current);
     }

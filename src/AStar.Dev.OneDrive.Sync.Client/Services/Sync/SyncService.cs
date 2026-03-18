@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
@@ -20,7 +21,7 @@ public sealed class SyncService(
 
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
-        var authResult = await authService.AcquireTokenSilentAsync(account.Id, ct);
+        AuthResult authResult = await authService.AcquireTokenSilentAsync(account.Id, ct);
         if (authResult.IsError)
         {
             RaiseProgress(account.Id, string.Empty, 0, 0,
@@ -48,11 +49,11 @@ public sealed class SyncService(
 
     public async Task ResolveConflictAsync(SyncConflict conflict, ConflictPolicy policy, CancellationToken ct = default)
     {
-        var authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct);
+        AuthResult authResult = await authService.AcquireTokenSilentAsync(conflict.AccountId, ct);
 
         if (authResult.IsError) return;
 
-        var outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
+        ConflictOutcome outcome = ConflictResolver.Resolve(policy, conflict.LocalModified, conflict.RemoteModified);
 
         await ApplyConflictOutcomeAsync(conflict, outcome, authResult.AccessToken!, ct);
 
@@ -63,14 +64,14 @@ public sealed class SyncService(
 
     private async Task SyncFolderAsync(OneDriveAccount account, string token, string folderId, CancellationToken ct)
     {
-        var entity = await accountRepository.GetByIdAsync(account.Id);
-        var folderEntity = entity?.SyncFolders.FirstOrDefault(f => f.FolderId == folderId);
+        AccountEntity? entity = await accountRepository.GetByIdAsync(account.Id);
+        SyncFolderEntity? folderEntity = entity?.SyncFolders.FirstOrDefault(f => f.FolderId == folderId);
 
         var deltaLink = folderEntity?.DeltaLink;
 
         RaiseProgress(account.Id, folderId, 0, 0, "Fetching changes ...");
 
-        var delta = await graphService.GetDeltaAsync(token, folderId, deltaLink, ct);
+        DeltaResult delta = await graphService.GetDeltaAsync(token, folderId, deltaLink, ct);
 
         if (delta.Items.Count == 0)
         {
@@ -82,13 +83,13 @@ public sealed class SyncService(
             return;
         }
 
-        var jobs = BuildJobs(account, folderId, delta.Items);
-        var (cleanJobs, conflicts) = await ClassifyJobsAsync(account, jobs, ct);
+        List<SyncJob> jobs = BuildJobs(account, folderId, delta.Items);
+        (List<SyncJob>? cleanJobs, List<SyncConflict>? conflicts) = await ClassifyJobsAsync(account, jobs, ct);
 
         if (cleanJobs.Count > 0)
             await syncRepository.EnqueueJobsAsync(cleanJobs);
 
-        foreach (var conflict in conflicts)
+        foreach (SyncConflict conflict in conflicts)
         {
             await syncRepository.AddConflictAsync(conflict);
             ConflictDetected?.Invoke(this, conflict);
@@ -115,7 +116,7 @@ public sealed class SyncService(
     {
         List<SyncJob> jobs = [];
 
-        foreach (var item in items)
+        foreach (DeltaItem item in items)
         {
             if (item.IsFolder) continue;
 
@@ -164,7 +165,7 @@ public sealed class SyncService(
         List<SyncJob> clean = [];
         List<SyncConflict> conflicts = [];
 
-        foreach (var job in jobs)
+        foreach (SyncJob job in jobs)
         {
             if (job.Direction == SyncDirection.Delete || !File.Exists(job.LocalPath))
             {
@@ -184,7 +185,7 @@ public sealed class SyncService(
                 continue;
             }
 
-            var outcome = ConflictResolver.Resolve(
+            ConflictOutcome outcome = ConflictResolver.Resolve(
                 account.ConflictPolicy,
                 localModified,
                 job.RemoteModified);
@@ -235,7 +236,7 @@ public sealed class SyncService(
         var completed = 0;
         var total = jobs.Count;
 
-        foreach (var job in jobs)
+        foreach (SyncJob job in jobs)
         {
             if (ct.IsCancellationRequested) break;
 
@@ -249,7 +250,7 @@ public sealed class SyncService(
             {
                 await ExecuteJobAsync(job, token, ct);
 
-                var completedJob = job with
+                SyncJob completedJob = job with
                 {
                     State = SyncJobState.Completed,
                     CompletedAt = DateTimeOffset.UtcNow
@@ -263,7 +264,7 @@ public sealed class SyncService(
             }
             catch (Exception ex)
             {
-                var failedJob = job with
+                SyncJob failedJob = job with
                 {
                     State = SyncJobState.Failed,
                     ErrorMessage = ex.Message,
@@ -312,17 +313,18 @@ public sealed class SyncService(
         if (job.DownloadUrl is null) return;
 
         var dir = Path.GetDirectoryName(job.LocalPath);
-        if (dir is not null) Directory.CreateDirectory(dir);
+        if (dir is not null)
+            _ = Directory.CreateDirectory(dir);
 
         using var http = new HttpClient();
-        using var response = await http.GetAsync(
+        using HttpResponseMessage response = await http.GetAsync(
             job.DownloadUrl,
             HttpCompletionOption.ResponseHeadersRead, ct);
 
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
 
-        await using var stream = await response.Content.ReadAsStreamAsync(ct);
-        await using var file = File.Create(job.LocalPath);
+        await using Stream stream = await response.Content.ReadAsStreamAsync(ct);
+        await using FileStream file = File.Create(job.LocalPath);
         await stream.CopyToAsync(file, ct);
 
         File.SetLastWriteTimeUtc(job.LocalPath, job.RemoteModified.UtcDateTime);
@@ -361,7 +363,7 @@ public sealed class SyncService(
         int completed,
         int total,
         string currentFile,
-        bool isComplete = false) =>
-        SyncProgressChanged?.Invoke(this, new SyncProgressEventArgs(
+        bool isComplete = false)
+        => SyncProgressChanged?.Invoke(this, new SyncProgressEventArgs(
             accountId, folderId, completed, total, currentFile, isComplete));
 }

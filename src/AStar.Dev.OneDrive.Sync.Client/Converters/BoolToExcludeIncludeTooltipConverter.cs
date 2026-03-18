@@ -1,18 +1,15 @@
 using Avalonia.Data.Converters;
-using Avalonia.Media;
 using System.Globalization;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Converters;
 
-/// <summary>Returns red when conflict count > 0, otherwise primary text colour.</summary>
-public sealed class ConflictCountToColorConverter : IValueConverter
+/// <summary>Converts bool IsIncluded to tooltip text.</summary>
+public sealed class BoolToExcludeIncludeTooltipConverter : IValueConverter
 {
-    public static readonly ConflictCountToColorConverter Instance = new();
+    public static readonly BoolToExcludeIncludeTooltipConverter Instance = new();
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-        => value is int n && n > 0
-            ? Color.Parse("#E24B4A")
-            : Color.Parse("#1A1917");
+        => value is true ? "Exclude this folder from sync" : "Include this folder in sync";
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();

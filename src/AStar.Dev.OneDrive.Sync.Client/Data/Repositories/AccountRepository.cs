@@ -5,26 +5,26 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
 public sealed class AccountRepository(AppDbContext db) : IAccountRepository
 {
-    public Task<List<AccountEntity>> GetAllAsync() =>
-        db.Accounts
+    public Task<List<AccountEntity>> GetAllAsync()
+        => db.Accounts
           .Include(a => a.SyncFolders)
           .OrderBy(a => a.Email)
           .ToListAsync();
 
-    public Task<AccountEntity?> GetByIdAsync(string id) =>
-        db.Accounts
+    public Task<AccountEntity?> GetByIdAsync(string id)
+        => db.Accounts
           .Include(a => a.SyncFolders)
           .FirstOrDefaultAsync(a => a.Id == id);
 
     public async Task UpsertAsync(AccountEntity account)
     {
-        var existing = await db.Accounts
+        AccountEntity? existing = await db.Accounts
             .Include(a => a.SyncFolders)
             .FirstOrDefaultAsync(a => a.Id == account.Id);
 
         if (existing is null)
         {
-            db.Accounts.Add(account);
+            _ = db.Accounts.Add(account);
         }
         else
         {
@@ -38,14 +38,14 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
 
             db.SyncFolders.RemoveRange(toRemove);
 
-            foreach (var newFolder in account.SyncFolders
+            foreach (SyncFolderEntity? newFolder in account.SyncFolders
                 .Where(nf => existing.SyncFolders.All(f => f.FolderId != nf.FolderId)))
             {
                 existing.SyncFolders.Add(newFolder);
             }
         }
 
-        await db.SaveChangesAsync();
+        _ = await db.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(string id) => await db.Accounts.Where(a => a.Id == id).ExecuteDeleteAsync();
@@ -53,10 +53,10 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
     public async Task SetActiveAccountAsync(string id)
     {
         // Clear all active flags then set the requested one
-        await db.Accounts.ExecuteUpdateAsync(s =>
+        _ = await db.Accounts.ExecuteUpdateAsync(s =>
             s.SetProperty(a => a.IsActive, false));
 
-        await db.Accounts
+        _ = await db.Accounts
             .Where(a => a.Id == id)
             .ExecuteUpdateAsync(s =>
                 s.SetProperty(a => a.IsActive, true));

@@ -51,7 +51,7 @@ public sealed class LocalizationService : ILocalizationService
     /// </summary>
     public async Task InitialiseAsync(CultureInfo? requested = null)
     {
-        var target = requested ?? FallbackCulture;
+        CultureInfo target = requested ?? FallbackCulture;
         await LoadAsync(target);
     }
 
@@ -91,7 +91,7 @@ public sealed class LocalizationService : ILocalizationService
     private async Task LoadAsync(CultureInfo target)
     {
         // Try exact match first (e.g. fr-FR), then neutral (e.g. fr), then fallback
-        var candidates = new[]
+        IEnumerable<string> candidates = new[]
         {
             target.Name,
             target.TwoLetterISOLanguageName,
@@ -101,10 +101,10 @@ public sealed class LocalizationService : ILocalizationService
         foreach (var name in candidates)
         {
             var resourceName = $"{_resourcePrefix}{name}.json";
-            await using var stream = _assembly.GetManifestResourceStream(resourceName);
+            await using Stream? stream = _assembly.GetManifestResourceStream(resourceName);
             if (stream is null) continue;
 
-            var loaded = await ParseAsync(stream);
+            Dictionary<string, string> loaded = await ParseAsync(stream);
             if (loaded.Count == 0) continue;
 
             _strings = loaded;
@@ -125,9 +125,9 @@ public sealed class LocalizationService : ILocalizationService
     {
         try
         {
-            using var doc = await JsonDocument.ParseAsync(stream);
+            using JsonDocument doc = await JsonDocument.ParseAsync(stream);
             var result = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var prop in doc.RootElement.EnumerateObject())
+            foreach (JsonProperty prop in doc.RootElement.EnumerateObject())
             {
                 // Skip metadata keys
                 if (prop.Name is "locale" or "culture") continue;

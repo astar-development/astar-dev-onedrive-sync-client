@@ -13,24 +13,15 @@ namespace AStar.Dev.OneDrive.Sync.Client.Controls;
 /// </summary>
 public partial class IconRailButton : UserControl
 {
-    // ── Styled properties ─────────────────────────────────────────────────
+    public static readonly StyledProperty<bool> IsActiveProperty = AvaloniaProperty.Register<IconRailButton, bool>(nameof(IsActive));
 
-    public static readonly StyledProperty<bool> IsActiveProperty =
-        AvaloniaProperty.Register<IconRailButton, bool>(nameof(IsActive));
+    public static readonly StyledProperty<Geometry?> IconDataProperty = AvaloniaProperty.Register<IconRailButton, Geometry?>(nameof(IconData));
 
-    public static readonly StyledProperty<Geometry?> IconDataProperty =
-        AvaloniaProperty.Register<IconRailButton, Geometry?>(nameof(IconData));
+    public static readonly StyledProperty<string> TooltipLabelProperty = AvaloniaProperty.Register<IconRailButton, string>(nameof(TooltipLabel), string.Empty);
 
-    public static readonly StyledProperty<string> TooltipLabelProperty =
-        AvaloniaProperty.Register<IconRailButton, string>(nameof(TooltipLabel), string.Empty);
+    public static readonly StyledProperty<ICommand?> CommandProperty = AvaloniaProperty.Register<IconRailButton, ICommand?>(nameof(Command));
 
-    public static readonly StyledProperty<ICommand?> CommandProperty =
-        AvaloniaProperty.Register<IconRailButton, ICommand?>(nameof(Command));
-
-    public static readonly StyledProperty<object?> CommandParameterProperty =
-        AvaloniaProperty.Register<IconRailButton, object?>(nameof(CommandParameter));
-
-    // ── CLR accessors ─────────────────────────────────────────────────────
+    public static readonly StyledProperty<object?> CommandParameterProperty = AvaloniaProperty.Register<IconRailButton, object?>(nameof(CommandParameter));
 
     public bool IsActive
     {
@@ -62,14 +53,12 @@ public partial class IconRailButton : UserControl
         set => SetValue(CommandParameterProperty, value);
     }
 
-    // ── Initialisation ────────────────────────────────────────────────────
-
     public IconRailButton()
     {
         InitializeComponent();
-        IsActiveProperty.Changed.AddClassHandler<IconRailButton>(OnIsActiveChanged);
-        IconDataProperty.Changed.AddClassHandler<IconRailButton>(OnIconDataChanged);
-        TooltipLabelProperty.Changed.AddClassHandler<IconRailButton>(OnTooltipChanged);
+        _ = IsActiveProperty.Changed.AddClassHandler<IconRailButton>(OnIsActiveChanged);
+        _ = IconDataProperty.Changed.AddClassHandler<IconRailButton>(OnIconDataChanged);
+        _ = TooltipLabelProperty.Changed.AddClassHandler<IconRailButton>(OnTooltipChanged);
     }
 
     private static void OnIsActiveChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
@@ -77,10 +66,10 @@ public partial class IconRailButton : UserControl
         var active = e.GetNewValue<bool>();
         sender.ActiveBar.IsVisible = active;
 
-        if (active)
+        if(active)
             sender.RailBtn.Classes.Add("active");
         else
-            sender.RailBtn.Classes.Remove("active");
+            _ = sender.RailBtn.Classes.Remove("active");
     }
 
     private static void OnIconDataChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
@@ -89,11 +78,9 @@ public partial class IconRailButton : UserControl
     private static void OnTooltipChanged(IconRailButton sender, AvaloniaPropertyChangedEventArgs e)
         => sender.TooltipText.Text = e.GetNewValue<string>();
 
-    // ── Click ────────────────────────────────────────────────────────────
-
-    private void RailBtn_OnClick(object? sender, RoutedEventArgs e)
+    private void RailBtnClick(object? sender, RoutedEventArgs e)
     {
-        if (Command?.CanExecute(CommandParameter) == true)
+        if(Command?.CanExecute(CommandParameter) == true)
             Command.Execute(CommandParameter);
     }
 }

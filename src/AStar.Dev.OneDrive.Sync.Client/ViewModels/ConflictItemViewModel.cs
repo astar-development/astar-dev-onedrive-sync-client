@@ -86,8 +86,8 @@ public sealed partial class ConflictItemViewModel(
 
     // ── Private helpers ───────────────────────────────────────────────────
 
-    private static string FormatDateTime(DateTimeOffset dt) =>
-        dt.LocalDateTime.ToString("dd MMM yyyy HH:mm");
+    private static string FormatDateTime(DateTimeOffset dt)
+        => dt.LocalDateTime.ToString("dd MMM yyyy HH:mm");
 }
 
 public sealed record ConflictPolicyOption(

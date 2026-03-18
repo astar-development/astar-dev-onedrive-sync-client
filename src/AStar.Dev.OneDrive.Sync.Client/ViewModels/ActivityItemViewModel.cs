@@ -43,7 +43,7 @@ public sealed partial class ActivityItemViewModel : ObservableObject
     {
         get
         {
-            var elapsed = DateTimeOffset.UtcNow - OccurredAt;
+            TimeSpan elapsed = DateTimeOffset.UtcNow - OccurredAt;
             return elapsed switch
             {
                 { TotalSeconds: < 60  }    => "just now",

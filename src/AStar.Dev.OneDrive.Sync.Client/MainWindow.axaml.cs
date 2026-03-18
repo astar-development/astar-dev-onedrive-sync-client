@@ -13,29 +13,15 @@ public partial class MainWindow : Window
 {
     private MainWindowViewModel? _vm;
 
-    public MainWindow()
-    {
-        InitializeComponent();
-    }
+    public MainWindow() => InitializeComponent();
 
-    public async Task InitialiseAsync(
-        IAuthService       authService,
-        IGraphService      graphService,
-        IStartupService    startupService,
-        ISyncService       syncService,
-        SyncScheduler      scheduler,
-        ISyncRepository    syncRepository,
-        ISettingsService   settingsService,
-        IAccountRepository accountRepository)
+    public async Task InitialiseAsync(IAuthService authService, IGraphService graphService, IStartupService startupService, ISyncService syncService, SyncScheduler scheduler, ISyncRepository syncRepository,
+                                      ISettingsService settingsService, IAccountRepository accountRepository)
     {
-        _vm = new MainWindowViewModel(
-            authService, graphService, startupService,
-            syncService, scheduler, syncRepository,
-            settingsService, accountRepository);
+        _vm = new MainWindowViewModel(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository);
 
         DataContext = _vm;
 
-        // InitialiseAsync loads accounts etc — runs after DataContext is set
         await _vm.InitialiseAsync();
     }
 }

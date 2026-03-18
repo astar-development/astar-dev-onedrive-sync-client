@@ -77,7 +77,7 @@ public sealed partial class AccountFilesViewModel : ObservableObject
 
         try
         {
-            var authResult = await _authService.AcquireTokenSilentAsync(_account.Id);
+            AuthResult authResult = await _authService.AcquireTokenSilentAsync(_account.Id);
 
             if (authResult.IsError)
             {
@@ -91,11 +91,11 @@ public sealed partial class AccountFilesViewModel : ObservableObject
             // Resolve and cache drive ID — used by all tree nodes for lazy loading
             _driveId = await _graphService.GetDriveIdAsync(_accessToken);
 
-            var folders = await _graphService.GetRootFoldersAsync(_accessToken);
+            List<DriveFolder> folders = await _graphService.GetRootFoldersAsync(_accessToken);
 
-            foreach (var f in folders)
+            foreach (DriveFolder f in folders)
             {
-                var syncState = _account.SelectedFolderIds.Contains(f.Id)
+                FolderSyncState syncState = _account.SelectedFolderIds.Contains(f.Id)
                     ? FolderSyncState.Included
                     : FolderSyncState.Excluded;
 
@@ -139,7 +139,7 @@ public sealed partial class AccountFilesViewModel : ObservableObject
         }
         else
         {
-            _account.SelectedFolderIds.Remove(node.Id);
+            _ = _account.SelectedFolderIds.Remove(node.Id);
         }
 
         // Persist — only root folders tracked for now; sub-folder tracking in step 6
@@ -167,8 +167,8 @@ public sealed partial class AccountFilesViewModel : ObservableObject
         await _repository.UpsertAsync(entity);
     }
 
-    private void OnViewActivityRequested(object? sender, FolderTreeNodeViewModel node) =>
-        ViewActivityRequested?.Invoke(this, node);
+    private void OnViewActivityRequested(object? sender, FolderTreeNodeViewModel node)
+        => ViewActivityRequested?.Invoke(this, node);
 
     private static void OnOpenInFileManager(object? sender, FolderTreeNodeViewModel node)
     {
@@ -182,6 +182,6 @@ public sealed partial class AccountFilesViewModel : ObservableObject
                    : OperatingSystem.IsMacOS()   ? "open"
                    : "xdg-open";
 
-        System.Diagnostics.Process.Start(opener, path);
+        _ = System.Diagnostics.Process.Start(opener, path);
     }
 }

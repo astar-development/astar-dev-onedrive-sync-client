@@ -108,12 +108,12 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OpenInFileManager() =>
-        OpenInFileManagerRequested?.Invoke(this, this);
+    private void OpenInFileManager()
+        => OpenInFileManagerRequested?.Invoke(this, this);
 
     [RelayCommand]
-    private void ViewActivity() =>
-        ViewActivityRequested?.Invoke(this, this);
+    private void ViewActivity()
+        => ViewActivityRequested?.Invoke(this, this);
 
     // ── Lazy loading ──────────────────────────────────────────────────────
 
@@ -124,11 +124,11 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         IsLoadingChildren = true;
         try
         {
-            var folders = await _graphService
+            List<DriveFolder> folders = await _graphService
                 .GetChildFoldersAsync(_accessToken, _driveId, Id);
 
             Children.Clear();
-            foreach (var f in folders)
+            foreach (DriveFolder f in folders)
             {
                 var childNode = new FolderTreeNode(
                     Id:          f.Id,

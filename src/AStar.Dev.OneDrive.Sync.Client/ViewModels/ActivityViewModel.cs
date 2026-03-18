@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
@@ -8,12 +9,10 @@ using System.Collections.ObjectModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
-public enum ActivityTab { Log, Conflicts }
-
 public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository) : ObservableObject
 {
     private string? _activeAccountId;
-    private string  _activeAccountEmail = string.Empty;
+    private string _activeAccountEmail = string.Empty;
 
     // ── Tab ───────────────────────────────────────────────────────────────
 
@@ -22,7 +21,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     [NotifyPropertyChangedFor(nameof(IsConflictsTabActive))]
     private ActivityTab _activeTab = ActivityTab.Log;
 
-    public bool IsLogTabActive       => ActiveTab == ActivityTab.Log;
+    public bool IsLogTabActive => ActiveTab == ActivityTab.Log;
     public bool IsConflictsTabActive => ActiveTab == ActivityTab.Conflicts;
 
     [RelayCommand]
@@ -30,7 +29,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     // ── Activity log ──────────────────────────────────────────────────────
 
-    public ObservableCollection<ActivityItemViewModel> LogItems    { get; } = [];
+    public ObservableCollection<ActivityItemViewModel> LogItems { get; } = [];
     public ObservableCollection<ActivityItemViewModel> FilteredLog { get; } = [];
 
     [ObservableProperty]
@@ -50,7 +49,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     [NotifyPropertyChangedFor(nameof(ConflictBadgeText))]
     private int _conflictCount;
 
-    public bool   HasConflicts      => ConflictCount > 0;
+    public bool HasConflicts => ConflictCount > 0;
     public string ConflictBadgeText => ConflictCount > 0 ? ConflictCount.ToString() : string.Empty;
 
     // ── Public API ────────────────────────────────────────────────────────
@@ -61,31 +60,31 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     /// </summary>
     public async Task SetActiveAccountAsync(string accountId, string accountEmail)
     {
-        _activeAccountId    = accountId;
+        _activeAccountId = accountId;
         _activeAccountEmail = accountEmail;
 
         Conflicts.Clear();
         FilteredLog.Clear();
 
         // Reload persisted conflicts for this account
-        var persistedConflicts = await syncRepository
+        List<SyncConflictEntity> persistedConflicts = await syncRepository
             .GetPendingConflictsAsync(accountId);
 
-        foreach (var entity in persistedConflicts)
+        foreach (SyncConflictEntity entity in persistedConflicts)
         {
             var model = new SyncConflict
             {
-                Id             = entity.Id,
-                AccountId      = entity.AccountId,
-                FolderId       = entity.FolderId,
-                RemoteItemId   = entity.RemoteItemId,
-                RelativePath   = entity.RelativePath,
-                LocalPath      = entity.LocalPath,
-                LocalModified  = entity.LocalModified,
+                Id = entity.Id,
+                AccountId = entity.AccountId,
+                FolderId = entity.FolderId,
+                RemoteItemId = entity.RemoteItemId,
+                RelativePath = entity.RelativePath,
+                LocalPath = entity.LocalPath,
+                LocalModified = entity.LocalModified,
                 RemoteModified = entity.RemoteModified,
-                LocalSize      = entity.LocalSize,
-                RemoteSize     = entity.RemoteSize,
-                DetectedAt     = entity.DetectedAt
+                LocalSize = entity.LocalSize,
+                RemoteSize = entity.RemoteSize,
+                DetectedAt = entity.DetectedAt
             };
 
             AddConflict(model);
@@ -144,7 +143,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         var vm = new ConflictItemViewModel(conflict, syncService);
         vm.Resolved += (_, c) =>
         {
-            Conflicts.Remove(c);
+            _ = Conflicts.Remove(c);
             ConflictCount = Conflicts.Count;
         };
         Conflicts.Add(vm);
@@ -154,14 +153,13 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     {
         FilteredLog.Clear();
 
-        var query = LogItems
-            .Where(i => _activeAccountId is null ||
-                        i.AccountId == _activeAccountId);
+        IEnumerable<ActivityItemViewModel> query = LogItems
+            .Where(i => _activeAccountId is null || i.AccountId == _activeAccountId);
 
         if (ActiveFilter.HasValue)
             query = query.Where(i => i.Type == ActiveFilter.Value);
 
-        foreach (var item in query)
+        foreach (ActivityItemViewModel? item in query)
             FilteredLog.Add(item);
 
         LogItemCount = FilteredLog.Count;

@@ -1,11 +1,9 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using System.ComponentModel.DataAnnotations;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
 public sealed class AccountEntity
 {
-    [Key]
     public string         Id             { get; set; } = string.Empty;
     public string         DisplayName    { get; set; } = string.Empty;
     public string         Email          { get; set; } = string.Empty;

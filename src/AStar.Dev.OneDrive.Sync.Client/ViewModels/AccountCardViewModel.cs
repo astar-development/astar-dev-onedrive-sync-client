@@ -94,7 +94,7 @@ public sealed partial class AccountCardViewModel : ObservableObject
             return;
         }
 
-        var elapsed = DateTimeOffset.UtcNow - _model.LastSyncedAt.Value;
+        TimeSpan elapsed = DateTimeOffset.UtcNow - _model.LastSyncedAt.Value;
         LastSyncText = elapsed.TotalMinutes < 2  ? "Just now"
                      : elapsed.TotalHours   < 1  ? $"{(int)elapsed.TotalMinutes}m ago"
                      : elapsed.TotalDays    < 1  ? $"{(int)elapsed.TotalHours}h ago"

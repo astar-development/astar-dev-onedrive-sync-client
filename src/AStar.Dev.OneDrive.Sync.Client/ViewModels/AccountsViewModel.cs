@@ -55,9 +55,9 @@ public sealed partial class AccountsViewModel(
 
     public void RestoreAccounts(IEnumerable<OneDriveAccount> accounts)
     {
-        foreach (var account in accounts)
+        foreach (OneDriveAccount account in accounts)
         {
-            var card = BuildCard(account);
+            AccountCardViewModel card = BuildCard(account);
             Accounts.Add(card);
 
             if (account.IsActive)
@@ -77,7 +77,7 @@ public sealed partial class AccountsViewModel(
         await authService.SignOutAsync(card.Id);
         await repository.DeleteAsync(card.Id);
 
-        Accounts.Remove(card);
+        _ = Accounts.Remove(card);
 
         if (ActiveAccount == card)
             ActiveAccount = Accounts.FirstOrDefault();
@@ -95,13 +95,13 @@ public sealed partial class AccountsViewModel(
         account.AccentIndex = Accounts.Count % 6;
         account.IsActive    = Accounts.Count == 0;
 
-        var entity = ToEntity(account);
+        AccountEntity entity = ToEntity(account);
         await repository.UpsertAsync(entity);
 
         if (account.IsActive)
             await repository.SetActiveAccountAsync(account.Id);
 
-        var card = BuildCard(account);
+        AccountCardViewModel card = BuildCard(account);
         Accounts.Add(card);
         OnPropertyChanged(nameof(HasAccounts));
 
@@ -129,7 +129,7 @@ public sealed partial class AccountsViewModel(
 
     private void OnCardSelected(object? sender, AccountCardViewModel card)
     {
-        foreach (var c in Accounts)
+        foreach (AccountCardViewModel c in Accounts)
             c.IsActive = c == card;
 
         ActiveAccount = card;

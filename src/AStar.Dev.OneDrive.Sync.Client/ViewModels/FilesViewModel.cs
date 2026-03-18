@@ -26,8 +26,8 @@ public sealed partial class FilesViewModel(
     public event EventHandler<(string AccountId, string FolderId)>? ViewActivityRequested;
 
     [RelayCommand]
-    private async Task ActivateTabAsync(string accountId) =>
-        await ActivateAccountAsync(accountId);
+    private async Task ActivateTabAsync(string accountId)
+        => await ActivateAccountAsync(accountId);
 
     public void AddAccount(OneDriveAccount account)
     {
@@ -50,10 +50,10 @@ public sealed partial class FilesViewModel(
 
     public void RemoveAccount(string accountId)
     {
-        var tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
+        AccountFilesViewModel? tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
         if (tab is null) return;
 
-        Tabs.Remove(tab);
+        _ = Tabs.Remove(tab);
         OnPropertyChanged(nameof(HasTabs));
         OnPropertyChanged(nameof(HasNoAccounts));
 
@@ -63,7 +63,7 @@ public sealed partial class FilesViewModel(
 
     public async Task ActivateAccountAsync(string accountId)
     {
-        var tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
+        AccountFilesViewModel? tab = Tabs.FirstOrDefault(t => t.AccountId == accountId);
         if (tab is null) return;
 
         ActivateTab(tab);
@@ -72,7 +72,7 @@ public sealed partial class FilesViewModel(
 
     private void ActivateTab(AccountFilesViewModel? tab)
     {
-        foreach (var t in Tabs)
+        foreach (AccountFilesViewModel t in Tabs)
             t.IsActiveTab = t == tab;
 
         ActiveTab = tab;

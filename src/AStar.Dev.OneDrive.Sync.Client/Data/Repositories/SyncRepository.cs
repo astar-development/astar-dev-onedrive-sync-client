@@ -10,7 +10,7 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
 
     public async Task EnqueueJobsAsync(IEnumerable<SyncJob> jobs)
     {
-        var entities = jobs.Select(j => new SyncJobEntity
+        IEnumerable<SyncJobEntity> entities = jobs.Select(j => new SyncJobEntity
         {
             Id             = j.Id,
             AccountId      = j.AccountId,
@@ -27,11 +27,11 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
         });
 
         db.SyncJobs.AddRange(entities);
-        await db.SaveChangesAsync();
+        _ = await db.SaveChangesAsync();
     }
 
-    public Task<List<SyncJobEntity>> GetPendingJobsAsync(string accountId) =>
-        db.SyncJobs
+    public Task<List<SyncJobEntity>> GetPendingJobsAsync(string accountId)
+        => db.SyncJobs
           .Where(j => j.AccountId == accountId &&
                       j.State == SyncJobState.Queued)
           .OrderBy(j => j.QueuedAt)
@@ -47,37 +47,36 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
                         ? DateTimeOffset.UtcNow
                         : null));
 
-    public Task ClearCompletedJobsAsync(string accountId) =>
-        db.SyncJobs
-          .Where(j => j.AccountId == accountId &&
-                      j.State == SyncJobState.Completed)
+    public Task ClearCompletedJobsAsync(string accountId)
+        => db.SyncJobs
+          .Where(job => job.AccountId == accountId && job.State == SyncJobState.Completed)
           .ExecuteDeleteAsync();
 
     // ── Conflicts ─────────────────────────────────────────────────────────
 
     public async Task AddConflictAsync(SyncConflict conflict)
     {
-        db.SyncConflicts.Add(new SyncConflictEntity
+        _ = db.SyncConflicts.Add(new SyncConflictEntity
         {
-            Id             = conflict.Id,
-            AccountId      = conflict.AccountId,
-            FolderId       = conflict.FolderId,
-            RemoteItemId   = conflict.RemoteItemId,
-            RelativePath   = conflict.RelativePath,
-            LocalPath      = conflict.LocalPath,
-            LocalModified  = conflict.LocalModified,
+            Id = conflict.Id,
+            AccountId = conflict.AccountId,
+            FolderId = conflict.FolderId,
+            RemoteItemId = conflict.RemoteItemId,
+            RelativePath = conflict.RelativePath,
+            LocalPath = conflict.LocalPath,
+            LocalModified = conflict.LocalModified,
             RemoteModified = conflict.RemoteModified,
-            LocalSize      = conflict.LocalSize,
-            RemoteSize     = conflict.RemoteSize,
-            State          = conflict.State,
-            DetectedAt     = conflict.DetectedAt
+            LocalSize = conflict.LocalSize,
+            RemoteSize = conflict.RemoteSize,
+            State = conflict.State,
+            DetectedAt = conflict.DetectedAt
         });
 
-        await db.SaveChangesAsync();
+        _ = await db.SaveChangesAsync();
     }
 
-    public Task<List<SyncConflictEntity>> GetPendingConflictsAsync(string accountId) =>
-        db.SyncConflicts
+    public Task<List<SyncConflictEntity>> GetPendingConflictsAsync(string accountId)
+        => db.SyncConflicts
           .Where(c => c.AccountId == accountId &&
                       c.State == ConflictState.Pending)
           .OrderBy(c => c.DetectedAt)
@@ -90,8 +89,8 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
                 .SetProperty(c => c.Resolution, resolution)
                 .SetProperty(c => c.ResolvedAt, DateTimeOffset.UtcNow));
 
-    public Task<int> GetPendingConflictCountAsync(string accountId) =>
-        db.SyncConflicts
+    public Task<int> GetPendingConflictCountAsync(string accountId)
+        => db.SyncConflicts
           .CountAsync(c => c.AccountId == accountId &&
                            c.State == ConflictState.Pending);
 }

@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
 using Avalonia.Styling;
 using Avalonia.Threading;
@@ -52,14 +53,14 @@ public sealed class ThemeService : IThemeService, IDisposable
 
     private static bool GetSystemIsDark()
     {
-        var app = Application.Current;
+        Application? app = Application.Current;
         if (app is null) return false;
         return app.ActualThemeVariant == ThemeVariant.Dark;
     }
 
     private void WatchSystem()
     {
-        var app = Application.Current;
+        Application? app = Application.Current;
         if (app is null) return;
 
         // ActualThemeVariantChanged fires when the OS dark-mode preference changes
@@ -77,18 +78,18 @@ public sealed class ThemeService : IThemeService, IDisposable
 
     private static void ApplyVariant(AppTheme resolved)
     {
-        var app = Application.Current;
+        Application? app = Application.Current;
         if (app is null) return;
 
-        var targetUri = resolved == AppTheme.Dark ? DarkUri : LightUri;
-        var merged = app.Resources.MergedDictionaries;
+        Uri targetUri = resolved == AppTheme.Dark ? DarkUri : LightUri;
+        IList<IResourceProvider> merged = app.Resources.MergedDictionaries;
 
-        var existing = merged
+        ResourceInclude? existing = merged
             .OfType<ResourceInclude>()
             .FirstOrDefault(r => r.Source == LightUri || r.Source == DarkUri);
 
         if (existing is not null)
-            merged.Remove(existing);
+            _ = merged.Remove(existing);
 
         merged.Add(new ResourceInclude(targetUri) { Source = targetUri });
     }

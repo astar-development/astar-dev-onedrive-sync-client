@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 
@@ -53,7 +54,7 @@ public sealed class SyncScheduler : IAsyncDisposable
     public void SetInterval(TimeSpan interval)
     {
         _interval = interval;
-        _timer?.Change(interval, interval);
+        _ = (_timer?.Change(interval, interval));
     }
 
     /// <summary>
@@ -97,8 +98,8 @@ public sealed class SyncScheduler : IAsyncDisposable
         
         try
         {
-            var entities = await _accountRepository.GetAllAsync();
-            foreach (var entity in entities)
+            List<AccountEntity> entities = await _accountRepository.GetAllAsync();
+            foreach (AccountEntity entity in entities)
             {
                 if (ct.IsCancellationRequested) break;
 

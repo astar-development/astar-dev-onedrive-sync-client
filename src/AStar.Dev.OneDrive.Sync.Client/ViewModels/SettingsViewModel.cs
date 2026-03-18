@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services;
@@ -43,7 +44,7 @@ public sealed partial class AccountSyncSettingsViewModel(
         account.LocalSyncPath  = LocalSyncPath;
         account.ConflictPolicy = ConflictPolicy;
 
-        var entity = await repository.GetByIdAsync(account.Id);
+        AccountEntity? entity = await repository.GetByIdAsync(account.Id);
         if (entity is null) return;
 
         entity.LocalSyncPath  = LocalSyncPath;
@@ -123,17 +124,18 @@ public sealed partial class SettingsViewModel(
     public void LoadAccounts(IEnumerable<OneDriveAccount> accounts)
     {
         AccountSettings.Clear();
-        foreach (var a in accounts)
+        foreach (OneDriveAccount a in accounts)
             AccountSettings.Add(new AccountSyncSettingsViewModel(a, repository));
     }
 
-    public void AddAccount(OneDriveAccount account) =>
-        AccountSettings.Add(new AccountSyncSettingsViewModel(account, repository));
+    public void AddAccount(OneDriveAccount account)
+        => AccountSettings.Add(new AccountSyncSettingsViewModel(account, repository));
 
     public void RemoveAccount(string accountId)
     {
-        var vm = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
-        if (vm is not null) AccountSettings.Remove(vm);
+        AccountSyncSettingsViewModel? vm = AccountSettings.FirstOrDefault(a => a.AccountId == accountId);
+        if (vm is not null)
+            _ = AccountSettings.Remove(vm);
     }
 }
 

@@ -46,9 +46,9 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
 
     public void RemoveAccount(string accountId)
     {
-        var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
+        DashboardAccountViewModel? section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
         if (section is null) return;
-        AccountSections.Remove(section);
+        _ = AccountSections.Remove(section);
         RecalculateGlobals();
     }
 
@@ -57,14 +57,14 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
         SyncState state,
         int       conflicts)
     {
-        var section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
+        DashboardAccountViewModel? section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
         section?.UpdateSyncState(state, conflicts);
         RecalculateGlobals();
     }
 
     public void AddActivityItem(ActivityItemViewModel item)
     {
-        var section = AccountSections
+        DashboardAccountViewModel? section = AccountSections
             .FirstOrDefault(s => s.AccountId == item.AccountId);
         section?.AddRecentActivity(item);
     }
@@ -79,7 +79,7 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
         AnyErrors      = AccountSections.Any(s => s.SyncState == SyncState.Error);
         AnySyncing     = AccountSections.Any(s => s.SyncState == SyncState.Syncing);
 
-        var mostRecent = AccountSections
+        DashboardAccountViewModel? mostRecent = AccountSections
             .Where(s => s.LastSyncText != "Never synced")
             .FirstOrDefault();
 

@@ -7,8 +7,8 @@ public static class ConflictResolver
     public static ConflictOutcome Resolve(
         ConflictPolicy    policy,
         DateTimeOffset    localModified,
-        DateTimeOffset    remoteModified) =>
-        policy switch
+        DateTimeOffset    remoteModified)
+        => policy switch
         {
             ConflictPolicy.Ignore        => ConflictOutcome.Skip,
             ConflictPolicy.LocalWins     => ConflictOutcome.UseLocal,

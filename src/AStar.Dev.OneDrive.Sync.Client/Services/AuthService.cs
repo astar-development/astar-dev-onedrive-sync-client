@@ -46,7 +46,7 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 
         try
         {
-            var result = await _app
+            AuthenticationResult result = await _app
                     .AcquireTokenInteractive(Scopes)
                     .WithPrompt(Prompt.SelectAccount)
                     .ExecuteAsync(ct);
@@ -81,13 +81,13 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 
         try
         {
-            var accounts = await _app.GetAccountsAsync();
-            var account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+            IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
+            IAccount? account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
             if (account is null)
                 return AuthResult.Failure("Account not found in token cache.");
 
-            var result = await _app
+            AuthenticationResult result = await _app
                 .AcquireTokenSilent(Scopes, account)
                 .ExecuteAsync(ct);
 
@@ -112,8 +112,8 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
     {
         await EnsureCacheRegisteredAsync();
 
-        var accounts = await _app.GetAccountsAsync();
-        var account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
+        IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
+        IAccount? account  = accounts.FirstOrDefault(a => a.HomeAccountId.Identifier == accountId);
 
         if (account is not null)
             await _app.RemoveAsync(account);
@@ -123,7 +123,7 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
     {
         await EnsureCacheRegisteredAsync();
 
-        var accounts = await _app.GetAccountsAsync();
+        IEnumerable<IAccount> accounts = await _app.GetAccountsAsync();
         return accounts
             .Select(a => a.HomeAccountId.Identifier)
             .ToList();

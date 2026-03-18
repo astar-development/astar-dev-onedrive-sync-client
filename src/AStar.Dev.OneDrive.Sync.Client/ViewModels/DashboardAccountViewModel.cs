@@ -19,8 +19,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public string DisplayName => _account.DisplayName;
     public string Email       => _account.Email;
     public string AccentHex   => AccountCardViewModel.PaletteHex(_account.AccentIndex);
-    public Avalonia.Media.Color AccentColor =>
-        Avalonia.Media.Color.Parse(AccentHex);
+    public Avalonia.Media.Color AccentColor
+        => Avalonia.Media.Color.Parse(AccentHex);
 
     // ── Storage ───────────────────────────────────────────────────────────
 
@@ -123,8 +123,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     // ── Private helpers ───────────────────────────────────────────────────
 
-    private void UpdateLastSyncText() =>
-        LastSyncText = _account.LastSyncedAt is null
+    private void UpdateLastSyncText()
+        => LastSyncText = _account.LastSyncedAt is null
             ? "Never synced"
             : (DateTimeOffset.UtcNow - _account.LastSyncedAt.Value) switch
             {

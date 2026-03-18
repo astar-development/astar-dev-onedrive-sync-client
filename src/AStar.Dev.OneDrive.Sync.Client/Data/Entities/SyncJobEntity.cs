@@ -6,7 +6,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
 public sealed class SyncJobEntity
 {
-    [Key]
     public Guid           Id             { get; set; }
     public string         AccountId      { get; set; } = string.Empty;
     public string         FolderId       { get; set; } = string.Empty;
@@ -21,7 +20,5 @@ public sealed class SyncJobEntity
     public DateTimeOffset RemoteModified { get; set; }
     public DateTimeOffset QueuedAt       { get; set; }
     public DateTimeOffset? CompletedAt   { get; set; }
-
-    [ForeignKey(nameof(AccountId))]
     public AccountEntity? Account        { get; set; }
 }

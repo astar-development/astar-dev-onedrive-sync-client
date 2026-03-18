@@ -1,6 +1,8 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.Utilities;
 using Microsoft.Graph;
+using Microsoft.Graph.Drives.Item.Items.Item.Delta;
+using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Serilog;
 
@@ -19,9 +21,9 @@ public sealed class GraphService : IGraphService
     /// <inheritdoc />
     public async Task<List<DriveFolder>> GetRootFoldersAsync(string accessToken, CancellationToken ct = default)
     {
-        var (client, driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        (GraphServiceClient? client, DriveContext? driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        var driveItemCollectionResponse = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
+        DriveItemCollectionResponse? driveItemCollectionResponse = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
             .GetAsync(req =>
             {
                 req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
@@ -30,7 +32,7 @@ public sealed class GraphService : IGraphService
 
         List<DriveFolder> folders = [];
 
-        var page = driveItemCollectionResponse;
+        DriveItemCollectionResponse? page = driveItemCollectionResponse;
         while (page?.Value is not null)
         {
             folders.AddRange(
@@ -54,9 +56,9 @@ public sealed class GraphService : IGraphService
     /// <inheritdoc />
     public async Task<List<DriveFolder>> GetChildFoldersAsync(string accessToken, string driveId, string parentFolderId, CancellationToken ct = default)
     {
-        var client = BuildClient(accessToken);
+        GraphServiceClient client = BuildClient(accessToken);
 
-        var result = await client.Drives[driveId].Items[parentFolderId].Children
+        DriveItemCollectionResponse? result = await client.Drives[driveId].Items[parentFolderId].Children
             .GetAsync(req =>
             {
                 req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
@@ -65,7 +67,7 @@ public sealed class GraphService : IGraphService
 
         List<DriveFolder> folders = [];
 
-        var page = result;
+        DriveItemCollectionResponse? page = result;
         while (page?.Value is not null)
         {
             folders.AddRange(
@@ -89,9 +91,9 @@ public sealed class GraphService : IGraphService
     /// <inheritdoc />
     public async Task<(long Total, long Used)> GetQuotaAsync(string accessToken, CancellationToken ct = default)
     {
-        var (client, ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+        (GraphServiceClient? client, DriveContext? ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        var drive = await client.Drives[ctx.DriveId]
+        Drive? drive = await client.Drives[ctx.DriveId]
             .GetAsync(req => req.QueryParameters.Select = ["quota"], ct);
 
         return drive?.Quota is { Total: not null, Used: not null }
@@ -106,7 +108,7 @@ public sealed class GraphService : IGraphService
     string? deltaLink,
     CancellationToken ct = default)
 {
-    var (client, ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+    (GraphServiceClient? client, DriveContext? ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
     // First sync — enumerate all children recursively then get a delta link
     if (deltaLink is null)
@@ -117,13 +119,13 @@ public sealed class GraphService : IGraphService
     string? nextDeltaLink = null;
     bool hasMorePages     = false;
 
-    var page = await client.Drives[ctx.DriveId].Items[folderId].Delta
+        DeltaGetResponse? page = await client.Drives[ctx.DriveId].Items[folderId].Delta
         .WithUrl(deltaLink)
         .GetAsDeltaGetResponseAsync(cancellationToken: ct);
 
     while (page?.Value is not null)
     {
-        foreach (var item in page.Value)
+        foreach (DriveItem item in page.Value)
             items.Add(MapToDeltaItem(item));
 
         if (page.OdataNextLink is not null)
@@ -152,8 +154,8 @@ private async Task<DeltaResult> FullEnumerationAsync(
     List<DeltaItem> items = [];
     await EnumerateFolderAsync(client, driveId, folderId, string.Empty, items, ct);
 
-    // After full enumeration, get a delta link to use for future syncs
-    var deltaPage = await client.Drives[driveId].Items[folderId].Delta
+        // After full enumeration, get a delta link to use for future syncs
+        DeltaGetResponse? deltaPage = await client.Drives[driveId].Items[folderId].Delta
         .GetAsDeltaGetResponseAsync(cancellationToken: ct);
 
     var deltaLink = deltaPage?.OdataDeltaLink;
@@ -169,7 +171,7 @@ private async Task EnumerateFolderAsync(
     List<DeltaItem>    items,
     CancellationToken  ct)
 {
-    var page = await client.Drives[driveId].Items[parentId].Children
+        DriveItemCollectionResponse? page = await client.Drives[driveId].Items[parentId].Children
         .GetAsync(req =>
         {
             req.QueryParameters.Select = 
@@ -181,7 +183,7 @@ private async Task EnumerateFolderAsync(
 
     while (page?.Value is not null)
     {
-        foreach (var item in page.Value)
+        foreach (DriveItem item in page.Value)
         {
             var itemPath = string.IsNullOrEmpty(relativePath)
                 ? item.Name ?? string.Empty
@@ -214,8 +216,8 @@ private async Task EnumerateFolderAsync(
     }
 }
 
-private static DeltaItem MapToDeltaItem(Microsoft.Graph.Models.DriveItem item) =>
-    new(
+private static DeltaItem MapToDeltaItem(Microsoft.Graph.Models.DriveItem item)
+    => new(
         Id:           item.Id!,
         Name:         item.Name ?? string.Empty,
         ParentId:     item.ParentReference?.Id,
@@ -232,16 +234,16 @@ private static DeltaItem MapToDeltaItem(Microsoft.Graph.Models.DriveItem item) =
 
     private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
     {
-        var graphServiceClient = BuildClient(accessToken);
+        GraphServiceClient graphServiceClient = BuildClient(accessToken);
 
-        if (_cache.TryGetValue(accessToken, out var cached))
+        if (_cache.TryGetValue(accessToken, out DriveContext? cached))
             return (graphServiceClient, cached);
 
-        var drive = await graphServiceClient.Me.Drive.GetAsync(cancellationToken: ct);
+        Drive? drive = await graphServiceClient.Me.Drive.GetAsync(cancellationToken: ct);
 
         var driveId = drive?.Id ?? throw new InvalidOperationException("Could not retrieve drive ID.");
 
-        var root = await graphServiceClient.Drives[driveId].Root.GetAsync(cancellationToken: ct);
+        DriveItem? root = await graphServiceClient.Drives[driveId].Root.GetAsync(cancellationToken: ct);
 
         var rootId = root?.Id ?? throw new InvalidOperationException("Could not retrieve root item ID.");
 
@@ -251,8 +253,8 @@ private static DeltaItem MapToDeltaItem(Microsoft.Graph.Models.DriveItem item) =
         return (graphServiceClient, driveContext);
     }
 
-    private static GraphServiceClient BuildClient(string accessToken) =>
-        new(new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken)));
+    private static GraphServiceClient BuildClient(string accessToken)
+        => new(new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken)));
 
     private sealed record DriveContext(string DriveId, string RootId);
 

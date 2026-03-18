@@ -1,3 +1,4 @@
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
@@ -20,18 +21,18 @@ public sealed class StartupService(
 {
     public async Task<List<OneDriveAccount>> RestoreAccountsAsync()
     {
-        var entities = await repository.GetAllAsync();
+        List<AccountEntity> entities = await repository.GetAllAsync();
 
         // Only restore accounts that still have a valid cached MSAL token
         var cachedIds = (await authService.GetCachedAccountIdsAsync()).ToHashSet();
         System.Diagnostics.Debug.WriteLine($"Cached MSAL IDs: {string.Join(", ", cachedIds)}");
 
-        foreach (var entity in entities)
+        foreach (AccountEntity entity in entities)
             System.Diagnostics.Debug.WriteLine($"DB account: {entity.Id} | {entity.Email}");
 
         List<OneDriveAccount> accounts = [];
 
-        foreach (var entity in entities)
+        foreach (AccountEntity entity in entities)
         {
             // Skip accounts whose tokens have been evicted from the cache
             // (e.g. user signed out on another device, token expired beyond refresh)
@@ -58,7 +59,7 @@ public sealed class StartupService(
         var activeCount = accounts.Count(a => a.IsActive);
         if (activeCount > 1)
         {
-            foreach (var a in accounts.Where(a => a.IsActive).Skip(1))
+            foreach (OneDriveAccount? a in accounts.Where(a => a.IsActive).Skip(1))
                 a.IsActive = false;
         }
 

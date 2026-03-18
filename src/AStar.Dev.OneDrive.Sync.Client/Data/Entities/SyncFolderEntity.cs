@@ -5,7 +5,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 
 public sealed class SyncFolderEntity
 {
-    [Key]
     public int    Id         { get; set; }
     public string FolderId   { get; set; } = string.Empty;
     public string FolderName { get; set; } = string.Empty;

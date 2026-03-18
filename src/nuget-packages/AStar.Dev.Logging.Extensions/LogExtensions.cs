@@ -2,9 +2,7 @@
 
 namespace AStar.Dev.Logging.Extensions;
 
-/// <summary>
-/// </summary>
-/// <typeparam name="T"></typeparam>
+/// <inheritdoc />
 public class LogExtensions<T> : ILogger<T>
 {
     /// <inheritdoc />

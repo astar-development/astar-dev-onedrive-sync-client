@@ -292,7 +292,7 @@
             <param name="path">The file path to normalize</param>
             <returns>The normalized file path, prefixed with a backslash if not already prefixed</returns>
         </member>
-        <member name="M:AStar.Dev.Utilities.StringExtensions.FileSizeText(System.Int64)">
+        <member name="M:AStar.Dev.Utilities.StringExtensions.FileSizeToText(System.Int64)">
             <summary>
                The FileSizeText method converts a file size in bytes to a human-readable string format (B, KB, MB).
             </summary>

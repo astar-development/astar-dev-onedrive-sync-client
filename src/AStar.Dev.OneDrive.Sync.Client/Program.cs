@@ -15,7 +15,7 @@ sealed class Program
     {
         try
         {
-            var configuration = new ConfigurationBuilder()
+            IConfigurationRoot configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .Build();
 
@@ -35,10 +35,10 @@ sealed class Program
                     flushToDiskInterval: TimeSpan.FromSeconds(1)
                 )
                 .CreateLogger();
-            
-            var appBuilder = BuildAvaloniaApp();
-            
-            appBuilder.StartWithClassicDesktopLifetime(args);
+
+            AppBuilder appBuilder = BuildAvaloniaApp();
+
+            _ = appBuilder.StartWithClassicDesktopLifetime(args);
         }
         catch (Exception ex)
         {
@@ -51,20 +51,17 @@ sealed class Program
     }
 
     // Avalonia configuration, don't remove; also used by visualdddd designer.
-    public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>()
+    public static AppBuilder BuildAvaloniaApp()
+        => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
             .With(new X11PlatformOptions { EnableIme = false })
-            .AfterSetup(_ =>
-            {
-                AppDomain.CurrentDomain.UnhandledException += (s, e) =>
+            .AfterSetup(_ => AppDomain.CurrentDomain.UnhandledException += (s, e) =>
                 {
                     Serilog.Log.Fatal(e.ExceptionObject as Exception,
                         "[Unhandled] {Message}",
                         (e.ExceptionObject as Exception)?.Message ?? "Unknown");
                     Serilog.Log.CloseAndFlush();
-                };
-            });
+                });
 }

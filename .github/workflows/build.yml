@@ -79,10 +79,8 @@ jobs:
       - name: Restore ${{ env.PASCAL_REPO_NAME }}
         run: dotnet restore ${{ env.PASCAL_REPO_NAME }}
 
-      - name: Build solution
+      - name: Build ${{ env.PASCAL_REPO_NAME }} solution
         run: dotnet build ${{ env.SOLUTION_FILE }} --configuration Release
-
-      - run: echo "REPO_NAME=${{ github.event.repository.name }}" >> $GITHUB_ENV
 
       - name: Run unit tests and collect coverage (XPlat)
         run: |
@@ -94,7 +92,7 @@ jobs:
         with:
           name: testruns-${{ matrix.os }}
           path: TestResults
-          retention-days: 30
+          retention-days: 10
 
   sonar:
     name: SonarCloud analysis and coverage
