@@ -74,8 +74,6 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────
-
     private async void OnTimerTick(object? state)
     {
         if(_running)

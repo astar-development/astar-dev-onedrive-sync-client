@@ -1,5 +1,5 @@
-using AStar.Dev.OneDrive.Sync.Client.Services;
 using System.Globalization;
+using AStar.Dev.OneDrive.Sync.Client.Services;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services;
 

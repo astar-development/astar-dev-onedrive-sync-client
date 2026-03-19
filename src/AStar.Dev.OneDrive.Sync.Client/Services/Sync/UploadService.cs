@@ -1,6 +1,6 @@
 using Microsoft.Graph;
-using Microsoft.Graph.Models;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
+using Microsoft.Graph.Models;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 
@@ -156,7 +156,7 @@ public sealed class UploadService
                 }
 
                 _ = response.EnsureSuccessStatusCode();
-                
+
                 return null;
             }
             catch(HttpRequestException) when(attempt <= MaxRetries)

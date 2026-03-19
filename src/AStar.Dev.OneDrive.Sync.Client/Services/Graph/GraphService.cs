@@ -104,7 +104,6 @@ public sealed class GraphService : IGraphService
     {
         (GraphServiceClient? client, DriveContext? ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        // Fetch folder name once — used by both full enumeration and delta paths
         DriveItem? folderItem = await client.Drives[ctx.DriveId]
         .Items[folderId]
         .GetAsync(req =>
@@ -123,8 +122,8 @@ public sealed class GraphService : IGraphService
         var hasMorePages      = false;
 
         DeltaGetResponse? page = await client.Drives[ctx.DriveId].Items[folderId].Delta
-        .WithUrl(deltaLink)
-        .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+                                            .WithUrl(deltaLink)
+                                            .GetAsDeltaGetResponseAsync(cancellationToken: ct);
 
         while(page?.Value is not null)
         {
@@ -239,7 +238,6 @@ public sealed class GraphService : IGraphService
                     : null,
             RelativePath: relativePath);
     }
-    // ── Private helpers ───────────────────────────────────────────────────
 
     private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
     {

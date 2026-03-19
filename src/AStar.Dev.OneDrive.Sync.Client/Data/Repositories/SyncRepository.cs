@@ -6,8 +6,6 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 
 public sealed class SyncRepository(AppDbContext db) : ISyncRepository
 {
-    // ── Jobs ──────────────────────────────────────────────────────────────
-
     public async Task EnqueueJobsAsync(IEnumerable<SyncJob> jobs)
     {
         IEnumerable<SyncJobEntity> entities = jobs.Select(j => new SyncJobEntity
@@ -51,8 +49,6 @@ public sealed class SyncRepository(AppDbContext db) : ISyncRepository
         => db.SyncJobs
           .Where(job => job.AccountId == accountId && job.State == SyncJobState.Completed)
           .ExecuteDeleteAsync();
-
-    // ── Conflicts ─────────────────────────────────────────────────────────
 
     public async Task AddConflictAsync(SyncConflict conflict)
     {

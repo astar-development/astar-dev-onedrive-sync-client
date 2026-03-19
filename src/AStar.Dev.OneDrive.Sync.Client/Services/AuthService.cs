@@ -15,11 +15,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 /// </summary>
 public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 {
-    // Replace with your real Azure App Registration client ID
     private const string ClientId = "3057f494-687d-4abb-a653-4b8066230b6e";
 
-    // Personal Microsoft accounts only — do not change this
-    private const string Authority = "https://login.microsoftonline.com/consumers";
+    private const string AuthorityForMicrosoftAccountsOunly = "https://login.microsoftonline.com/consumers";
 
     private static readonly string[] Scopes =
     [
@@ -30,15 +28,14 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 
     private readonly IPublicClientApplication _app = PublicClientApplicationBuilder
             .Create(ClientId)
-            .WithAuthority(Authority)
+            .WithAuthority(AuthorityForMicrosoftAccountsOunly)
             .WithRedirectUri("http://localhost")
             .WithClientName("AStar.Dev.OneDrive.Sync")
             .WithClientVersion("1.0.0")
             .Build();
+
     private readonly TokenCacheService _cacheService = cacheService;
     private          bool                     _cacheRegistered;
-
-    // ── IAuthService ──────────────────────────────────────────────────────
 
     public async Task<AuthResult> SignInInteractiveAsync(CancellationToken ct = default)
     {
@@ -53,10 +50,7 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 
             return BuildSuccess(result);
         }
-        catch(MsalClientException ex) when
-                (ex.ErrorCode is MsalError.AuthenticationCanceledError
-                            or "authentication_canceled"
-                            or "user_canceled")
+        catch(MsalClientException ex) when(ex.ErrorCode is MsalError.AuthenticationCanceledError or "authentication_canceled" or "user_canceled")
         {
             return AuthResult.Cancelled();
         }
@@ -94,7 +88,6 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
         }
         catch(MsalUiRequiredException)
         {
-            // Silent refresh not possible — interactive sign-in required
             return AuthResult.Failure("Re-authentication required.");
         }
         catch(OperationCanceledException)
@@ -128,8 +121,6 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
             .ToList();
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────
-
     private async Task EnsureCacheRegisteredAsync()
     {
         if(_cacheRegistered)
@@ -140,11 +131,9 @@ public sealed class AuthService(TokenCacheService cacheService) : IAuthService
 
     private static AuthResult BuildSuccess(AuthenticationResult result)
     {
-        // Extract display name and email from the account or ID token claims
         var displayName = result.Account.Username;
         var email       = result.Account.Username;
 
-        // Try to get a friendlier display name from the ID token claims
         if(result.ClaimsPrincipal is not null)
         {
             var nameClaim  = result.ClaimsPrincipal.FindFirst("name")?.Value;

@@ -35,7 +35,6 @@ public sealed class ThemeService : IThemeService, IDisposable
 
         if(theme == AppTheme.System)
         {
-            // Apply immediately based on current OS preference, then watch
             ApplyVariant(GetSystemIsDark() ? AppTheme.Dark : AppTheme.Light);
             WatchSystem();
         }
@@ -46,8 +45,6 @@ public sealed class ThemeService : IThemeService, IDisposable
 
         ThemeChanged?.Invoke(this, CurrentTheme);
     }
-
-    // ── Private helpers ───────────────────────────────────────────────────
 
     private static bool GetSystemIsDark()
     {
@@ -95,7 +92,6 @@ public sealed class ThemeService : IThemeService, IDisposable
 
     public void Dispose() => _systemWatcher?.Dispose();
 
-    // Minimal disposable helper to avoid a System.Reactive dependency
     private sealed class Disposable(Action action) : IDisposable
     {
         public void Dispose() => action();

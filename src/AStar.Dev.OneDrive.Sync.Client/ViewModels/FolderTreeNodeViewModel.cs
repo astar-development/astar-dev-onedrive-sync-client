@@ -13,8 +13,6 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     private readonly string        _driveId;
     private          bool          _childrenLoaded;
 
-    // ── Display ───────────────────────────────────────────────────────────
-
     public string Id { get; }
     public string Name { get; }
     public string? ParentId { get; }
@@ -40,8 +38,6 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         _ => "excluded"
     };
 
-    // ── Expansion ─────────────────────────────────────────────────────────
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ExpanderGlyph))]
     private bool _isExpanded;
@@ -53,13 +49,9 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
 
     public ObservableCollection<FolderTreeNodeViewModel> Children { get; } = [];
 
-    // ── Events ────────────────────────────────────────────────────────────
-
     public event EventHandler<FolderTreeNodeViewModel>? IncludeToggled;
     public event EventHandler<FolderTreeNodeViewModel>? OpenInFileManagerRequested;
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
-
-    // ── Construction ──────────────────────────────────────────────────────
 
     public FolderTreeNodeViewModel(
         FolderTreeNode node,
@@ -78,8 +70,6 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
         _accessToken = accessToken;
         _driveId = driveId;
     }
-
-    // ── Commands ──────────────────────────────────────────────────────────
 
     [RelayCommand]
     private async Task ToggleExpandAsync()
@@ -115,8 +105,6 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
     [RelayCommand]
     private void ViewActivity()
         => ViewActivityRequested?.Invoke(this, this);
-
-    // ── Lazy loading ──────────────────────────────────────────────────────
 
     private async Task EnsureChildrenLoadedAsync()
     {

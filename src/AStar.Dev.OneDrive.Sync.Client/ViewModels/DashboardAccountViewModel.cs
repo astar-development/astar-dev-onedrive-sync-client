@@ -19,7 +19,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public string DisplayName => _account.DisplayName;
     public string Email => _account.Email;
     public string AccentHex => AccountCardViewModel.PaletteHex(_account.AccentIndex);
-    public Avalonia.Media.Color AccentColor=> Avalonia.Media.Color.Parse(AccentHex);
+    public Avalonia.Media.Color AccentColor => Avalonia.Media.Color.Parse(AccentHex);
 
     public long QuotaTotal => _account.QuotaTotal;
     public long QuotaUsed => _account.QuotaUsed;
@@ -81,7 +81,8 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private async Task SyncNowAsync()
     {
         AccountEntity? entity = await _repository.GetByIdAsync(_account.Id);
-        if (entity is null) return;
+        if(entity is null)
+            return;
 
         var fullAccount = new OneDriveAccount
         {

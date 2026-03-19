@@ -12,8 +12,6 @@ public sealed partial class AccountCardViewModel : ObservableObject
 {
     private readonly OneDriveAccount _model;
 
-    // ── Display properties ────────────────────────────────────────────────
-
     public string Id => _model.Id;
     public string DisplayName => _model.DisplayName;
     public string Email => _model.Email;
@@ -54,8 +52,6 @@ public sealed partial class AccountCardViewModel : ObservableObject
     [ObservableProperty] private int       _conflictCount;
     [ObservableProperty] private string    _lastSyncText = string.Empty;
 
-    // ── Commands ──────────────────────────────────────────────────────────
-
     /// <summary>Raised when the user clicks the card — navigates to Files view.</summary>
     public event EventHandler<AccountCardViewModel>? Selected;
 
@@ -67,8 +63,6 @@ public sealed partial class AccountCardViewModel : ObservableObject
 
     [RelayCommand]
     private void Remove() => RemoveRequested?.Invoke(this, this);
-
-    // ── Construction ──────────────────────────────────────────────────────
 
     public AccountCardViewModel(OneDriveAccount model)
     {
@@ -101,8 +95,6 @@ public sealed partial class AccountCardViewModel : ObservableObject
                      : elapsed.TotalDays < 2 ? "Yesterday"
                      : $"{(int)elapsed.TotalDays}d ago";
     }
-
-    // ── Palette ───────────────────────────────────────────────────────────
 
     private static readonly string[] AccentPalette =
     [

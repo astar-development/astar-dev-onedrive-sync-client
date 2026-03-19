@@ -10,8 +10,6 @@ public sealed partial class ConflictItemViewModel(
     SyncConflict conflict,
     ISyncService syncService) : ObservableObject
 {
-    // ── Display ───────────────────────────────────────────────────────────
-
     public Guid Id => conflict.Id;
     public string AccountId => conflict.AccountId;
     public string FileName => Path.GetFileName(conflict.RelativePath);
@@ -26,8 +24,6 @@ public sealed partial class ConflictItemViewModel(
     public string RemoteModifiedText => FormatDateTime(conflict.RemoteModified);
     public string LocalSizeText => conflict.LocalSize.FileSizeToText();
     public string RemoteSizeText => conflict.RemoteSize.FileSizeToText();
-
-    // ── Resolution panel state ────────────────────────────────────────────
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsPanelOpen))]
@@ -48,11 +44,7 @@ public sealed partial class ConflictItemViewModel(
         new(ConflictPolicy.RemoteWins,    "Remote wins",     "Overwrite local with remote version"),
     ];
 
-    // ── Events ────────────────────────────────────────────────────────────
-
     public event EventHandler<ConflictItemViewModel>? Resolved;
-
-    // ── Commands ──────────────────────────────────────────────────────────
 
     [RelayCommand]
     private void TogglePanel() => IsExpanded = !IsExpanded;
@@ -84,8 +76,6 @@ public sealed partial class ConflictItemViewModel(
         IsResolved = true;
         Resolved?.Invoke(this, this);
     }
-
-    // ── Private helpers ───────────────────────────────────────────────────
 
     private static string FormatDateTime(DateTimeOffset dt)
         => dt.LocalDateTime.ToString("dd MMM yyyy HH:mm");

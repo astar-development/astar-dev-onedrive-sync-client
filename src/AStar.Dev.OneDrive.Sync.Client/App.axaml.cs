@@ -30,7 +30,7 @@ public partial class App : Application
 
     public static string GetPlatformUserDataDirectory(string email)
     {
-         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
         var safeEmail = string.Concat(email.Split(Path.GetInvalidFileNameChars()));
         return OperatingSystem.IsWindows()

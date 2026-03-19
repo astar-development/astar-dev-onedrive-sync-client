@@ -118,7 +118,8 @@ public sealed class HttpDownloader : IDisposable
         return TimeSpan.FromSeconds(seconds + jitter);
     }
 
-    private static double CalculateExponentialBackoff(int attempt) =>        // Exponential backoff with jitter: 2s, 4s, 8s, 16s, 32s (max 120s)
-            Math.Min(BaseDelaySeconds * Math.Pow(2, attempt - 1), MaxDelaySeconds);
+    private static double CalculateExponentialBackoff(int attempt) // Exponential backoff with jitter: 2s, 4s, 8s, 16s, 32s (max 120s)
+            => Math.Min(BaseDelaySeconds * Math.Pow(2, attempt - 1), MaxDelaySeconds);
+
     public void Dispose() => _http.Dispose();
 }

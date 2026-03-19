@@ -10,7 +10,7 @@ public class TokenCacheServiceTests
     [Fact]
     public void Constructor_ShouldCreateCacheDirectory()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        _ = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
         var service = new TokenCacheService();
 
@@ -75,6 +75,7 @@ public class TokenCacheServiceTests
         {
             // Expected when MSAL helpers are not available
         }
+
         _ = mockApp.Received(1).UserTokenCache;
     }
 
@@ -124,7 +125,7 @@ public class TokenCacheServiceTests
     {
         var service = new TokenCacheService();
 
-        var cacheDir = service.CacheDirectory;
+        _ = service.CacheDirectory;
         PropertyInfo? property = typeof(TokenCacheService).GetProperty("CacheDirectory");
         _ = property.ShouldNotBeNull();
         property.CanWrite.ShouldBeFalse();

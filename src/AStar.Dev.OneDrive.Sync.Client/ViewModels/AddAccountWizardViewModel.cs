@@ -25,8 +25,6 @@ public sealed partial class AddAccountWizardViewModel(
     private string? _accessToken;
     private CancellationTokenSource? _authCts;
 
-    // ── Step state ────────────────────────────────────────────────────────
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsSignInStep))]
     [NotifyPropertyChangedFor(nameof(IsSelectFoldersStep))]
@@ -40,8 +38,6 @@ public sealed partial class AddAccountWizardViewModel(
     public bool IsSelectFoldersStep => CurrentStep == WizardStep.SelectFolders;
     public bool IsConfirmStep => CurrentStep == WizardStep.Confirm;
 
-    // ── Sign-in step ──────────────────────────────────────────────────────
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanGoNext))]
     private bool _isSignedIn;
@@ -50,20 +46,14 @@ public sealed partial class AddAccountWizardViewModel(
     [ObservableProperty] private string _signInStatusText = string.Empty;
     [ObservableProperty] private bool   _signInHasError;
 
-    // ── Folder selection step ─────────────────────────────────────────────
-
     public ObservableCollection<WizardFolderItem> Folders { get; } = [];
 
     [ObservableProperty] private bool   _isLoadingFolders;
     [ObservableProperty] private string _folderLoadError = string.Empty;
 
-    // ── Confirm step ──────────────────────────────────────────────────────
-
     [ObservableProperty] private string _confirmedDisplayName = string.Empty;
     [ObservableProperty] private string _confirmedEmail       = string.Empty;
     [ObservableProperty] private int    _confirmedFolderCount;
-
-    // ── Navigation ────────────────────────────────────────────────────────
 
     public bool CanGoBack => CurrentStep != WizardStep.SignIn;
     public bool CanGoNext => CurrentStep switch
@@ -115,8 +105,6 @@ public sealed partial class AddAccountWizardViewModel(
         CurrentStep = WizardStep.Confirm;
     }
 
-    // ── Sign-in ───────────────────────────────────────────────────────────
-
     [RelayCommand]
     private async Task OpenBrowserAsync()
     {
@@ -163,8 +151,6 @@ public sealed partial class AddAccountWizardViewModel(
         }
     }
 
-    // ── Events ────────────────────────────────────────────────────────────
-
     public event EventHandler<OneDriveAccount>? Completed;
     public event EventHandler?                  Cancelled;
 
@@ -175,8 +161,6 @@ public sealed partial class AddAccountWizardViewModel(
         await Task.CompletedTask;
         Cancelled?.Invoke(this, EventArgs.Empty);
     }
-
-    // ── Private helpers ───────────────────────────────────────────────────
 
     private async Task LoadFoldersAsync()
     {

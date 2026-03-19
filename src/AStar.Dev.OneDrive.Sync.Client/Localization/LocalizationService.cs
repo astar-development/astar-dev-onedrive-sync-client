@@ -54,16 +54,7 @@ public sealed class LocalizationService : ILocalizationService
         await LoadAsync(target);
     }
 
-    // ── ILocalizationService ──────────────────────────────────────────────
-
-    public string Get(string key)
-    {
-        if(_strings.TryGetValue(key, out var value))
-            return value;
-
-        // Soft fallback — never return null or throw in the UI layer
-        return key;
-    }
+    public string Get(string key) => _strings.TryGetValue(key, out var value) ? value : key;
 
     public string Get(string key, params object[] args)
     {
@@ -86,11 +77,8 @@ public sealed class LocalizationService : ILocalizationService
         CultureChanged?.Invoke(this, CurrentCulture);
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────
-
     private async Task LoadAsync(CultureInfo target)
     {
-        // Try exact match first (e.g. fr-FR), then neutral (e.g. fr), then fallback
         IEnumerable<string> candidates = new[]
         {
             target.Name,
@@ -111,14 +99,12 @@ public sealed class LocalizationService : ILocalizationService
 
             _strings = loaded;
 
-            // Use the actual culture object for the name we successfully loaded
             CurrentCulture = name == target.Name
                 ? target
                 : (name == FallbackCulture.Name ? FallbackCulture : new CultureInfo(name));
             return;
         }
 
-        // Should not happen if en-GB.json is embedded, but guard anyway
         _strings = [];
         CurrentCulture = FallbackCulture;
     }
@@ -131,9 +117,9 @@ public sealed class LocalizationService : ILocalizationService
             var result = new Dictionary<string, string>(StringComparer.Ordinal);
             foreach(JsonProperty prop in doc.RootElement.EnumerateObject())
             {
-                // Skip metadata keys
                 if(prop.Name is "locale" or "culture")
                     continue;
+
                 if(prop.Value.ValueKind == JsonValueKind.String)
                     result[prop.Name] = prop.Value.GetString()!;
             }
@@ -155,6 +141,7 @@ public sealed class LocalizationService : ILocalizationService
         {
             if(!name.StartsWith(prefix, StringComparison.Ordinal))
                 continue;
+
             if(!name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 continue;
 

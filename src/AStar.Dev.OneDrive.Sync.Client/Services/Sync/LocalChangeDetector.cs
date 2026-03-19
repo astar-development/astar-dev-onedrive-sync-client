@@ -41,8 +41,6 @@ public sealed class LocalChangeDetector
         return jobs;
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────
-
     private static void ScanDirectory(string accountId, string folderId, string localDir, string remoteDir, DateTime cutoff, List<SyncJob> jobs)
     {
         try
@@ -54,7 +52,7 @@ public sealed class LocalChangeDetector
                 if(IsFileToSkip(cutoff, info))
                     continue;
 
-                var relativePath = Path.GetRelativePath(localDir, filePath)                    .Replace(Path.DirectorySeparatorChar, '/');
+                var relativePath = Path.GetRelativePath(localDir, filePath).Replace(Path.DirectorySeparatorChar, '/');
 
                 var remotePath = string.IsNullOrEmpty(remoteDir)
                     ? relativePath

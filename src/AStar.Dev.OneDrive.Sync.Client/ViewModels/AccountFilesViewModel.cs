@@ -19,8 +19,6 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
     private          string?            _accessToken;
     private          string?            _driveId;
 
-    // ── Display ───────────────────────────────────────────────────────────
-
     public string AccountId => _account.Id;
     public string DisplayName => _account.DisplayName;
     public string Email => _account.Email;
@@ -33,23 +31,15 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
     public Color AccentColor => AccountCardViewModel.PaletteColor(_account.AccentIndex);
 
-    // ── Tree ──────────────────────────────────────────────────────────────
-
     public ObservableCollection<FolderTreeNodeViewModel> RootFolders { get; } = [];
 
     [ObservableProperty] private bool   _isLoading;
     [ObservableProperty] private string _loadError    = string.Empty;
     [ObservableProperty] private bool   _hasLoadError;
 
-    // ── Tab state ─────────────────────────────────────────────────────────
-
     [ObservableProperty] private bool _isActiveTab;
 
-    // ── Events ────────────────────────────────────────────────────────────
-
     public event EventHandler<FolderTreeNodeViewModel>? ViewActivityRequested;
-
-    // ── Commands ──────────────────────────────────────────────────────────
 
     [RelayCommand]
     public async Task LoadAsync()
@@ -75,7 +65,6 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
 
             _accessToken = authResult.AccessToken!;
 
-            // Resolve and cache drive ID — used by all tree nodes for lazy loading
             _driveId = await _graphService.GetDriveIdAsync(_accessToken);
 
             List<DriveFolder> folders = await _graphService.GetRootFoldersAsync(_accessToken);
@@ -115,8 +104,6 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
         }
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────
-
     private async void OnIncludeToggled(object? sender, FolderTreeNodeViewModel node)
     {
         if(node.IsIncluded)
@@ -129,7 +116,6 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             _ = _account.SelectedFolderIds.Remove(node.Id);
         }
 
-        // Persist — only root folders tracked for now; sub-folder tracking in step 6
         var entity = new AccountEntity
         {
             Id           = _account.Id,
