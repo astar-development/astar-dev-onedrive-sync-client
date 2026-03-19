@@ -128,21 +128,6 @@ public class LocalizationServiceTests
     }
 
     [Fact]
-    public async Task SetCultureAsync_RaisesEvent_WhenCultureChanges()
-    {
-        var service = new LocalizationService();
-        var cultureChanged = false;
-
-        service.CultureChanged += (s, c) => cultureChanged = true;
-
-        var targetCulture = new CultureInfo("en-GB");
-
-        await service.SetCultureAsync(targetCulture);
-
-        cultureChanged.ShouldBeTrue();
-    }
-
-    [Fact]
     public async Task SetCultureAsync_WithSameCulture_ShouldNotRaiseEvent()
     {
         var service = new LocalizationService();

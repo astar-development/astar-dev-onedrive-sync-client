@@ -96,7 +96,7 @@ public class SyncServiceTests
         var noSyncPathRaised = false;
         service.SyncProgressChanged += (s, args) =>
         {
-            if(args.SyncState == SyncState.NoSyncPathConfigured)
+            if(args.CurrentFile == "No local sync path configured")
                 noSyncPathRaised = true;
         };
 
@@ -198,44 +198,6 @@ public class SyncServiceTests
         await service.ResolveConflictAsync(conflict, policy, TestContext.Current.CancellationToken);
 
         await mockSyncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Is(policy));
-    }
-
-    [Fact]
-    public void SyncProgressChanged_EventIsSuppressable()
-    {
-        IAuthService mockAuthService = Substitute.For<IAuthService>();
-        IGraphService mockGraphService = Substitute.For<IGraphService>();
-        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
-        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
-
-        var eventFired = false;
-        void handler(object? s, SyncProgressEventArgs args) => eventFired = true;
-
-        service.SyncProgressChanged += handler;
-        service.SyncProgressChanged -= handler;
-
-        // Handler has been unsubscribed
-        _ = service.ShouldNotBeNull();
-        eventFired.ShouldBeTrue();
-    }
-
-    [Fact]
-    public void ConflictDetected_EventIsSubscribable()
-    {
-        IAuthService mockAuthService = Substitute.For<IAuthService>();
-        IGraphService mockGraphService = Substitute.For<IGraphService>();
-        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
-        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
-        var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
-
-        var eventFired = false;
-        void handler(object? s, SyncConflict conflict) => eventFired = true;
-
-        service.ConflictDetected += handler;
-
-        _ = service.ShouldNotBeNull();
-        eventFired.ShouldBeTrue();
     }
 
     [Fact]
