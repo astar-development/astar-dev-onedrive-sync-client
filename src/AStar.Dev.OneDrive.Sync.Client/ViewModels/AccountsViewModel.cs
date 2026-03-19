@@ -1,21 +1,18 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
+using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
-public sealed partial class AccountsViewModel(
-    IAuthService authService,
-    IGraphService graphService,
-    IAccountRepository repository) : ObservableObject
+public sealed partial class AccountsViewModel(IAuthService authService, IGraphService graphService, IAccountRepository repository) : ObservableObject
 {
-    // ── Account list ──────────────────────────────────────────────────────
-
     public ObservableCollection<AccountCardViewModel> Accounts { get; } = [];
 
     [ObservableProperty]
@@ -24,15 +21,11 @@ public sealed partial class AccountsViewModel(
 
     public bool HasAccounts => Accounts.Count > 0;
 
-    // ── Wizard ────────────────────────────────────────────────────────────
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsWizardVisible))]
     private AddAccountWizardViewModel? _wizard;
 
     public bool IsWizardVisible => Wizard is not null;
-
-    // ── Events ────────────────────────────────────────────────────────────
 
     /// <summary>Raised when user clicks an account card — navigate to Files.</summary>
     public event EventHandler<AccountCardViewModel>? AccountSelected;
@@ -42,8 +35,6 @@ public sealed partial class AccountsViewModel(
 
     /// <summary>Raised after an account is removed.</summary>
     public event EventHandler<string>? AccountRemoved;
-
-    // ── Public API ────────────────────────────────────────────────────────
 
     public void AddAccount()
     {
@@ -65,11 +56,7 @@ public sealed partial class AccountsViewModel(
         }
 
         OnPropertyChanged(nameof(HasAccounts));
-        System.Diagnostics.Debug.WriteLine(
-    $"AccountsViewModel instance: {GetHashCode()} Count: {Accounts.Count} - RestoreAccounts: Restored {accounts.Count()} accounts, active account is {ActiveAccount?.Email}");
     }
-
-    // ── Commands ──────────────────────────────────────────────────────────
 
     [RelayCommand]
     private async Task RemoveAccountAsync(AccountCardViewModel card)
@@ -86,14 +73,14 @@ public sealed partial class AccountsViewModel(
         AccountRemoved?.Invoke(this, card.Id);
     }
 
-    // ── Wizard events ─────────────────────────────────────────────────────
-
     private async void OnWizardCompleted(object? sender, OneDriveAccount account)
     {
         CloseWizard();
 
         account.AccentIndex = Accounts.Count % 6;
         account.IsActive = Accounts.Count == 0;
+        if(account.LocalSyncPath.IsNullOrWhiteSpace())
+            account.LocalSyncPath = App.GetPlatformUserDataDirectory(account.Email);
 
         AccountEntity entity = ToEntity(account);
         await repository.UpsertAsync(entity);
@@ -108,10 +95,8 @@ public sealed partial class AccountsViewModel(
         if(account.IsActive)
             ActiveAccount = card;
 
-        // Notify MainWindowViewModel to add a Files tab
         AccountAdded?.Invoke(this, account);
-        System.Diagnostics.Debug.WriteLine(
-    $"AccountsViewModel instance: {GetHashCode()} Count: {Accounts.Count} - OnWizardCompleted: Added account {account.Email} with ID {account.Id}");
+        System.Diagnostics.Debug.WriteLine($"AccountsViewModel instance: {GetHashCode()} Count: {Accounts.Count} - OnWizardCompleted: Added account {account.Email} with ID {account.Id}");
     }
 
     private void OnWizardCancelled(object? sender, EventArgs e) => CloseWizard();
@@ -127,8 +112,6 @@ public sealed partial class AccountsViewModel(
         Wizard = null;
     }
 
-    // ── Card selection ────────────────────────────────────────────────────
-
     private void OnCardSelected(object? sender, AccountCardViewModel card)
     {
         foreach(AccountCardViewModel c in Accounts)
@@ -140,8 +123,6 @@ public sealed partial class AccountsViewModel(
         _ = repository.SetActiveAccountAsync(card.Id);
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────
-
     private AccountCardViewModel BuildCard(OneDriveAccount account)
     {
         var card = new AccountCardViewModel(account);
@@ -150,24 +131,25 @@ public sealed partial class AccountsViewModel(
         return card;
     }
 
-    private static AccountEntity ToEntity(OneDriveAccount a) => new()
-    {
-        Id = a.Id,
-        DisplayName = a.DisplayName,
-        Email = a.Email,
-        AccentIndex = a.AccentIndex,
-        IsActive = a.IsActive,
-        DeltaLink = a.DeltaLink,
-        LastSyncedAt = a.LastSyncedAt,
-        QuotaTotal = a.QuotaTotal,
-        LocalSyncPath = a.LocalSyncPath,
-        ConflictPolicy = a.ConflictPolicy,
-        QuotaUsed = a.QuotaUsed,
-        SyncFolders = [.. a.SelectedFolderIds.Select(id => new SyncFolderEntity
+    private static AccountEntity ToEntity(OneDriveAccount a)
+        => new()
         {
-            FolderId   = id,
-            FolderName = a.FolderNames.GetValueOrDefault(id, string.Empty),
-            AccountId  = a.Id
-        })]
-    };
+            Id = a.Id,
+            DisplayName = a.DisplayName,
+            Email = a.Email,
+            AccentIndex = a.AccentIndex,
+            IsActive = a.IsActive,
+            DeltaLink = a.DeltaLink,
+            LastSyncedAt = a.LastSyncedAt,
+            QuotaTotal = a.QuotaTotal,
+            LocalSyncPath = a.LocalSyncPath,
+            ConflictPolicy = a.ConflictPolicy,
+            QuotaUsed = a.QuotaUsed,
+            SyncFolders = [.. a.SelectedFolderIds.Select(id => new SyncFolderEntity
+                {
+                    FolderId   = id,
+                    FolderName = a.FolderNames.GetValueOrDefault(id, string.Empty),
+                    AccountId  = a.Id
+                })]
+        };
 }

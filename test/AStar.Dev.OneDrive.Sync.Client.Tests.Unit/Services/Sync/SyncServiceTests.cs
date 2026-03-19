@@ -1,5 +1,3 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
-
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
@@ -8,32 +6,30 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using NSubstitute;
 
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
+
 public class SyncServiceTests
 {
     [Fact]
     public void Constructor_ShouldInitializeWithDependencies()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
 
-        // Act
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
-        // Assert
-        service.ShouldNotBeNull();
+        _ = service.ShouldNotBeNull();
     }
 
     [Fact]
     public async Task SyncAccountAsync_WithValidAccount_ShouldCompleteSuccessfully()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var account = new OneDriveAccount
@@ -44,24 +40,21 @@ public class SyncServiceTests
             SelectedFolderIds = new List<string>()
         };
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
-        // Act
-        await service.SyncAccountAsync(account);
+        await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
 
-        // Assert
-        await mockAuthService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+        _ = await mockAuthService.Received(1).AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task SyncAccountAsync_WhenAuthFails_ShouldRaiseErrorEvent()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var account = new OneDriveAccount { Id = "user-1", Email = "user@outlook.com" };
@@ -73,34 +66,31 @@ public class SyncServiceTests
                 errorRaised = true;
         };
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Failure("Authentication failed"));
 
-        // Act
-        await service.SyncAccountAsync(account);
+        await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
 
-        // Assert
         errorRaised.ShouldBeTrue();
     }
 
     [Fact]
     public async Task SyncAccountAsync_WithoutSyncPath_ShouldRaiseNoSyncPathEvent()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var account = new OneDriveAccount
         {
             Id = "user-1",
             Email = "user@outlook.com",
-            LocalSyncPath = null // No sync path
+            LocalSyncPath = null!
         };
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
         var noSyncPathRaised = false;
@@ -110,21 +100,18 @@ public class SyncServiceTests
                 noSyncPathRaised = true;
         };
 
-        // Act
-        await service.SyncAccountAsync(account);
+        await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
 
-        // Assert
         noSyncPathRaised.ShouldBeTrue();
     }
 
     [Fact]
     public async Task SyncAccountAsync_RaisesSyncProgressChangedEvent()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var account = new OneDriveAccount
@@ -135,27 +122,24 @@ public class SyncServiceTests
             SelectedFolderIds = new List<string>()
         };
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
         var eventRaised = false;
         service.SyncProgressChanged += (s, args) => eventRaised = true;
 
-        // Act
-        await service.SyncAccountAsync(account);
+        await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
 
-        // Assert
         eventRaised.ShouldBeTrue();
     }
 
     [Fact]
     public async Task ResolveConflictAsync_WithValidPolicy_ShouldResolveConflict()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var conflict = new SyncConflict
@@ -167,36 +151,30 @@ public class SyncServiceTests
             State = ConflictState.Pending
         };
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
-        // Act
-        await service.ResolveConflictAsync(conflict, ConflictPolicy.LastWriteWins);
+        await service.ResolveConflictAsync(conflict, ConflictPolicy.LastWriteWins, TestContext.Current.CancellationToken);
 
-        // Assert
         await mockSyncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
     }
 
     [Fact]
     public async Task ResolveConflictAsync_WhenAuthFails_ShouldNotResolve()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Failure("Auth failed"));
 
-        // Act
-        await service.ResolveConflictAsync(conflict, ConflictPolicy.Ignore);
-
-        // Assert - Repository method should not be called if auth fails
-        await mockSyncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
+        await service.ResolveConflictAsync(conflict, ConflictPolicy.Ignore, TestContext.Current.CancellationToken);
+               await mockSyncRepository.DidNotReceive().ResolveConflictAsync(Arg.Any<Guid>(), Arg.Any<ConflictPolicy>());
     }
 
     [Theory]
@@ -206,76 +184,67 @@ public class SyncServiceTests
     [InlineData(ConflictPolicy.LocalWins)]
     public async Task ResolveConflictAsync_WithVariousPolicies_ShouldApply(ConflictPolicy policy)
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
-        // Act
-        await service.ResolveConflictAsync(conflict, policy);
+        await service.ResolveConflictAsync(conflict, policy, TestContext.Current.CancellationToken);
 
-        // Assert
         await mockSyncRepository.Received(1).ResolveConflictAsync(Arg.Any<Guid>(), Arg.Is(policy));
     }
 
     [Fact]
     public void SyncProgressChanged_EventIsSuppressable()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var eventFired = false;
         EventHandler<SyncProgressEventArgs>? handler = (s, args) => eventFired = true;
 
-        // Act
         service.SyncProgressChanged += handler;
         service.SyncProgressChanged -= handler;
 
-        // Assert
         // Handler has been unsubscribed
-        service.ShouldNotBeNull();
+        _ = service.ShouldNotBeNull();
+        eventFired.ShouldBeTrue();
     }
 
     [Fact]
     public void ConflictDetected_EventIsSubscribable()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var eventFired = false;
         EventHandler<SyncConflict>? handler = (s, conflict) => eventFired = true;
 
-        // Act
         service.ConflictDetected += handler;
 
-        // Assert
-        // Handler has been subscribed
-        service.ShouldNotBeNull();
+        _ = service.ShouldNotBeNull();
+        eventFired.ShouldBeTrue();
     }
 
     [Fact]
     public async Task SyncAccountAsync_WithMultipleFolders_ShouldSyncAll()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var account = new OneDriveAccount
@@ -286,24 +255,21 @@ public class SyncServiceTests
             SelectedFolderIds = new List<string> { "folder-1", "folder-2", "folder-3" }
         };
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
-        // Act
-        await service.SyncAccountAsync(account);
+        await service.SyncAccountAsync(account, TestContext.Current.CancellationToken);
 
-        // Assert
         // Service should attempt to sync each folder
     }
 
     [Fact]
     public async Task SyncAccountAsync_ShouldAcceptCancellationToken()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var account = new OneDriveAccount
@@ -316,34 +282,27 @@ public class SyncServiceTests
 
         var cts = new CancellationTokenSource();
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
-        // Act
         await service.SyncAccountAsync(account, cts.Token);
-
-        // Assert - Should not throw
     }
 
     [Fact]
     public async Task ResolveConflictAsync_ShouldAcceptCancellationToken()
     {
-        // Arrange
-        var mockAuthService = Substitute.For<IAuthService>();
-        var mockGraphService = Substitute.For<IGraphService>();
-        var mockAccountRepository = Substitute.For<IAccountRepository>();
-        var mockSyncRepository = Substitute.For<ISyncRepository>();
+        IAuthService mockAuthService = Substitute.For<IAuthService>();
+        IGraphService mockGraphService = Substitute.For<IGraphService>();
+        IAccountRepository mockAccountRepository = Substitute.For<IAccountRepository>();
+        ISyncRepository mockSyncRepository = Substitute.For<ISyncRepository>();
         var service = new SyncService(mockAuthService, mockGraphService, mockAccountRepository, mockSyncRepository);
 
         var conflict = new SyncConflict { Id = Guid.NewGuid(), AccountId = "user-1" };
         var cts = new CancellationTokenSource();
 
-        mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+        _ = mockAuthService.AcquireTokenSilentAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
             .Returns(AuthResult.Success("token", "user-1", "User", "user@outlook.com"));
 
-        // Act
         await service.ResolveConflictAsync(conflict, ConflictPolicy.Ignore, cts.Token);
-
-        // Assert - Should not throw
     }
 }

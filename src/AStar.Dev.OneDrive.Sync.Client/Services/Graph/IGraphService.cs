@@ -46,4 +46,10 @@ public interface IGraphService
     /// <param name="ct">The cancellation token.</param>
     /// <returns>The delta result containing the changes.</returns>
     Task<DeltaResult> GetDeltaAsync(string accessToken, string folderId, string? deltaLink, CancellationToken ct = default);
+
+    /// <summary>
+    /// Uploads a local file to OneDrive using a resumable upload session.
+    /// Handles all file sizes. Returns the remote item ID on success.
+    /// </summary>
+    Task<string> UploadFileAsync(string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default);
 }

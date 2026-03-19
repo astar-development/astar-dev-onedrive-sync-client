@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.Utilities;
@@ -13,16 +15,11 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     private readonly OneDriveAccount _account;
     private readonly SyncScheduler   _scheduler;
 
-    // ── Identity ──────────────────────────────────────────────────────────
-
     public string AccountId => _account.Id;
     public string DisplayName => _account.DisplayName;
     public string Email => _account.Email;
     public string AccentHex => AccountCardViewModel.PaletteHex(_account.AccentIndex);
-    public Avalonia.Media.Color AccentColor
-        => Avalonia.Media.Color.Parse(AccentHex);
-
-    // ── Storage ───────────────────────────────────────────────────────────
+    public Avalonia.Media.Color AccentColor=> Avalonia.Media.Color.Parse(AccentHex);
 
     public long QuotaTotal => _account.QuotaTotal;
     public long QuotaUsed => _account.QuotaUsed;
@@ -33,8 +30,6 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     public string StorageText => QuotaTotal > 0
         ? $"{QuotaUsed.FileSizeToText()} / {QuotaTotal.FileSizeToText()}"
         : "Unknown";
-
-    // ── Sync state ────────────────────────────────────────────────────────
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(StatusLabel))]
@@ -48,6 +43,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
 
     [ObservableProperty] private string _lastSyncText = "Never synced";
     [ObservableProperty] private int    _folderCount;
+    private readonly IAccountRepository _repository;
     [ObservableProperty] private bool   _isSyncing;
 
     public bool IsHealthy => SyncState is SyncState.Idle && ConflictCount == 0;
@@ -60,29 +56,23 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
         _ => "Synced"
     };
 
-    // ── Expansion ─────────────────────────────────────────────────────────
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ExpanderGlyph))]
     private bool _isExpanded = true;
 
     public string ExpanderGlyph => IsExpanded ? "\u25BE" : "\u25B8";
 
-    // ── Recent activity (last 3 items) ────────────────────────────────────
-
     public ObservableCollection<ActivityItemViewModel> RecentActivity { get; } = [];
 
-    // ── Construction ──────────────────────────────────────────────────────
-
-    public DashboardAccountViewModel(OneDriveAccount account, SyncScheduler scheduler)
+    public DashboardAccountViewModel(OneDriveAccount account, SyncScheduler scheduler,
+    IAccountRepository repository)
     {
         _account = account;
         _scheduler = scheduler;
         _folderCount = account.SelectedFolderIds.Count;
+        _repository = repository;
         UpdateLastSyncText(SyncState.Idle);
     }
-
-    // ── Commands ──────────────────────────────────────────────────────────
 
     [RelayCommand]
     private void ToggleExpand() => IsExpanded = !IsExpanded;
@@ -90,40 +80,44 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
     [RelayCommand]
     private async Task SyncNowAsync()
     {
-        SyncState = SyncState.Syncing;
-        try
-        {
-            await _scheduler.TriggerAccountAsync(_account);
-        }
-        finally
-        {
-            IsSyncing = false;
-        }
-    }
+        AccountEntity? entity = await _repository.GetByIdAsync(_account.Id);
+        if (entity is null) return;
 
-    // ── Public update API (called by DashboardViewModel) ─────────────────
+        var fullAccount = new OneDriveAccount
+        {
+            Id                = entity.Id,
+            DisplayName       = entity.DisplayName,
+            Email             = entity.Email,
+            LocalSyncPath     = entity.LocalSyncPath,
+            ConflictPolicy    = entity.ConflictPolicy,
+            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
+            LastSyncedAt      = entity.LastSyncedAt
+        };
+
+        await _scheduler.TriggerAccountAsync(fullAccount);
+    }
 
     public void UpdateSyncState(SyncState state, int conflicts)
-    {Serilog.Log.Information(
-        "[Dashboard] UpdateSyncState state={State} conflicts={C}",
-        state, conflicts);
-        Dispatcher.UIThread.Post(() =>
-                                                                        {
-                                                                            SyncState = state;
-                                                                            ConflictCount = conflicts;
-                                                                            IsSyncing = state == SyncState.Syncing;  // ← drives button enable
-                                                                            UpdateLastSyncText(state);
-                                                                        });
-    }
+        => Dispatcher.UIThread.Post(() =>
+                                    {
+                                        SyncState = state;
+                                        ConflictCount = conflicts;
+                                        IsSyncing = state == SyncState.Syncing;
 
-    public void AddRecentActivity(ActivityItemViewModel item) => Dispatcher.UIThread.Post(() =>
-                                                                      {
-                                                                          RecentActivity.Insert(0, item);
-                                                                          while(RecentActivity.Count > 3)
-                                                                              RecentActivity.RemoveAt(RecentActivity.Count - 1);
-                                                                      });
+                                        if(state == SyncState.Idle)
+                                        {
+                                            _account.LastSyncedAt = DateTimeOffset.UtcNow;
+                                            UpdateLastSyncText(SyncState);
+                                        }
+                                    });
 
-    // ── Private helpers ───────────────────────────────────────────────────
+    public void AddRecentActivity(ActivityItemViewModel item)
+        => Dispatcher.UIThread.Post(() =>
+                                    {
+                                        RecentActivity.Insert(0, item);
+                                        while(RecentActivity.Count > 3)
+                                            RecentActivity.RemoveAt(RecentActivity.Count - 1);
+                                    });
 
     private void UpdateLastSyncText(SyncState syncState)
         => LastSyncText =
@@ -132,7 +126,7 @@ public sealed partial class DashboardAccountViewModel : ObservableObject
             ? "Never synced"
             : (DateTimeOffset.UtcNow - _account.LastSyncedAt.Value) switch
             {
-                { TotalSeconds: < 60 } => "Just now",
+                { TotalSeconds: < 60 } => "Just now 2",
                 { TotalMinutes: < 60 } td => $"{(int)td.TotalMinutes}m ago",
                 { TotalHours: < 24 } td => $"{(int)td.TotalHours}h ago",
                 { TotalDays: < 2 } => "Yesterday",

@@ -31,4 +31,8 @@
     <ProjectReference Include="..\..\src\AStar.Dev.OneDrive.Sync.Client\AStar.Dev.OneDrive.Sync.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+      <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage"/>
+  </ItemGroup>
+
 </Project>

@@ -17,6 +17,7 @@ namespace AStar.Dev.OneDrive.Sync.Client;
 
 public partial class App : Application
 {
+    private const string AppName    = "AStar.Dev.OneDrive.Sync";
     public static ILocalizationService Localisation { get; private set; } = null!;
     public static IThemeService Theme { get; private set; } = null!;
     public static IAuthService Auth { get; private set; } = null!;
@@ -26,6 +27,21 @@ public partial class App : Application
     public static ISettingsService AppSettings { get; private set; } = null!;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
+
+    public static string GetPlatformUserDataDirectory(string email)
+    {
+         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+        var safeEmail = string.Concat(email.Split(Path.GetInvalidFileNameChars()));
+        return OperatingSystem.IsWindows()
+            ? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                AppName,
+                safeEmail)
+            : OperatingSystem.IsMacOS()
+                ? Path.Combine(home, "Library", "Application Support", AppName, safeEmail)
+                : Path.Combine(home, ".config", AppName, safeEmail);
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -75,8 +91,7 @@ public partial class App : Application
             Auth = authService;
 
             var graphService   = new GraphService();
-            var syncService    = new SyncService(
-                authService, graphService, accountRepository, syncRepository);
+            var syncService    = new SyncService(authService, graphService, accountRepository, syncRepository);
             var scheduler      = new SyncScheduler(syncService, accountRepository);
             SyncService = syncService;
             Scheduler = scheduler;

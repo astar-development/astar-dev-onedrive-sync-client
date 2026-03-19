@@ -7,11 +7,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
 public sealed partial class DashboardViewModel(SyncScheduler scheduler) : ObservableObject
 {
-    // ── Account sections ──────────────────────────────────────────────────
-
     public ObservableCollection<DashboardAccountViewModel> AccountSections { get; } = [];
-
-    // ── Global stats ──────────────────────────────────────────────────────
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasAccounts))]
@@ -33,15 +29,15 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
         _ => "All synced"
     };
 
-    // ── Public API ────────────────────────────────────────────────────────
-
     public void AddAccount(OneDriveAccount account)
     {
         if(AccountSections.Any(s => s.AccountId == account.Id))
             return;
 
-        var section = new DashboardAccountViewModel(account, scheduler);
+        var section = new DashboardAccountViewModel(account, scheduler, App.Repository);
+
         AccountSections.Add(section);
+
         RecalculateGlobals();
     }
 
@@ -50,27 +46,28 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
         DashboardAccountViewModel? section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
         if(section is null)
             return;
+
         _ = AccountSections.Remove(section);
+
         RecalculateGlobals();
     }
 
-    public void UpdateAccountSyncState(string    accountId,AccountCardViewModel card)
+    public void UpdateAccountSyncState(string accountId, AccountCardViewModel card)
     {
         DashboardAccountViewModel? section = AccountSections.FirstOrDefault(s => s.AccountId == accountId);
-        if (section is null) return;
+        if(section is null)
+            return;
 
         section.UpdateSyncState(card.SyncState, card.ConflictCount);
+
         RecalculateGlobals();
     }
 
     public void AddActivityItem(ActivityItemViewModel item)
     {
-        DashboardAccountViewModel? section = AccountSections
-            .FirstOrDefault(s => s.AccountId == item.AccountId);
+        DashboardAccountViewModel? section = AccountSections.FirstOrDefault(s => s.AccountId == item.AccountId);
         section?.AddRecentActivity(item);
     }
-
-    // ── Private helpers ───────────────────────────────────────────────────
 
     private void RecalculateGlobals()
     {
@@ -80,9 +77,7 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
         AnyErrors = AccountSections.Any(s => s.SyncState == SyncState.Error);
         AnySyncing = AccountSections.Any(s => s.SyncState == SyncState.Syncing);
 
-        DashboardAccountViewModel? mostRecent = AccountSections
-            .Where(s => s.LastSyncText != "Never synced")
-            .FirstOrDefault();
+        DashboardAccountViewModel? mostRecent = AccountSections.FirstOrDefault(s => s.LastSyncText != "Never synced");
 
         LastSyncText = mostRecent?.LastSyncText ?? "Never";
         OnPropertyChanged(nameof(OverallStatusText));

@@ -51,7 +51,7 @@ public partial class InitialCreate : Migration
         _ = migrationBuilder.CreateIndex(
             name: "IX_SyncFolders_AccountId_FolderId",
             table: "SyncFolders",
-            columns: new[] { "AccountId", "FolderId" },
+            columns: ["AccountId", "FolderId"],
             unique: true);
     }
 

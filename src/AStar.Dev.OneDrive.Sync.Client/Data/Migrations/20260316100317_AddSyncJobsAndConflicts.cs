@@ -87,12 +87,12 @@ public partial class AddSyncJobsAndConflicts : Migration
         _ = migrationBuilder.CreateIndex(
             name: "IX_SyncConflicts_AccountId_State",
             table: "SyncConflicts",
-            columns: new[] { "AccountId", "State" });
+            columns: ["AccountId", "State"]);
 
         _ = migrationBuilder.CreateIndex(
             name: "IX_SyncJobs_AccountId_State",
             table: "SyncJobs",
-            columns: new[] { "AccountId", "State" });
+            columns: ["AccountId", "State"]);
     }
 
     /// <inheritdoc />

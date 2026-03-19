@@ -11,10 +11,9 @@ namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
 public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRepository syncRepository) : ObservableObject
 {
+    private const int MaxLogSixe = 10_000;
     private string? _activeAccountId;
     private string _activeAccountEmail = string.Empty;
-
-    // ── Tab ───────────────────────────────────────────────────────────────
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLogTabActive))]
@@ -27,8 +26,6 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
     [RelayCommand]
     private void SwitchTab(ActivityTab tab) => ActiveTab = tab;
 
-    // ── Activity log ──────────────────────────────────────────────────────
-
     public ObservableCollection<ActivityItemViewModel> LogItems { get; } = [];
     public ObservableCollection<ActivityItemViewModel> FilteredLog { get; } = [];
 
@@ -40,8 +37,6 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     [ObservableProperty] private ActivityItemType? _activeFilter;
 
-    // ── Conflicts ─────────────────────────────────────────────────────────
-
     public ObservableCollection<ConflictItemViewModel> Conflicts { get; } = [];
 
     [ObservableProperty]
@@ -51,8 +46,6 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
 
     public bool HasConflicts => ConflictCount > 0;
     public string ConflictBadgeText => ConflictCount > 0 ? ConflictCount.ToString() : string.Empty;
-
-    // ── Public API ────────────────────────────────────────────────────────
 
     /// <summary>
     /// Called by MainWindowViewModel when the active account changes.
@@ -66,9 +59,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         Conflicts.Clear();
         FilteredLog.Clear();
 
-        // Reload persisted conflicts for this account
-        List<SyncConflictEntity> persistedConflicts = await syncRepository
-            .GetPendingConflictsAsync(accountId);
+        List<SyncConflictEntity> persistedConflicts = await syncRepository.GetPendingConflictsAsync(accountId);
 
         foreach(SyncConflictEntity entity in persistedConflicts)
         {
@@ -90,7 +81,6 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
             AddConflict(model);
         }
 
-        // Filter log to this account
         RebuildFilteredLog();
         ConflictCount = Conflicts.Count;
     }
@@ -100,8 +90,7 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
                                                                     {
                                                                         LogItems.Insert(0, item);
 
-                                                                        // Keep log to 500 items max
-                                                                        while(LogItems.Count > 500)
+                                                                        while(LogItems.Count > MaxLogSixe)
                                                                             LogItems.RemoveAt(LogItems.Count - 1);
 
                                                                         LogItemCount = LogItems.Count;
@@ -116,11 +105,8 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
                                                                    AddConflict(conflict);
                                                                    ConflictCount = Conflicts.Count;
 
-                                                                   // Switch to conflicts tab automatically
                                                                    ActiveTab = ActivityTab.Conflicts;
                                                                });
-
-    // ── Filter commands ───────────────────────────────────────────────────
 
     [RelayCommand]
     private void SetFilter(ActivityItemType? filter)
@@ -136,8 +122,6 @@ public sealed partial class ActivityViewModel(ISyncService syncService, ISyncRep
         FilteredLog.Clear();
         LogItemCount = 0;
     }
-
-    // ── Private helpers ───────────────────────────────────────────────────
 
     private void AddConflict(SyncConflict conflict)
     {

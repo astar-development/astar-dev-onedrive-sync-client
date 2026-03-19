@@ -52,7 +52,7 @@ public sealed class ThemeService : IThemeService, IDisposable
     private static bool GetSystemIsDark()
     {
         Application? app = Application.Current;
-        return app is null ? false : app.ActualThemeVariant == ThemeVariant.Dark;
+        return app is not null && app.ActualThemeVariant == ThemeVariant.Dark;
     }
 
     private void WatchSystem()
@@ -61,7 +61,6 @@ public sealed class ThemeService : IThemeService, IDisposable
         if(app is null)
             return;
 
-        // ActualThemeVariantChanged fires when the OS dark-mode preference changes
         app.ActualThemeVariantChanged += OnActualThemeVariantChanged;
         _systemWatcher = new Disposable(
             () => app.ActualThemeVariantChanged -= OnActualThemeVariantChanged);

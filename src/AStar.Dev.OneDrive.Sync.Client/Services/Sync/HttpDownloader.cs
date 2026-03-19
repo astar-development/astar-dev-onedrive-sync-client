@@ -16,8 +16,7 @@ public sealed class HttpDownloader : IDisposable
     public HttpDownloader()
     {
         _http = new HttpClient();
-        _http.DefaultRequestHeaders.Add(
-            "User-Agent", "AStar.Dev.OneDrive.Sync/1.0");
+        _http.DefaultRequestHeaders.Add("User-Agent", "AStar.Dev.OneDrive.Sync/1.0");
     }
 
     /// <summary>
@@ -25,16 +24,11 @@ public sealed class HttpDownloader : IDisposable
     /// Automatically retries on 429 with exponential backoff.
     /// Preserves the remote last-modified timestamp on the local file.
     /// </summary>
-    public async Task DownloadAsync(
-        string            url,
-        string            localPath,
-        DateTimeOffset    remoteModified,
-        IProgress<long>?  progress      = null,
-        CancellationToken ct            = default)
+    public async Task DownloadAsync(string url, string localPath, DateTimeOffset remoteModified, IProgress<long>? progress = null, CancellationToken ct = default)
     {
         var attempt = 0;
 
-        while (true)
+        while(true)
         {
             ct.ThrowIfCancellationRequested();
 
@@ -43,69 +37,50 @@ public sealed class HttpDownloader : IDisposable
 
             try
             {
-                response = await _http.GetAsync(
-                    url,
-                    HttpCompletionOption.ResponseHeadersRead,
-                    ct);
+                response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
 
-                if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
-                    if (attempt > MaxRetries)
-                        throw new HttpRequestException(
-                            $"Rate limited after {MaxRetries} retries.");
+                    if(attempt > MaxRetries)
+                    {
+                        throw new HttpRequestException($"Rate limited after {MaxRetries} retries.");
+                    }
 
                     TimeSpan delay = GetRetryDelay(response, attempt);
-                    Serilog.Log.Warning(
-                        "[HttpDownloader] 429 received, waiting {Delay:F1}s " +
-                        "(attempt {Attempt}/{Max})",
-                        delay.TotalSeconds, attempt, MaxRetries);
+                    Serilog.Log.Warning("[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
 
                     response.Dispose();
                     await Task.Delay(delay, ct);
                     continue;
                 }
 
-                response.EnsureSuccessStatusCode();
+                _ = response.EnsureSuccessStatusCode();
 
-                // Ensure parent directories exist
                 var dir = Path.GetDirectoryName(localPath);
-                if (!string.IsNullOrEmpty(dir))
-                    Directory.CreateDirectory(dir);
+                if(!string.IsNullOrEmpty(dir))
+                    _ = Directory.CreateDirectory(dir);
 
-                // Stream to disk
-                await using Stream stream = await response.Content
-                    .ReadAsStreamAsync(ct);
-                await using var file = new FileStream(
-                    localPath,
-                    FileMode.Create,
-                    FileAccess.Write,
-                    FileShare.None,
-                    bufferSize: 81920,
-                    useAsync:   true);
+                await using Stream stream = await response.Content.ReadAsStreamAsync(ct);
+                await using var file = new FileStream(localPath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 81920, useAsync: true);
 
                 var buffer    = new byte[81920];
                 long written  = 0;
                 int  read;
 
-                while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+                while((read = await stream.ReadAsync(buffer, ct)) > 0)
                 {
                     await file.WriteAsync(buffer.AsMemory(0, read), ct);
                     written += read;
                     progress?.Report(written);
                 }
 
-                // Preserve remote timestamp
-                File.SetLastWriteTimeUtc(localPath, remoteModified.UtcDateTime);
+                PreserveRemoteTimestamp(localPath, remoteModified);
                 return;
             }
-            catch (HttpRequestException) when (attempt <= MaxRetries)
+            catch(HttpRequestException) when(attempt <= MaxRetries)
             {
-                // Transient network error — retry with backoff
                 TimeSpan delay = GetBackoffDelay(attempt);
-                Serilog.Log.Warning(
-                    "[HttpDownloader] Network error, retrying in {Delay:F1}s " +
-                    "(attempt {Attempt}/{Max})",
-                    delay.TotalSeconds, attempt, MaxRetries);
+                Serilog.Log.Warning("[HttpDownloader] Network error, retrying in {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
                 await Task.Delay(delay, ct);
             }
             finally
@@ -115,35 +90,35 @@ public sealed class HttpDownloader : IDisposable
         }
     }
 
-    // ── Private helpers ───────────────────────────────────────────────────
+    private static void PreserveRemoteTimestamp(string localPath, DateTimeOffset remoteModified) => File.SetLastWriteTimeUtc(localPath, remoteModified.UtcDateTime);
 
-    private static TimeSpan GetRetryDelay(
-        HttpResponseMessage response, int attempt)
+    private static TimeSpan GetRetryDelay(HttpResponseMessage response, int attempt)
     {
-        // Honour Retry-After header if present
-        if (response.Headers.RetryAfter?.Delta is { } delta)
-            return delta + TimeSpan.FromSeconds(1); // +1s buffer
+        if(response.Headers.RetryAfter?.Delta is { } delta)
+            return delta + AddAdditionalSecondBackoff();
 
-        if (response.Headers.RetryAfter?.Date is { } date)
+        if(response.Headers.RetryAfter?.Date is { } date)
         {
             TimeSpan wait = date - DateTimeOffset.UtcNow;
-            if (wait > TimeSpan.Zero) return wait + TimeSpan.FromSeconds(1);
+            if(wait > TimeSpan.Zero)
+                return wait + AddAdditionalSecondBackoff();
         }
 
         return GetBackoffDelay(attempt);
     }
 
+    private static TimeSpan AddAdditionalSecondBackoff() => TimeSpan.FromSeconds(1);
+
     private static TimeSpan GetBackoffDelay(int attempt)
     {
-        // Exponential backoff with jitter: 2s, 4s, 8s, 16s, 32s (max 120s)
-        var seconds = Math.Min(
-            BaseDelaySeconds * Math.Pow(2, attempt - 1),
-            MaxDelaySeconds);
+        var seconds = CalculateExponentialBackoff(attempt);
 
         // Add up to 20% jitter to avoid thundering herd
         var jitter = seconds * 0.2 * Random.Shared.NextDouble();
         return TimeSpan.FromSeconds(seconds + jitter);
     }
 
+    private static double CalculateExponentialBackoff(int attempt) =>        // Exponential backoff with jitter: 2s, 4s, 8s, 16s, 32s (max 120s)
+            Math.Min(BaseDelaySeconds * Math.Pow(2, attempt - 1), MaxDelaySeconds);
     public void Dispose() => _http.Dispose();
 }

@@ -34,14 +34,14 @@ public static class StringExtensions
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is null, empty or whitespace, False otherwise</returns>
-    public static bool IsNullOrWhiteSpace(this string? value) => string.IsNullOrWhiteSpace(value);
+    public static bool IsNullOrWhiteSpace([NotNullWhen(true)] this string? value) => string.IsNullOrWhiteSpace(value);
 
     /// <summary>
     ///     The IsNotNullOrWhiteSpace method, as you might expect, checks whether the string is not null, empty or whitespace
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is not null, empty or whitespace, False otherwise</returns>
-    public static bool IsNotNullOrWhiteSpace(this string? value) => !value.IsNullOrWhiteSpace();
+    public static bool IsNotNullOrWhiteSpace([NotNullWhen(true)] this string? value) => !value.IsNullOrWhiteSpace();
 
     /// <summary>
     ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object - using the web default settings

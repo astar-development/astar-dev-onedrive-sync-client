@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using AStar.Dev.Utilities;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.Delta;
@@ -10,9 +11,8 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 
 public sealed class GraphService : IGraphService
 {
+    private readonly UploadService _uploadService = new();
     private readonly Dictionary<string, DriveContext> _cache = [];
-
-    // ── IGraphService ─────────────────────────────────────────────────────
 
     /// <inheritdoc />
     public async Task<string> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
@@ -24,11 +24,7 @@ public sealed class GraphService : IGraphService
         (GraphServiceClient? client, DriveContext? driveContext) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
         DriveItemCollectionResponse? driveItemCollectionResponse = await client.Drives[driveContext.DriveId].Items[driveContext.RootId].Children
-            .GetAsync(req =>
-            {
-                req.QueryParameters.Select = ["id", "name", "folder", "parentReference"];
-                req.QueryParameters.Top = 100;
-            }, ct);
+            .GetAsync(req => req.QueryParameters.Select =    ["id", "name", "folder", "file", "size",     "lastModifiedDateTime", "parentReference",     "@microsoft.graph.downloadUrl"], ct);
 
         List<DriveFolder> folders = [];
 
@@ -108,14 +104,23 @@ public sealed class GraphService : IGraphService
     {
         (GraphServiceClient? client, DriveContext? ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
 
-        // First sync — enumerate all children recursively then get a delta link
-        if(deltaLink is null)
-            return await FullEnumerationAsync(client, ctx.DriveId, folderId, ct);
+        // Fetch folder name once — used by both full enumeration and delta paths
+        DriveItem? folderItem = await client.Drives[ctx.DriveId]
+        .Items[folderId]
+        .GetAsync(req =>
+            req.QueryParameters.Select = ["id", "name"], ct);
 
-        // Subsequent syncs — use delta link for changes only
+        var folderName = folderItem?.Name ?? string.Empty;
+
+        if(deltaLink is null)
+        {
+            return await FullEnumerationAsync(
+            client, ctx.DriveId, folderId, folderName, ct);
+        }
+
         List<DeltaItem> items = [];
         string? nextDeltaLink = null;
-        var hasMorePages     = false;
+        var hasMorePages      = false;
 
         DeltaGetResponse? page = await client.Drives[ctx.DriveId].Items[folderId].Delta
         .WithUrl(deltaLink)
@@ -143,21 +148,29 @@ public sealed class GraphService : IGraphService
         return new DeltaResult(items, nextDeltaLink, hasMorePages);
     }
 
-    private async Task<DeltaResult> FullEnumerationAsync(GraphServiceClient client, string driveId, string folderId, CancellationToken ct)
+    /// <inheritdoc />
+    public async Task<string> UploadFileAsync(string accessToken, string localPath, string remotePath, string parentFolderId, CancellationToken ct = default)
+    {
+        (GraphServiceClient? client, DriveContext? ctx) = await ResolveClientWithDriveContextAsync(accessToken, ct);
+
+        return await _uploadService.UploadAsync(client, ctx.DriveId, parentFolderId, localPath, remotePath, ct: ct);
+    }
+
+    private async Task<DeltaResult> FullEnumerationAsync(GraphServiceClient client, string driveId, string folderId, string folderName, CancellationToken ct)
     {
         List<DeltaItem> items = [];
-        await EnumerateFolderAsync(client, driveId, folderId, string.Empty, items, ct);
-
-        // After full enumeration, get a delta link to use for future syncs
-        DeltaGetResponse? deltaPage = await client.Drives[driveId].Items[folderId].Delta
-        .GetAsDeltaGetResponseAsync(cancellationToken: ct);
+        await EnumerateSubFolderAsync(client, driveId, folderId, folderName, items, ct);
+        DeltaGetResponse? deltaPage = await GetDeltaLinkForNextSync(client, driveId, folderId, ct);
 
         var deltaLink = deltaPage?.OdataDeltaLink;
 
         return new DeltaResult(items, deltaLink, false);
     }
 
-    private async Task EnumerateFolderAsync(GraphServiceClient client, string driveId, string parentId, string relativePath, List<DeltaItem> items, CancellationToken ct)
+    private static async Task<DeltaGetResponse?> GetDeltaLinkForNextSync(GraphServiceClient client, string driveId, string folderId, CancellationToken ct)
+            => await client.Drives[driveId].Items[folderId].Delta.GetAsDeltaGetResponseAsync(cancellationToken: ct);
+
+    private async Task EnumerateSubFolderAsync(GraphServiceClient client, string driveId, string parentId, string relativePath, List<DeltaItem> items, CancellationToken ct)
     {
         DriveItemCollectionResponse? page = await client.Drives[driveId].Items[parentId].Children.GetAsync();
 
@@ -172,7 +185,7 @@ public sealed class GraphService : IGraphService
                 items.Add(new DeltaItem(
                     Id: item.Id!,
                     DriveId: item.ParentReference?.DriveId ?? string.Empty,
-                    Name: item.Name ?? string.Empty,   // just the filename
+                    Name: item.Name ?? string.Empty,
                     ParentId: item.ParentReference?.Id,
                     IsFolder: item.Folder is not null,
                     IsDeleted: false,
@@ -184,11 +197,9 @@ public sealed class GraphService : IGraphService
                             : null,
                     RelativePath: itemPath));
 
-                // Recurse into subfolders
                 if(item.Folder is not null && item.Id is not null)
                 {
-                    await EnumerateFolderAsync(
-                        client, driveId, item.Id, itemPath, items, ct);
+                    await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, ct);
                 }
             }
 
@@ -202,7 +213,18 @@ public sealed class GraphService : IGraphService
     }
 
     private static DeltaItem MapToDeltaItem(DriveItem item)
-        => new(
+    {
+        var parentPath = item.ParentReference?.Path ?? string.Empty;
+        var rootMarker = "root:";
+        var afterRoot  = parentPath.Contains(rootMarker)
+                            ? parentPath[(parentPath.IndexOf(rootMarker) + rootMarker.Length)..].TrimStart('/')
+                            : string.Empty;
+
+        var relativePath = string.IsNullOrEmpty(afterRoot)
+                            ? item.Name ?? string.Empty
+                            : $"{afterRoot}/{item.Name}";
+
+        return new DeltaItem(
             Id: item.Id!,
             DriveId: item.ParentReference?.DriveId ?? string.Empty,
             Name: item.Name ?? string.Empty,
@@ -214,8 +236,9 @@ public sealed class GraphService : IGraphService
             DownloadUrl: item.AdditionalData
                 .TryGetValue("@microsoft.graph.downloadUrl", out var url)
                     ? url?.ToString()
-                    : null);
-
+                    : null,
+            RelativePath: relativePath);
+    }
     // ── Private helpers ───────────────────────────────────────────────────
 
     private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
@@ -246,10 +269,7 @@ public sealed class GraphService : IGraphService
 
     private sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
     {
-        public Task<string> GetAuthorizationTokenAsync(
-            Uri uri,
-            Dictionary<string, object>? additionalAuthenticationContext = null,
-            CancellationToken ct = default) => Task.FromResult(token);
+        public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken ct = default) => Task.FromResult(token);
 
         public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
     }

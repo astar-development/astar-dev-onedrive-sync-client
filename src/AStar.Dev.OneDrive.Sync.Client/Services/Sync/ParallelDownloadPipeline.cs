@@ -1,5 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
+using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using System.Threading.Channels;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
@@ -16,82 +18,56 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 /// never loads more than ~4 jobs per worker into memory at once.
 /// With 300k files this means memory stays flat regardless of job count.
 /// </summary>
-public sealed class ParallelDownloadPipeline(
-    ISyncRepository syncRepository,
-    int workerCount = 8)
+public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGraphService graphService, int workerCount = 8) : IDisposable
 {
     private readonly HttpDownloader _downloader = new();
 
-    // ── Public API ────────────────────────────────────────────────────────
-
-    public async Task RunAsync(
-        IEnumerable<SyncJob> jobs,
-        string accessToken,
-        Action<SyncProgressEventArgs> onProgress,
-        Action<JobCompletedEventArgs> onJobCompleted,
-        string accountId,
-        string folderId,
-        CancellationToken ct = default)
+    public async Task RunAsync(IEnumerable<SyncJob> jobs, string accessToken, Action<SyncProgressEventArgs> onProgress, Action<JobCompletedEventArgs> onJobCompleted, string accountId, string folderId, CancellationToken ct = default)
     {
         var jobList = jobs.ToList();
         if(jobList.Count == 0)
             return;
 
-        var total     = jobList.Count;
-        var completed = 0;
-        var failed    = 0;
-        var lockObj   = new object();
+        var total   = jobList.Count;
+        var done    = 0;
+        var lockObj = new object();
 
-        // Bounded channel — backpressure prevents memory explosion
         var channel = Channel.CreateBounded<SyncJob>(
             new BoundedChannelOptions(workerCount * 4)
             {
-                FullMode          = BoundedChannelFullMode.Wait,
-                SingleReader      = false,
-                SingleWriter      = true
+                FullMode     = BoundedChannelFullMode.Wait,
+                SingleReader = false,
+                SingleWriter = true
             });
 
         void OnJobComplete(SyncJob job, bool success, string? error)
         {
-            int done;
+            int completedSoFar;
             lock(lockObj)
             {
-                if(success)
-                    completed++;
-                else
-                    failed++;
-                done = completed + failed;
+                done++;
+                completedSoFar = done;
             }
-Serilog.Log.Information(
-    "[Pipeline] OnJobComplete done={Done} total={Total} isComplete={IsComplete}",
-    done, total, done == total);
-            onProgress(new SyncProgressEventArgs(
-                accountId: accountId,
-                folderId: folderId,
-                completed: done,
-                total: total,
-                currentFile: job.RelativePath,
-                syncState: ViewModels.SyncState.Syncing,
-                isComplete: done == total));
-            onJobCompleted(new JobCompletedEventArgs(
-                job with
-                {
-                    State = success ? SyncJobState.Completed : SyncJobState.Failed,
-                    ErrorMessage = error,
-                    CompletedAt = DateTimeOffset.UtcNow
-                }));
 
-            if(success)
-                Serilog.Log.Information("[Pipeline] ✓ {Path} ({Done}/{Total})", job.RelativePath, done, total);
+            SyncJob completedJob = job with
+            {
+                State        = success ? SyncJobState.Completed : SyncJobState.Failed,
+                ErrorMessage = error,
+                CompletedAt  = DateTimeOffset.UtcNow
+            };
+
+            var isComplete = completedSoFar == total;
+
+            onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: completedSoFar, total: total, currentFile: job.RelativePath, syncState: completedSoFar == total ? SyncState.Idle : SyncState.Syncing));
+
+            onJobCompleted(new JobCompletedEventArgs(completedJob));
         }
 
-        // Start N worker tasks
         var workers = Enumerable.Range(1, workerCount)
-            .Select(id => new DownloadWorker(id, _downloader, syncRepository)
-                .RunAsync(channel.Reader, accessToken, OnJobComplete, ct))
+            .Select(id => new DownloadWorker(                    id, _downloader, graphService, syncRepository)
+            .RunAsync(channel.Reader, accessToken, OnJobComplete, ct))
             .ToList();
 
-        // Producer — feed jobs into the channel with backpressure
         try
         {
             foreach(SyncJob? job in jobList)
@@ -102,20 +78,29 @@ Serilog.Log.Information(
         }
         finally
         {
-            // Signal all workers that no more jobs are coming
             channel.Writer.Complete();
         }
 
-        // Wait for all workers to drain the channel
-        await Task.WhenAll(workers);
+        try
+        {
+            await Task.WhenAll(workers);
+            Serilog.Log.Information("[Pipeline] All workers completed normally");
+        }
+        catch(Exception ex)
+        {
+            Serilog.Log.Error(ex, "[Pipeline] Worker threw unhandled exception: {Type} {Error}", ex.GetType().Name, ex.Message);
+        }
+        finally
+        {
+            // Always raise completion so UI resets
+            onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: done, total: total, currentFile: string.Empty, syncState: SyncState.Idle));
 
-        // Clean up completed jobs from DB
+            Serilog.Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", done, total);
+        }
+
         await syncRepository.ClearCompletedJobsAsync(accountId);
 
-        Serilog.Log.Information(
-            "[Pipeline] Complete — {Completed} succeeded, {Failed} failed " +
-            "out of {Total} total",
-            completed, failed, total);
+        Serilog.Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", done, total);
     }
 
     public void Dispose() => _downloader.Dispose();

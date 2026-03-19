@@ -29,7 +29,7 @@ sealed class Program
                 .WriteTo.File(
                     formatter: new Serilog.Formatting.Json.JsonFormatter(),
                     path: logPath,
-                    rollingInterval: RollingInterval.Hour,
+                    rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 7,
                     shared: true,
                     flushToDiskInterval: TimeSpan.FromSeconds(1)
@@ -59,9 +59,7 @@ sealed class Program
             .With(new X11PlatformOptions { EnableIme = false })
             .AfterSetup(_ => AppDomain.CurrentDomain.UnhandledException += (s, e) =>
                 {
-                    Serilog.Log.Fatal(e.ExceptionObject as Exception,
-                        "[Unhandled] {Message}",
-                        (e.ExceptionObject as Exception)?.Message ?? "Unknown");
-                    Serilog.Log.CloseAndFlush();
+                    Log.Fatal(e.ExceptionObject as Exception, "[Unhandled] {Message}", (e.ExceptionObject as Exception)?.Message ?? "Unknown");
+                    Log.CloseAndFlush();
                 });
 }

@@ -57,7 +57,7 @@ public sealed partial class ActivityItemViewModel : ObservableObject
 
     public string FileSizeText => FileSize.FileSizeToText();
 
-    public static ActivityItemViewModel FromJob(SyncJob job, string accountEmail, string folderName) => new()
+    public static ActivityItemViewModel FromJob(SyncJob job, string accountEmail, string folderName = "") => new()
     {
         AccountId = job.AccountId,
         AccountEmail = accountEmail,

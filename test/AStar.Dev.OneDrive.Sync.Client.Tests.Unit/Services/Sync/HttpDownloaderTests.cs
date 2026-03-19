@@ -1,26 +1,17 @@
-namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
-
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using System.Reflection;
 
+namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Sync;
+
 public class HttpDownloaderBackoffTests
 {
-    /// <summary>
-    /// Tests the exponential backoff calculation logic of HttpDownloader.
-    /// Since GetBackoffDelay is private, we use reflection to test it.
-    /// </summary>
-    /// 
     [Fact]
     public void GetBackoffDelay_Attempt1_ShouldBeBetweenBaseAndBaseWithJitter()
     {
-        // Arrange
-        var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        method.ShouldNotBeNull();
+        MethodInfo? method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
+        _ = method.ShouldNotBeNull();
 
-        // Act
-        var result = (TimeSpan)method!.Invoke(null, new object[] { 1 })!;
-
-        // Assert - Base delay is 2s, with up to 20% jitter (0.4s)
+        var result = (TimeSpan)method!.Invoke(null, [1])!;
         result.TotalSeconds.ShouldBeGreaterThanOrEqualTo(2.0);
         result.TotalSeconds.ShouldBeLessThanOrEqualTo(2.4);
     }
@@ -28,15 +19,11 @@ public class HttpDownloaderBackoffTests
     [Fact]
     public void GetBackoffDelay_Attempt2_ShouldBeDoubleAttempt1()
     {
-        // Arrange
-        var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        method.ShouldNotBeNull();
+        MethodInfo? method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
+        _ = method.ShouldNotBeNull();
 
-        // Act
-        var result1 = (TimeSpan)method!.Invoke(null, new object[] { 1 })!;
-        var result2 = (TimeSpan)method!.Invoke(null, new object[] { 2 })!;
-
-        // Assert - Attempt 2 should be ~4s (2 * 2^(2-1) = 2 * 2)
+        _ = (TimeSpan)method!.Invoke(null, [1])!;
+        var result2 = (TimeSpan)method!.Invoke(null, [2])!;
         result2.TotalSeconds.ShouldBeGreaterThanOrEqualTo(4.0);
         result2.TotalSeconds.ShouldBeLessThanOrEqualTo(4.8);
     }
@@ -44,20 +31,17 @@ public class HttpDownloaderBackoffTests
     [Fact]
     public void GetBackoffDelay_IncreasingAttempts_ShouldExponentiallyIncrease()
     {
-        // Arrange
-        var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        method.ShouldNotBeNull();
+        MethodInfo? method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
+        _ = method.ShouldNotBeNull();
 
         var delays = new List<TimeSpan>();
 
-        // Act
-        for(int i = 1; i <= 5; i++)
+        for(var i = 1; i <= 5; i++)
         {
-            var delay = (TimeSpan)method!.Invoke(null, new object[] { i })!;
+            var delay = (TimeSpan)method!.Invoke(null, [i])!;
             delays.Add(delay);
         }
 
-        // Assert - Each delay (roughly) doubles
         delays[0].TotalSeconds.ShouldBeLessThan(delays[1].TotalSeconds);
         delays[1].TotalSeconds.ShouldBeLessThan(delays[2].TotalSeconds);
         delays[2].TotalSeconds.ShouldBeLessThan(delays[3].TotalSeconds);
@@ -67,35 +51,25 @@ public class HttpDownloaderBackoffTests
     [Fact]
     public void GetBackoffDelay_CappedAt120Seconds()
     {
-        // Arrange
-        var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        method.ShouldNotBeNull();
-
-        // Act - Attempt 10 would be 2 * 2^9 = 1024s without cap
-        var result = (TimeSpan)method!.Invoke(null, new object[] { 10 })!;
-
-        // Assert - Should be capped at 120s + up to 20% jitter (144s max)
+        MethodInfo? method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
+        _ = method.ShouldNotBeNull();
+        var result = (TimeSpan)method!.Invoke(null, [10])!;
         result.TotalSeconds.ShouldBeLessThanOrEqualTo(144);
     }
 
     [Fact]
     public void GetBackoffDelay_WithJitter_ShouldHaveVariability()
     {
-        // Arrange
-        var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        method.ShouldNotBeNull();
+        MethodInfo? method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
+        _ = method.ShouldNotBeNull();
         var delays = new List<TimeSpan>();
-
-        // Act - Call multiple times to observe jitter
-        for(int i = 0; i < 10; i++)
+        for(var i = 0; i < 10; i++)
         {
-            var delay = (TimeSpan)method!.Invoke(null, new object[] { 1 })!;
+            var delay = (TimeSpan)method!.Invoke(null, [1])!;
             delays.Add(delay);
         }
 
-        // Assert - We should see different values due to jitter
         var uniqueValues = delays.DistinctBy(d => d.TotalMilliseconds).Count();
-        // With random jitter, we expect variation (not all the same)
         uniqueValues.ShouldBeGreaterThan(1);
     }
 
@@ -107,14 +81,11 @@ public class HttpDownloaderBackoffTests
     [InlineData(5, 32.0, 38.4)]    // 32s base, 20% = 6.4s jitter
     public void GetBackoffDelay_RespectsCeilingAndJitter(int attempt, double minSeconds, double maxSeconds)
     {
-        // Arrange
-        var method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-        method.ShouldNotBeNull();
+        MethodInfo? method = typeof(HttpDownloader).GetMethod("GetBackoffDelay", BindingFlags.NonPublic | BindingFlags.Static);
+        _ = method.ShouldNotBeNull();
 
-        // Act
-        var result = (TimeSpan)method!.Invoke(null, new object[] { attempt })!;
+        var result = (TimeSpan)method!.Invoke(null, [attempt])!;
 
-        // Assert
         result.TotalSeconds.ShouldBeGreaterThanOrEqualTo(minSeconds);
         result.TotalSeconds.ShouldBeLessThanOrEqualTo(maxSeconds);
     }
@@ -125,32 +96,25 @@ public class HttpDownloaderFileOperationTests
     [Fact]
     public void HttpDownloader_ShouldBeDisposable()
     {
-        // Act
         var downloader = new HttpDownloader();
 
-        // Assert
-        downloader.ShouldBeAssignableTo<IDisposable>();
+        _ = downloader.ShouldBeAssignableTo<IDisposable>();
     }
 
     [Fact]
     public void HttpDownloader_DisposeMultipleTimes_ShouldNotThrow()
     {
-        // Arrange
         var downloader = new HttpDownloader();
 
-        // Act & Assert
         downloader.Dispose();
-        downloader.Dispose(); // Should not throw
+        downloader.Dispose();
     }
 
     [Fact]
     public async Task DownloadAsync_Created_ShouldHaveValidHttpClient()
     {
-        // Arrange
         var downloader = new HttpDownloader();
-
-        // Assert - Constructor succeeded, downloader is ready
-        downloader.ShouldNotBeNull();
+        _ = downloader.ShouldNotBeNull();
 
         downloader.Dispose();
     }

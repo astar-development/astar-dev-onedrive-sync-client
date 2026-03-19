@@ -1,5 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using System.Threading.Channels;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
@@ -9,18 +10,11 @@ namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 /// <see cref="ChannelReader{T}"/> and executes them.
 /// Multiple workers run concurrently — one per degree of parallelism.
 /// </summary>
-public sealed class DownloadWorker(
-    int              workerId,
-    HttpDownloader   downloader,
-    ISyncRepository  syncRepository)
+public sealed class DownloadWorker(int workerId, HttpDownloader downloader, IGraphService graphService, ISyncRepository syncRepository)
 {
-    public async Task RunAsync(
-        ChannelReader<SyncJob>                    reader,
-        string                                    accessToken,
-        Action<SyncJob, bool, string?>            onJobComplete,
-        CancellationToken                         ct)
+    public async Task RunAsync(ChannelReader<SyncJob> reader, string accessToken, Action<SyncJob, bool, string?> onJobComplete, CancellationToken ct)
     {
-        await foreach (SyncJob job in reader.ReadAllAsync(ct))
+        await foreach(SyncJob job in reader.ReadAllAsync(ct))
         {
             ct.ThrowIfCancellationRequested();
 
@@ -31,32 +25,25 @@ public sealed class DownloadWorker(
             await syncRepository.UpdateJobStateAsync(
                 job.Id, SyncJobState.InProgress);
 
-            string? error = null;
+            string? error   = null;
             var     success = false;
 
             try
             {
-                await ExecuteJobAsync(job, ct);
+                await ExecuteJobAsync(job, accessToken, ct);
                 success = true;
-
-                await syncRepository.UpdateJobStateAsync(
-                    job.Id, SyncJobState.Completed);
+                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Completed);
             }
-            catch (OperationCanceledException)
+            catch(OperationCanceledException)
             {
-                await syncRepository.UpdateJobStateAsync(
-                    job.Id, SyncJobState.Queued); // re-queue on cancel
+                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Queued);
                 throw;
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 error = ex.Message;
-                Serilog.Log.Error(ex,
-                    "[Worker {Id}] Failed: {Path} — {Error}",
-                    workerId, job.RelativePath, ex.Message);
-
-                await syncRepository.UpdateJobStateAsync(
-                    job.Id, SyncJobState.Failed, ex.Message);
+                Serilog.Log.Error(ex, "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path} stack={Stack}", workerId, ex.GetType().Name, ex.Message, job.LocalPath, ex.StackTrace);
+                await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Failed, ex.Message);
             }
             finally
             {
@@ -65,16 +52,15 @@ public sealed class DownloadWorker(
         }
     }
 
-    // ── Private ───────────────────────────────────────────────────────────
-
-    private async Task ExecuteJobAsync(SyncJob job, CancellationToken ct)
+    private async Task ExecuteJobAsync(SyncJob job, string accessToken, CancellationToken ct)
     {
-        switch (job.Direction)
+        switch(job.Direction)
         {
             case SyncDirection.Download:
-                if (job.DownloadUrl is null)
-                    throw new InvalidOperationException(
-                        $"No download URL for {job.RelativePath}");
+                if(job.DownloadUrl is null)
+                {
+                    throw new InvalidOperationException($"No download URL for {job.RelativePath}");
+                }
 
                 await downloader.DownloadAsync(
                     job.DownloadUrl,
@@ -83,16 +69,17 @@ public sealed class DownloadWorker(
                     ct: ct);
                 break;
 
-            case SyncDirection.Delete:
-                if (File.Exists(job.LocalPath))
-                    File.Delete(job.LocalPath);
+            case SyncDirection.Upload:
+                var remotePath = job.DownloadUrl ?? job.RelativePath;
+
+                _ = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct);
+
+                Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.RelativePath);
                 break;
 
-            case SyncDirection.Upload:
-                // Upload implementation in a later step
-                Serilog.Log.Warning(
-                    "[Worker {Id}] Upload not yet implemented: {Path}",
-                    workerId, job.RelativePath);
+            case SyncDirection.Delete:
+                if(File.Exists(job.LocalPath))
+                    File.Delete(job.LocalPath);
                 break;
         }
     }

@@ -23,8 +23,6 @@ public sealed partial class MainWindowViewModel(
     ISettingsService settingsService,
     IAccountRepository accountRepository) : ObservableObject
 {
-    // ── Navigation ────────────────────────────────────────────────────────
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
     [NotifyPropertyChangedFor(nameof(IsFilesActive))]
@@ -42,8 +40,6 @@ public sealed partial class MainWindowViewModel(
 
     [RelayCommand]
     private void Navigate(NavSection section) => ActiveSection = section;
-
-    // ── Active view ───────────────────────────────────────────────────────
 
     public object? ActiveView
     {
@@ -113,8 +109,6 @@ public sealed partial class MainWindowViewModel(
         }
     }
 
-    // ── Child view models ─────────────────────────────────────────────────
-
     public AccountsViewModel Accounts { get; } = new(authService, graphService, App.Repository);
 
     public FilesViewModel Files { get; } = new(authService, graphService, App.Repository);
@@ -126,8 +120,6 @@ public sealed partial class MainWindowViewModel(
     public SettingsViewModel Settings { get; } = new(settingsService, App.Theme, scheduler, accountRepository);
 
     public StatusBarViewModel StatusBar { get; } = new();
-
-    // ── Startup ───────────────────────────────────────────────────────────
 
     public async Task InitialiseAsync()
     {
@@ -174,8 +166,6 @@ public sealed partial class MainWindowViewModel(
         }
     }
 
-    // ── Sync commands ─────────────────────────────────────────────────────
-
     [RelayCommand]
     private async Task SyncNowAsync()
     {
@@ -194,13 +184,12 @@ public sealed partial class MainWindowViewModel(
             Email             = entity.Email,
             LocalSyncPath     = entity.LocalSyncPath,
             ConflictPolicy    = entity.ConflictPolicy,
-            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)]
+            SelectedFolderIds = [.. entity.SyncFolders.Select(f => f.FolderId)],
+            LastSyncedAt      = entity.LastSyncedAt
         };
 
         await scheduler.TriggerAccountAsync(account);
     }
-
-    // ── Add account ───────────────────────────────────────────────────────
 
     [RelayCommand]
     private void AddAccount()
@@ -208,8 +197,6 @@ public sealed partial class MainWindowViewModel(
         ActiveSection = NavSection.Accounts;
         Accounts.AddAccount();
     }
-
-    // ── Private helpers ───────────────────────────────────────────────────
 
     private async void OnAccountSelected(object? sender, AccountCardViewModel card)
     {
@@ -238,44 +225,25 @@ public sealed partial class MainWindowViewModel(
 
     private void OnSyncProgressChanged(object? sender, SyncProgressEventArgs e)
         => Dispatcher.UIThread.Post(() =>
-        {
+            {
+                AccountCardViewModel? card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.AccountId);
+                if(card is null)
+                    return;
 
-        Serilog.Log.Information(
-            "[Progress] AccountId={Id} Completed={C} Total={T} IsComplete={Done}",
-            e.AccountId, e.Completed, e.Total, e.IsComplete);
+                card.SyncState = e.SyncState;
+                Dashboard.UpdateAccountSyncState(e.AccountId, card);
 
-            AccountCardViewModel? card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.AccountId);
-            if(card is null)
-                return;
-
-            card.SyncState = e.SyncState;
-            UpdateSyncStatus(e, card);
-
-            Dashboard.UpdateAccountSyncState(e.AccountId, card);
-
-            if(card.Id == Accounts.ActiveAccount?.Id)
-                SyncStatusBarToActiveAccount();
-        });
-    private static void UpdateSyncStatus(SyncProgressEventArgs e, AccountCardViewModel card)
-    {
-        card.LastSyncText = e.SyncState == SyncState.NoSyncPathConfigured ? "No local sync path configured" : $"Syncing: {e.CurrentFile} ({e.Completed}/{e.Total})";
-
-        card.SyncState = e.SyncState switch
-        {
-            SyncState.NoSyncPathConfigured => SyncState.NoSyncPathConfigured,
-            _ => e.SyncState == SyncState.Completed ? SyncState.Idle : SyncState.Syncing,
-        };
-    }
+                if(card.Id == Accounts.ActiveAccount?.Id)
+                    SyncStatusBarToActiveAccount();
+            });
 
     private void OnJobCompleted(object? sender, JobCompletedEventArgs e)
         => Dispatcher.UIThread.Post(() =>
             {
                 AccountCardViewModel? card = Accounts.Accounts.FirstOrDefault(a => a.Id == e.Job.AccountId);
 
-                var item = ActivityItemViewModel.FromJob(
-                e.Job,
-                accountEmail: card?.Email ?? e.Job.AccountId,
-                folderName:   string.Empty);
+                var accountEmail = card?.Email ?? e.Job.AccountId;
+                var item = ActivityItemViewModel.FromJob(e.Job, accountEmail);
 
                 Activity.AddActivityItem(item);
                 Dashboard.AddActivityItem(item);
@@ -287,8 +255,7 @@ public sealed partial class MainWindowViewModel(
 
         Dispatcher.UIThread.Post(() =>
         {
-            AccountCardViewModel? card = Accounts.Accounts
-                .FirstOrDefault(a => a.Id == conflict.AccountId);
+            AccountCardViewModel? card = Accounts.Accounts.FirstOrDefault(a => a.Id == conflict.AccountId);
             if(card is not null)
             {
                 card.ConflictCount++;
