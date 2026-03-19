@@ -1,4 +1,4 @@
-name: Build the File App
+name: Build the App
 permissions:
   contents: read
 
@@ -84,7 +84,7 @@ jobs:
 
       - name: Run unit tests and collect coverage (XPlat)
         run: |
-          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults --filter "FullyQualifiedName!~Integration&FullyQualifiedName!~EndToEnd" --solution ${{ env.SOLUTION_FILE }}
+          dotnet test --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults --filter "FullyQualifiedName!~Integration&FullyQualifiedName!~EndToEnd"
 
       - name: Upload TestResults artifact (contains coverage)
         if: success() || failure()
