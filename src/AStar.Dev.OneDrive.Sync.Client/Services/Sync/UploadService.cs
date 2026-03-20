@@ -1,6 +1,9 @@
+using System.Net;
+using System.Text.Json;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.CreateUploadSession;
 using Microsoft.Graph.Models;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 
@@ -33,18 +36,15 @@ public sealed class UploadService
     public async Task<string> UploadAsync(GraphServiceClient client, string driveId, string parentFolderId, string localPath, string remotePath, IProgress<long>? progress = null, CancellationToken ct = default)
     {
         var fileInfo = new FileInfo(localPath);
-        if(!fileInfo.Exists)
-        {
-            throw new FileNotFoundException($"Local file not found: {localPath}");
-        }
+        if(!fileInfo.Exists) throw new FileNotFoundException($"Local file not found: {localPath}");
 
-        Serilog.Log.Information("[UploadService] Starting upload: {Path} ({Size:F2} MB)", remotePath, fileInfo.Length / (1024.0 * 1024));
+        Log.Information("[UploadService] Starting upload: {Path} ({Size:F2} MB)", remotePath, fileInfo.Length / (1024.0 * 1024));
 
         var sessionUrl = await CreateSessionWithRetryAsync(client, driveId, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
 
         var itemId = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
 
-        Serilog.Log.Information("[UploadService] Upload complete: {Path} → {ItemId}", remotePath, itemId);
+        Log.Information("[UploadService] Upload complete: {Path} → {ItemId}", remotePath, itemId);
 
         return itemId;
     }
@@ -131,29 +131,20 @@ public sealed class UploadService
 
                 using HttpResponseMessage response = await _http.PutAsync(sessionUrl, content, ct);
 
-                if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                if(response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
-                    if(attempt > MaxRetries)
-                    {
-                        throw new HttpRequestException($"Upload rate limited after {MaxRetries} retries.");
-                    }
+                    if(attempt > MaxRetries) throw new HttpRequestException($"Upload rate limited after {MaxRetries} retries.");
 
                     TimeSpan delay = GetRetryDelay(response, attempt);
-                    Serilog.Log.Warning("[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
+                    Log.Warning("[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
 
                     await Task.Delay(delay, ct);
                     continue;
                 }
 
-                if(response.StatusCode == System.Net.HttpStatusCode.Accepted)
-                {
-                    return null;
-                }
+                if(response.StatusCode == HttpStatusCode.Accepted) return null;
 
-                if(response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
-                {
-                    return await GetUpdloadedDocumentId(response, ct);
-                }
+                if(response.StatusCode is HttpStatusCode.Created or HttpStatusCode.OK) return await GetUpdloadedDocumentId(response, ct);
 
                 _ = response.EnsureSuccessStatusCode();
 
@@ -162,7 +153,7 @@ public sealed class UploadService
             catch(HttpRequestException) when(attempt <= MaxRetries)
             {
                 TimeSpan delay = GetBackoffDelay(attempt);
-                Serilog.Log.Warning("[UploadService] Network error on chunk {Start}-{End}, retrying in {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
+                Log.Warning("[UploadService] Network error on chunk {Start}-{End}, retrying in {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
 
                 await Task.Delay(delay, ct);
             }
@@ -172,7 +163,7 @@ public sealed class UploadService
     private static async Task<string?> GetUpdloadedDocumentId(HttpResponseMessage response, CancellationToken ct)
     {
         var json = await response.Content.ReadAsStringAsync(ct);
-        using var doc = System.Text.Json.JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
 
         return doc.RootElement
             .GetProperty("id")

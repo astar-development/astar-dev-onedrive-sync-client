@@ -1,8 +1,9 @@
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using Avalonia.Media;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -112,9 +113,7 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
                 _account.SelectedFolderIds.Add(node.Id);
         }
         else
-        {
             _ = _account.SelectedFolderIds.Remove(node.Id);
-        }
 
         var entity = new AccountEntity
         {
@@ -153,9 +152,13 @@ public sealed partial class AccountFilesViewModel(OneDriveAccount account, IAuth
             return;
 
         var opener = OperatingSystem.IsWindows() ? "explorer"
-                   : OperatingSystem.IsMacOS()   ? "open"
-                   : "xdg-open";
+                   : LinuxOrMacOsFileOpener();
 
-        _ = System.Diagnostics.Process.Start(opener, path);
+        _ = Process.Start(opener, path);
     }
+
+    private static string LinuxOrMacOsFileOpener()
+        => OperatingSystem.IsMacOS()
+            ? "open"
+            : "xdg-open";
 }

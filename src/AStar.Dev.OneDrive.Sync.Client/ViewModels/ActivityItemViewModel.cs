@@ -6,7 +6,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
 public enum ActivityItemType { Downloaded, Uploaded, Deleted, Conflict, Error, Info }
 
-public sealed partial class ActivityItemViewModel : ObservableObject
+public sealed class ActivityItemViewModel : ObservableObject
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public string AccountId { get; init; } = string.Empty;

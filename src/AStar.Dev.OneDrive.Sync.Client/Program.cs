@@ -1,34 +1,33 @@
-﻿using AStar.Dev.OneDrive.Sync.Client.Data;
+﻿using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
 using Serilog;
+using Serilog.Formatting.Json;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
-sealed class Program
+[ExcludeFromCodeCoverage(Justification = "Framework code...largely...")]
+internal static class Program
 {
-    // Initialization code. Don't use any Avalonia, third-party APIs or any
-    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-    // yet and stuff might (will!) break.
     [STAThread]
     public static void Main(string[] args)
     {
         try
         {
             IConfigurationRoot configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.json", false, true)
                 .Build();
 
             var logPath = Path.Combine(
-                DbContextFactory.GetPlatformDataDirectory(),
+                DataDirectoryPathGenerator.GetPlatformDataDirectory(),
                 "sync.txt");
 
             Log.Logger = new LoggerConfiguration()
                 .ReadFrom.Configuration(configuration)
                 .MinimumLevel.Information()
                 .WriteTo.File(
-                    formatter: new Serilog.Formatting.Json.JsonFormatter(),
-                    path: logPath,
+                    new JsonFormatter(),
+                    logPath,
                     rollingInterval: RollingInterval.Day,
                     retainedFileCountLimit: 7,
                     shared: true,
@@ -50,16 +49,15 @@ sealed class Program
         }
     }
 
-    // Avalonia configuration, don't remove; also used by visualdddd designer.
-    public static AppBuilder BuildAvaloniaApp()
+    private static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace()
             .With(new X11PlatformOptions { EnableIme = false })
             .AfterSetup(_ => AppDomain.CurrentDomain.UnhandledException += (s, e) =>
-                {
-                    Log.Fatal(e.ExceptionObject as Exception, "[Unhandled] {Message}", (e.ExceptionObject as Exception)?.Message ?? "Unknown");
-                    Log.CloseAndFlush();
-                });
+            {
+                Log.Fatal(e.ExceptionObject as Exception, "[Unhandled] {Message}", (e.ExceptionObject as Exception)?.Message ?? "Unknown");
+                Log.CloseAndFlush();
+            });
 }

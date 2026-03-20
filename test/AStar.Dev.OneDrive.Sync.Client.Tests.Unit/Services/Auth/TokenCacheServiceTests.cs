@@ -1,7 +1,6 @@
 using System.Reflection;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Authentication;
 using Microsoft.Identity.Client;
-using NSubstitute;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Auth;
 
@@ -166,10 +165,7 @@ public class TokenCacheServiceTests
             var task = Task.Run(() =>
             {
                 var service = new TokenCacheService();
-                lock (lockObj)
-                {
-                    services.Add(service);
-                }
+                lock (lockObj) services.Add(service);
             },TestContext.Current.CancellationToken);
             tasks.Add(task);
         }
@@ -178,10 +174,7 @@ public class TokenCacheServiceTests
 
         services.Count.ShouldBe(10);
         var firstDir = services[0].CacheDirectory;
-        foreach(TokenCacheService service in services)
-        {
-            service.CacheDirectory.ShouldBe(firstDir);
-        }
+        foreach(TokenCacheService service in services) service.CacheDirectory.ShouldBe(firstDir);
     }
 
     [Fact]
@@ -199,16 +192,9 @@ public class TokenCacheServiceTests
         var service = new TokenCacheService();
         var cacheDir = service.CacheDirectory;
         if(OperatingSystem.IsWindows())
-        {
             cacheDir.ShouldContain("AStar.Dev.OneDrive.Sync");
-        }
         else if(OperatingSystem.IsMacOS())
-        {
             cacheDir.ShouldContain("Application Support");
-        }
-        else if(OperatingSystem.IsLinux())
-        {
-            cacheDir.ShouldContain(".config");
-        }
+        else if(OperatingSystem.IsLinux()) cacheDir.ShouldContain(".config");
     }
 }

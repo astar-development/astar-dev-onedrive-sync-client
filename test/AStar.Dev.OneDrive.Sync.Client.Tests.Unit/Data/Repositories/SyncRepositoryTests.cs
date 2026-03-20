@@ -190,7 +190,7 @@ public class SyncRepositoryTests
 
         await repository.AddConflictAsync(conflict);
 
-        SyncConflictEntity? inserted = await db.SyncConflicts.FindAsync(conflict.Id, TestContext.Current.CancellationToken);
+        SyncConflictEntity? inserted = await db.SyncConflicts.FindAsync([conflict.Id], TestContext.Current.CancellationToken);
         _ = inserted.ShouldNotBeNull();
         inserted.State.ShouldBe(ConflictState.Pending);
     }

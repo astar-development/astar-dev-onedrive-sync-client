@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.Extensions.Configuration;
 using Serilog;
@@ -20,7 +21,7 @@ internal static class SerilogConfigure
         => loggerConfiguration
                 .WriteTo.ApplicationInsights(telemetryConfiguration,
                     TelemetryConverter.Traces)
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message:lj}{NewLine}{Exception}", formatProvider: new System.Globalization.CultureInfo("en-GB"))
+                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level}] {Message:lj}{NewLine}{Exception}", formatProvider: new CultureInfo("en-GB"))
                 .ReadFrom.Configuration(configuration);
 #pragma warning restore CA1305 // Specify IFormatProvider
 }

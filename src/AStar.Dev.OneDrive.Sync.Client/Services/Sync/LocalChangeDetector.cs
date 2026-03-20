@@ -1,4 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 
@@ -21,7 +22,7 @@ public sealed class LocalChangeDetector
     {
         if(!Directory.Exists(localFolderPath))
         {
-            Serilog.Log.Warning("[LocalChangeDetector] Path does not exist: {Path}", localFolderPath);
+            Log.Warning("[LocalChangeDetector] Path does not exist: {Path}", localFolderPath);
             return [];
         }
 
@@ -36,7 +37,7 @@ public sealed class LocalChangeDetector
             cutoff,
             jobs);
 
-        Serilog.Log.Information("[LocalChangeDetector] Found {Count} changed files in {Path} since {Since}", jobs.Count, localFolderPath, since?.ToString("yyyy-MM-dd HH:mm:ss") ?? "beginning");
+        Log.Information("[LocalChangeDetector] Found {Count} changed files in {Path} since {Since}", jobs.Count, localFolderPath, since?.ToString("yyyy-MM-dd HH:mm:ss") ?? "beginning");
 
         return jobs;
     }
@@ -77,11 +78,11 @@ public sealed class LocalChangeDetector
         }
         catch(UnauthorizedAccessException ex)
         {
-            Serilog.Log.Warning("[LocalChangeDetector] Access denied: {Path} — {Error}", localDir, ex.Message);
+            Log.Warning("[LocalChangeDetector] Access denied: {Path} — {Error}", localDir, ex.Message);
         }
         catch(Exception ex)
         {
-            Serilog.Log.Error(ex, "[LocalChangeDetector] Error scanning {Path}: {Error}", localDir, ex.Message);
+            Log.Error(ex, "[LocalChangeDetector] Error scanning {Path}: {Error}", localDir, ex.Message);
         }
     }
 

@@ -162,8 +162,7 @@ public class FolderTreeNodeTests
     [Fact]
     public void FolderTreeNode_CanBeCreatedWithNoChildren()
     {
-        var node = new FolderTreeNode("id", "Docs", "parent", "account",
-            FolderSyncState.Excluded, HasChildren: false);
+        var node = new FolderTreeNode("id", "Docs", "parent", "account", HasChildren: false);
 
         node.HasChildren.ShouldBeFalse();
     }
@@ -204,7 +203,7 @@ public class FolderTreeNodeTests
     public void FolderTreeNode_DifferentStateShouldNotBeEqual()
     {
         var node1 = new FolderTreeNode("id", "Docs", "parent", "account", FolderSyncState.Included);
-        var node2 = new FolderTreeNode("id", "Docs", "parent", "account", FolderSyncState.Excluded);
+        var node2 = new FolderTreeNode("id", "Docs", "parent", "account");
 
         node1.ShouldNotBe(node2);
     }

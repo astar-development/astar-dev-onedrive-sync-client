@@ -1,7 +1,6 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
-using NSubstitute;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Settings;
 
@@ -174,18 +173,6 @@ public class SettingsServiceTests
         service.Current.SyncIntervalMinutes = minutes;
 
         service.Current.SyncIntervalMinutes.ShouldBe(minutes);
-    }
-
-    [Fact]
-    public void SettingsChanged_ShouldBeNullByDefault()
-    {
-        var service = new SettingsService();
-        var eventHandlerInvoked = false;
-
-        // This test verifies that the event handler property exists and can receive subscribers
-        service.SettingsChanged += (s, e) => eventHandlerInvoked = true;
-
-        // Event handler successfully subscribed - no exception thrown
     }
 
     [Fact]

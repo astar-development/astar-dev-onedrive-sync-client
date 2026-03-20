@@ -99,7 +99,7 @@ public class AccountRepositoryTests
 
         await repository.UpsertAsync(account);
 
-        AccountEntity? retrieved = await db.Accounts.FindAsync("user-1", TestContext.Current.CancellationToken);
+        AccountEntity? retrieved = await db.Accounts.FindAsync(["user-1"], cancellationToken: TestContext.Current.CancellationToken);
         _ = retrieved.ShouldNotBeNull();
         retrieved.Email.ShouldBe("user@outlook.com");
     }
@@ -116,8 +116,8 @@ public class AccountRepositoryTests
         account.DisplayName = "Updated User";
         await repository.UpsertAsync(account);
 
-        AccountEntity? retrieved = await db.Accounts.FindAsync("user-1", TestContext.Current.CancellationToken);
-        retrieved.DisplayName.ShouldBe("Updated User");
+        AccountEntity? retrieved = await db.Accounts.FindAsync(["user-1"], cancellationToken: TestContext.Current.CancellationToken);
+        retrieved?.DisplayName.ShouldBe("Updated User");
     }
 
     [Fact]
@@ -228,7 +228,7 @@ public class AccountRepositoryTests
 
         AccountEntity? result = await repository.GetByIdAsync("user-1");
 
-        _ = result.SyncFolders.ShouldNotBeNull();
-        result.SyncFolders.Count.ShouldBe(1);
+        _ = result?.SyncFolders.ShouldNotBeNull();
+        result?.SyncFolders.Count.ShouldBe(1);
     }
 }

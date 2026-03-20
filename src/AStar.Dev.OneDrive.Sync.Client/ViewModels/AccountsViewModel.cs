@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
-using AStar.Dev.OneDrive.Sync.Client.Data;
+using System.Diagnostics;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.Utilities;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -80,7 +80,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
         account.AccentIndex = Accounts.Count % 6;
         account.IsActive = Accounts.Count == 0;
         if(account.LocalSyncPath.IsNullOrWhiteSpace())
-            account.LocalSyncPath = App.GetPlatformUserDataDirectory(account.Email);
+            account.LocalSyncPath = DataDirectoryPathGenerator.GetPlatformUserDataDirectory(account.Email);
 
         AccountEntity entity = ToEntity(account);
         await repository.UpsertAsync(entity);
@@ -96,7 +96,7 @@ public sealed partial class AccountsViewModel(IAuthService authService, IGraphSe
             ActiveAccount = card;
 
         AccountAdded?.Invoke(this, account);
-        System.Diagnostics.Debug.WriteLine($"AccountsViewModel instance: {GetHashCode()} Count: {Accounts.Count} - OnWizardCompleted: Added account {account.Email} with ID {account.Id}");
+        Debug.WriteLine($"AccountsViewModel instance: {GetHashCode()} Count: {Accounts.Count} - OnWizardCompleted: Added account {account.Email} with ID {account.Id}");
     }
 
     private void OnWizardCancelled(object? sender, EventArgs e) => CloseWizard();

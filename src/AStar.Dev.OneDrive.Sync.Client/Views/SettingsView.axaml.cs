@@ -31,18 +31,12 @@ public partial class SettingsView : UserControl
 
     private void OnPolicyClick(object? sender, RoutedEventArgs e)
     {
-        if(sender is Button { Tag: ConflictPolicy policy } && DataContext is SettingsViewModel vm)
-        {
-            vm.DefaultConflictPolicy = policy;
-        }
+        if(sender is Button { Tag: ConflictPolicy policy } && DataContext is SettingsViewModel vm) vm.DefaultConflictPolicy = policy;
     }
 
     private void OnIntervalClick(object? sender, RoutedEventArgs e)
     {
-        if(sender is Button { Tag: int minutes } && DataContext is SettingsViewModel vm)
-        {
-            vm.SyncIntervalMinutes = minutes;
-        }
+        if(sender is Button { Tag: int minutes } && DataContext is SettingsViewModel vm) vm.SyncIntervalMinutes = minutes;
     }
 
     private async void OnBrowseClick(object? sender, RoutedEventArgs e)
