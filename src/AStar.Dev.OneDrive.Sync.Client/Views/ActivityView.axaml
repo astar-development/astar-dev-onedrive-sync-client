@@ -25,7 +25,7 @@
                             BorderThickness="0,0,0,2"
                             Click="OnLogTabClick">
                         <Button.BorderBrush>
-                            <SolidColorBrush Color="{Binding IsLogTabActive,
+                            <SolidColorBrush Color="{Binding Mode=TwoWay, Path=IsLogTabActive,
                                 Converter={StaticResource BoolToAccentConverter}}"/>
                         </Button.BorderBrush>
                         <TextBlock Text="Activity log"
@@ -39,18 +39,18 @@
                             BorderThickness="0,0,0,2"
                             Click="OnConflictsTabClick">
                         <Button.BorderBrush>
-                            <SolidColorBrush Color="{Binding IsConflictsTabActive,
+                            <SolidColorBrush Color="{Binding Mode=TwoWay,
                                 Converter={StaticResource BoolToAccentConverter}}"/>
                         </Button.BorderBrush>
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <TextBlock Text="Conflicts"
                                        FontSize="{StaticResource FontSizeSm}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <Border IsVisible="{Binding HasConflicts}"
+                            <Border IsVisible="{Binding Mode=TwoWay, Path=HasConflicts}"
                                     Background="{DynamicResource StatusConflictBrush}"
                                     CornerRadius="8"
                                     Padding="5,1">
-                                <TextBlock Text="{Binding ConflictBadgeText}"
+                                <TextBlock Text="{Binding Mode=TwoWay, Path=ConflictBadgeText}"
                                            FontSize="{StaticResource FontSizeXs}"
                                            Foreground="White"/>
                             </Border>
@@ -61,7 +61,7 @@
 
                 <!-- Filter chips (log tab only) -->
                 <StackPanel Grid.Column="2"
-                            IsVisible="{Binding IsLogTabActive}"
+                            IsVisible="{Binding Mode=TwoWay, Path=IsLogTabActive}"
                             Orientation="Horizontal"
                             Spacing="4"
                             Margin="0,0,12,0"
@@ -110,7 +110,7 @@
                             BorderBrush="{DynamicResource BorderDefaultBrush}"
                             BorderThickness="1"
                             FontSize="{StaticResource FontSizeXs}"
-                            Command="{Binding ClearLogCommand}"/>
+                            Command="{Binding Mode=TwoWay, Path=ClearLogCommand}"/>
 
                 </StackPanel>
 
@@ -121,10 +121,10 @@
         <Grid Grid.Row="1">
 
             <!-- Activity log tab -->
-            <Grid IsVisible="{Binding IsLogTabActive}">
+            <Grid IsVisible="{Binding Mode=TwoWay, Path=IsLogTabActive}">
 
                 <!-- Empty state -->
-                <StackPanel IsVisible="{Binding !HasLogItems}"
+                <StackPanel IsVisible="{Binding Mode=TwoWay, Path=!HasLogItems}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Spacing="8">
@@ -139,9 +139,9 @@
                 </StackPanel>
 
                 <!-- Log list -->
-                <ScrollViewer IsVisible="{Binding HasLogItems}"
+                <ScrollViewer IsVisible="{Binding Mode=TwoWay, Path=HasLogItems}"
                               VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding FilteredLog}">
+                    <ItemsControl ItemsSource="{Binding Mode=TwoWay, Path=FilteredLog}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="vm:ActivityItemViewModel">
                                 <Border BorderThickness="0,0,0,1"
@@ -155,7 +155,7 @@
                                                 CornerRadius="{StaticResource RadiusSm}"
                                                 Background="{DynamicResource BackgroundSecondaryBrush}"
                                                 VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding TypeIcon}"
+                                            <TextBlock Text="{Binding Mode=TwoWay, Path=TypeIcon}"
                                                        FontSize="{StaticResource FontSizeMd}"
                                                        HorizontalAlignment="Center"
                                                        VerticalAlignment="Center"
@@ -166,30 +166,30 @@
                                         <StackPanel Grid.Column="2"
                                                     VerticalAlignment="Center"
                                                     Spacing="2">
-                                            <TextBlock Text="{Binding FileName}"
+                                            <TextBlock Text="{Binding Mode=TwoWay, Path=FileName}"
                                                        FontSize="{StaticResource FontSizeMd}"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        TextTrimming="CharacterEllipsis"/>
                                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <TextBlock Text="{Binding TypeLabel}"
+                                                <TextBlock Text="{Binding Mode=TwoWay, Path=TypeLabel}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"/>
-                                                <TextBlock Text="{Binding FolderName}"
+                                                <TextBlock Text="{Binding Mode=TwoWay, Path=FolderName}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"
-                                                           IsVisible="{Binding FolderName,
+                                                           IsVisible="{Binding Mode=TwoWay, Path=FolderName,
                                                                Converter={StaticResource StringNotEmptyConverter}}"/>
-                                                <TextBlock Text="{Binding FileSizeText}"
+                                                <TextBlock Text="{Binding Mode=TwoWay, Path=FileSizeText}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"
-                                                           IsVisible="{Binding FileSizeText,
+                                                           IsVisible="{Binding Mode=TwoWay, Path=FileSizeText,
                                                                Converter={StaticResource StringNotEmptyConverter}}"/>
                                             </StackPanel>
                                         </StackPanel>
 
                                         <!-- Time -->
                                         <TextBlock Grid.Column="3"
-                                                   Text="{Binding TimeAgoText}"
+                                                   Text="{Binding Mode=TwoWay, Path=TimeAgoText}"
                                                    FontSize="{StaticResource FontSizeXs}"
                                                    Foreground="{DynamicResource TextTertiaryBrush}"
                                                    VerticalAlignment="Center"/>
@@ -204,10 +204,10 @@
             </Grid>
 
             <!-- Conflicts tab -->
-            <Grid IsVisible="{Binding IsConflictsTabActive}">
+            <Grid IsVisible="{Binding Mode=TwoWay, Path=IsConflictsTabActive}">
 
                 <!-- Empty state -->
-                <StackPanel IsVisible="{Binding !HasConflicts}"
+                <StackPanel IsVisible="{Binding Mode=TwoWay, Path=!HasConflicts}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
                             Spacing="8">
@@ -222,9 +222,9 @@
                 </StackPanel>
 
                 <!-- Conflict list -->
-                <ScrollViewer IsVisible="{Binding HasConflicts}"
+                <ScrollViewer IsVisible="{Binding Mode=TwoWay, Path=HasConflicts}"
                               VerticalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Conflicts}">
+                    <ItemsControl ItemsSource="{Binding Mode=TwoWay, Path=Conflicts}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="vm:ConflictItemViewModel">
                                 <StackPanel>
@@ -254,11 +254,11 @@
                                             <StackPanel Grid.Column="2"
                                                         VerticalAlignment="Center"
                                                         Spacing="2">
-                                                <TextBlock Text="{Binding FileName}"
+                                                <TextBlock Text="{Binding Mode=TwoWay, Path=FileName}"
                                                            FontSize="{StaticResource FontSizeMd}"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"
                                                            TextTrimming="CharacterEllipsis"/>
-                                                <TextBlock Text="{Binding RelativePath}"
+                                                <TextBlock Text="{Binding Mode=TwoWay, Path=RelativePath}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextTertiaryBrush}"
                                                            TextTrimming="CharacterEllipsis"/>
@@ -266,7 +266,7 @@
 
                                             <!-- Resolved badge -->
                                             <Border Grid.Column="3"
-                                                    IsVisible="{Binding IsResolved}"
+                                                    IsVisible="{Binding Mode=TwoWay, Path=IsResolved}"
                                                     Background="{DynamicResource BackgroundSuccessBrush}"
                                                     CornerRadius="{StaticResource RadiusSm}"
                                                     Padding="6,2"
@@ -283,9 +283,9 @@
                                                     Background="Transparent"
                                                     BorderBrush="{DynamicResource BorderDefaultBrush}"
                                                     BorderThickness="1"
-                                                    IsVisible="{Binding !IsResolved}"
-                                                    Command="{Binding TogglePanelCommand}">
-                                                <TextBlock Text="{Binding IsExpanded,
+                                                    IsVisible="{Binding Mode=TwoWay, Path=!IsResolved}"
+                                                    Command="{Binding Mode=TwoWay, Path=TogglePanelCommand}">
+                                                <TextBlock Text="{Binding Mode=TwoWay, Path=IsExpanded,
                                                                Converter={StaticResource BoolToCollapseExpandConverter}}"
                                                            FontSize="{StaticResource FontSizeXs}"
                                                            Foreground="{DynamicResource TextSecondaryBrush}"/>
@@ -296,8 +296,8 @@
 
                                     <!-- Slide-in resolution panel -->
                                     <controls:ConflictResolutionPanel
-                                        IsVisible="{Binding IsPanelOpen}"
-                                        DataContext="{Binding}"/>
+                                        IsVisible="{Binding Mode=TwoWay, Path=IsPanelOpen}"
+                                        DataContext="{Binding Mode=TwoWay}"/>
 
                                 </StackPanel>
                             </DataTemplate>

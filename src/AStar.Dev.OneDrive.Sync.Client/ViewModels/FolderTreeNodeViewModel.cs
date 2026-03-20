@@ -83,9 +83,7 @@ public sealed partial class FolderTreeNodeViewModel : ObservableObject
             IsExpanded = true;
         }
         else
-        {
             IsExpanded = false;
-        }
     }
 
     [RelayCommand]

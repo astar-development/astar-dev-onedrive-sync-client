@@ -1,9 +1,10 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 
@@ -17,13 +18,13 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
     public async Task SyncAccountAsync(OneDriveAccount account, CancellationToken ct = default)
     {
-        Serilog.Log.Information("[SyncService] SyncAccountAsync called for {Email}, LocalSyncPath={Path}, Folders={Count}", account.Email, account.LocalSyncPath, account.SelectedFolderIds.Count);
+        Log.Information("[SyncService] SyncAccountAsync called for {Email}, LocalSyncPath={Path}, Folders={Count}", account.Email, account.LocalSyncPath, account.SelectedFolderIds.Count);
 
         //Dashboard.UpdateAccountSyncState(e.AccountId, card); // need this or similar to immediately reflect "Syncing" state in UI when sync starts, otherwise there can be a long delay before UI updates, which is bad UX
         AuthResult authResult = await authService.AcquireTokenSilentAsync(account.Id, ct);
         SyncProgressChanged?.Invoke(this, new SyncProgressEventArgs(account.Id, folderId: string.Empty, completed: 0, total: 0, currentFile: "TEST TEST TEST !!!", SyncState.Syncing));
 
-        Serilog.Log.Information("[SyncService] Auth result: IsError={IsError}, Error={Error}", authResult.IsError, authResult.ErrorMessage ?? "none");
+        Log.Information("[SyncService] Auth result: IsError={IsError}, Error={Error}", authResult.IsError, authResult.ErrorMessage ?? "none");
 
         if(authResult.IsError)
         {
@@ -33,14 +34,14 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
         var token = authResult.AccessToken!;
 
-        Serilog.Log.Information("[SyncService] LocalSyncPath check: '{Path}' IsEmpty={IsEmpty}", account.LocalSyncPath, string.IsNullOrEmpty(account.LocalSyncPath));
+        Log.Information("[SyncService] LocalSyncPath check: '{Path}' IsEmpty={IsEmpty}", account.LocalSyncPath, string.IsNullOrEmpty(account.LocalSyncPath));
         if(string.IsNullOrEmpty(account.LocalSyncPath))
         {
             RaiseProgress(account.Id, string.Empty, 0, 0, "No local sync path configured", SyncState.Error);
             return;
         }
 
-        Serilog.Log.Information("[SyncService] About to loop {Count} folders", account.SelectedFolderIds.Count);
+        Log.Information("[SyncService] About to loop {Count} folders", account.SelectedFolderIds.Count);
         foreach(var folderId in account.SelectedFolderIds)
         {
             if(ct.IsCancellationRequested)
@@ -65,7 +66,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
     private async Task SyncFolderAsync(OneDriveAccount account, string token, string folderId, CancellationToken ct)
     {
-        Serilog.Log.Information("Starting sync for account {AccountId}, folder {FolderId}", account.Id, folderId);
+        Log.Information("Starting sync for account {AccountId}, folder {FolderId}", account.Id, folderId);
 
         try
         {
@@ -85,17 +86,12 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
             {
                 await ProcessJobQueueAsync(account, token, allJobs, ct);
 
-                Serilog.Log.Information("[SyncFolder] ProcessJobQueueAsync completed for {FolderId}", folderId);
+                Log.Information("[SyncFolder] ProcessJobQueueAsync completed for {FolderId}", folderId);
             }
             else
-            {
                 await ReportNoRemoteOrLocalChanges(account, folderId, entity);
-            }
 
-            if(delta.NextDeltaLink is not null)
-            {
-                await accountRepository.UpdateDeltaLinkAsync(account.Id, folderId, delta.NextDeltaLink);
-            }
+            if(delta.NextDeltaLink is not null) await accountRepository.UpdateDeltaLinkAsync(account.Id, folderId, delta.NextDeltaLink);
 
             if(entity is not null)
             {
@@ -105,11 +101,11 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
             account.LastSyncedAt = DateTimeOffset.UtcNow;
 
-            Serilog.Log.Information("Finished sync for account {AccountId}, folder {FolderId}", account.Id, folderId);
+            Log.Information("Finished sync for account {AccountId}, folder {FolderId}", account.Id, folderId);
         }
         catch(Exception ex)
         {
-            Serilog.Log.Error(ex, "[SyncService] Error syncing folder {FolderId}: {Error}", folderId, ex.Message);
+            Log.Error(ex, "[SyncService] Error syncing folder {FolderId}: {Error}", folderId, ex.Message);
             RaiseProgress(account.Id, folderId, 0, 0, ex.Message, SyncState.Error);
         }
     }
@@ -135,15 +131,15 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
 
             if(Directory.Exists(folderLocalPath))
             {
-                Serilog.Log.Information("[SyncFolder] Local path={LocalPath}, FolderName={FolderName}, LastSyncedAt={LastSync}", account.LocalSyncPath, folderEntity?.FolderName ?? "(null)", account.LastSyncedAt);
+                Log.Information("[SyncFolder] Local path={LocalPath}, FolderName={FolderName}, LastSyncedAt={LastSync}", account.LocalSyncPath, folderEntity?.FolderName ?? "(null)", account.LastSyncedAt);
 
-                Serilog.Log.Information("[SyncFolder] Scanning for uploads at: {FolderLocalPath}", folderLocalPath);
+                Log.Information("[SyncFolder] Scanning for uploads at: {FolderLocalPath}", folderLocalPath);
 
                 List<SyncJob> uploadJobs = _changeDetector.DetectChanges(account.Id, folderId, folderLocalPath, remoteFolderPath: string.Empty,  account.LastSyncedAt);
 
                 if(uploadJobs.Count > 0)
                 {
-                    Serilog.Log.Information("[SyncService] Found {Count} local changes to upload", uploadJobs.Count);
+                    Log.Information("[SyncService] Found {Count} local changes to upload", uploadJobs.Count);
                     allJobs.AddRange(uploadJobs);
                 }
             }
@@ -154,7 +150,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
     {
         DeltaResult delta = await graphService.GetDeltaAsync(token, folderId, deltaLink, ct);
 
-        Serilog.Log.Information("[SyncService] Delta for folder {FolderId}: {Count} items, deltaLink={HasDelta}", folderId, delta.Items.Count, delta.NextDeltaLink is not null);
+        Log.Information("[SyncService] Delta for folder {FolderId}: {Count} items, deltaLink={HasDelta}", folderId, delta.Items.Count, delta.NextDeltaLink is not null);
 
         List<SyncJob> allJobs = [];
 
@@ -296,7 +292,7 @@ public sealed class SyncService(IAuthService authService, IGraphService graphSer
         var uploads   = jobs.Count(j => j.Direction == SyncDirection.Upload);
         var deletes   = jobs.Count(j => j.Direction == SyncDirection.Delete);
 
-        Serilog.Log.Information("[SyncService] Processing {Total} jobs for {Email}: {D} downloads, {U} uploads, {Del} deletes", jobs.Count, account.Email, downloads, uploads, deletes);
+        Log.Information("[SyncService] Processing {Total} jobs for {Email}: {D} downloads, {U} uploads, {Del} deletes", jobs.Count, account.Email, downloads, uploads, deletes);
 
         await syncRepository.EnqueueJobsAsync(jobs);
 

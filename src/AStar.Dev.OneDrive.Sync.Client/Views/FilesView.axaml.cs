@@ -10,9 +10,6 @@ public partial class FilesView : UserControl
 
     private async void OnTabClick(object? sender, RoutedEventArgs e)
     {
-        if(sender is Button { Tag: string accountId } && DataContext is FilesViewModel vm)
-        {
-            await vm.ActivateAccountAsync(accountId);
-        }
+        if(sender is Button { Tag: string accountId } && DataContext is FilesViewModel vm) await vm.ActivateAccountAsync(accountId);
     }
 }

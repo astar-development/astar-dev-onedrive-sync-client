@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 
@@ -34,7 +36,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
         }
         catch(Exception ex)
         {
-            Serilog.Log.Fatal(ex, "[SyncScheduler.Start] FATAL ERROR creating Timer: {Error}", ex.Message);
+            Log.Fatal(ex, "[SyncScheduler.Start] FATAL ERROR creating Timer: {Error}", ex.Message);
             throw;
         }
     }
@@ -113,7 +115,7 @@ public sealed class SyncScheduler(ISyncService syncService, IAccountRepository a
                 }
                 catch(Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine(
+                    Debug.WriteLine(
                         $"Scheduled sync failed for {account.Email}: {ex.Message}");
                 }
                 finally

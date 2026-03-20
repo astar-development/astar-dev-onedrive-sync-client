@@ -1,7 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
@@ -10,6 +10,7 @@ using AStar.Dev.OneDrive.Sync.Client.Views;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
@@ -162,7 +163,7 @@ public sealed partial class MainWindowViewModel(
         }
         catch(Exception ex)
         {
-            Serilog.Log.Fatal(ex, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", ex.Message);
+            Log.Fatal(ex, "[MainWindowViewModel.InitialiseAsync] FATAL ERROR: {Error}", ex.Message);
         }
     }
 

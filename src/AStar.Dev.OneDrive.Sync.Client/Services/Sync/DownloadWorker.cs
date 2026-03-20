@@ -2,6 +2,7 @@ using System.Threading.Channels;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 
@@ -18,7 +19,7 @@ public sealed class DownloadWorker(int workerId, HttpDownloader downloader, IGra
         {
             ct.ThrowIfCancellationRequested();
 
-            Serilog.Log.Debug(
+            Log.Debug(
                 "[Worker {Id}] Processing {Direction} {Path}",
                 workerId, job.Direction, job.RelativePath);
 
@@ -42,7 +43,7 @@ public sealed class DownloadWorker(int workerId, HttpDownloader downloader, IGra
             catch(Exception ex)
             {
                 error = ex.Message;
-                Serilog.Log.Error(ex, "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path} stack={Stack}", workerId, ex.GetType().Name, ex.Message, job.LocalPath, ex.StackTrace);
+                Log.Error(ex, "[Worker {Id}] EXCEPTION type={Type} message={Error} path={Path} stack={Stack}", workerId, ex.GetType().Name, ex.Message, job.LocalPath, ex.StackTrace);
                 await syncRepository.UpdateJobStateAsync(job.Id, SyncJobState.Failed, ex.Message);
             }
             finally
@@ -57,10 +58,7 @@ public sealed class DownloadWorker(int workerId, HttpDownloader downloader, IGra
         switch(job.Direction)
         {
             case SyncDirection.Download:
-                if(job.DownloadUrl is null)
-                {
-                    throw new InvalidOperationException($"No download URL for {job.RelativePath}");
-                }
+                if(job.DownloadUrl is null) throw new InvalidOperationException($"No download URL for {job.RelativePath}");
 
                 await downloader.DownloadAsync(
                     job.DownloadUrl,
@@ -74,7 +72,7 @@ public sealed class DownloadWorker(int workerId, HttpDownloader downloader, IGra
 
                 _ = await graphService.UploadFileAsync(accessToken, job.LocalPath, remotePath, parentFolderId: job.FolderId, ct: ct);
 
-                Serilog.Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.RelativePath);
+                Log.Information("[Worker {Id}] Uploaded {Path}", workerId, job.RelativePath);
                 break;
 
             case SyncDirection.Delete:

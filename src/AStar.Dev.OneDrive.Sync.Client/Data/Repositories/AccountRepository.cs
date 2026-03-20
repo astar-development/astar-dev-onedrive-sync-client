@@ -23,9 +23,7 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
             .FirstOrDefaultAsync(a => a.Id == account.Id);
 
         if(existing is null)
-        {
             _ = db.Accounts.Add(account);
-        }
         else
         {
             // Update scalar properties
@@ -40,9 +38,7 @@ public sealed class AccountRepository(AppDbContext db) : IAccountRepository
 
             foreach(SyncFolderEntity? newFolder in account.SyncFolders
                 .Where(nf => existing.SyncFolders.All(f => f.FolderId != nf.FolderId)))
-            {
                 existing.SyncFolders.Add(newFolder);
-            }
         }
 
         _ = await db.SaveChangesAsync();

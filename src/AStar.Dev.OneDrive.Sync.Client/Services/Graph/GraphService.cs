@@ -1,11 +1,9 @@
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
-using AStar.Dev.Utilities;
 using Microsoft.Graph;
 using Microsoft.Graph.Drives.Item.Items.Item.Delta;
 using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
-using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 
@@ -175,32 +173,8 @@ public sealed class GraphService : IGraphService
 
         while(page?.Value is not null)
         {
-            foreach(DriveItem item in page.Value)
-            {
-                var itemPath = string.IsNullOrEmpty(relativePath)
-                ? item.Name ?? string.Empty
-                : $"{relativePath}/{item.Name}";
-
-                items.Add(new DeltaItem(
-                    Id: item.Id!,
-                    DriveId: item.ParentReference?.DriveId ?? string.Empty,
-                    Name: item.Name ?? string.Empty,
-                    ParentId: item.ParentReference?.Id,
-                    IsFolder: item.Folder is not null,
-                    IsDeleted: false,
-                    Size: item.Size ?? 0L,
-                    LastModified: item.LastModifiedDateTime,
-                    DownloadUrl: item.AdditionalData
-                        .TryGetValue("@microsoft.graph.downloadUrl", out var url)
-                            ? url?.ToString()
-                            : null,
-                    RelativePath: itemPath));
-
-                if(item.Folder is not null && item.Id is not null)
-                {
-                    await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, ct);
-                }
-            }
+            foreach(DriveItem item in page.Value) 
+                await ProcessPage(client, driveId, relativePath, items, item, ct);
 
             if(page.OdataNextLink is null)
                 break;
@@ -209,6 +183,30 @@ public sealed class GraphService : IGraphService
                 .WithUrl(page.OdataNextLink)
                 .GetAsync(cancellationToken: ct);
         }
+    }
+
+    private async Task ProcessPage(GraphServiceClient client, string driveId, string relativePath, List<DeltaItem> items, DriveItem item, CancellationToken ct)
+    {
+        var itemPath = string.IsNullOrEmpty(relativePath)
+            ? item.Name ?? string.Empty
+            : $"{relativePath}/{item.Name}";
+
+        items.Add(new DeltaItem(
+            Id: item.Id!,
+            DriveId: item.ParentReference?.DriveId ?? string.Empty,
+            Name: item.Name ?? string.Empty,
+            ParentId: item.ParentReference?.Id,
+            IsFolder: item.Folder is not null,
+            IsDeleted: false,
+            Size: item.Size ?? 0L,
+            LastModified: item.LastModifiedDateTime,
+            DownloadUrl: item.AdditionalData
+                .TryGetValue("@microsoft.graph.downloadUrl", out var url)
+                ? url?.ToString()
+                : null,
+            RelativePath: itemPath));
+
+        if(item.Folder is not null && item.Id is not null) await EnumerateSubFolderAsync(client, driveId, item.Id, itemPath, items, ct);
     }
 
     private static DeltaItem MapToDeltaItem(DriveItem item)
@@ -267,7 +265,7 @@ public sealed class GraphService : IGraphService
 
     private sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
     {
-        public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken ct = default) => Task.FromResult(token);
+        public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default) => Task.FromResult(token);
 
         public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
     }

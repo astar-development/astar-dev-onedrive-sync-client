@@ -8,33 +8,17 @@ namespace AStar.Dev.OneDrive.Sync.Client.Data;
 /// </summary>
 public static class DbContextFactory
 {
-    private const string AppName    = "AStar.Dev.OneDrive.Sync";
-    private const string DbFileName = "onedrivesync.db";
-
     public static AppDbContext Create()
     {
-        var dir = GetPlatformDataDirectory();
+        var dir = DataDirectoryPathGenerator.GetPlatformDataDirectory();
         _ = Directory.CreateDirectory(dir);
 
-        var dbPath = Path.Combine(dir, DbFileName);
+        var dbPath = Path.Combine(dir, ApplicationMetadata.DatabaseFileName);
 
         DbContextOptions<AppDbContext> options = new DbContextOptionsBuilder<AppDbContext>()
             .UseSqlite($"Data Source={dbPath}")
             .Options;
 
         return new AppDbContext(options);
-    }
-
-    public static string GetPlatformDataDirectory()
-    {
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-        return OperatingSystem.IsWindows()
-            ? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                AppName)
-            : OperatingSystem.IsMacOS()
-                ? Path.Combine(home, "Library", "Application Support", AppName)
-                : Path.Combine(home, ".config", AppName);
     }
 }

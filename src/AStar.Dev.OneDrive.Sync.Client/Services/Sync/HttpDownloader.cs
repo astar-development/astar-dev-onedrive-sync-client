@@ -1,3 +1,6 @@
+using System.Net;
+using Serilog;
+
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 
 /// <summary>
@@ -39,15 +42,12 @@ public sealed class HttpDownloader : IDisposable
             {
                 response = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, ct);
 
-                if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                if(response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
-                    if(attempt > MaxRetries)
-                    {
-                        throw new HttpRequestException($"Rate limited after {MaxRetries} retries.");
-                    }
+                    if(attempt > MaxRetries) throw new HttpRequestException($"Rate limited after {MaxRetries} retries.");
 
                     TimeSpan delay = GetRetryDelay(response, attempt);
-                    Serilog.Log.Warning("[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
+                    Log.Warning("[HttpDownloader] 429 received, waiting {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
 
                     response.Dispose();
                     await Task.Delay(delay, ct);
@@ -75,12 +75,11 @@ public sealed class HttpDownloader : IDisposable
                 }
 
                 PreserveRemoteTimestamp(localPath, remoteModified);
-                return;
             }
             catch(HttpRequestException) when(attempt <= MaxRetries)
             {
                 TimeSpan delay = GetBackoffDelay(attempt);
-                Serilog.Log.Warning("[HttpDownloader] Network error, retrying in {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
+                Log.Warning("[HttpDownloader] Network error, retrying in {Delay:F1}s (attempt {Attempt}/{Max})", delay.TotalSeconds, attempt, MaxRetries);
                 await Task.Delay(delay, ct);
             }
             finally

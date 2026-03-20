@@ -1,5 +1,5 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
@@ -21,7 +21,8 @@ public partial class MainWindow : Window
         _vm = new MainWindowViewModel(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository);
 
         DataContext = _vm;
+        Title = $"{ApplicationMetadata.ApplicationName} - {ApplicationMetadata.ApplicationVersion}";
 
-        await _vm.InitialiseAsync();
+        await _vm.InitialiseAsync().ConfigureAwait(false);
     }
 }

@@ -1,4 +1,3 @@
-
 using System.Reflection;
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -20,10 +19,7 @@ public static class ModelBuilderExtensions
     typeof(SyncJobEntity),
         ];
 
-        foreach(IMutableEntityType? et in mb.Model.GetEntityTypes().Where(e => targetEntities.Contains(e.ClrType)))
-        {
-            ApplyConversionsForEntity(mb, et);
-        }
+        foreach(IMutableEntityType? et in mb.Model.GetEntityTypes().Where(e => targetEntities.Contains(e.ClrType))) ApplyConversionsForEntity(mb, et);
     }
 
     private static void ApplyConversionsForEntity(ModelBuilder mb, IMutableEntityType et)
@@ -35,41 +31,23 @@ public static class ModelBuilderExtensions
             Type propertyType = propInfo.PropertyType;
 
             if(propertyType == typeof(DateTimeOffset))
-            {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.DateTimeOffsetToTicks).HasColumnType("INTEGER").HasColumnName(propInfo.Name + "_Ticks");
-            }
             else if(Nullable.GetUnderlyingType(propertyType) == typeof(DateTimeOffset))
-            {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableDateTimeOffsetToTicks).HasColumnType("INTEGER").HasColumnName(propInfo.Name + "_Ticks");
-            }
             else if(propertyType == typeof(TimeSpan))
-            {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.TimeSpanToTicks).HasColumnType("INTEGER");
-            }
             else if(Nullable.GetUnderlyingType(propertyType) == typeof(TimeSpan))
-            {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableTimeSpanToTicks).HasColumnType("INTEGER");
-            }
             else if(propertyType == typeof(Guid))
-            {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.GuidToBytes).HasColumnType("BLOB");
-            }
             else if(Nullable.GetUnderlyingType(propertyType) == typeof(Guid))
-            {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableGuidToBytes).HasColumnType("BLOB");
-            }
             else if(propertyType == typeof(decimal))
-            {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.DecimalToCents).HasColumnType("INTEGER");
-            }
             else if(Nullable.GetUnderlyingType(propertyType) == typeof(decimal))
-            {
                 _ = eb.Property(propInfo.Name).HasConversion(SqliteTypeConverters.NullableDecimalToCents).HasColumnType("INTEGER");
-            }
             else if(propertyType.IsEnum)
-            {
                 _ = eb.Property(propInfo.Name).HasConversion<int>().HasColumnType("INTEGER");
-            }
             else if(Nullable.GetUnderlyingType(propertyType)?.IsEnum == true)
             {
                 Type? enumType = Nullable.GetUnderlyingType(propertyType);

@@ -2,7 +2,7 @@ using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Services;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
+using AStar.Dev.OneDrive.Sync.Client.Services.Authentication;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
@@ -12,12 +12,12 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
-public partial class App : Application
+public class App : Application
 {
-    private const string AppName    = "AStar.Dev.OneDrive.Sync";
     public static ILocalizationService Localisation { get; private set; } = null!;
     public static IThemeService Theme { get; private set; } = null!;
     public static IAuthService Auth { get; private set; } = null!;
@@ -27,21 +27,6 @@ public partial class App : Application
     public static ISettingsService AppSettings { get; private set; } = null!;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
-
-    public static string GetPlatformUserDataDirectory(string email)
-    {
-        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-        var safeEmail = string.Concat(email.Split(Path.GetInvalidFileNameChars()));
-        return OperatingSystem.IsWindows()
-            ? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                AppName,
-                safeEmail)
-            : OperatingSystem.IsMacOS()
-                ? Path.Combine(home, "Library", "Application Support", AppName, safeEmail)
-                : Path.Combine(home, ".config", AppName, safeEmail);
-    }
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -59,8 +44,8 @@ public partial class App : Application
                 if(Scheduler is not null)
                     await Scheduler.DisposeAsync();
 
-                Serilog.Log.Information("[App] Application exiting");
-                Serilog.Log.CloseAndFlush();
+                Log.Information("[App] Application exiting");
+                Log.CloseAndFlush();
             };
         }
     }
@@ -104,7 +89,7 @@ public partial class App : Application
         }
         catch(Exception ex)
         {
-            Serilog.Log.Fatal(ex, "[App] Fatal error during bootstrap: {Message}", ex.Message);
+            Log.Fatal(ex, "[App] Fatal error during bootstrap: {Message}", ex.Message);
         }
     }
 }

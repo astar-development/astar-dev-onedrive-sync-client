@@ -1,5 +1,4 @@
 using System.Text.Json;
-using AStar.Dev.OneDrive.Sync.Client.Data;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Settings;
 
@@ -26,7 +25,7 @@ public sealed class SettingsService : ISettingsService
 
     public SettingsService()
     {
-        var dir = DbContextFactory.GetPlatformDataDirectory();
+        var dir = DataDirectoryPathGenerator.GetPlatformDataDirectory();
         _ = Directory.CreateDirectory(dir);
         _path = Path.Combine(dir, "settings.json");
     }

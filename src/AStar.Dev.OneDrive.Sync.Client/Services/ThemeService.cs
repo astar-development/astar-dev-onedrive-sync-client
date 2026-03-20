@@ -39,9 +39,7 @@ public sealed class ThemeService : IThemeService, IDisposable
             WatchSystem();
         }
         else
-        {
             ApplyVariant(theme);
-        }
 
         ThemeChanged?.Invoke(this, CurrentTheme);
     }

@@ -3,6 +3,7 @@ using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
+using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 
@@ -56,8 +57,6 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
                 CompletedAt  = DateTimeOffset.UtcNow
             };
 
-            var isComplete = completedSoFar == total;
-
             onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: completedSoFar, total: total, currentFile: job.RelativePath, syncState: completedSoFar == total ? SyncState.Idle : SyncState.Syncing));
 
             onJobCompleted(new JobCompletedEventArgs(completedJob));
@@ -84,23 +83,23 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         try
         {
             await Task.WhenAll(workers);
-            Serilog.Log.Information("[Pipeline] All workers completed normally");
+            Log.Information("[Pipeline] All workers completed normally");
         }
         catch(Exception ex)
         {
-            Serilog.Log.Error(ex, "[Pipeline] Worker threw unhandled exception: {Type} {Error}", ex.GetType().Name, ex.Message);
+            Log.Error(ex, "[Pipeline] Worker threw unhandled exception: {Type} {Error}", ex.GetType().Name, ex.Message);
         }
         finally
         {
             // Always raise completion so UI resets
             onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: done, total: total, currentFile: string.Empty, syncState: SyncState.Idle));
 
-            Serilog.Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", done, total);
+            Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", done, total);
         }
 
         await syncRepository.ClearCompletedJobsAsync(accountId);
 
-        Serilog.Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", done, total);
+        Log.Information("[Pipeline] Complete — {Done}/{Total} jobs processed", done, total);
     }
 
     public void Dispose() => _downloader.Dispose();
