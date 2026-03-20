@@ -84,7 +84,10 @@ jobs:
 
       - name: Run unit tests and collect coverage (XPlat)
         run: |
-          dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults --filter "FullyQualifiedName!~Integration&FullyQualifiedName!~EndToEnd"
+          dotnet test --configuration Release --no-build --verbosity normal \
+            --collect:"XPlat Code Coverage" \
+            --results-directory TestResults \
+            --filter "FullyQualifiedName!~Integration&FullyQualifiedName!~EndToEnd"
 
       - name: Upload TestResults artifact (contains coverage)
         if: success() || failure()
