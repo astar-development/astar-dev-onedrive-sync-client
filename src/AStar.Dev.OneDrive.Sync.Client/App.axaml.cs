@@ -1,45 +1,35 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data;
-using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Services;
-using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
-using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Localization;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
-using AStar.Dev.OneDrive.Sync.Client.Services.Startup;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
+using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
 [ExcludeFromCodeCoverage]
 public partial class App : Application
 {
-    private const string AppName    = "AStar.Dev.OneDrive.Sync";
-    public static ILocalizationService Localisation { get; private set; } = null!;
-    public static IThemeService Theme { get; private set; } = null!;
-    public static IAuthService Auth { get; private set; } = null!;
-    public static IAccountRepository Repository { get; private set; } = null!;
-    public static ISyncService SyncService { get; private set; } = null!;
-    public static SyncScheduler Scheduler { get; private set; } = null!;
-    public static ISettingsService AppSettings { get; private set; } = null!;
+    private const string AppName = "AStar.Dev.OneDrive.Sync";
+
+    private static ServiceProvider? _serviceProvider;
 
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     public static string GetPlatformUserDataDirectory(string email)
     {
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
         var safeEmail = string.Concat(email.Split(Path.GetInvalidFileNameChars()));
+
         return OperatingSystem.IsWindows()
-            ? Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                AppName,
-                safeEmail)
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppName, safeEmail)
             : OperatingSystem.IsMacOS()
                 ? Path.Combine(home, "Library", "Application Support", AppName, safeEmail)
                 : Path.Combine(home, ".config", AppName, safeEmail);
@@ -58,8 +48,8 @@ public partial class App : Application
 
             desktop.Exit += async (_, _) =>
             {
-                if(Scheduler is not null)
-                    await Scheduler.DisposeAsync();
+                if(_serviceProvider is not null)
+                    await _serviceProvider.DisposeAsync();
 
                 Serilog.Log.Information("[App] Application exiting");
                 Serilog.Log.CloseAndFlush();
@@ -71,38 +61,26 @@ public partial class App : Application
     {
         try
         {
-            var locService = new LocalizationService();
+            ISettingsService settings = await SettingsService.LoadAsync();
+
+            var services = new ServiceCollection();
+            _ = services.AddOneDriveSyncServices(settings);
+            _serviceProvider = services.BuildServiceProvider();
+
+            ILocalizationService locService = _serviceProvider.GetRequiredService<ILocalizationService>();
             await locService.InitialiseAsync(new CultureInfo("en-GB"));
-            Localisation = locService;
 
-            SettingsService settingsService = await SettingsService.LoadAsync();
-            AppSettings = settingsService;
+            IThemeService themeService = _serviceProvider.GetRequiredService<IThemeService>();
+            themeService.Apply(settings.Current.Theme);
 
-            var themeService = new ThemeService();
-            themeService.Apply(settingsService.Current.Theme);
-            Theme = themeService;
-
-            AppDbContext db = DbContextFactory.Create();
+            AppDbContext db = _serviceProvider.GetRequiredService<AppDbContext>();
             await db.Database.MigrateAsync();
-            var accountRepository = new AccountRepository(db);
-            var syncRepository    = new SyncRepository(db);
-            Repository = accountRepository;
 
-            var tokenCache  = new TokenCacheService();
-            var authService = new AuthService(tokenCache);
-            Auth = authService;
+            MainWindowViewModel vm = _serviceProvider.GetRequiredService<MainWindowViewModel>();
+            await window.InitialiseAsync(vm);
 
-            var graphService   = new GraphService();
-            var syncService    = new SyncService(authService, graphService, accountRepository, syncRepository);
-            var scheduler      = new SyncScheduler(syncService, accountRepository);
-            SyncService = syncService;
-            Scheduler = scheduler;
-
-            var startupService = new StartupService(accountRepository, authService);
-
-            await window.InitialiseAsync(authService, graphService, startupService, syncService, scheduler, syncRepository, settingsService, accountRepository);
-
-            scheduler.Start(TimeSpan.FromMinutes(settingsService.Current.SyncIntervalMinutes));
+            SyncScheduler scheduler = _serviceProvider.GetRequiredService<SyncScheduler>();
+            scheduler.Start(TimeSpan.FromMinutes(settings.Current.SyncIntervalMinutes));
         }
         catch(Exception ex)
         {

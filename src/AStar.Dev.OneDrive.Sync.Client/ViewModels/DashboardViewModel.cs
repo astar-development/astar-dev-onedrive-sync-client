@@ -1,11 +1,12 @@
 using System.Collections.ObjectModel;
+using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.Services.Sync;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AStar.Dev.OneDrive.Sync.Client.ViewModels;
 
-public sealed partial class DashboardViewModel(SyncScheduler scheduler) : ObservableObject
+public sealed partial class DashboardViewModel(SyncScheduler scheduler, IAccountRepository accountRepository) : ObservableObject
 {
     public ObservableCollection<DashboardAccountViewModel> AccountSections { get; } = [];
 
@@ -34,7 +35,7 @@ public sealed partial class DashboardViewModel(SyncScheduler scheduler) : Observ
         if(AccountSections.Any(s => s.AccountId == account.Id))
             return;
 
-        var section = new DashboardAccountViewModel(account, scheduler, App.Repository);
+        var section = new DashboardAccountViewModel(account, scheduler, accountRepository);
 
         AccountSections.Add(section);
 

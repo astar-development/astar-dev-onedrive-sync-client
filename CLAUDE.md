@@ -28,9 +28,22 @@ dotnet watch test
 
 **.NET 10 / Avalonia 11 desktop app (MVVM).** No web server, no API — pure desktop with Microsoft Graph API for OneDrive access.
 
-### Bootstrap (no DI container)
+### Bootstrap
 
-`App.axaml.cs` is the composition root. `BootstrapAsync` manually wires all services and assigns them to static properties on `App` (e.g., `App.Auth`, `App.SyncService`, `App.Repository`). There is no `IServiceProvider` — ViewModels receive dependencies via constructor injection from `MainWindow.InitialiseAsync`.
+`App.axaml.cs` is the composition root. `BootstrapAsync` builds a `Microsoft.Extensions.DependencyInjection` `ServiceProvider` and resolves all services from it. Service registrations live in `Services/ServiceCollectionExtensions.cs` (`AddOneDriveSyncServices`).
+
+Bootstrap order matters:
+1. `SettingsService.LoadAsync()` — async factory, pre-loaded before container build and registered as a singleton instance
+2. `ServiceCollection` built, `ServiceProvider` stored in `App._serviceProvider`
+3. `ILocalizationService.InitialiseAsync` called
+4. `IThemeService.Apply` called with saved theme
+5. `AppDbContext` resolved, `MigrateAsync()` run
+6. `MainWindowViewModel` resolved (transient), passed to `MainWindow.InitialiseAsync`
+7. `SyncScheduler.Start` called with saved interval
+
+`ServiceProvider` is disposed on app exit via `desktop.Exit`, which automatically disposes singleton `IAsyncDisposable` services (e.g., `SyncScheduler`).
+
+**Lifetimes:** all services are `Singleton` except `MainWindowViewModel` which is `Transient`. No `Scoped` — there is no HTTP scope in a desktop app.
 
 ### Navigation
 
@@ -82,7 +95,7 @@ Avalonia value converters in `src/.../Converters/`. `SyncState` enum drives badg
 
 ### Localization
 
-JSON-based; `en-GB.json` is the only locale. `LocalizationService` loads it as an embedded resource. Accessed globally via `App.Localisation`.
+JSON-based; `en-GB.json` is the only locale. `LocalizationService` loads it as an embedded resource. Resolved via `ILocalizationService` from the DI container.
 
 ### Settings
 
