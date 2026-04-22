@@ -27,6 +27,12 @@ public interface ILocalizationService
     string Get(string key, params object[] args);
 
     /// <summary>
+    /// Loads strings for the requested culture at startup (or en-GB as fallback).
+    /// Does not raise <see cref="CultureChanged"/>.
+    /// </summary>
+    Task InitialiseAsync(CultureInfo? requested = null);
+
+    /// <summary>
     /// Switches the active culture and reloads strings.
     /// Raises <see cref="CultureChanged"/>.
     /// </summary>

@@ -1,6 +1,7 @@
 using AStar.Dev.OneDrive.Sync.Client.Data.Entities;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
 using AStar.Dev.OneDrive.Sync.Client.Models;
+using AStar.Dev.OneDrive.Sync.Client.Services;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using AStar.Dev.OneDrive.Sync.Client.Services.Graph;
 using AStar.Dev.OneDrive.Sync.Client.Services.Settings;
@@ -21,7 +22,8 @@ public sealed partial class MainWindowViewModel(
     SyncScheduler scheduler,
     ISyncRepository syncRepository,
     ISettingsService settingsService,
-    IAccountRepository accountRepository) : ObservableObject
+    IAccountRepository accountRepository,
+    IThemeService themeService) : ObservableObject
 {
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsDashboardActive))]
@@ -109,15 +111,15 @@ public sealed partial class MainWindowViewModel(
         }
     }
 
-    public AccountsViewModel Accounts { get; } = new(authService, graphService, App.Repository);
+    public AccountsViewModel Accounts { get; } = new(authService, graphService, accountRepository);
 
-    public FilesViewModel Files { get; } = new(authService, graphService, App.Repository);
+    public FilesViewModel Files { get; } = new(authService, graphService, accountRepository);
 
     public ActivityViewModel Activity { get; } = new(syncService, syncRepository);
 
-    public DashboardViewModel Dashboard { get; } = new(scheduler);
+    public DashboardViewModel Dashboard { get; } = new(scheduler, accountRepository);
 
-    public SettingsViewModel Settings { get; } = new(settingsService, App.Theme, scheduler, accountRepository);
+    public SettingsViewModel Settings { get; } = new(settingsService, themeService, scheduler, accountRepository);
 
     public StatusBarViewModel StatusBar { get; } = new();
 
@@ -173,7 +175,7 @@ public sealed partial class MainWindowViewModel(
         if(active is null)
             return;
 
-        AccountEntity? entity = await App.Repository.GetByIdAsync(active.Id);
+        AccountEntity? entity = await accountRepository.GetByIdAsync(active.Id);
         if(entity is null)
             return;
 
