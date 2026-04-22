@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Avalonia.Controls;
@@ -5,6 +6,7 @@ using Avalonia.Interactivity;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Controls;
 
+[ExcludeFromCodeCoverage]
 public partial class ConflictResolutionPanel : UserControl
 {
     public ConflictResolutionPanel() => InitializeComponent();

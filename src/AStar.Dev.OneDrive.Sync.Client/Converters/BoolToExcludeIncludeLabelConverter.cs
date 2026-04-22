@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Data.Converters;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Converters;
 
+[ExcludeFromCodeCoverage]
 /// <summary>Converts bool IsIncluded to "Exclude" / "Include" button label.</summary>
 public sealed class BoolToExcludeIncludeLabelConverter : IValueConverter
 {

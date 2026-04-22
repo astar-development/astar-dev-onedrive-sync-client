@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Windows.Input;
 using Avalonia;
 using Avalonia.Controls;
@@ -11,6 +12,7 @@ namespace AStar.Dev.OneDrive.Sync.Client.Controls;
 /// Exposes <see cref="IsActive"/>, <see cref="IconData"/>,
 /// <see cref="TooltipLabel"/> and <see cref="Command"/> as styled properties.
 /// </summary>
+[ExcludeFromCodeCoverage]
 public partial class IconRailButton : UserControl
 {
     public static readonly StyledProperty<bool> IsActiveProperty = AvaloniaProperty.Register<IconRailButton, bool>(nameof(IsActive));

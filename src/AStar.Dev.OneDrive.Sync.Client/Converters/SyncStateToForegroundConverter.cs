@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.ViewModels;
 using Avalonia.Data.Converters;
@@ -5,6 +6,7 @@ using Avalonia.Media;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Converters;
 
+[ExcludeFromCodeCoverage]
 public sealed class SyncStateToForegroundConverter : IValueConverter
 {
     public static readonly SyncStateToForegroundConverter Instance = new();

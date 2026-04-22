@@ -1,7 +1,6 @@
 using System.Reflection;
 using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 using Microsoft.Identity.Client;
-using NSubstitute;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Tests.Unit.Services.Auth;
 

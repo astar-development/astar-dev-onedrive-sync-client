@@ -5,30 +5,13 @@ using AStar.Dev.OneDrive.Sync.Client.Services.Auth;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Services.Startup;
 
-public interface IStartupService
-{
-    /// <summary>
-    /// Loads all persisted accounts from the database.
-    /// Returns them in display order with the previously-active account flagged.
-    /// Does NOT attempt any network calls.
-    /// </summary>
-    Task<List<OneDriveAccount>> RestoreAccountsAsync();
-}
-
-public sealed class StartupService(
-    IAccountRepository repository,
-    IAuthService authService) : IStartupService
+public sealed class StartupService(IAccountRepository repository, IAuthService authService) : IStartupService
 {
     public async Task<List<OneDriveAccount>> RestoreAccountsAsync()
     {
         List<AccountEntity> entities = await repository.GetAllAsync();
 
-        // Only restore accounts that still have a valid cached MSAL token
         var cachedIds = (await authService.GetCachedAccountIdsAsync()).ToHashSet();
-        System.Diagnostics.Debug.WriteLine($"Cached MSAL IDs: {string.Join(", ", cachedIds)}");
-
-        foreach(AccountEntity entity in entities)
-            System.Diagnostics.Debug.WriteLine($"DB account: {entity.Id} | {entity.Email}");
 
         List<OneDriveAccount> accounts = [];
 
@@ -56,7 +39,6 @@ public sealed class StartupService(
             });
         }
 
-        // Ensure only one account is active — last-write wins if data is inconsistent
         var activeCount = accounts.Count(a => a.IsActive);
         if(activeCount > 1)
         {

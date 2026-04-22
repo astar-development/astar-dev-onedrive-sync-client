@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Models;
 using Avalonia.Data.Converters;
@@ -6,6 +7,7 @@ using Avalonia.Media;
 namespace AStar.Dev.OneDrive.Sync.Client.Converters;
 
 /// <summary>Maps FolderSyncState to a badge background colour.</summary>
+[ExcludeFromCodeCoverage]
 public sealed class SyncStateToBadgeBackgroundConverter : IValueConverter
 {
     public static readonly SyncStateToBadgeBackgroundConverter Instance = new();
