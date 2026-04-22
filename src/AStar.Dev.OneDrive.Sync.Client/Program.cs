@@ -1,10 +1,12 @@
-﻿using AStar.Dev.OneDrive.Sync.Client.Data;
+﻿using System.Diagnostics.CodeAnalysis;
+using AStar.Dev.OneDrive.Sync.Client.Data;
 using Avalonia;
 using Microsoft.Extensions.Configuration;
 using Serilog;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
+[ExcludeFromCodeCoverage]
 sealed class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any

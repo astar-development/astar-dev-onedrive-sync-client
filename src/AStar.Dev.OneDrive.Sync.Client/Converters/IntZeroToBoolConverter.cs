@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Data.Converters;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Converters;
 
 /// <summary>Returns true when an integer equals zero — used for empty-state visibility.</summary>
+[ExcludeFromCodeCoverage]
 public sealed class IntZeroToBoolConverter : IValueConverter
 {
     public static readonly IntZeroToBoolConverter Instance = new();

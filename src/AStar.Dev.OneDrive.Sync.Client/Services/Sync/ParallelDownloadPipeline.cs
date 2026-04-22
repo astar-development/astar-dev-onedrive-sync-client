@@ -92,7 +92,6 @@ public sealed class ParallelDownloadPipeline(ISyncRepository syncRepository, IGr
         }
         finally
         {
-            // Always raise completion so UI resets
             onProgress(new SyncProgressEventArgs(accountId: accountId, folderId: folderId, completed: done, total: total, currentFile: string.Empty, syncState: SyncState.Idle));
 
             Serilog.Log.Information("[Pipeline] Final progress raised — done={Done} total={Total}", done, total);

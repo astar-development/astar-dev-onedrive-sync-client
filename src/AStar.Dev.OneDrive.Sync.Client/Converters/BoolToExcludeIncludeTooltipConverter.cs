@@ -1,10 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Avalonia.Data.Converters;
 
 namespace AStar.Dev.OneDrive.Sync.Client.Converters;
 
+[ExcludeFromCodeCoverage]
 /// <summary>Converts bool IsIncluded to tooltip text.</summary>
-public sealed class BoolToExcludeIncludeTooltipConverter : IValueConverter
+public sealed class BoolToExcludeIncludeTooltipConverter : IValueConverter, IBoolToExcludeIncludeTooltipConverter
 {
     public static readonly BoolToExcludeIncludeTooltipConverter Instance = new();
 

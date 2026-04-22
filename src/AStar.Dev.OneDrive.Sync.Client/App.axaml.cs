@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using AStar.Dev.OneDrive.Sync.Client.Data;
 using AStar.Dev.OneDrive.Sync.Client.Data.Repositories;
@@ -15,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AStar.Dev.OneDrive.Sync.Client;
 
+[ExcludeFromCodeCoverage]
 public partial class App : Application
 {
     private const string AppName    = "AStar.Dev.OneDrive.Sync";
