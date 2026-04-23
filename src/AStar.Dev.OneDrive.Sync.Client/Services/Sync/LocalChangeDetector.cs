@@ -87,12 +87,8 @@ public sealed class LocalChangeDetector
 
     private static void ProcessSubDirectories(string accountId, string folderId, string localDir, string remoteDir, DateTime cutoff, List<SyncJob> jobs)
     {
-        foreach(var subDir in Directory.EnumerateDirectories(localDir))
+        foreach(var subDir in Directory.EnumerateDirectories(localDir).Where(d => !new DirectoryInfo(d).Attributes.HasFlag(FileAttributes.Hidden) && !Path.GetFileName(d).StartsWith('.')))
         {
-            var dirInfo = new DirectoryInfo(subDir);
-            if(dirInfo.Attributes.HasFlag(FileAttributes.Hidden) || dirInfo.Name.StartsWith('.'))
-                continue;
-
             var subRelative = Path.GetRelativePath(localDir, subDir).Replace(Path.DirectorySeparatorChar, '/');
 
             var subRemote = string.IsNullOrEmpty(remoteDir)

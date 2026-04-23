@@ -11,6 +11,11 @@ public sealed class GraphService : IGraphService
 {
     private readonly UploadService _uploadService = new();
     private readonly Dictionary<string, DriveContext> _cache = [];
+    private readonly HttpClient? _httpClient;
+
+    internal GraphService(HttpClient httpClient) => _httpClient = httpClient;
+
+    public GraphService() { }
 
     /// <inheritdoc />
     public async Task<string> GetDriveIdAsync(string accessToken, CancellationToken ct = default)
@@ -51,7 +56,7 @@ public sealed class GraphService : IGraphService
     /// <inheritdoc />
     public async Task<List<DriveFolder>> GetChildFoldersAsync(string accessToken, string driveId, string parentFolderId, CancellationToken ct = default)
     {
-        GraphServiceClient client = BuildClient(accessToken);
+        GraphServiceClient client = BuildClient(accessToken, _httpClient);
 
         DriveItemCollectionResponse? result = await client.Drives[driveId].Items[parentFolderId].Children
             .GetAsync(req =>
@@ -239,7 +244,7 @@ public sealed class GraphService : IGraphService
 
     private async Task<(GraphServiceClient Client, DriveContext Ctx)> ResolveClientWithDriveContextAsync(string accessToken, CancellationToken ct)
     {
-        GraphServiceClient graphServiceClient = BuildClient(accessToken);
+        GraphServiceClient graphServiceClient = BuildClient(accessToken, _httpClient);
 
         if(_cache.TryGetValue(accessToken, out DriveContext? cached))
             return (graphServiceClient, cached);
@@ -258,15 +263,17 @@ public sealed class GraphService : IGraphService
         return (graphServiceClient, driveContext);
     }
 
-    private static GraphServiceClient BuildClient(string accessToken)
-        => new(new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken)));
+    internal static GraphServiceClient BuildClient(string accessToken, HttpClient? httpClient = null)
+        => httpClient is not null
+            ? new(httpClient, new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken, new AllowedHostsValidator())), httpClient.BaseAddress?.ToString() ?? "https://graph.microsoft.com/v1.0")
+            : new(new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken)));
 
     private sealed record DriveContext(string DriveId, string RootId);
 
-    private sealed class StaticAccessTokenProvider(string token) : IAccessTokenProvider
+    private sealed class StaticAccessTokenProvider(string token, AllowedHostsValidator? validator = null) : IAccessTokenProvider
     {
         public Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken ct = default) => Task.FromResult(token);
 
-        public AllowedHostsValidator AllowedHostsValidator { get; } = new(["graph.microsoft.com"]);
+        public AllowedHostsValidator AllowedHostsValidator { get; } = validator ?? new(["graph.microsoft.com"]);
     }
 }
