@@ -1,7 +1,4 @@
-#nullable enable
-
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -14,88 +11,102 @@ namespace AStar.Dev.Utilities;
 /// </summary>
 public static class StringExtensions
 {
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
     /// <summary>
     ///     The IsNull method, as you might expect, checks whether the string is, in fact, null
     /// </summary>
     /// <param name="value">The string to check for being null</param>
     /// <returns>True if the string is null, False otherwise</returns>
-    public static bool IsNull([NotNullWhen(false)] this string? value) => value is null;
+    public static bool IsNull(this string? value)
+        => value is null;
 
     /// <summary>
     ///     The IsNotNull method, as you might expect, checks whether the string is not null
     /// </summary>
-    /// <param name="value">The string to check for being null</param>
+    /// <param name="value">The string to check for being not null</param>
     /// <returns>True if the string is not null, False otherwise</returns>
-    public static bool IsNotNull(this string? value) => !value.IsNull();
+    public static bool IsNotNull(this string? value)
+        => !value.IsNull();
 
     /// <summary>
     ///     The IsNullOrWhiteSpace method, as you might expect, checks whether the string is, in fact, null, empty or
     ///     whitespace
     /// </summary>
-    /// <param name="value">The string to check for being null</param>
+    /// <param name="value">The string to check for being null, empty or whitespace</param>
     /// <returns>True if the string is null, empty or whitespace, False otherwise</returns>
-    public static bool IsNullOrWhiteSpace([NotNullWhen(true)] this string? value) => string.IsNullOrWhiteSpace(value);
+    public static bool IsNullOrWhiteSpace(this string
+    ? value)
+        => string.IsNullOrWhiteSpace(value);
 
     /// <summary>
     ///     The IsNotNullOrWhiteSpace method, as you might expect, checks whether the string is not null, empty or whitespace
     /// </summary>
-    /// <param name="value">The string to check for being null</param>
+    /// <param name="value">The string to check for being not null, empty or whitespace</param>
     /// <returns>True if the string is not null, empty or whitespace, False otherwise</returns>
-    public static bool IsNotNullOrWhiteSpace([NotNullWhen(true)] this string? value) => !value.IsNullOrWhiteSpace();
-
-    /// <summary>
-    ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object - using the web default settings
-    /// </summary>
-    /// <param name="json">The JSON representation of the object</param>
-    /// <typeparam name="T">The required type of the object to deserialise to</typeparam>
-    /// <returns>A deserialised object based on the original JSON</returns>
-    public static T FromJson<T>(this string json) => JsonSerializer.Deserialize<T>(json, Constants.WebDeserialisationSettings)!;
+    public static bool IsNotNullOrWhiteSpace(this string? value)
+        => !value.IsNullOrWhiteSpace();
 
     /// <summary>
     ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object
     /// </summary>
     /// <typeparam name="T">The required type of the object to deserialise to</typeparam>
+    /// <param name="json">The JSON representation of the object</param>
+    /// <returns>A deserialised object based on the original JSON</returns>
+    public static T FromJson<T>(this string json)
+        => JsonSerializer.Deserialize<T>(json)!;
+
+    /// <summary>
+    ///     The FromJson method, as you might expect, converts the supplied JSON to the specified object
+    /// </summary>
+    /// <typeparam name="T">The required type of the object to deserialise to</typeparam>
+    /// <param name="json">The JSON representation of the object</param>
     /// <param name="options">
     ///     Allows the specific <see href="JsonSerializerOptions">options</see> to be set to control
     ///     deserialisation
     /// </param>
-    /// <param name="json">The JSON representation of the object</param>
     /// <returns>A deserialised object based on the original JSON</returns>
-    public static T FromJson<T>(this string json, JsonSerializerOptions options) => JsonSerializer.Deserialize<T>(json, options)!;
+    public static T FromJson<T>(this string json, JsonSerializerOptions options)
+        => JsonSerializer.Deserialize<T>(json, options)!;
 
     /// <summary>
     /// </summary>
-    /// <param name="json">The JSON representation of the object</param>
+    /// <param name="fileName"></param>
     /// <returns></returns>
-    public static bool IsImage(this string json) => json.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
-               || json.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
-               || json.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
-               || json.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)
-               || json.EndsWith(".gif", StringComparison.OrdinalIgnoreCase);
+    public static bool IsImage(this string fileName) 
+        => !string.IsNullOrEmpty(fileName) && (fileName.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".png", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase)
+            || fileName.EndsWith(".gif", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// </summary>
-    /// <param name="json">The JSON representation of the object</param>
+    /// <param name="fileName"></param>
     /// <returns></returns>
-    public static bool IsNumberOnly(this string json) => json.All(c => char.IsDigit(c) || c == '_' || c == '.');
+    public static bool IsNumberOnly(this string fileName)
+        => fileName.All(c => char.IsDigit(c) || c == '_' || c == '.');
 
     /// <summary>
     ///     The TruncateIfRequired method will, as the name suggests, truncate the string if the length exceeds the specified length
     /// </summary>
+    /// <param name="value">The raw string to potentially truncate</param>
     /// <param name="truncateLength">The maximum length the string should be truncated to if required</param>
-    /// <param name="target">The string to truncate if required</param>
     /// <returns>The specified string or the truncated version</returns>
-    public static string TruncateIfRequired(this string target, int truncateLength) => target.Length > truncateLength ? target[..truncateLength] : target;
+    public static string TruncateIfRequired(this string value, int truncateLength)
+        => string.IsNullOrEmpty(value) || truncateLength <= 0 ? value : value.Length > truncateLength ? value[..truncateLength] : value;
 
     /// <summary>
     ///     The RemoveTrailing method will, as the name suggests, remove the specified character from the end if it exists
     /// </summary>
+    /// <param name="value">The raw string to potentially remove the trailing character from</param>
     /// <param name="removeTrailing">The character to remove from the end if it exists</param>
-    /// <param name="json">The JSON representation of the object</param>
     /// <returns>The original or updated string</returns>
-    public static string RemoveTrailing(this string json, string removeTrailing) => json.EndsWith(removeTrailing, StringComparison.OrdinalIgnoreCase)
-                ? json[..^removeTrailing.Length]
-                : json;
+    public static string RemoveTrailing(this string value, string removeTrailing)
+        => string.IsNullOrEmpty(value) || string.IsNullOrEmpty(removeTrailing)
+            ? value
+            : value.EndsWith(removeTrailing, StringComparison.OrdinalIgnoreCase)
+            ? value[..^removeTrailing.Length]
+            : value;
 
     /// <summary>
     ///     The SanitizeFilePath method replaces invalid or undesirable characters in a file path
@@ -109,10 +120,10 @@ public static class StringExtensions
     ///     string sanitizedPath = originalPath.SanitizeFilePath();
     ///     // sanitizedPath will be: "path to some file.txt"
     /// </example>
-    public static string SanitizeFilePath(this string json) => json.Replace(Path.DirectorySeparatorChar, ' ')
+    public static string SanitizeFilePath(this string json) => json.IsNotNullOrWhiteSpace() ? json.Replace(Path.DirectorySeparatorChar, ' ')
                 .Replace(Path.AltDirectorySeparatorChar, ' ')
                 .Replace('-', ' ')
-                .Replace('_', ' ');
+                .Replace('_', ' ') : string.Empty;
 
     /// <summary>
     ///    The NormalizeLinux method normalizes a file path to a Linux-style format by replacing backslashes with forward slashes,
@@ -125,7 +136,7 @@ public static class StringExtensions
             return "/";
 
         path = path.Trim()
-                   .Replace("\\", "/")
+                   .Replace("\\", "/", StringComparison.Ordinal)
                    .TrimEnd('/');
 
         return path.StartsWith('/') ? path : "/" + path;
@@ -142,7 +153,7 @@ public static class StringExtensions
             return "\\";
 
         path = path.Trim()
-                   .Replace("/", "\\")
+                   .Replace("/", "\\", comparisonType: StringComparison.Ordinal)
                    .TrimEnd('\\');
 
         return path.StartsWith('\\') ? path : "\\" + path;
@@ -160,4 +171,5 @@ public static class StringExtensions
         < 1024 * 1024 => $"{fileSize / 1024.0:F1} KB",
         _ => $"{fileSize / (1024.0 * 1024):F1} MB"
     };
+#pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
 }

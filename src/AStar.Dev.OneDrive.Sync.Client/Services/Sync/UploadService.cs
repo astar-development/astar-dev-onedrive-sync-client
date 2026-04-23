@@ -20,11 +20,20 @@ public sealed class UploadService
     // 10 MB — must be multiple of 320 KB (327,680 bytes)
     private const int ChunkSize = 10 * 1024 * 1024;
 
-    private const int    MaxRetries       = 5;
-    private const double BaseDelaySeconds = 2.0;
-    private const double MaxDelaySeconds  = 120.0;
+    private const int    DefaultMaxRetries = 5;
+    private const double BaseDelaySeconds  = 2.0;
+    private const double MaxDelaySeconds   = 120.0;
 
-    private readonly HttpClient _http = new();
+    private readonly HttpClient _http;
+    private readonly int maxRetries;
+
+    public UploadService() : this(new HttpClient(), DefaultMaxRetries) { }
+
+    internal UploadService(HttpClient httpClient, int maxRetries = DefaultMaxRetries)
+    {
+        _http = httpClient;
+        this.maxRetries = maxRetries;
+    }
 
     /// <summary>
     /// Uploads a local file to OneDrive using a resumable upload session.
@@ -40,7 +49,7 @@ public sealed class UploadService
 
         Serilog.Log.Information("[UploadService] Starting upload: {Path} ({Size:F2} MB)", remotePath, fileInfo.Length / (1024.0 * 1024));
 
-        var sessionUrl = await CreateSessionWithRetryAsync(client, driveId, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
+        var sessionUrl = await CreateSessionAsync(client, driveId, parentFolderId, remotePath, fileInfo.LastWriteTimeUtc, ct);
 
         var itemId = await UploadChunksAsync(sessionUrl, localPath, fileInfo.Length, progress, ct);
 
@@ -49,7 +58,7 @@ public sealed class UploadService
         return itemId;
     }
 
-    private static async Task<string> CreateSessionWithRetryAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
+    private static async Task<string> CreateSessionAsync(GraphServiceClient client, string driveId, string parentFolderId, string remotePath, DateTime lastModified, CancellationToken ct)
     {
         var fileName = remotePath.Contains('/')
             ? remotePath[(remotePath.LastIndexOf('/') + 1)..]
@@ -84,7 +93,7 @@ public sealed class UploadService
             : session.UploadUrl;
     }
 
-    private async Task<string> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
+    internal async Task<string> UploadChunksAsync(string sessionUrl, string localPath, long totalBytes, IProgress<long>? progress, CancellationToken ct)
     {
         await using FileStream file = File.OpenRead(localPath);
         var buffer    = new byte[ChunkSize];
@@ -107,11 +116,12 @@ public sealed class UploadService
             uploaded += bytesRead;
             progress?.Report(uploaded);
 
-            if(itemId is not null)
-                return itemId;
+            return itemId is not null
+                ? itemId
+                : throw new InvalidOperationException("Upload completed without receiving item ID from Graph API.");
         }
-
-        throw new InvalidOperationException("Upload completed without receiving item ID from Graph API.");
+        
+        return string.Empty;
     }
 
     private async Task<string?> UploadChunkWithRetryAsync(string sessionUrl, ReadOnlyMemory<byte> chunk, long rangeStart, long rangeEnd, long totalBytes, CancellationToken ct)
@@ -133,13 +143,13 @@ public sealed class UploadService
 
                 if(response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
                 {
-                    if(attempt > MaxRetries)
+                    if(attempt >= maxRetries)
                     {
-                        throw new HttpRequestException($"Upload rate limited after {MaxRetries} retries.");
+                        throw new HttpRequestException($"Upload rate limited after {maxRetries} retries.");
                     }
 
                     TimeSpan delay = GetRetryDelay(response, attempt);
-                    Serilog.Log.Warning("[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
+                    Serilog.Log.Warning("[UploadService] 429 on chunk {Start}-{End}, waiting {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, maxRetries);
 
                     await Task.Delay(delay, ct);
                     continue;
@@ -152,24 +162,24 @@ public sealed class UploadService
 
                 if(response.StatusCode is System.Net.HttpStatusCode.Created or System.Net.HttpStatusCode.OK)
                 {
-                    return await GetUpdloadedDocumentId(response, ct);
+                    return await GetUploadedDocumentId(response, ct);
                 }
 
                 _ = response.EnsureSuccessStatusCode();
 
                 return null;
             }
-            catch(HttpRequestException) when(attempt <= MaxRetries)
+            catch(HttpRequestException) when(attempt <= maxRetries)
             {
                 TimeSpan delay = GetBackoffDelay(attempt);
-                Serilog.Log.Warning("[UploadService] Network error on chunk {Start}-{End}, retrying in {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, MaxRetries);
+                Serilog.Log.Warning("[UploadService] Network error on chunk {Start}-{End}, retrying in {Delay:F1}s (attempt {A}/{Max})", rangeStart, rangeEnd, delay.TotalSeconds, attempt, maxRetries);
 
                 await Task.Delay(delay, ct);
             }
         }
     }
 
-    private static async Task<string?> GetUpdloadedDocumentId(HttpResponseMessage response, CancellationToken ct)
+    private static async Task<string?> GetUploadedDocumentId(HttpResponseMessage response, CancellationToken ct)
     {
         var json = await response.Content.ReadAsStringAsync(ct);
         using var doc = System.Text.Json.JsonDocument.Parse(json);
